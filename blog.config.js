@@ -1,7 +1,7 @@
 // 注: process.env.XX是Vercel的环境变量，配置方式见：https://docs.tangly1024.com/zh/features/personality
 const BLOG = {
-  AUTHOR: '66619', // 作者
-  BIO: 'A githuber in this chaotic world.', // 作者简介
+  AUTHOR: '619', // 作者
+  BIO: 'a Githuber in this CHAOTIC world.', // 作者简介
   LINK: 'https://66619.eu.org', // 网站地址
   KEYWORDS: 'blog,boring,博客', // 网站关键词 英文逗号隔开
   NOTION_PAGE_ID:
