@@ -8,6 +8,7 @@ const CONFIG = {
     { title: '欢迎来到我的博客', url: 'https://66619.eu.org' },
     { title: '【最近更新】关于Blind-Helper的一切', url: '/article/blind-helper-everything' },
     { title: '我好想看到小可爱给我的blog留个言，戳我直达~', url: '/message' }
+    { title: '开往下一站，戳我直达~', url: 'https://www.travellings.cn/go.html' }
   ],
 
   // 英雄区(首页顶部大卡)
@@ -16,6 +17,7 @@ const CONFIG = {
   HERO_TITLE_3: '619的blog',
   HERO_TITLE_4: '最近更新',
   HERO_TITLE_5: 'Blind-Helper的一切',
+  HERO_BACKGROUND_LINK: 'https://image.66619.eu.org/file/79ead6631a93505d78f06.jpg',
   HERO_TITLE_LINK: 'https://66619.eu.org/article/blind-helper-everything',
 
   // 英雄区显示三个置顶分类
