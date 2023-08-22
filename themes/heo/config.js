@@ -5,24 +5,24 @@ const CONFIG = {
 
   // 首页顶部通知条滚动内容，如不需要可以留空 []
   NOTICE_BAR: [
-    { title: '欢迎来到我的博客', url: 'https://66619.eu.org' },
-    { title: '【最近更新】关于Blind-Helper的一切', url: '/article/blind-helper-everything' },
-    { title: '【留言板】我好想看到小可爱给我的blog留个言，戳我直达~', url: '/message' },
+    { title: '【✨】欢迎来到我的博客', url: 'https://66619.eu.org' },
+    { title: '【📌最近更新】关于Blind-Helper的一切', url: '/article/blind-helper-everything' },
+    { title: '【📝留言板】我好想看到有小可爱给我留言，戳我直达💖~', url: '/message' },
     { title: '【🚇开往】开往下一站，戳我直达~', url: 'https://www.travellings.cn/go.html' }
   ],
 
   // 英雄区(首页顶部大卡)
   HERO_TITLE_1: '分享技术',
   HERO_TITLE_2: '与思维认知',
-  HERO_TITLE_3: '619的blog',
-  HERO_TITLE_4: '最近更新',
-  HERO_TITLE_5: 'Blind-Helper的一切',
+  HERO_TITLE_3: '𝟞𝟙𝟡’𝕤 𝔹𝕃𝕆𝔾',
+  HERO_TITLE_4: '📌最近更新',
+  HERO_TITLE_5: '⚙Blind-Helper的一切',
   HERO_TITLE_LINK: 'https://66619.eu.org/article/blind-helper-everything',
 
   // 英雄区显示三个置顶分类
-  HERO_CATEGORY_1: { title: '学习思考', url: '/category/学习思考' },
-  HERO_CATEGORY_2: { title: '技术分享', url: '/category/技术分享' },
-  HERO_CATEGORY_3: { title: '班级相关', url: '/category/班级相关' },
+  HERO_CATEGORY_1: { title: '🤓学习思考', url: '/category/学习思考' },
+  HERO_CATEGORY_2: { title: '😎技术分享', url: '/category/技术分享' },
+  HERO_CATEGORY_3: { title: '👀班级相关', url: '/category/班级相关' },
 
   // 英雄区右侧推荐文章标签, 例如 [推荐] , 最多六篇文章; 若留空白''，则推荐最近更新文章
   HERO_RECOMMEND_POST_TAG: '',
@@ -30,7 +30,7 @@ const CONFIG = {
 
   // 右侧个人资料卡牌欢迎语，点击可自动切换
   INFOCARD_GREETINGS: [
-    '你好！我是@619',
+    '🙋‍♂️ 你好！我是@619',
     '🔍 热心分享与帮助',
     '🤝 专修网络与安全',
     '🏃 脚踏实地行动派',
