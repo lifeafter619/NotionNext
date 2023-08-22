@@ -17,7 +17,6 @@ const CONFIG = {
   HERO_TITLE_3: '619的blog',
   HERO_TITLE_4: '最近更新',
   HERO_TITLE_5: 'Blind-Helper的一切',
-  HERO_BACKGROUND_LINK: 'https://image.66619.eu.org/file/79ead6631a93505d78f06.jpg',
   HERO_TITLE_LINK: 'https://66619.eu.org/article/blind-helper-everything',
 
   // 英雄区显示三个置顶分类
