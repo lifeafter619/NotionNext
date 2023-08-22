@@ -7,8 +7,8 @@ const CONFIG = {
   NOTICE_BAR: [
     { title: '欢迎来到我的博客', url: 'https://66619.eu.org' },
     { title: '【最近更新】关于Blind-Helper的一切', url: '/article/blind-helper-everything' },
-    { title: '我好想看到小可爱给我的blog留个言，戳我直达~', url: '/message' },
-    { title: '开往下一站，戳我直达~', url: 'https://www.travellings.cn/go.html' }
+    { title: '【留言板】我好想看到小可爱给我的blog留个言，戳我直达~', url: '/message' },
+    { title: '【🚇开往】开往下一站，戳我直达~', url: 'https://www.travellings.cn/go.html' }
   ],
 
   // 英雄区(首页顶部大卡)
