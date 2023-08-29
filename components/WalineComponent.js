@@ -1,5 +1,5 @@
 import React from 'react'
-import { init } from '@waline/client'
+import { init } from '@waline/client@3'
 import BLOG from '@/blog.config'
 import { useRouter } from 'next/router'
 import '@waline/client/dist/waline.css'
@@ -22,12 +22,12 @@ const WalineComponent = (props) => {
   }
   const locale = {
     nick: '昵称',
-    nickError: '昵称不能少于3个字符',
+    nickError: '昵称不能少于3个字符哦...',
     mail: '邮箱',
     mailError: '请填写正确的邮件地址',
     link: '网址',
     optional: '可选',
-    placeholder: '来叭叭，信息都不留也行哈~\n如果留邮箱的话，被回复时有通知~',
+    placeholder: '来叭叭，信息都不留也行哈~\n如果留下邮箱的话，被回复时会有📧通知~',
     sofa: '来发评论吧~',
     submit: '提交~',
     like: '喜欢~',
@@ -49,7 +49,7 @@ const WalineComponent = (props) => {
     login: '登录',
     logout: '退出',
     admin: '博主同志',
-    sticky: '置个顶',
+    sticky: '置顶',
     word: '字',
     wordHint: '评论字数应在 $0 到 $1 字之间！\n当前字数：$2',
     anonymous: '匿名同志',
@@ -76,10 +76,13 @@ const WalineComponent = (props) => {
         reaction: true,
         dark: 'html.dark',
         emoji: [
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/qq',
           '//npm.elemecdn.com/sticker-heo@2022.7.5/Sticker-100',
-          '//npm.elemecdn.com/@waline/emojis@1.1.0/tieba',
-          '//npm.elemecdn.com/@waline/emojis@1.1.0/weibo',
-          '//npm.elemecdn.com/@waline/emojis@1.1.0/bilibili'
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/tieba',
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/weibo',
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/bilibili',
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/bmoji',
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/soul-emoji'
         ]
       })
     }
