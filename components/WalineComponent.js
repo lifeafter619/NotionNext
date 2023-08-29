@@ -1,5 +1,5 @@
 import React from 'react'
-import { init } from '@waline/client@3'
+import { init } from '@waline/client'
 import BLOG from '@/blog.config'
 import { useRouter } from 'next/router'
 import '@waline/client/dist/waline.css'
