@@ -76,8 +76,8 @@ const WalineComponent = (props) => {
         reaction: true,
         dark: 'html.dark',
         emoji: [
-          '//npm.elemecdn.com/@waline/emojis@1.2.0/qq',
           '//npm.elemecdn.com/sticker-heo@2022.7.5/Sticker-100',
+          '//npm.elemecdn.com/@waline/emojis@1.2.0/qq',
           '//npm.elemecdn.com/@waline/emojis@1.2.0/tieba',
           '//npm.elemecdn.com/@waline/emojis@1.2.0/weibo',
           '//npm.elemecdn.com/@waline/emojis@1.2.0/bilibili',
