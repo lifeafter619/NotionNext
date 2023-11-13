@@ -73,8 +73,6 @@ const WalineComponent = (props) => {
         serverURL: siteConfig('COMMENT_WALINE_SERVER_URL'),
         lang: siteConfig('LANG'),
         locale,
-        serverURL: BLOG.COMMENT_WALINE_SERVER_URL,
-        lang: BLOG.lang,
         reaction: true,
         dark: 'html.dark',
         emoji: [
