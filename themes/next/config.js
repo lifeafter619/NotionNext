@@ -1,7 +1,7 @@
 const CONFIG = {
 
   NEXT_HOME_BANNER: true, // 首页是否显示大图及标语 [true,false]
-  NEXT_HOME_BANNER_STRINGS: ['Hi，我是一个程序员', 'Hi，我是一个打工人', 'Hi，我是一个干饭人', '欢迎来到我的博客🎉'], // 首页大图标语文字
+  NEXT_HOME_BANNER_STRINGS: ['Hi,my friends!🎉', 'Hi，我是一个程序员', 'Hi，我是一个干饭人', '欢迎来到我的博客🎉'], // 首页大图标语文字
 
   NEXT_NAV_TYPE: 'normal', // ['fixed','autoCollapse','normal'] 分别是固定屏幕顶部并始终显示、固定屏幕顶部且滚动时隐藏，不固定屏幕顶部
 
@@ -25,14 +25,14 @@ const CONFIG = {
   NEXT_MENU_ARCHIVE: true, // 显示归档
   NEXT_MENU_SEARCH: true, // 显示搜索
 
-  NEXT_WIDGET_TO_TOP: true, // 是否显示回顶
-  NEXT_WIDGET_TO_BOTTOM: false, // 显示回底
-  NEXT_WIDGET_DARK_MODE: false, // 显示日间/夜间模式切换
-  NEXT_WIDGET_TOC: true, // 移动端显示悬浮目录
+  WIDGET_TO_TOP: true, // 是否显示回顶
+  WIDGET_TO_BOTTOM: false, // 显示回底
+  WIDGET_DARK_MODE: false, // 显示日间/夜间模式切换
+  WIDGET_TOC: true, // 移动端显示悬浮目录
 
-  NEXT_ARTICLE_RELATE_POSTS: true, // 相关文章推荐
-  NEXT_ARTICLE_COPYRIGHT: true, // 文章版权声明
-  NEXT_ARTICLE_INFO: true // 显示文章信息
+  ARTICLE_RELATE_POSTS: true, // 相关文章推荐
+  ARTICLE_COPYRIGHT: true, // 文章版权声明
+  ARTICLE_INFO: true // 显示文章信息
 
 }
 
