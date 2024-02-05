@@ -23,7 +23,6 @@ const Footer = ({ title }) => {
             </div>
 
             <br />
-
             {/* 底部页面信息 */}
             <div id='footer-bottom' className='w-full h-20 flex flex-col p-3 lg:flex-row justify-between px-6 items-center bg-[#f1f3f7] dark:bg-[#30343f]'>
 
@@ -32,7 +31,7 @@ const Footer = ({ title }) => {
                 </div>
             <div id='footer-bottom-right'>
                 {siteConfig('BEI_AN') && <><i className='fas fa-shield-alt' /> <a href='https://icp.gov.moe/?keyword=20225199' className='mr-2'>{siteConfig('BEI_AN')}</a></>}
-
+                <i className='fas fa-code' /> <a href='https://icp.gov.moe/?keyword=20225199' className='underline font-bold  dark:text-gray-300 '>GitHub</a>.
                 <span className='hidden busuanzi_container_site_pv'>
                     <i className='fas fa-eye' /><span className='px-1 busuanzi_value_site_pv'> </span>  </span>
                 <span className='pl-2 hidden busuanzi_container_site_uv'>
