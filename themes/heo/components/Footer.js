@@ -31,12 +31,13 @@ const Footer = ({ title }) => {
                 </div>
             <div id='footer-bottom-right'>
                 {siteConfig('BEI_AN') && <><i className='fas fa-shield-alt' /> <a href='https://icp.gov.moe/?keyword=20225199' className='mr-2'>{siteConfig('BEI_AN')}</a></>}
-                <i className='fas fa-code' /> <a href='https://icp.gov.moe/?keyword=20225199' className='underline font-bold  dark:text-gray-300 '>GitHub</a>.
                 <span className='hidden busuanzi_container_site_pv'>
                     <i className='fas fa-eye' /><span className='px-1 busuanzi_value_site_pv'> </span>  </span>
                 <span className='pl-2 hidden busuanzi_container_site_uv'>
                     <i className='fas fa-users' /> <span className='px-1 busuanzi_value_site_uv'> </span> </span>
-
+                <div>
+                <i className='fas fa-code' /> <a href='https://icp.gov.moe/?keyword=20225199' className='underline font-bold  dark:text-gray-300 '>GitHub</a>.
+                </div>
                 {/* <h1 className='text-xs pt-4 text-light-400 dark:text-gray-400'>{title} {siteConfig('BIO') && <>|</>} {siteConfig('BIO')}</h1> */}
 
             </div>
