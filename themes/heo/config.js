@@ -1,7 +1,7 @@
 const CONFIG = {
   HEO_HOME_BANNER_ENABLE: true,
 
-  HEO_SITE_CREATE_TIME: '2020-08-21', // 建站日期，用于计算网站运行的第几天
+  HEO_SITE_CREATE_TIME: '2021-08-21', // 建站日期，用于计算网站运行的第几天
 
   // 首页顶部通知条滚动内容，如不需要可以留空 []
   HEO_NOTICE_BAR: [
@@ -9,6 +9,7 @@ const CONFIG = {
     { title: '【📌最近更新】关于Blind-Helper的一切', url: '/article/blind-helper-everything' },
     { title: '【📝留言板】我好想看到有小可爱给我留言，戳我直达💖~', url: '/message' },
     { title: '【🚇开往】开往下一站，戳我直达~', url: 'https://www.travellings.cn/go.html' }
+    { title: '【💖赞助商】本站由蓝易云安全提供高防CDN安全防护和加速服务', url: 'https://www.tsycdn.com/' }
   ],
 
   // 英雄区左右侧组件颠倒位置
@@ -17,11 +18,11 @@ const CONFIG = {
   HEO_HERO_BODY_REVERSE: false,
 
   // 英雄区(首页顶部大卡)
-  HEO_HERO_TITLE_1: '分享技术',
-  HEO_HERO_TITLE_2: '与思维认知',
+  HEO_HERO_TITLE_1: '分享🔥技术',
+  HEO_HERO_TITLE_2: '与生活瞬间😜',
   HEO_HERO_TITLE_3: '𝟞𝟙𝟡’𝕤 𝔹𝕃𝕆𝔾',
   HEO_HERO_TITLE_4: '📌最近更新',
-  HEO_HERO_TITLE_5: '⚙Blind-Helper的一切',
+  HEO_HERO_TITLE_5: '👀Blind-Helper的一切',
   HEO_HERO_TITLE_LINK: 'https://66619.eu.org/article/blind-helper-everything',
 
   // 英雄区显示三个置顶分类
@@ -133,7 +134,7 @@ const CONFIG = {
   HEO_ARTICLE_RECOMMEND: true, // 文章关联推荐
 
   HEO_WIDGET_LATEST_POSTS: true, // 显示最新文章卡
-  HEO_WIDGET_ANALYTICS: false, // 显示统计卡
+  HEO_WIDGET_ANALYTICS: true, // 显示统计卡
   HEO_WIDGET_TO_TOP: true,
   HEO_WIDGET_TO_COMMENT: true, // 跳到评论区
   HEO_WIDGET_DARK_MODE: true, // 夜间模式
