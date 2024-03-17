@@ -1,4 +1,4 @@
-import React, { createRef } from 'react'
+import  { createRef, useEffect } from 'react'
 import { init } from '@waline/client'
 import { useRouter } from 'next/router'
 import '@waline/client/dist/waline.css'
@@ -65,7 +65,7 @@ const WalineComponent = (props) => {
     reactionTitle: 'hi,觉得这篇文章咋样？选一个叭~'
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!waline) {
       waline = init({
         ...props,
