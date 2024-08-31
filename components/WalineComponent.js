@@ -27,10 +27,10 @@ const WalineComponent = (props) => {
     mailError: '请填写正确的邮件地址',
     link: '网址',
     optional: '可选',
-    placeholder: '来叭叭，信息都不留也行哈~\n如果留下邮箱的话，被回复时会有📧通知~',
+    placeholder: '来叭叭，信息都不留也行~\n如果留下邮箱的话，被回复时会有📧通知~',
     sofa: '来发评论吧~',
     submit: '提交~',
-    like: '喜欢~',
+    like: '喜欢✪ω✪',
     cancelLike: '取消喜欢',
     reply: '回复~',
     cancelReply: '取消回复',
@@ -48,8 +48,8 @@ const WalineComponent = (props) => {
     uploading: '正在上传',
     login: '登录',
     logout: '退出',
-    admin: '博主同志',
-    sticky: '置顶',
+    admin: '博主',
+    sticky: '置顶📌',
     word: '字',
     wordHint: '评论字数应在 $0 到 $1 字之间！\n当前字数：$2',
     anonymous: '匿名同志',
@@ -81,8 +81,8 @@ const WalineComponent = (props) => {
           '//npm.elemecdn.com/@waline/emojis@1.2.0/tieba',
           '//npm.elemecdn.com/@waline/emojis@1.2.0/weibo',
           '//npm.elemecdn.com/@waline/emojis@1.2.0/bilibili',
-          '//file.66619.eu.org/beluga-emoji',
-          '//file.66619.eu.org/ikun-emoji'
+          '//file.cdn.sbbb.us.kg/beluga-emoji',
+          '//file.cdn.sbbb.us.kg/ikun-emoji'
         ]
       })
     }
