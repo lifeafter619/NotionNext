@@ -20,12 +20,14 @@ const CONFIG = {
   HEO_HERO_BODY_REVERSE: false,
 
   // 英雄区(首页顶部大卡)
-  HEO_HERO_TITLE_1: '分享🔥技术',
+  HEO_HERO_TITLE_1: '分享技术',
   HEO_HERO_TITLE_2: '与生活瞬间😜',
   HEO_HERO_TITLE_3: '𝟞𝟙𝟡’𝕤 𝔹𝕃𝕆𝔾',
   HEO_HERO_TITLE_4: '📌最近更新',
   HEO_HERO_TITLE_5: '👀Blind-Helper的一切',
   HEO_HERO_TITLE_LINK: 'https://66619.eu.org/article/blind-helper-everything',
+  // 英雄区遮罩文字
+  HEO_HERO_COVER_TITLE: '逛逛~',
 
   // 英雄区显示三个置顶分类
   HEO_HERO_CATEGORY_1: { title: '🤓学习思考', url: '/category/学习思考' },
@@ -53,8 +55,6 @@ const CONFIG = {
   HEO_INFO_CARD_ICON1: 'fas fa-user',
   HEO_INFO_CARD_URL2: 'https://github.com/lifeafter619',
   HEO_INFO_CARD_ICON2: 'fab fa-github',
-  HEO_INFO_CARD_URL3: 'https://66619.eu.org',
-  HEO_INFO_CARD_TEXT3: '了解更多',
 
   // 用户技能图标
   HEO_GROUP_ICONS: [
