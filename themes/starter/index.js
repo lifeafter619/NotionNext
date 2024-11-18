@@ -25,6 +25,7 @@ import CONFIG from './config'
 import { Style } from './style'
 // import { MadeWithButton } from './components/MadeWithButton'
 import Comment from '@/components/Comment'
+import replaceSearchResult from '@/components/Mark'
 import ShareBar from '@/components/ShareBar'
 import { useGlobal } from '@/lib/global'
 import { loadWowJS } from '@/lib/plugins/wow'
@@ -33,6 +34,7 @@ import Link from 'next/link'
 import { ArticleLock } from './components/ArticleLock'
 import { Banner } from './components/Banner'
 import { CTA } from './components/CTA'
+import SearchInput from './components/SearchInput'
 import { SignInForm } from './components/SignInForm'
 import { SignUpForm } from './components/SignUpForm'
 import { SVG404 } from './components/svg/SVG404'
@@ -61,7 +63,9 @@ const LayoutBase = props => {
       {/* 页头 */}
       <Header {...props} />
 
-      {children}
+      <div id='main-wrapper' className='grow'>
+        {children}
+      </div>
 
       {/* 页脚 */}
       <Footer {...props} />
@@ -81,6 +85,7 @@ const LayoutBase = props => {
  */
 const LayoutIndex = props => {
   const count = siteConfig('STARTER_BLOG_COUNT', 3, CONFIG)
+  const { locale } = useGlobal()
   const posts = props?.allNavPages ? props.allNavPages.slice(0, count) : []
   return (
     <>
@@ -108,7 +113,7 @@ const LayoutIndex = props => {
           <Blog posts={posts} />
           <div className='container mx-auto flex justify-end mb-4'>
             <Link className='text-lg underline' href={'/archive'}>
-              <span>查看全部</span>
+              <span>{locale.COMMON.MORE}</span>
               <i className='ml-2 fas fa-arrow-right' />
             </Link>
           </div>
@@ -158,7 +163,7 @@ const LayoutSlug = props => {
           <div id='container-inner' className='w-full p-4'>
             {lock && <ArticleLock validPassword={validPassword} />}
 
-            {!lock && (
+            {!lock && post && (
               <div id='article-wrapper' className='mx-auto'>
                 <NotionPage {...props} />
                 <Comment frontMatter={post} />
@@ -172,7 +177,32 @@ const LayoutSlug = props => {
   )
 }
 
-const LayoutSearch = props => <></>
+const LayoutSearch = props => {
+  const { keyword } = props
+  const router = useRouter()
+  const currentSearch = keyword || router?.query?.s
+
+  useEffect(() => {
+    if (isBrowser) {
+      replaceSearchResult({
+        doms: document.getElementById('posts-wrapper'),
+        search: keyword,
+        target: {
+          element: 'span',
+          className: 'text-red-500 border-b border-dashed'
+        }
+      })
+    }
+  }, [])
+  return (
+    <>
+      <section className='max-w-7xl mx-auto bg-white pb-10 pt-20 dark:bg-dark lg:pb-20 lg:pt-[120px]'>
+        <SearchInput {...props} />
+        {currentSearch && <Blog {...props} />}
+      </section>
+    </>
+  )
+}
 
 /**
  * 文章归档
