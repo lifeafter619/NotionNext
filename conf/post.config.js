@@ -31,15 +31,15 @@ module.exports = {
 
   // 文章过期提醒配置 p.s. 目前此功能暂时只适用于heo主题
   ARTICLE_EXPIRATION_DAYS:
-    process.env.NEXT_PUBLIC_ARTICLE_EXPIRATION_DAYS || 60, // 文章过期提醒阈值（天）
+    process.env.NEXT_PUBLIC_ARTICLE_EXPIRATION_DAYS || 90, // 文章过期提醒阈值（天）
   ARTICLE_EXPIRATION_MESSAGE:
     process.env.NEXT_PUBLIC_ARTICLE_EXPIRATION_MESSAGE ||
     '这篇文章最后更新于 %%DAYS%% 天前，有点久远啦，技术相关の具体内容请谨慎参考，若发现问题，请及时联系站长处理~', // 过期提示信息，使用 %%DAYS%% 作为天数占位符
   ARTICLE_EXPIRATION_ENABLED:
-    process.env.NEXT_PUBLIC_ARTICLE_EXPIRATION_ENABLED || 'false', // 是否启用文章过期提醒
+    process.env.NEXT_PUBLIC_ARTICLE_EXPIRATION_ENABLED || 'true', // 是否启用文章过期提醒
 
   POST_WAITING_TIME_FOR_404:
-    process.env.NEXT_PUBLIC_POST_WAITING_TIME_FOR_404 || '15', // 文章加载超时时间，单位秒；超时后跳转到404页面
+    process.env.NEXT_PUBLIC_POST_WAITING_TIME_FOR_404 || '8', // 文章加载超时时间，单位秒；超时后跳转到404页面
 
   // 标签相关
   TAG_SORT_BY_COUNT: true, // 标签是否按照文章数量倒序排列，文章多的标签排在前。
