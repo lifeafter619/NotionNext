@@ -5,6 +5,9 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { getQueryParam, getQueryVariable, isBrowser } from '../lib/utils'
 
+// 缓存已解析的主题配置，避免重复动态导入
+const themeConfigCache = new Map()
+
 // 在next.config.js中扫描所有主题
 export const { THEMES = [] } = getConfig()?.publicRuntimeConfig || {}
 
@@ -14,45 +17,50 @@ export const { THEMES = [] } = getConfig()?.publicRuntimeConfig || {}
  * @returns {Promise<object>} 主题配置对象
  */
 export const getThemeConfig = async themeQuery => {
-  // 如果 themeQuery 存在且不等于默认主题，处理多主题情况
-  if (typeof themeQuery === 'string' && themeQuery.trim()) {
-    // 取 themeQuery 中第一个主题（以逗号为分隔符）
-    const themeName = themeQuery.split(',')[0].trim()
+  const themeName =
+    typeof themeQuery === 'string' && themeQuery.trim()
+      ? themeQuery.split(',')[0].trim()
+      : BLOG.THEME
+  const cacheKey = themeName || BLOG.THEME
 
-    // 如果 themeQuery 不等于当前默认主题，则加载指定主题的配置
-    if (themeName !== BLOG.THEME) {
+  if (themeConfigCache.has(cacheKey)) {
+    return themeConfigCache.get(cacheKey)
+  }
+
+  const loadPromise = (async () => {
+    if (cacheKey !== BLOG.THEME) {
       try {
-        // 动态导入主题配置
-        const THEME_CONFIG = await import(`@/themes/${themeName}`)
+        const THEME_CONFIG = await import(`@/themes/${cacheKey}`)
           .then(m => m.THEME_CONFIG)
           .catch(err => {
-            console.error(`Failed to load theme ${themeName}:`, err)
-            return null // 主题加载失败时返回 null 或者其他默认值
+            console.error(`Failed to load theme ${cacheKey}:`, err)
+            return null
           })
 
-        // 如果主题配置加载成功，返回配置
         if (THEME_CONFIG) {
           return THEME_CONFIG
-        } else {
-          // 如果加载失败，返回默认主题配置
-          console.warn(
-            `Loading ${themeName} failed. Falling back to default theme.`
-          )
-          return ThemeComponents?.THEME_CONFIG
         }
+
+        console.warn(
+          `Loading ${cacheKey} failed. Falling back to default theme.`
+        )
+        return ThemeComponents?.THEME_CONFIG
       } catch (error) {
-        // 如果 import 过程中出现异常，返回默认主题配置
         console.error(
-          `Error loading theme configuration for ${themeName}:`,
+          `Error loading theme configuration for ${cacheKey}:`,
           error
         )
         return ThemeComponents?.THEME_CONFIG
       }
     }
-  }
 
-  // 如果没有 themeQuery 或 themeQuery 与默认主题相同，返回默认主题配置
-  return ThemeComponents?.THEME_CONFIG
+    return ThemeComponents?.THEME_CONFIG
+  })()
+
+  themeConfigCache.set(cacheKey, loadPromise)
+  return loadPromise
+
+  // 如果 themeQuery 存在且不等于默认主题，处理多主题情况
 }
 
 /**

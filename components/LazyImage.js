@@ -33,7 +33,7 @@ export default function LazyImage({
    */
   const handleThumbnailLoaded = () => {
     if (typeof onLoad === 'function') {
-      // onLoad() // 触发传递的onLoad回调函数
+      onLoad() // 触发传递的onLoad回调函数
     }
   }
   // 原图加载完成
@@ -65,6 +65,8 @@ export default function LazyImage({
   }
 
   useEffect(() => {
+    if (!src) return
+
     const adjustedImageSrc =
       adjustImgSize(src, maxWidth) || defaultPlaceholderSrc
 
@@ -134,8 +136,8 @@ export default function LazyImage({
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
     ref: imageRef,
-    src: currentSrc,
-    'data-src': src, // 存储原始图片地址
+    src: src ? currentSrc : defaultPlaceholderSrc,
+    ...(src && { 'data-src': src }), // 存储原始图片地址
     alt: alt || 'Lazy loaded image',
     onLoad: handleThumbnailLoaded,
     onError: handleImageError,
@@ -154,10 +156,6 @@ export default function LazyImage({
 
   if (id) imgProps.id = id
   if (title) imgProps.title = title
-
-  if (!src) {
-    return null
-  }
 
   return (
     <>
