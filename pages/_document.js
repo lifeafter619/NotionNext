@@ -33,6 +33,9 @@ const darkModeScript = `
 })()
 `
 
+// 获取字体URL列表
+const fontUrls = BLOG.FONT_URL || []
+
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
     const initialProps = await Document.getInitialProps(ctx)
@@ -43,7 +46,43 @@ class MyDocument extends Document {
     return (
       <Html lang={BLOG.LANG}>
         <Head>
-          {/* 预加载字体 */}
+          {/* DNS预解析 - 加速字体加载 */}
+          <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+          <link rel='dns-prefetch' href='//fonts.gstatic.com' />
+          <link rel='dns-prefetch' href='//npm.elemecdn.com' />
+          <link rel='dns-prefetch' href='//cdnjs.cloudflare.com' />
+          
+          {/* 预连接 - 提前建立连接 */}
+          <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
+          <link rel='preconnect' href='https://fonts.gstatic.com' crossOrigin='anonymous' />
+          <link rel='preconnect' href='https://npm.elemecdn.com' crossOrigin='anonymous' />
+
+          {/* 预加载字体样式表 */}
+          {fontUrls.map((url, index) => (
+            url && (
+              <link
+                key={`preload-font-${index}`}
+                rel='preload'
+                href={url}
+                as='style'
+                crossOrigin='anonymous'
+              />
+            )
+          ))}
+
+          {/* 加载字体样式表 */}
+          {fontUrls.map((url, index) => (
+            url && (
+              <link
+                key={`font-${index}`}
+                rel='stylesheet'
+                href={url}
+                crossOrigin='anonymous'
+              />
+            )
+          ))}
+
+          {/* 预加载 Font Awesome */}
           {BLOG.FONT_AWESOME && (
             <>
               <link

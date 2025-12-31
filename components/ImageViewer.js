@@ -77,20 +77,31 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     }
   }, [isOpen, onClose, resetState])
 
-  // 全局滚轮事件阻止 - 防止页面滚动
+  // 全局滚轮事件处理 - 用于缩放图片，同时防止页面滚动
   useEffect(() => {
     if (!isOpen) return
 
-    const preventScroll = e => {
+    const handleGlobalWheel = e => {
+      e.preventDefault()
+      e.stopPropagation()
+      // 使用滚轮进行缩放
+      if (e.deltaY < 0) {
+        setScale(prev => Math.min(prev + 0.15, 5))
+      } else {
+        setScale(prev => Math.max(prev - 0.15, 0.25))
+      }
+      return false
+    }
+
+    const preventTouchScroll = e => {
       e.preventDefault()
       e.stopPropagation()
       return false
     }
 
-    // 阻止所有滚动事件 - 使用 capture 阶段确保优先处理
-    document.addEventListener('wheel', preventScroll, { passive: false, capture: true })
-    document.addEventListener('touchmove', preventScroll, { passive: false, capture: true })
-    document.addEventListener('scroll', preventScroll, { passive: false, capture: true })
+    // 滚轮事件用于缩放，同时阻止页面滚动
+    document.addEventListener('wheel', handleGlobalWheel, { passive: false })
+    document.addEventListener('touchmove', preventTouchScroll, { passive: false })
 
     // 防止 body 滚动
     const originalOverflow = document.body.style.overflow
@@ -103,9 +114,8 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     document.body.style.width = '100%'
 
     return () => {
-      document.removeEventListener('wheel', preventScroll, { capture: true })
-      document.removeEventListener('touchmove', preventScroll, { capture: true })
-      document.removeEventListener('scroll', preventScroll, { capture: true })
+      document.removeEventListener('wheel', handleGlobalWheel)
+      document.removeEventListener('touchmove', preventTouchScroll)
       document.body.style.overflow = originalOverflow
       document.body.style.position = originalPosition
       document.body.style.top = originalTop
@@ -203,17 +213,6 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setIsDragging(false)
   }, [])
 
-  // 鼠标滚轮缩放
-  const handleWheel = useCallback(e => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.deltaY < 0) {
-      setScale(prev => Math.min(prev + 0.15, 5))
-    } else {
-      setScale(prev => Math.max(prev - 0.15, 0.25))
-    }
-  }, [])
-
   // 触摸事件支持 - 使用 ref 实现无延迟拖动
   const handleTouchStart = e => {
     if (e.touches.length === 1) {
@@ -244,7 +243,6 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     <div
       className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/90'
       onClick={onClose}
-      onWheel={handleWheel}
       role='dialog'
       aria-modal='true'
       aria-label='Image viewer'>
