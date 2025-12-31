@@ -2185,8 +2185,28 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 }
 
 .dark .notion-callout {
-  background: linear-gradient(135deg, rgba(60, 60, 65, 0.6) 0%, rgba(50, 50, 55, 0.4) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(50, 50, 55, 0.8) 0%, rgba(45, 45, 50, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Callout 内部文字颜色确保可见 */
+.dark .notion-callout-text {
+  color: #e5e7eb !important;
+}
+
+/* Callout 内的背景色文字需要更低对比度 */
+.dark .notion-callout .notion-red_background,
+.dark .notion-callout .notion-pink_background,
+.dark .notion-callout .notion-blue_background,
+.dark .notion-callout .notion-purple_background,
+.dark .notion-callout .notion-teal_background,
+.dark .notion-callout .notion-yellow_background,
+.dark .notion-callout .notion-orange_background,
+.dark .notion-callout .notion-brown_background,
+.dark .notion-callout .notion-gray_background,
+.dark .notion-callout .notion-green_background,
+.dark .notion-callout .notion-default_background {
+  background-color: rgba(60, 60, 65, 0.5) !important;
 }
 
 .notion-callout .notion-page-icon {
@@ -2206,20 +2226,20 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   flex: 1;
 }
 
-/* 加粗文字 - 增强效果 */
+/* 加粗文字 - 增强效果 (更强的黄色高亮) */
 .notion b,
 .notion strong {
   font-weight: 700;
   color: var(--fg-color-4);
-  background: linear-gradient(180deg, transparent 60%, var(--notion-yellow_background) 60%);
-  padding: 0 2px;
-  border-radius: 2px;
+  background: linear-gradient(180deg, transparent 50%, rgba(255, 230, 0, 0.5) 50%);
+  padding: 0 3px;
+  border-radius: 3px;
 }
 
 .dark .notion b,
 .dark .notion strong {
   color: #fff;
-  background: linear-gradient(180deg, transparent 60%, rgba(223, 171, 1, 0.3) 60%);
+  background: linear-gradient(180deg, transparent 50%, rgba(255, 200, 0, 0.45) 50%);
 }
 
 /* 背景色文字 - 现代圆角效果 */
@@ -2239,6 +2259,52 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   margin: 8px 0;
   display: block;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 暗色模式下的背景色 - 更暗的背景，确保文字可见 */
+.dark .notion-red_background {
+  background-color: rgba(180, 50, 50, 0.25) !important;
+  color: #fca5a5 !important;
+}
+.dark .notion-pink_background {
+  background-color: rgba(160, 40, 100, 0.25) !important;
+  color: #f9a8d4 !important;
+}
+.dark .notion-blue_background {
+  background-color: rgba(40, 80, 140, 0.3) !important;
+  color: #93c5fd !important;
+}
+.dark .notion-purple_background {
+  background-color: rgba(100, 60, 140, 0.3) !important;
+  color: #c4b5fd !important;
+}
+.dark .notion-teal_background {
+  background-color: rgba(30, 100, 90, 0.3) !important;
+  color: #5eead4 !important;
+}
+.dark .notion-yellow_background {
+  background-color: rgba(140, 120, 20, 0.3) !important;
+  color: #fde047 !important;
+}
+.dark .notion-orange_background {
+  background-color: rgba(160, 80, 20, 0.3) !important;
+  color: #fdba74 !important;
+}
+.dark .notion-brown_background {
+  background-color: rgba(100, 70, 50, 0.35) !important;
+  color: #d6b89f !important;
+}
+.dark .notion-gray_background {
+  background-color: rgba(80, 80, 85, 0.4) !important;
+  color: #d1d5db !important;
+}
+.dark .notion-green_background {
+  background-color: rgba(30, 100, 50, 0.3) !important;
+  color: #86efac !important;
+}
+.dark .notion-default_background {
+  background-color: rgba(70, 70, 75, 0.4) !important;
+  color: #e5e7eb !important;
 }
 
 /* 内联代码 - 现代化 */
@@ -2378,18 +2444,32 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   background: linear-gradient(90deg, transparent 0%, var(--fg-color-1) 20%, var(--fg-color-1) 80%, transparent 100%);
 }
 
-/* 链接 - 现代化动画 */
+/* 链接 - 现代化动画 (更醒目的效果) */
 .notion-link {
-  color: var(--notion-blue);
+  color: #0066cc;
   word-break: break-word;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  border-bottom: 2px solid rgba(0, 102, 204, 0.3);
+  padding-bottom: 1px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .notion-link:hover {
-  border-bottom-color: var(--notion-blue);
-  color: var(--notion-purple);
+  color: #0052a3;
+  border-bottom-color: #0052a3;
+  background: linear-gradient(180deg, transparent 70%, rgba(0, 102, 204, 0.1) 70%);
+}
+
+.dark .notion-link {
+  color: #60a5fa;
+  border-bottom-color: rgba(96, 165, 250, 0.4);
+}
+
+.dark .notion-link:hover {
+  color: #93c5fd;
+  border-bottom-color: #93c5fd;
+  background: linear-gradient(180deg, transparent 70%, rgba(96, 165, 250, 0.15) 70%);
 }
 
 /* 收藏卡片 - 现代化 */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 /**
@@ -10,8 +10,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   const [rotation, setRotation] = useState(0)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [mounted, setMounted] = useState(false)
+  const dragStartRef = useRef({ x: 0, y: 0 })
+  const positionRef = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
     setMounted(true)
@@ -23,6 +24,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setScale(1)
     setRotation(0)
     setPosition({ x: 0, y: 0 })
+    positionRef.current = { x: 0, y: 0 }
   }, [])
 
   // 关闭时重置
@@ -75,6 +77,25 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     }
   }, [isOpen, onClose, resetState])
 
+  // 全局滚轮事件阻止 - 防止页面滚动
+  useEffect(() => {
+    if (!isOpen) return
+
+    const preventScroll = e => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    // 阻止所有滚动事件
+    document.addEventListener('wheel', preventScroll, { passive: false })
+    document.addEventListener('touchmove', preventScroll, { passive: false })
+
+    return () => {
+      document.removeEventListener('wheel', preventScroll)
+      document.removeEventListener('touchmove', preventScroll)
+    }
+  }, [isOpen])
+
   // 放大
   const handleZoomIn = () => {
     setScale(prev => Math.min(prev + 0.25, 5))
@@ -95,82 +116,109 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setRotation(prev => prev - 90)
   }
 
-  // 下载图片
+  // 下载图片 - 直接触发下载
   const handleDownload = async () => {
     if (!src) return
 
     try {
-      const response = await fetch(src)
+      // 使用 CORS 代理或直接获取
+      const response = await fetch(src, { mode: 'cors' })
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = alt || 'image'
+      
+      // 从 URL 中提取文件名或使用 alt
+      const fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      link.download = fileName
+      
+      // 直接触发下载
+      link.style.display = 'none'
       document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      
+      // 清理
+      setTimeout(() => {
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }, 100)
     } catch (error) {
-      // If fetch fails, open image link directly
-      console.warn('Failed to download image:', error?.message || 'Unknown error')
-      window.open(src, '_blank')
+      console.warn('Failed to download via fetch, trying direct link:', error?.message)
+      // 如果 fetch 失败，尝试创建一个直接下载链接
+      try {
+        const link = document.createElement('a')
+        link.href = src
+        link.download = alt || 'image'
+        link.target = '_self'
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        setTimeout(() => {
+          document.body.removeChild(link)
+        }, 100)
+      } catch (e) {
+        console.error('Download failed:', e)
+      }
     }
   }
 
-  // 鼠标拖拽
+  // 鼠标拖拽 - 使用 ref 实现无延迟拖动
   const handleMouseDown = e => {
     if (e.button !== 0) return
-    setIsDragging(true)
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    })
-  }
-
-  const handleMouseMove = e => {
-    if (!isDragging) return
-    setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    })
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-
-  // 鼠标滚轮缩放
-  const handleWheel = e => {
     e.preventDefault()
-    if (e.deltaY < 0) {
-      handleZoomIn()
-    } else {
-      handleZoomOut()
+    setIsDragging(true)
+    dragStartRef.current = {
+      x: e.clientX - positionRef.current.x,
+      y: e.clientY - positionRef.current.y
     }
   }
 
-  // 触摸事件支持
+  const handleMouseMove = useCallback(e => {
+    if (!isDragging) return
+    const newX = e.clientX - dragStartRef.current.x
+    const newY = e.clientY - dragStartRef.current.y
+    positionRef.current = { x: newX, y: newY }
+    setPosition({ x: newX, y: newY })
+  }, [isDragging])
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false)
+  }, [])
+
+  // 鼠标滚轮缩放
+  const handleWheel = useCallback(e => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.deltaY < 0) {
+      setScale(prev => Math.min(prev + 0.15, 5))
+    } else {
+      setScale(prev => Math.max(prev - 0.15, 0.25))
+    }
+  }, [])
+
+  // 触摸事件支持 - 使用 ref 实现无延迟拖动
   const handleTouchStart = e => {
     if (e.touches.length === 1) {
       setIsDragging(true)
-      setDragStart({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y
-      })
+      dragStartRef.current = {
+        x: e.touches[0].clientX - positionRef.current.x,
+        y: e.touches[0].clientY - positionRef.current.y
+      }
     }
   }
 
-  const handleTouchMove = e => {
+  const handleTouchMove = useCallback(e => {
     if (!isDragging || e.touches.length !== 1) return
-    setPosition({
-      x: e.touches[0].clientX - dragStart.x,
-      y: e.touches[0].clientY - dragStart.y
-    })
-  }
+    e.preventDefault()
+    const newX = e.touches[0].clientX - dragStartRef.current.x
+    const newY = e.touches[0].clientY - dragStartRef.current.y
+    positionRef.current = { x: newX, y: newY }
+    setPosition({ x: newX, y: newY })
+  }, [isDragging])
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     setIsDragging(false)
-  }
+  }, [])
 
   if (!isOpen || !mounted) return null
 
@@ -197,15 +245,17 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{
-          cursor: isDragging ? 'grabbing' : 'grab'
+          cursor: isDragging ? 'grabbing' : 'grab',
+          touchAction: 'none'
         }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
           alt={alt || 'Image'}
-          className='max-w-[90vw] max-h-[80vh] object-contain transition-transform duration-200'
+          className='max-w-[90vw] max-h-[80vh] object-contain'
           style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`
+            transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
+            transition: isDragging ? 'none' : 'transform 0.1s ease-out'
           }}
           draggable={false}
         />
