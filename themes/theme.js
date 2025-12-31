@@ -187,6 +187,50 @@ export const initDarkMode = (updateDarkMode, defaultDarkMode) => {
   document
     .getElementsByTagName('html')[0]
     .setAttribute('class', newDarkMode ? 'dark' : 'light')
+
+  // 如果是auto模式，监听系统主题变化
+  if (BLOG.APPEARANCE === 'auto' && !userDarkMode) {
+    setupSystemThemeListener(updateDarkMode)
+  }
+}
+
+/**
+ * 设置系统主题变化监听器
+ * 当用户系统主题变化时自动切换深色/浅色模式
+ */
+export const setupSystemThemeListener = updateDarkMode => {
+  if (typeof window === 'undefined') return
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+  const handleChange = e => {
+    // 只有当用户没有手动设置过主题时才自动切换
+    const userDarkMode = loadDarkModeFromLocalStorage()
+    if (!userDarkMode) {
+      const newDarkMode = e.matches
+      updateDarkMode(newDarkMode)
+      const htmlElement = document.getElementsByTagName('html')[0]
+      htmlElement.classList?.remove(newDarkMode ? 'light' : 'dark')
+      htmlElement.classList?.add(newDarkMode ? 'dark' : 'light')
+    }
+  }
+
+  // 添加事件监听器
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', handleChange)
+  } else {
+    // 兼容旧版浏览器
+    mediaQuery.addListener(handleChange)
+  }
+
+  // 返回清理函数
+  return () => {
+    if (mediaQuery.removeEventListener) {
+      mediaQuery.removeEventListener('change', handleChange)
+    } else {
+      mediaQuery.removeListener(handleChange)
+    }
+  }
 }
 
 /**
