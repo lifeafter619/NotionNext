@@ -2098,3 +2098,449 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion-gallery {
   padding: 0 16px;
 }
+
+/* ============================================
+   现代化 Notion 样式增强
+   Modern Notion Style Enhancements
+   ============================================ */
+
+/* CSS变量 - 可配置的圆角半径 */
+:root {
+  --notion-rounded-radius: 12px;
+  --notion-rounded-radius-sm: 8px;
+  --notion-rounded-radius-lg: 16px;
+}
+
+/* 图片圆角和现代化效果 */
+.notion-asset-wrapper img,
+.notion-image,
+.notion-asset-object-fit {
+  border-radius: var(--notion-rounded-radius) !important;
+  overflow: hidden;
+}
+
+.notion-asset-wrapper {
+  border-radius: var(--notion-rounded-radius);
+  overflow: hidden;
+}
+
+/* 引用块 - 现代化设计 */
+.notion-quote {
+  display: block;
+  border-radius: var(--notion-rounded-radius);
+  background: linear-gradient(135deg, var(--notion-blue_background) 0%, var(--notion-purple_background_co) 100%);
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-left: 4px solid var(--notion-blue);
+  padding: 1em 1.5em;
+  margin: 12px 0;
+  font-size: 1em;
+  font-style: italic;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notion-quote:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.notion-quote::before {
+  content: '"';
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  font-size: 3em;
+  color: var(--notion-blue);
+  opacity: 0.3;
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.dark .notion-quote {
+  background: linear-gradient(135deg, rgba(45, 85, 115, 0.3) 0%, rgba(85, 60, 120, 0.2) 100%);
+  border-left-color: rgba(100, 150, 200, 0.8);
+}
+
+/* 高亮/突出块 - Callout 现代化 */
+.notion-callout {
+  padding: 16px 20px;
+  display: flex;
+  width: 100%;
+  border-radius: var(--notion-rounded-radius);
+  align-items: flex-start;
+  box-sizing: border-box;
+  margin: 12px 0;
+  border: none;
+  background: linear-gradient(135deg, var(--notion-gray_background) 0%, var(--notion-default_background_co) 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notion-callout:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dark .notion-callout {
+  background: linear-gradient(135deg, rgba(60, 60, 65, 0.6) 0%, rgba(50, 50, 55, 0.4) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.notion-callout .notion-page-icon {
+  align-self: flex-start;
+  width: 28px;
+  height: 28px;
+  font-size: 1.2em;
+  line-height: 1.2em;
+  flex-shrink: 0;
+}
+
+.notion-callout-text {
+  margin-left: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* 加粗文字 - 增强效果 */
+.notion b,
+.notion strong {
+  font-weight: 700;
+  color: var(--fg-color-4);
+  background: linear-gradient(180deg, transparent 60%, var(--notion-yellow_background) 60%);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.dark .notion b,
+.dark .notion strong {
+  color: #fff;
+  background: linear-gradient(180deg, transparent 60%, rgba(223, 171, 1, 0.3) 60%);
+}
+
+/* 背景色文字 - 现代圆角效果 */
+.notion-red_background,
+.notion-pink_background,
+.notion-blue_background,
+.notion-purple_background,
+.notion-teal_background,
+.notion-yellow_background,
+.notion-orange_background,
+.notion-brown_background,
+.notion-gray_background,
+.notion-green_background,
+.notion-default_background {
+  border-radius: var(--notion-rounded-radius-sm);
+  padding: 12px 16px;
+  margin: 8px 0;
+  display: block;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* 内联代码 - 现代化 */
+.notion-inline-code {
+  color: #e83e8c;
+  padding: 0.15em 0.5em;
+  background: linear-gradient(135deg, rgba(255, 0, 100, 0.08) 0%, rgba(200, 50, 150, 0.08) 100%);
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-family: 'SF Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, monospace;
+  border: 1px solid rgba(255, 0, 100, 0.1);
+}
+
+.dark .notion-inline-code {
+  color: #ff79c6;
+  background: linear-gradient(135deg, rgba(255, 0, 100, 0.15) 0%, rgba(200, 50, 150, 0.15) 100%);
+  border-color: rgba(255, 100, 150, 0.2);
+}
+
+/* 书签链接 - 现代卡片样式 */
+.notion-bookmark {
+  margin: 12px 0;
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
+  border: 1px solid var(--fg-color-1);
+  border-radius: var(--notion-rounded-radius);
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  background: var(--bg-color);
+}
+
+.notion-bookmark:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--notion-blue);
+}
+
+.dark .notion-bookmark {
+  background: rgba(40, 40, 45, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .notion-bookmark:hover {
+  border-color: rgba(100, 150, 200, 0.5);
+}
+
+/* Toggle 折叠块 - 现代化 */
+.notion-toggle {
+  padding: 8px 12px;
+  width: 100%;
+  border-radius: var(--notion-rounded-radius-sm);
+  background: rgba(0, 0, 0, 0.02);
+  margin: 4px 0;
+  transition: background 0.2s ease;
+}
+
+.notion-toggle:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.dark .notion-toggle {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark .notion-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notion-toggle > summary {
+  cursor: pointer;
+  outline: none;
+  padding: 4px 0;
+  font-weight: 500;
+}
+
+/* 表格 - 现代化圆角 */
+.notion-simple-table {
+  border-radius: var(--notion-rounded-radius) !important;
+  overflow: hidden;
+  border: 1px solid var(--fg-color-1);
+}
+
+.notion-simple-table td {
+  border: 1px solid var(--fg-color-1) !important;
+  padding: 8px 12px;
+}
+
+.notion-simple-table tr:first-child td {
+  background: var(--bg-color-1);
+  font-weight: 600;
+}
+
+.dark .notion-simple-table {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .notion-simple-table td {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .notion-simple-table tr:first-child td {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 待办事项 - 现代化 */
+.notion-to-do-item {
+  padding: 6px 8px;
+  border-radius: var(--notion-rounded-radius-sm);
+  transition: background 0.2s ease;
+}
+
+.notion-to-do-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.dark .notion-to-do-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.notion-to-do-item .notion-property-checkbox {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+/* 分割线 - 现代化 */
+.notion-hr {
+  width: 100%;
+  margin: 24px 0;
+  padding: 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--fg-color-1) 20%, var(--fg-color-1) 80%, transparent 100%);
+}
+
+/* 链接 - 现代化动画 */
+.notion-link {
+  color: var(--notion-blue);
+  word-break: break-word;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.notion-link:hover {
+  border-bottom-color: var(--notion-blue);
+  color: var(--notion-purple);
+}
+
+/* 收藏卡片 - 现代化 */
+.notion-collection-card {
+  border-radius: var(--notion-rounded-radius) !important;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notion-collection-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.notion-collection-card-cover {
+  border-radius: var(--notion-rounded-radius) var(--notion-rounded-radius) 0 0;
+  overflow: hidden;
+}
+
+/* 数据库视图 - 现代化 */
+.notion-table,
+.notion-board,
+.notion-gallery {
+  border-radius: var(--notion-rounded-radius);
+  overflow: hidden;
+}
+
+/* 代码块容器 - 现代化 */
+.notion-code {
+  border-radius: 0 0 var(--notion-rounded-radius) var(--notion-rounded-radius) !important;
+}
+
+.code-toolbar {
+  border-radius: var(--notion-rounded-radius) !important;
+  overflow: hidden;
+}
+
+/* 页面链接 - 现代化 */
+.notion-page-link {
+  border-radius: var(--notion-rounded-radius-sm);
+  padding: 8px 12px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.notion-page-link:hover {
+  background: var(--bg-color-1);
+  transform: translateX(4px);
+}
+
+/* 动画关键帧 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* 标题增强 */
+.notion-h {
+  position: relative;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 4px 0;
+  margin-bottom: 4px;
+  max-width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notion-h1 {
+  font-size: 1.75em;
+  margin-top: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid var(--fg-color-0);
+}
+
+.notion-h2 {
+  font-size: 1.5em;
+  margin-top: 1.3em;
+}
+
+.notion-h3 {
+  font-size: 1.25em;
+  margin-top: 1.1em;
+}
+
+/* Google Drive 链接 - 现代化 */
+.notion-google-drive-link {
+  border-radius: var(--notion-rounded-radius);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notion-google-drive-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 文件块 - 现代化 */
+.notion-file-link {
+  border-radius: var(--notion-rounded-radius-sm);
+  padding: 8px 12px;
+  transition: background 0.2s ease;
+}
+
+.notion-file-link:hover {
+  background: var(--bg-color-1);
+}
+
+/* PDF 预览 - 现代化 */
+.notion-asset-wrapper-pdf {
+  border-radius: var(--notion-rounded-radius);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 公式块 - 现代化 */
+.notion-equation-block {
+  border-radius: var(--notion-rounded-radius-sm);
+  background: var(--bg-color-1);
+  padding: 16px;
+  margin: 8px 0;
+}
+
+/* 列表项间距优化 */
+.notion-list li {
+  padding: 4px 0;
+}
+
+.notion-list-disc,
+.notion-list-numbered {
+  padding-left: 1.8em;
+}
+
+/* 暗色模式下的颜色文字优化 */
+.dark .notion-red,
+.dark .notion-pink,
+.dark .notion-blue,
+.dark .notion-purple,
+.dark .notion-teal,
+.dark .notion-yellow,
+.dark .notion-orange,
+.dark .notion-brown,
+.dark .notion-gray {
+  filter: brightness(1.2);
+}

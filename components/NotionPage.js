@@ -7,6 +7,12 @@ import dynamic from 'next/dynamic'
 import { useEffect, useCallback } from 'react'
 import { NotionRenderer } from 'react-notion-x'
 
+// 阅读进度保存组件
+const ReadingPositionSaver = dynamic(
+  () => import('@/components/ReadingPositionSaver'),
+  { ssr: false }
+)
+
 /**
  * 整个站点的核心组件
  * 将Notion数据渲染成网页
@@ -19,6 +25,7 @@ const NotionPage = ({ post, className }) => {
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
   const SPOILER_TEXT_TAG = siteConfig('SPOILER_TEXT_TAG')
   const IMAGE_ZOOM_IN_WIDTH = siteConfig('IMAGE_ZOOM_IN_WIDTH', 1200)
+  const READING_PROGRESS_SAVE = siteConfig('READING_PROGRESS_SAVE', true)
 
   // 使用全局图片查看器
   const { openViewer } = useImageViewerContext()
@@ -92,27 +99,34 @@ const NotionPage = ({ post, className }) => {
   }, [post])
 
   return (
-    <div
-      id='notion-article'
-      className={`mx-auto overflow-hidden ${className || ''}`}
-      onClick={handleImageClick}>
-      <NotionRenderer
-        recordMap={post?.blockMap}
-        mapPageUrl={mapPageUrl}
-        mapImageUrl={mapImgUrl}
-        components={{
-          Code,
-          Collection,
-          Equation,
-          Modal,
-          Pdf,
-          Tweet
-        }}
-      />
+    <>
+      <div
+        id='notion-article'
+        className={`mx-auto overflow-hidden ${className || ''}`}
+        onClick={handleImageClick}>
+        <NotionRenderer
+          recordMap={post?.blockMap}
+          mapPageUrl={mapPageUrl}
+          mapImageUrl={mapImgUrl}
+          components={{
+            Code,
+            Collection,
+            Equation,
+            Modal,
+            Pdf,
+            Tweet
+          }}
+        />
 
-      <AdEmbed />
-      <PrismMac />
-    </div>
+        <AdEmbed />
+        <PrismMac />
+      </div>
+
+      {/* 阅读进度保存和恢复 */}
+      {READING_PROGRESS_SAVE && post?.id && (
+        <ReadingPositionSaver postId={post.id} enabled={READING_PROGRESS_SAVE} />
+      )}
+    </>
   )
 }
 
