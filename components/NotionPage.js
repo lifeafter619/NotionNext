@@ -1,11 +1,17 @@
 import { siteConfig } from '@/lib/config'
 import { compressImage, mapImgUrl } from '@/lib/notion/mapImage'
-import { isBrowser, loadExternalResource } from '@/lib/utils'
-import mediumZoom from '@fisch0920/medium-zoom'
+import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
+import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
-import { useEffect, useRef } from 'react'
+import { useEffect, useCallback } from 'react'
 import { NotionRenderer } from 'react-notion-x'
+
+// 阅读进度保存组件
+const ReadingPositionSaver = dynamic(
+  () => import('@/components/ReadingPositionSaver'),
+  { ssr: false }
+)
 
 /**
  * 整个站点的核心组件
@@ -18,17 +24,29 @@ const NotionPage = ({ post, className }) => {
   const POST_DISABLE_GALLERY_CLICK = siteConfig('POST_DISABLE_GALLERY_CLICK')
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
   const SPOILER_TEXT_TAG = siteConfig('SPOILER_TEXT_TAG')
-
-  const zoom =
-    isBrowser &&
-    mediumZoom({
-      //   container: '.notion-viewport',
-      background: 'rgba(0, 0, 0, 0.2)',
-      margin: getMediumZoomMargin()
-    })
-
-  const zoomRef = useRef(zoom ? zoom.clone() : null)
   const IMAGE_ZOOM_IN_WIDTH = siteConfig('IMAGE_ZOOM_IN_WIDTH', 1200)
+  const READING_PROGRESS_SAVE = siteConfig('READING_PROGRESS_SAVE', true)
+
+  // 使用全局图片查看器
+  const { openViewer } = useImageViewerContext()
+
+  // 处理图片点击事件
+  const handleImageClick = useCallback(
+    e => {
+      const target = e.target
+      if (target.tagName === 'IMG' && target.closest('.notion-asset-wrapper')) {
+        e.preventDefault()
+        e.stopPropagation()
+        // 获取高清图片URL
+        const src = getImageSrc(target)
+        const highResSrc = compressImage(src, IMAGE_ZOOM_IN_WIDTH)
+        const alt = target.getAttribute('alt') || ''
+        openViewer(highResSrc, alt)
+      }
+    },
+    [openViewer, IMAGE_ZOOM_IN_WIDTH]
+  )
+
   // 页面首次打开时执行的勾子
   useEffect(() => {
     // 检测当前的url并自动滚动到对应目标
@@ -39,51 +57,15 @@ const NotionPage = ({ post, className }) => {
   useEffect(() => {
     // 相册视图点击禁止跳转，只能放大查看图片
     if (POST_DISABLE_GALLERY_CLICK) {
-      // 针对页面中的gallery视图，点击后是放大图片还是跳转到gallery的内部页面
-      processGalleryImg(zoomRef?.current)
+      // 针对页面中的gallery视图，点击后是放大图片
+      processGalleryImg(openViewer, IMAGE_ZOOM_IN_WIDTH)
     }
 
     // 页内数据库点击禁止跳转，只能查看
     if (POST_DISABLE_DATABASE_CLICK) {
       processDisableDatabaseUrl()
     }
-
-    /**
-     * 放大查看图片时替换成高清图像
-     */
-    const observer = new MutationObserver((mutationsList, observer) => {
-      mutationsList.forEach(mutation => {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'class'
-        ) {
-          if (mutation.target.classList.contains('medium-zoom-image--opened')) {
-            // 等待动画完成后替换为更高清的图像
-            setTimeout(() => {
-              // 获取该元素的 src 属性
-              const src = mutation?.target?.getAttribute('src')
-              //   替换为更高清的图像
-              mutation?.target?.setAttribute(
-                'src',
-                compressImage(src, IMAGE_ZOOM_IN_WIDTH)
-              )
-            }, 800)
-          }
-        }
-      })
-    })
-
-    // 监视页面元素和属性变化
-    observer.observe(document.body, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['class']
-    })
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [post])
+  }, [post, POST_DISABLE_GALLERY_CLICK, POST_DISABLE_DATABASE_CLICK, openViewer, IMAGE_ZOOM_IN_WIDTH])
 
   useEffect(() => {
     // Spoiler文本功能
@@ -117,26 +99,34 @@ const NotionPage = ({ post, className }) => {
   }, [post])
 
   return (
-    <div
-      id='notion-article'
-      className={`mx-auto overflow-hidden ${className || ''}`}>
-      <NotionRenderer
-        recordMap={post?.blockMap}
-        mapPageUrl={mapPageUrl}
-        mapImageUrl={mapImgUrl}
-        components={{
-          Code,
-          Collection,
-          Equation,
-          Modal,
-          Pdf,
-          Tweet
-        }}
-      />
+    <>
+      <div
+        id='notion-article'
+        className={`mx-auto overflow-hidden ${className || ''}`}
+        onClick={handleImageClick}>
+        <NotionRenderer
+          recordMap={post?.blockMap}
+          mapPageUrl={mapPageUrl}
+          mapImageUrl={mapImgUrl}
+          components={{
+            Code,
+            Collection,
+            Equation,
+            Modal,
+            Pdf,
+            Tweet
+          }}
+        />
 
-      <AdEmbed />
-      <PrismMac />
-    </div>
+        <AdEmbed />
+        <PrismMac />
+      </div>
+
+      {/* 阅读进度保存和恢复 */}
+      {READING_PROGRESS_SAVE && post?.id && (
+        <ReadingPositionSaver postId={post.id} enabled={READING_PROGRESS_SAVE} />
+      )}
+    </>
   )
 }
 
@@ -153,17 +143,26 @@ const processDisableDatabaseUrl = () => {
 }
 
 /**
- * gallery视图，点击后是放大图片还是跳转到gallery的内部页面
+ * gallery视图，点击后是放大图片
  */
-const processGalleryImg = zoom => {
+const processGalleryImg = (openViewer, imageZoomWidth) => {
   setTimeout(() => {
     if (isBrowser) {
       const imgList = document?.querySelectorAll(
         '.notion-collection-card-cover img'
       )
-      if (imgList && zoom) {
+      if (imgList) {
         for (let i = 0; i < imgList.length; i++) {
-          zoom.attach(imgList[i])
+          const img = imgList[i]
+          img.style.cursor = 'zoom-in'
+          img.addEventListener('click', e => {
+            e.preventDefault()
+            e.stopPropagation()
+            const src = getImageSrc(img)
+            const highResSrc = compressImage(src, imageZoomWidth)
+            const alt = img.getAttribute('alt') || ''
+            openViewer(highResSrc, alt)
+          })
         }
       }
 
@@ -201,28 +200,6 @@ const autoScrollToHash = () => {
 const mapPageUrl = id => {
   // return 'https://www.notion.so/' + id.replace(/-/g, '')
   return '/' + id.replace(/-/g, '')
-}
-
-/**
- * 缩放
- * @returns
- */
-function getMediumZoomMargin() {
-  const width = window.innerWidth
-
-  if (width < 500) {
-    return 8
-  } else if (width < 800) {
-    return 20
-  } else if (width < 1280) {
-    return 30
-  } else if (width < 1600) {
-    return 40
-  } else if (width < 1920) {
-    return 48
-  } else {
-    return 72
-  }
 }
 
 // 代码
