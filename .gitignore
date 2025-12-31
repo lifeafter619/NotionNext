@@ -53,3 +53,6 @@ package-lock.json
 # yarn.lock
 
 .notion-api-lock
+
+# TypeScript build info
+tsconfig.tsbuildinfo
