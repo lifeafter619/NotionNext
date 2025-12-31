@@ -59,14 +59,32 @@ export default function VisitorInfoCard() {
 
   // 获取用户IP属地
   useEffect(() => {
+    // IP地址格式验证
+    const isValidIP = (ip) => {
+      if (!ip || typeof ip !== 'string') return false
+      // 简单的IP格式验证 (IPv4)
+      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/
+      if (!ipv4Regex.test(ip)) return false
+      const parts = ip.split('.')
+      return parts.every(part => {
+        const num = parseInt(part, 10)
+        return num >= 0 && num <= 255
+      })
+    }
+
     const fetchLocation = async () => {
       try {
         // 尝试使用免费的IP定位API
         const response = await fetch('https://api.ipify.org?format=json')
         const ipData = await response.json()
         
+        // 验证IP格式
+        if (!isValidIP(ipData.ip)) {
+          throw new Error('Invalid IP address format from ipify.org')
+        }
+        
         // 使用ip-api获取地理位置
-        const geoResponse = await fetch(`https://ip-api.com/json/${ipData.ip}?lang=zh-CN`)
+        const geoResponse = await fetch(`https://ip-api.com/json/${encodeURIComponent(ipData.ip)}?lang=zh-CN`)
         const geoData = await geoResponse.json()
         
         if (geoData.status === 'success') {
@@ -77,7 +95,7 @@ export default function VisitorInfoCard() {
           setLocation('未知地区')
         }
       } catch (error) {
-        console.warn('获取IP位置失败:', error)
+        console.warn('获取IP位置失败 (ipify.org/ip-api.com):', error)
         // 尝试备用方案
         try {
           const response = await fetch('https://ipapi.co/json/')
@@ -85,6 +103,7 @@ export default function VisitorInfoCard() {
           const city = data.city || data.region || data.country_name || '未知地区'
           setLocation(city)
         } catch (err) {
+          console.warn('获取IP位置失败 (ipapi.co):', err)
           setLocation('未知地区')
         }
       }
@@ -94,12 +113,15 @@ export default function VisitorInfoCard() {
   }, [])
 
   // 获取今日访客数 (从busuanzi)
+  // 延迟常量 - busuanzi需要一定时间加载
+  const BUSUANZI_CHECK_DELAY_MS = 2000
+
   useEffect(() => {
     const checkBusuanzi = () => {
       // busuanzi会通过全局DOM更新，我们需要监听变化
       const pageViewElement = document.querySelector('.busuanzi_value_page_pv')
-      if (pageViewElement && pageViewElement.innerHTML) {
-        setTodayVisitors(pageViewElement.innerHTML)
+      if (pageViewElement && pageViewElement.textContent) {
+        setTodayVisitors(pageViewElement.textContent)
       }
     }
 
@@ -110,7 +132,7 @@ export default function VisitorInfoCard() {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.target.classList.contains('busuanzi_value_page_pv')) {
-          setTodayVisitors(mutation.target.innerHTML || '-')
+          setTodayVisitors(mutation.target.textContent || '-')
         }
       })
     })
@@ -122,7 +144,7 @@ export default function VisitorInfoCard() {
         observer.observe(targetNode, { childList: true, characterData: true, subtree: true })
         checkBusuanzi()
       }
-    }, 2000)
+    }, BUSUANZI_CHECK_DELAY_MS)
 
     return () => {
       observer.disconnect()
