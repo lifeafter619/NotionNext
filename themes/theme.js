@@ -59,8 +59,6 @@ export const getThemeConfig = async themeQuery => {
 
   themeConfigCache.set(cacheKey, loadPromise)
   return loadPromise
-
-  // 如果 themeQuery 存在且不等于默认主题，处理多主题情况
 }
 
 /**
