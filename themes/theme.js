@@ -203,10 +203,16 @@ export const setupSystemThemeListener = updateDarkMode => {
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
+  // 缓存用户设置状态，避免每次事件都读取localStorage
+  let userHasManualPreference = !!loadDarkModeFromLocalStorage()
+
   const handleChange = e => {
+    // 重新检查用户偏好（用户可能在此期间手动更改了设置）
+    const currentUserPreference = loadDarkModeFromLocalStorage()
+    userHasManualPreference = !!currentUserPreference
+
     // 只有当用户没有手动设置过主题时才自动切换
-    const userDarkMode = loadDarkModeFromLocalStorage()
-    if (!userDarkMode) {
+    if (!userHasManualPreference) {
       const newDarkMode = e.matches
       updateDarkMode(newDarkMode)
       const htmlElement = document.getElementsByTagName('html')[0]

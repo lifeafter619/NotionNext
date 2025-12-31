@@ -1,6 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { compressImage, mapImgUrl } from '@/lib/notion/mapImage'
-import { isBrowser, loadExternalResource } from '@/lib/utils'
+import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
@@ -31,7 +31,7 @@ const NotionPage = ({ post, className }) => {
         e.preventDefault()
         e.stopPropagation()
         // 获取高清图片URL
-        const src = target.getAttribute('src') || target.getAttribute('data-src')
+        const src = getImageSrc(target)
         const highResSrc = compressImage(src, IMAGE_ZOOM_IN_WIDTH)
         const alt = target.getAttribute('alt') || ''
         openViewer(highResSrc, alt)
@@ -144,7 +144,7 @@ const processGalleryImg = (openViewer, imageZoomWidth) => {
           img.addEventListener('click', e => {
             e.preventDefault()
             e.stopPropagation()
-            const src = img.getAttribute('src') || img.getAttribute('data-src')
+            const src = getImageSrc(img)
             const highResSrc = compressImage(src, imageZoomWidth)
             const alt = img.getAttribute('alt') || ''
             openViewer(highResSrc, alt)

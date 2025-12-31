@@ -110,8 +110,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-    } catch {
-      // 如果fetch失败，直接打开图片链接
+    } catch (error) {
+      // If fetch fails, open image link directly
+      console.warn('Failed to download image:', error?.message || 'Unknown error')
       window.open(src, '_blank')
     }
   }
@@ -383,9 +384,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         </button>
       </div>
 
-      {/* 快捷键提示 */}
+      {/* 快捷键提示 - Keyboard shortcuts hint */}
       <div className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs'>
-        ESC 关闭 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
+        ESC Close | +/- Zoom | R/L Rotate | 0 Reset | Scroll to Zoom | Drag to Move
       </div>
     </div>
   )
