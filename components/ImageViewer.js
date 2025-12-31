@@ -84,15 +84,33 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     const preventScroll = e => {
       e.preventDefault()
       e.stopPropagation()
+      return false
     }
 
-    // 阻止所有滚动事件
-    document.addEventListener('wheel', preventScroll, { passive: false })
-    document.addEventListener('touchmove', preventScroll, { passive: false })
+    // 阻止所有滚动事件 - 使用 capture 阶段确保优先处理
+    document.addEventListener('wheel', preventScroll, { passive: false, capture: true })
+    document.addEventListener('touchmove', preventScroll, { passive: false, capture: true })
+    document.addEventListener('scroll', preventScroll, { passive: false, capture: true })
+
+    // 防止 body 滚动
+    const originalOverflow = document.body.style.overflow
+    const originalPosition = document.body.style.position
+    const originalTop = document.body.style.top
+    const scrollY = window.scrollY
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
 
     return () => {
-      document.removeEventListener('wheel', preventScroll)
-      document.removeEventListener('touchmove', preventScroll)
+      document.removeEventListener('wheel', preventScroll, { capture: true })
+      document.removeEventListener('touchmove', preventScroll, { capture: true })
+      document.removeEventListener('scroll', preventScroll, { capture: true })
+      document.body.style.overflow = originalOverflow
+      document.body.style.position = originalPosition
+      document.body.style.top = originalTop
+      document.body.style.width = ''
+      window.scrollTo(0, scrollY)
     }
   }, [isOpen])
 
@@ -436,7 +454,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
 
       {/* 快捷键提示 - Keyboard shortcuts hint */}
       <div className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs'>
-        ESC Close | +/- Zoom | R/L Rotate | 0 Reset | Scroll to Zoom | Drag to Move
+        ESC 关闭 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
       </div>
     </div>
   )
