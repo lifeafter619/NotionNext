@@ -31,7 +31,7 @@ export default function FloatTocButton(props) {
   )
 
   useEffect(() => {
-    window.addEventListener('scroll', checkScrollPosition)
+    window.addEventListener('scroll', checkScrollPosition, { passive: true })
     checkScrollPosition()
     return () => {
       window.removeEventListener('scroll', checkScrollPosition)

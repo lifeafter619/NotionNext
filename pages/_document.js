@@ -58,28 +58,24 @@ class MyDocument extends Document {
           <link rel='preconnect' href='https://npm.elemecdn.com' crossOrigin='anonymous' />
 
           {/* 预加载字体样式表 */}
-          {fontUrls.map((url, index) => (
-            url && (
-              <link
-                key={`preload-font-${index}`}
-                rel='preload'
-                href={url}
-                as='style'
-                crossOrigin='anonymous'
-              />
-            )
+          {fontUrls.filter(url => url).map((url, index) => (
+            <link
+              key={`preload-font-${index}`}
+              rel='preload'
+              href={url}
+              as='style'
+              crossOrigin='anonymous'
+            />
           ))}
 
           {/* 加载字体样式表 */}
-          {fontUrls.map((url, index) => (
-            url && (
-              <link
-                key={`font-${index}`}
-                rel='stylesheet'
-                href={url}
-                crossOrigin='anonymous'
-              />
-            )
+          {fontUrls.filter(url => url).map((url, index) => (
+            <link
+              key={`font-${index}`}
+              rel='stylesheet'
+              href={url}
+              crossOrigin='anonymous'
+            />
           ))}
 
           {/* 预加载 Font Awesome */}
