@@ -134,6 +134,28 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                 <span className='mr-2 busuanzi_value_page_pv' />
               </div>
             )}
+
+            {/* 字体大小调节 */}
+            <div className='flex items-center gap-2 pl-1 mr-2'>
+              <i className='fa-solid fa-font text-xs' />
+              <input
+                type='range'
+                min='14'
+                max='24'
+                defaultValue='16'
+                step='1'
+                className='w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
+                onChange={(e) => {
+                  const val = e.target.value
+                  const article = document.getElementById('notion-article')
+                  if(article) {
+                    article.style.fontSize = `${val}px`
+                  }
+                }}
+              />
+              <i className='fa-solid fa-font' />
+            </div>
+
           </section>
         </div>
 
