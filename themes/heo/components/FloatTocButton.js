@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Catalog from './Catalog'
 import throttle from 'lodash.throttle'
+import { uuidToId } from 'notion-utils'
 
 // 滚动偏移量常量 - 目录滚动超过此值后显示悬浮按钮
 const SCROLL_OFFSET = 100
@@ -12,6 +13,7 @@ const SCROLL_OFFSET = 100
 export default function FloatTocButton(props) {
   const [tocVisible, changeTocVisible] = useState(false)
   const [showOnDesktop, setShowOnDesktop] = useState(false)
+  const [activeSectionId, setActiveSectionId] = useState(null)
 
   const { post } = props
 
@@ -107,14 +109,14 @@ export default function FloatTocButton(props) {
           {/* 目录内容 - 点击展开/收起 */}
           <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
             <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-12'}`}>
-              <Catalog toc={post.toc} />
+              <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
             </div>
           </div>
           
           {/* 提示文字 */}
-          {!tocVisible && post.toc.length > 3 && (
-            <div className='text-xs text-gray-400 mt-2 text-center'>
-              点击展开完整目录
+          {!tocVisible && (
+            <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
+              {activeSectionId ? post?.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text : (post.toc.length > 3 && '点击展开完整目录')}
             </div>
           )}
         </div>

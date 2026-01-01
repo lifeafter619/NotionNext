@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * @returns {JSX.Element}
  * @constructor
  */
-const Catalog = ({ toc }) => {
+const Catalog = ({ toc, onActiveSectionChange }) => {
   const { locale } = useGlobal()
   // 监听滚动事件
   useEffect(() => {
@@ -51,6 +51,9 @@ const Catalog = ({ toc }) => {
         break
       }
       setActiveSection(currentSectionId)
+      if (onActiveSectionChange) {
+        onActiveSectionChange(currentSectionId)
+      }
       const index = tocIds.indexOf(currentSectionId) || 0
       tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
     }, 200)

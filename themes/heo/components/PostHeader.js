@@ -148,8 +148,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                 onChange={(e) => {
                   const val = e.target.value
                   const article = document.getElementById('notion-article')
-                  if(article) {
+                  if (article) {
                     article.style.fontSize = `${val}px`
+                    const notionElements = article.querySelectorAll('.notion')
+                    if (notionElements) {
+                      notionElements.forEach(e => {
+                        e.style.fontSize = `${val}px`
+                      })
+                    }
                   }
                 }}
               />
