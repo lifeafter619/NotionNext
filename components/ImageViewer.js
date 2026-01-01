@@ -190,7 +190,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     }
   }
 
-  // 鼠标拖拽 - 使用 ref 实现无延迟拖动
+  // 鼠标拖拽开始
   const handleMouseDown = e => {
     if (e.button !== 0) return
     e.preventDefault()
@@ -201,19 +201,36 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     }
   }
 
-  const handleMouseMove = useCallback(e => {
-    if (!isDragging) return
-    const newX = e.clientX - dragStartRef.current.x
-    const newY = e.clientY - dragStartRef.current.y
-    positionRef.current = { x: newX, y: newY }
-    setPosition({ x: newX, y: newY })
-  }, [isDragging])
+  // 全局鼠标移动和释放事件 - 确保拖拽在窗口外也能继续
+  useEffect(() => {
+    if (!isOpen) return
 
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-  }, [])
+    const handleGlobalMouseMove = e => {
+      if (!isDragging) return
+      // 使用 requestAnimationFrame 实现更流畅的拖拽
+      requestAnimationFrame(() => {
+        const newX = e.clientX - dragStartRef.current.x
+        const newY = e.clientY - dragStartRef.current.y
+        positionRef.current = { x: newX, y: newY }
+        setPosition({ x: newX, y: newY })
+      })
+    }
 
-  // 触摸事件支持 - 使用 ref 实现无延迟拖动
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    // 添加全局事件监听器到 document，确保拖拽在窗口外也能工作
+    document.addEventListener('mousemove', handleGlobalMouseMove)
+    document.addEventListener('mouseup', handleGlobalMouseUp)
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove)
+      document.removeEventListener('mouseup', handleGlobalMouseUp)
+    }
+  }, [isOpen, isDragging])
+
+  // 触摸事件支持
   const handleTouchStart = e => {
     if (e.touches.length === 1) {
       setIsDragging(true)
@@ -227,10 +244,12 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   const handleTouchMove = useCallback(e => {
     if (!isDragging || e.touches.length !== 1) return
     e.preventDefault()
-    const newX = e.touches[0].clientX - dragStartRef.current.x
-    const newY = e.touches[0].clientY - dragStartRef.current.y
-    positionRef.current = { x: newX, y: newY }
-    setPosition({ x: newX, y: newY })
+    requestAnimationFrame(() => {
+      const newX = e.touches[0].clientX - dragStartRef.current.x
+      const newY = e.touches[0].clientY - dragStartRef.current.y
+      positionRef.current = { x: newX, y: newY }
+      setPosition({ x: newX, y: newY })
+    })
   }, [isDragging])
 
   const handleTouchEnd = useCallback(() => {
@@ -254,9 +273,6 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         className='relative max-w-full max-h-full select-none'
         onClick={e => e.stopPropagation()}
         onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -271,7 +287,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
           className='max-w-[90vw] max-h-[80vh] object-contain'
           style={{
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
-            transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+            ...(isDragging && { willChange: 'transform' })
           }}
           draggable={false}
         />

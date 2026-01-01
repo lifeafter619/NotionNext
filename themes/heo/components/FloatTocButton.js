@@ -88,29 +88,37 @@ export default function FloatTocButton(props) {
             onClick={toggleToc} />
     </div>
 
-    {/* 桌面端：滚动超过右侧边栏目录后显示 */}
-    <div className={`hidden xl:block fixed right-8 bottom-24 z-50 transition-all duration-300 ${showOnDesktop ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20 pointer-events-none'}`}>
-        {/* 按钮 */}
-        <div onClick={toggleToc} className={'w-12 h-12 select-none hover:scale-110 transform duration-200 text-white rounded-full bg-indigo-600 dark:bg-yellow-500 drop-shadow-lg flex justify-center items-center cursor-pointer'}>
-            <i className={'fa-list-ol fas text-lg'} />
-        </div>
-
-        {/* 目录Modal */}
-        <div
-            className={`${tocVisible && showOnDesktop ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'} 
-            w-72 duration-200 fixed right-8 bottom-40 rounded-xl py-3 px-1 bg-white dark:bg-[#1e1e1e] shadow-lg border dark:border-gray-700 transition-all z-50`}>
-            <div className='dark:text-gray-300 text-gray-600 max-h-[60vh] overflow-y-auto'>
-                <Catalog toc={post.toc} />
+    {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
+    {showOnDesktop && (
+      <div className='hidden xl:block fixed right-4 bottom-4 z-50'>
+        {/* 悬浮目录框 - 简洁盒子样式 */}
+        <div 
+          onClick={toggleToc}
+          className='text-sm block p-4 w-72 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200'>
+          {/* 标题栏 */}
+          <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
+            <div className='flex items-center gap-2'>
+              <i className='fa-list-ol fas' />
+              <span>目录导航</span>
             </div>
+            <i className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`} />
+          </div>
+          
+          {/* 目录内容 - 点击展开/收起 */}
+          <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-24 opacity-80'}`}>
+            <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-20'}`}>
+              <Catalog toc={post.toc} />
+            </div>
+          </div>
+          
+          {/* 提示文字 */}
+          {!tocVisible && post.toc.length > 3 && (
+            <div className='text-xs text-gray-400 mt-2 text-center'>
+              点击展开完整目录
+            </div>
+          )}
         </div>
-
-        {/* 背景蒙版 */}
-        {tocVisible && showOnDesktop && (
-          <div 
-            className='fixed top-0 left-0 z-40 w-full h-full'
-            onClick={toggleToc} 
-          />
-        )}
-    </div>
+      </div>
+    )}
   </>)
 }
