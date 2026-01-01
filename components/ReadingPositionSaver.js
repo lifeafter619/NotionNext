@@ -89,12 +89,19 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
       const position = getSavedPosition()
       if (position && position.position > 200) {
         setSavedPosition(position)
+        // 自动跳转到上次位置
+        window.scrollTo({
+          top: position.position,
+          behavior: 'smooth'
+        })
         setShowNotification(true)
+        // 清除保存的位置
+        localStorage.removeItem(getStorageKey())
       }
     }, 500)
 
     return () => clearTimeout(timer)
-  }, [postId, enabled, getSavedPosition])
+  }, [postId, enabled, getSavedPosition, getStorageKey])
 
   // 监听滚动事件，定期保存位置
   useEffect(() => {
@@ -127,7 +134,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
     if (showNotification) {
       const timer = setTimeout(() => {
         setShowNotification(false)
-      }, 8000)
+      }, 15000)
       return () => clearTimeout(timer)
     }
   }, [showNotification])
@@ -151,13 +158,16 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
             />
           </svg>
           <span className='text-sm text-gray-700 dark:text-gray-300'>
-            已定位到上次阅读位置 ({savedPosition.percentage}%)
+            已自动跳转到上次阅读位置 ({savedPosition.percentage}%)
           </span>
         </div>
         <button
-          onClick={scrollToSavedPosition}
+          onClick={() => {
+             window.scrollTo({ top: 0, behavior: 'smooth' })
+             setShowNotification(false)
+          }}
           className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors'>
-          跳转
+          返回开头
         </button>
         <button
           onClick={dismissNotification}
