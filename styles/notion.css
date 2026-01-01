@@ -2166,11 +2166,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 
 /* 高亮/突出块 - Callout 现代化 */
 .notion-callout {
-  padding: 16px;
+  padding: 10px 12px;
   display: flex;
   width: 100%;
   border-radius: var(--notion-rounded-radius);
-  align-items: flex-start;
+  align-items: center;
   box-sizing: border-box;
   margin: 12px 0;
   border: none;
@@ -2210,14 +2210,13 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 }
 
 .notion-callout .notion-page-icon {
-  align-self: flex-start;
+  align-self: center;
   width: 24px;
   height: 24px;
   font-size: 1.2em;
   line-height: 1.2em;
   flex-shrink: 0;
-  /* 确保图标与顶部和左侧距离相等 */
-  margin: 2px 12px 0 0;
+  margin: 0 10px 0 0;
 }
 
 .notion-callout-text {
