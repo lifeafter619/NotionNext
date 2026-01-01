@@ -149,44 +149,30 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     if (!src) return
 
     try {
-      // 使用 CORS 代理或直接获取
-      const response = await fetch(src, { mode: 'cors' })
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      // 尝试使用后端代理下载 (解决跨域和强制下载问题)
+      let fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      // 确保文件名有后缀
+      if (!fileName.includes('.')) {
+        fileName += '.png'
+      }
+
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(fileName)}`
+      
+      // 创建隐藏的 link 来触发下载
       const link = document.createElement('a')
-      link.href = url
-      
-      // 从 URL 中提取文件名或使用 alt
-      const fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      link.href = proxyUrl
       link.download = fileName
-      
-      // 直接触发下载
       link.style.display = 'none'
       document.body.appendChild(link)
       link.click()
       
-      // 清理
       setTimeout(() => {
         document.body.removeChild(link)
-        window.URL.revokeObjectURL(url)
-      }, 100)
+      }, 1000)
     } catch (error) {
-      console.warn('Failed to download via fetch, trying direct link:', error?.message)
-      // 如果 fetch 失败，尝试创建一个直接下载链接
-      try {
-        const link = document.createElement('a')
-        link.href = src
-        link.download = alt || 'image'
-        link.target = '_self'
-        link.style.display = 'none'
-        document.body.appendChild(link)
-        link.click()
-        setTimeout(() => {
-          document.body.removeChild(link)
-        }, 100)
-      } catch (e) {
-        console.error('Download failed:', e)
-      }
+      console.error('Download failed:', error)
+      // 降级：直接打开链接
+      window.open(src, '_blank')
     }
   }
 

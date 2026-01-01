@@ -108,7 +108,7 @@ export default function FloatTocButton(props) {
 
     {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
     {showOnDesktop && (
-      <div className={`hidden xl:block fixed right-4 z-50 duration-200 transition-all ${hasNextPost ? 'bottom-36' : 'bottom-4'}`}>
+      <div className={`hidden xl:block fixed ${hasNextPost ? 'right-10 bottom-40' : 'right-4 bottom-4'} z-50 duration-200 transition-all`}>
         {/* 悬浮目录框 - 简洁盒子样式 */}
         <div
           onClick={toggleToc}
@@ -124,17 +124,23 @@ export default function FloatTocButton(props) {
 
           {/* 目录内容 - 点击展开/收起 */}
           <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
-            <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-12'}`}>
+            {/* 始终挂载 Catalog 以监听滚动，但仅在展开时显示完整列表 */}
+            <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
               <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
             </div>
+
+            {/* 收起时显示当前标题 */}
+            {!tocVisible && (
+              <div className="h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500">
+                 {activeSectionId && post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text || '目录'}
+              </div>
+            )}
           </div>
 
           {/* 提示文字 */}
           {!tocVisible && (
             <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
-              {activeSectionId &&
-                post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text}
-              {!activeSectionId && post.toc.length > 3 && '点击展开完整目录'}
+              点击展开目录
             </div>
           )}
         </div>
