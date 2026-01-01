@@ -32,7 +32,6 @@ export default async function handler(req, res) {
     )
 
     if (!isAllowed) {
-       // Log the blocked attempt for debugging but return generic error
        console.warn(`Blocked proxy attempt to: ${targetUrl.hostname}`)
        return res.status(403).json({ error: 'Domain not allowed' })
     }
@@ -40,7 +39,8 @@ export default async function handler(req, res) {
     const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch image: ${response.statusText}`)
+      // If the upstream request failed, return JSON error, do not stream body as image
+      return res.status(response.status).json({ error: `Upstream error: ${response.statusText}` })
     }
 
     const contentType = response.headers.get('content-type')
@@ -50,7 +50,30 @@ export default async function handler(req, res) {
        return res.status(400).json({ error: 'Invalid content type' })
     }
 
-    const contentDisposition = `attachment; filename="${filename || 'image.png'}"`
+    // Determine safe filename and extension
+    let finalFilename = filename || 'image'
+    // Ensure filename has an extension derived from Content-Type if possible
+    const extensionMap = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/gif': '.gif',
+      'image/webp': '.webp',
+      'image/svg+xml': '.svg'
+    }
+
+    // If filename has no extension or a weird one, append the correct one from MIME type
+    const hasExtension = /\.[a-zA-Z0-9]{3,4}$/.test(finalFilename)
+    if (!hasExtension || finalFilename.endsWith('.customize')) {
+        const ext = extensionMap[contentType] || '.png'
+        // Remove .customize if present
+        finalFilename = finalFilename.replace(/\.customize$/, '')
+        if (!finalFilename.endsWith(ext)) {
+            finalFilename += ext
+        }
+    }
+
+    // Encode filename for Content-Disposition (handling UTF-8)
+    const contentDisposition = `attachment; filename="${encodeURIComponent(finalFilename)}"; filename*=UTF-8''${encodeURIComponent(finalFilename)}`
 
     res.setHeader('Content-Type', contentType)
     res.setHeader('Content-Disposition', contentDisposition)

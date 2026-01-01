@@ -150,10 +150,15 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
 
     try {
       // 尝试使用后端代理下载 (解决跨域和强制下载问题)
-      const fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      let fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      // 确保文件名有后缀
+      if (!fileName.includes('.')) {
+        fileName += '.png'
+      }
+
       const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(fileName)}`
       
-      // 创建隐藏的 iframe 或 link 来触发下载
+      // 创建隐藏的 link 来触发下载
       const link = document.createElement('a')
       link.href = proxyUrl
       link.download = fileName

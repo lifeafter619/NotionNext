@@ -108,7 +108,7 @@ export default function FloatTocButton(props) {
 
     {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
     {showOnDesktop && (
-      <div className={`hidden xl:block fixed right-4 z-50 duration-200 transition-all ${hasNextPost ? 'bottom-36' : 'bottom-4'}`}>
+      <div className={`hidden xl:block fixed ${hasNextPost ? 'right-10 bottom-36' : 'right-4 bottom-4'} z-50 duration-200 transition-all`}>
         {/* 悬浮目录框 - 简洁盒子样式 */}
         <div
           onClick={toggleToc}
