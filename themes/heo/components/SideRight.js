@@ -1,4 +1,3 @@
-import Live2D from '@/components/Live2D'
 import dynamic from 'next/dynamic'
 import { AnalyticsCard } from './AnalyticsCard'
 import Card from './Card'
@@ -7,6 +6,7 @@ import { InfoCard } from './InfoCard'
 import LatestPostsGroupMini from './LatestPostsGroupMini'
 import TagGroups from './TagGroups'
 import TouchMeCard from './TouchMeCard'
+import VisitorInfoCard from './VisitorInfoCard'
 
 const FaceBookPage = dynamic(
   () => {
@@ -20,6 +20,8 @@ const FaceBookPage = dynamic(
   },
   { ssr: false }
 )
+
+const Live2D = dynamic(() => import('@/components/Live2D'), { ssr: false })
 
 /**
  * Hexo主题右侧栏
@@ -37,6 +39,9 @@ export default function SideRight(props) {
       <InfoCard {...props} className='w-72 wow fadeInUp' />
 
       <div className='sticky top-20 space-y-4'>
+        {/* 访客信息卡片 */}
+        <VisitorInfoCard />
+
         {/* 文章页显示目录 */}
         {post && post.toc && post.toc.length > 0 && (
           <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
