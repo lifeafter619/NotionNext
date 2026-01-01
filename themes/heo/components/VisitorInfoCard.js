@@ -59,43 +59,24 @@ export default function VisitorInfoCard() {
 
   // 获取用户IP属地
   useEffect(() => {
-    // IP地址格式验证
-    const isValidIP = (ip) => {
-      if (!ip || typeof ip !== 'string') return false
-      // 简单的IP格式验证 (IPv4)
-      const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/
-      if (!ipv4Regex.test(ip)) return false
-      const parts = ip.split('.')
-      return parts.every(part => {
-        const num = parseInt(part, 10)
-        return num >= 0 && num <= 255
-      })
-    }
-
     const fetchLocation = async () => {
       try {
-        // 尝试使用免费的IP定位API
-        const response = await fetch('https://api.ipify.org?format=json')
-        const ipData = await response.json()
+        // 使用 vore.top API获取IP和地理位置
+        const response = await fetch('https://api.vore.top/api/IPdata')
+        const data = await response.json()
         
-        // 验证IP格式
-        if (!isValidIP(ipData.ip)) {
-          throw new Error('Invalid IP address format from ipify.org')
-        }
-        
-        // 使用ip-api获取地理位置
-        const geoResponse = await fetch(`https://ip-api.com/json/${encodeURIComponent(ipData.ip)}?lang=zh-CN`)
-        const geoData = await geoResponse.json()
-        
-        if (geoData.status === 'success') {
-          // 优先显示城市，其次是地区
-          const city = geoData.city || geoData.regionName || geoData.country
-          setLocation(city)
+        if (data.code === 200 && data.ipdata) {
+          // 从返回数据中提取城市和ISP信息
+          const city = data.ipdata.info2 || data.ipdata.info1 || '未知地区'
+          const isp = data.ipdata.isp || ''
+          // 格式化为 "广州市-电信" 的形式
+          const locationStr = isp ? `${city}-${isp}` : city
+          setLocation(locationStr)
         } else {
           setLocation('未知地区')
         }
       } catch (error) {
-        console.warn('获取IP位置失败 (ipify.org/ip-api.com):', error)
+        console.warn('获取IP位置失败 (api.vore.top):', error)
         // 尝试备用方案
         try {
           const response = await fetch('https://ipapi.co/json/')
@@ -175,7 +156,7 @@ export default function VisitorInfoCard() {
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>📍</span>
           <span className='text-sm'>
-            感谢来自<span className='font-semibold text-indigo-600 dark:text-yellow-500'>{location}</span>的朋友来访
+            欢迎来自<span className='font-semibold text-indigo-600 dark:text-yellow-500'>{location}</span>的朋友来访~
           </span>
         </div>
 
