@@ -142,7 +142,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                 type='range'
                 min='14'
                 max='24'
-                defaultValue='16'
+                defaultValue='18'
                 step='1'
                 className='w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
                 onChange={(e) => {
@@ -150,12 +150,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   const article = document.getElementById('notion-article')
                   if (article) {
                     article.style.fontSize = `${val}px`
-                    const notionElements = article.querySelectorAll('.notion')
-                    if (notionElements) {
-                      notionElements.forEach(e => {
-                        e.style.fontSize = `${val}px`
-                      })
-                    }
+                  }
+                  const notionElements = document.querySelectorAll(
+                    '#notion-article .notion'
+                  )
+                  if (notionElements) {
+                    notionElements.forEach(e => {
+                      e.style.fontSize = `${val}px`
+                    })
                   }
                 }}
               />

@@ -42,15 +42,31 @@ export default function FloatTocButton(props) {
     []
   )
 
+  const [hasNextPost, setHasNextPost] = useState(false)
+  const checkNextPost = useMemo(
+    () =>
+      throttle(() => {
+        const nextPost = document.getElementById('pc-next-post')
+        if (nextPost) {
+          const isVisible = window.getComputedStyle(nextPost).opacity === '1'
+          setHasNextPost(isVisible)
+        }
+      }, 200),
+    []
+  )
+
   useEffect(() => {
     window.addEventListener('scroll', checkScrollPosition, { passive: true })
     window.addEventListener('resize', checkScrollPosition, { passive: true })
+    window.addEventListener('scroll', checkNextPost, { passive: true })
     checkScrollPosition()
+    checkNextPost()
     return () => {
       window.removeEventListener('scroll', checkScrollPosition)
       window.removeEventListener('resize', checkScrollPosition)
+      window.removeEventListener('scroll', checkNextPost)
     }
-  }, [checkScrollPosition])
+  }, [checkScrollPosition, checkNextPost])
 
   // 当目录隐藏且滚动回右侧栏范围时，关闭目录弹窗
   useEffect(() => {
@@ -92,9 +108,9 @@ export default function FloatTocButton(props) {
 
     {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
     {showOnDesktop && (
-      <div className='hidden xl:block fixed right-4 bottom-4 z-50'>
+      <div className={`hidden xl:block fixed right-4 z-50 duration-200 transition-all ${hasNextPost ? 'bottom-36' : 'bottom-4'}`}>
         {/* 悬浮目录框 - 简洁盒子样式 */}
-        <div 
+        <div
           onClick={toggleToc}
           className={`text-sm block p-4 w-72 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
           {/* 标题栏 */}
@@ -105,18 +121,20 @@ export default function FloatTocButton(props) {
             </div>
             <i className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`} />
           </div>
-          
+
           {/* 目录内容 - 点击展开/收起 */}
           <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
             <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-12'}`}>
               <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
             </div>
           </div>
-          
+
           {/* 提示文字 */}
           {!tocVisible && (
             <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
-              {activeSectionId ? post?.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text : (post.toc.length > 3 && '点击展开完整目录')}
+              {activeSectionId &&
+                post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text}
+              {!activeSectionId && post.toc.length > 3 && '点击展开完整目录'}
             </div>
           )}
         </div>
