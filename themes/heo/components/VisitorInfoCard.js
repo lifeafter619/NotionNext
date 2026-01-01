@@ -48,8 +48,8 @@ export default function VisitorInfoCard() {
   // 更新阅读时间 - 记录当天总时间
   useEffect(() => {
     const updateReadingTime = () => {
-      // 获取今天的日期字符串 YYYY-MM-DD
-      const today = new Date().toISOString().split('T')[0]
+      // 获取今天的日期字符串 YYYY-MM-DD (使用本地时间，而非UTC)
+      const today = new Date().toLocaleDateString()
       const key = `reading_time_${today}`
 
       // 从 localStorage 获取今天的累积时间 (单位: 分钟)
@@ -74,7 +74,7 @@ export default function VisitorInfoCard() {
 
     // 每分钟增加并保存
     const timer = setInterval(() => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date().toLocaleDateString()
       const key = `reading_time_${today}`
 
       try {

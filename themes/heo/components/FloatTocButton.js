@@ -124,15 +124,14 @@ export default function FloatTocButton(props) {
 
           {/* 目录内容 - 点击展开/收起 */}
           <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
-            {/* 展开时显示完整目录 */}
+            {/* 始终挂载 Catalog 以监听滚动，但仅在展开时显示完整列表 */}
             <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
               <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
             </div>
 
-            {/* 收起时只显示当前标题，但必须保持Catalog挂载以监听滚动 */}
+            {/* 收起时显示当前标题 */}
             {!tocVisible && (
-              <div className="h-12 flex items-center justify-center font-medium truncate px-4">
-                 <div className="hidden"><Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} /></div>
+              <div className="h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500">
                  {activeSectionId && post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text || '目录'}
               </div>
             )}
