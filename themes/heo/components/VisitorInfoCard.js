@@ -45,17 +45,53 @@ export default function VisitorInfoCard() {
     return () => clearInterval(timer)
   }, [])
 
-  // 更新阅读时间
+  // 更新阅读时间 - 记录当天总时间
   useEffect(() => {
     const updateReadingTime = () => {
-      const elapsed = Math.floor((Date.now() - startTime) / 60000) // 转换为分钟
-      setReadingTime(elapsed)
+      // 获取今天的日期字符串 YYYY-MM-DD
+      const today = new Date().toISOString().split('T')[0]
+      const key = `reading_time_${today}`
+
+      // 从 localStorage 获取今天的累积时间 (单位: 分钟)
+      let storedTime = 0
+      try {
+        const stored = localStorage.getItem(key)
+        if (stored) {
+          storedTime = parseInt(stored, 10)
+        }
+      } catch (e) {
+        console.error('Failed to read reading time:', e)
+      }
+
+      // 计算本次会话的增加时间
+      // 为了避免重复计算，我们每分钟增加 1 分钟到 localStorage
+      // 初始化时，只显示存储的时间，随后每分钟 +1
+      setReadingTime(storedTime)
     }
 
+    // 初始加载
     updateReadingTime()
-    const timer = setInterval(updateReadingTime, 60000) // 每分钟更新
+
+    // 每分钟增加并保存
+    const timer = setInterval(() => {
+      const today = new Date().toISOString().split('T')[0]
+      const key = `reading_time_${today}`
+
+      try {
+        const stored = localStorage.getItem(key)
+        let newTime = 1
+        if (stored) {
+          newTime = parseInt(stored, 10) + 1
+        }
+        localStorage.setItem(key, newTime.toString())
+        setReadingTime(newTime)
+      } catch (e) {
+        console.error('Failed to save reading time:', e)
+      }
+    }, 60000) // 每分钟更新
+
     return () => clearInterval(timer)
-  }, [startTime])
+  }, [])
 
   // 获取用户IP属地
   useEffect(() => {

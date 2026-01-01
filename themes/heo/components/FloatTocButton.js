@@ -124,17 +124,24 @@ export default function FloatTocButton(props) {
 
           {/* 目录内容 - 点击展开/收起 */}
           <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
-            <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-12'}`}>
+            {/* 展开时显示完整目录 */}
+            <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
               <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
             </div>
+
+            {/* 收起时只显示当前标题，但必须保持Catalog挂载以监听滚动 */}
+            {!tocVisible && (
+              <div className="h-12 flex items-center justify-center font-medium truncate px-4">
+                 <div className="hidden"><Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} /></div>
+                 {activeSectionId && post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text || '目录'}
+              </div>
+            )}
           </div>
 
           {/* 提示文字 */}
           {!tocVisible && (
             <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
-              {activeSectionId &&
-                post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text}
-              {!activeSectionId && post.toc.length > 3 && '点击展开完整目录'}
+              点击展开目录
             </div>
           )}
         </div>

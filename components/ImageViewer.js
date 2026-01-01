@@ -148,7 +148,46 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   const handleDownload = async () => {
     if (!src) return
 
+    // 尝试通过 Canvas 下载 (解决跨域问题)
+    const downloadViaCanvas = () => {
+      return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = src
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas')
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(img, 0, 0)
+            canvas.toBlob(blob => {
+              if (blob) {
+                const url = window.URL.createObjectURL(blob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = alt || 'image.png'
+                document.body.appendChild(link)
+                link.click()
+                setTimeout(() => {
+                  document.body.removeChild(link)
+                  window.URL.revokeObjectURL(url)
+                }, 100)
+                resolve(true)
+              } else {
+                reject(new Error('Canvas toBlob failed'))
+              }
+            }, 'image/png')
+          } catch (err) {
+            reject(err)
+          }
+        }
+        img.onerror = e => reject(e)
+      })
+    }
+
     try {
+      // 1. 尝试直接 fetch
       // 使用 CORS 代理或直接获取
       const response = await fetch(src, { mode: 'cors' })
       const blob = await response.blob()
@@ -171,21 +210,28 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         window.URL.revokeObjectURL(url)
       }, 100)
     } catch (error) {
-      console.warn('Failed to download via fetch, trying direct link:', error?.message)
-      // 如果 fetch 失败，尝试创建一个直接下载链接
+      console.warn('Failed to download via fetch, trying canvas:', error?.message)
       try {
-        const link = document.createElement('a')
-        link.href = src
-        link.download = alt || 'image'
-        link.target = '_self'
-        link.style.display = 'none'
-        document.body.appendChild(link)
-        link.click()
-        setTimeout(() => {
-          document.body.removeChild(link)
-        }, 100)
-      } catch (e) {
-        console.error('Download failed:', e)
+        // 2. 尝试 Canvas 下载
+        await downloadViaCanvas()
+      } catch (canvasError) {
+        console.warn('Failed to download via canvas, trying direct link:', canvasError?.message)
+        // 3. 如果都失败，创建新窗口打开 (避免覆盖当前页面)
+        try {
+          const link = document.createElement('a')
+          link.href = src
+          link.download = alt || 'image'
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          setTimeout(() => {
+            document.body.removeChild(link)
+          }, 100)
+        } catch (e) {
+          console.error('Download failed:', e)
+        }
       }
     }
   }
