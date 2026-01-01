@@ -94,7 +94,7 @@ export default function FloatTocButton(props) {
         {/* 悬浮目录框 - 简洁盒子样式 */}
         <div 
           onClick={toggleToc}
-          className='text-sm block p-4 w-72 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200'>
+          className={`text-sm block p-4 w-72 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
           {/* 标题栏 */}
           <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
             <div className='flex items-center gap-2'>
@@ -105,8 +105,8 @@ export default function FloatTocButton(props) {
           </div>
           
           {/* 目录内容 - 点击展开/收起 */}
-          <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-24 opacity-80'}`}>
-            <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-20'}`}>
+          <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
+            <div className={`dark:text-gray-300 text-gray-600 overflow-y-auto ${tocVisible ? 'max-h-[50vh]' : 'max-h-12'}`}>
               <Catalog toc={post.toc} />
             </div>
           </div>

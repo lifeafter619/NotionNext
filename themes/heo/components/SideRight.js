@@ -1,4 +1,3 @@
-import Live2D from '@/components/Live2D'
 import dynamic from 'next/dynamic'
 import { AnalyticsCard } from './AnalyticsCard'
 import Card from './Card'
@@ -21,6 +20,8 @@ const FaceBookPage = dynamic(
   },
   { ssr: false }
 )
+
+const Live2D = dynamic(() => import('@/components/Live2D'), { ssr: false })
 
 /**
  * Hexo主题右侧栏
