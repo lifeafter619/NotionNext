@@ -31,11 +31,11 @@ export default function FloatTocButton(props) {
     changeTocVisible(!tocVisible)
   }
 
-  // 初始加载3秒后收缩移动端按钮
+  // 初始加载6秒后收缩移动端按钮
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsExpandedButton(false)
-    }, 3000)
+    }, 6000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -46,7 +46,7 @@ export default function FloatTocButton(props) {
     setTouchStartButton({
       x: touch.clientX,
       y: touch.clientY,
-      initialRight: buttonPos.x || 16, // default right-4 = 16px
+      initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
       initialBottom: buttonPos.y || 96 // default bottom-24 = 96px
     })
   }
@@ -58,9 +58,20 @@ export default function FloatTocButton(props) {
     const deltaX = touchStartButton.x - touch.clientX // 向左滑，right增加
     const deltaY = touchStartButton.y - touch.clientY // 向上滑，bottom增加
 
+    // 计算新位置
+    let newRight = touchStartButton.initialRight + deltaX
+    let newBottom = touchStartButton.initialBottom + deltaY
+
+    // 边界检查
+    const maxRight = window.innerWidth - 44 // 假设按钮宽度约 44px
+    const maxBottom = window.innerHeight - 44 // 假设按钮高度约 44px
+
+    newRight = Math.max(0, Math.min(newRight, maxRight))
+    newBottom = Math.max(0, Math.min(newBottom, maxBottom))
+
     setButtonPos({
-      x: Math.max(16, touchStartButton.initialRight + deltaX), // 保持至少 16px 间距
-      y: Math.max(16, touchStartButton.initialBottom + deltaY)
+      x: newRight,
+      y: newBottom
     })
   }
 
@@ -158,17 +169,17 @@ export default function FloatTocButton(props) {
     {/* 移动端始终显示 */}
     <div
       style={{
-        right: buttonPos.x ? `${buttonPos.x}px` : undefined,
-        bottom: buttonPos.y ? `${buttonPos.y}px` : undefined
+        right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
+        bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
       }}
-      className='fixed xl:hidden right-4 bottom-24 z-50'
+      className={`fixed xl:hidden bottom-24 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       onTouchStart={handleButtonTouchStart}
       onTouchMove={handleButtonTouchMove}
     >
       {/* 按钮 */}
       <div
         onClick={toggleToc}
-        className={`${isExpandedButton ? 'w-48 px-4 justify-start' : 'w-11 h-11 justify-center'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 rounded-full bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+        className={`${isExpandedButton ? 'w-48 px-4 justify-start rounded-r-none' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
         <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'} />
         {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>}
       </div>
@@ -208,7 +219,7 @@ export default function FloatTocButton(props) {
 
         {/* 内容 */}
         <div className='flex-1 px-5 overflow-y-auto overscroll-contain'>
-            <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
+            <Catalog className='!max-h-none h-full' toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
       </div>
     </div>

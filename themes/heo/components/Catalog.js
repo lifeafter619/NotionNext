@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * @returns {JSX.Element}
  * @constructor
  */
-const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
+const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
   const { locale } = useGlobal()
   // 监听滚动事件
   useEffect(() => {
@@ -76,7 +76,7 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
         {locale.COMMON.TABLE_OF_CONTENTS}
       </div>
       <div
-        className='overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden'
+        className={`${className || ''} overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden`}
         ref={tRef}>
         <nav className='h-full'>
           {toc?.map(tocItem => {

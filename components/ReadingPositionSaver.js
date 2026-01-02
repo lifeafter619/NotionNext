@@ -144,9 +144,9 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
   return (
     <div className='fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 z-50 w-[90vw] md:w-auto max-w-md animate-fade-in'>
       <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3'>
-        <div className='flex items-center gap-2 truncate'>
+        <div className='flex items-center gap-2 flex-1 min-w-0'>
           <svg
-            className='w-5 h-5 text-blue-500 shrink-0'
+            className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
             fill='none'
             stroke='currentColor'
             viewBox='0 0 24 24'>
@@ -157,11 +157,12 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
               d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z'
             />
           </svg>
-          <span className='text-sm md:text-base text-gray-700 dark:text-gray-300 truncate'>
-            已自动跳转到上次阅读位置 ({savedPosition.percentage}%)
-          </span>
+          <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
+             <span className='font-bold'>已跳转至：</span>
+             <span className='truncate'>上次阅读位置 ({savedPosition.percentage}%)</span>
+          </div>
         </div>
-        <div className='flex items-center gap-2 shrink-0'>
+        <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
             <button
             onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'smooth' })
