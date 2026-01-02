@@ -117,7 +117,7 @@ export default function FloatTocButton(props) {
 
         {/* 内容 */}
         <div className='px-5 py-4 overflow-y-auto overscroll-contain'>
-            <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
+            <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
       </div>
     </div>
