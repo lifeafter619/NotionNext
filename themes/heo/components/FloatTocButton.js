@@ -76,7 +76,7 @@ export default function FloatTocButton(props) {
 
   // 当目录隐藏且滚动回右侧栏范围时，关闭目录弹窗
   useEffect(() => {
-    if (!showOnDesktop && tocVisible) {
+    if (window.innerWidth >= 1280 && !showOnDesktop && tocVisible) {
       changeTocVisible(false)
     }
   }, [showOnDesktop, tocVisible])
