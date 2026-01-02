@@ -23,8 +23,12 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
   const headerImage = post?.pageCover ? post.pageCover : siteInfo?.pageCover
   const ANALYTICS_BUSUANZI_ENABLE = siteConfig('ANALYTICS_BUSUANZI_ENABLE')
 
-  // 封面图加载完成后隐藏加载指示器
+  // 封面图加载完成或出错后隐藏加载指示器
   const handleCoverLoad = () => {
+    setOnLoading(false)
+  }
+
+  const handleCoverError = () => {
     setOnLoading(false)
   }
 
@@ -59,6 +63,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             className='w-full h-full object-cover max-h-[50rem] min-w-[50vw] min-h-[20rem]'
             src={headerImage}
             onLoad={handleCoverLoad}
+            onError={handleCoverError}
           />
         </div>
 

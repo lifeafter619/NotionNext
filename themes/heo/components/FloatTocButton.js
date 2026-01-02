@@ -110,7 +110,7 @@ export default function FloatTocButton(props) {
         </div>
         {/* 头部 */}
         <div className='flex items-center justify-between px-5 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0'>
-            <div className='flex items-center gap-2 font-bold text-base text-black dark:text-white'>
+            <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
                 <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
                 <span>目录导航</span>
             </div>
