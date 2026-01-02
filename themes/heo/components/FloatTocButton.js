@@ -95,18 +95,22 @@ export default function FloatTocButton(props) {
       </div>
     </div>
 
-    {/* 移动端目录弹窗 - 居中卡片样式 */}
-    <div className={`fixed inset-0 z-[60] flex items-center justify-center xl:hidden ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
+    {/* 移动端目录弹窗 - 底部抽屉样式 */}
+    <div className={`fixed inset-0 z-[60] xl:hidden ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
       {/* 背景蒙版 */}
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${tocVisible ? 'opacity-100' : 'opacity-0'}`}
         onClick={toggleToc}
       />
-      {/* 目录卡片 */}
-      <div className={`w-[85vw] max-w-sm max-h-[70vh] bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-2xl transform transition-all duration-300 overflow-hidden flex flex-col ${tocVisible ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'}`}>
+      {/* 底部目录抽屉 */}
+      <div className={`absolute bottom-0 left-0 right-0 h-[30vh] bg-white dark:bg-[#1e1e1e] rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col ${tocVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+        {/* 顶部拖动条 */}
+        <div className='flex justify-center pt-2 pb-1 shrink-0'>
+          <div className='w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full' />
+        </div>
         {/* 头部 */}
-        <div className='flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0'>
-            <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
+        <div className='flex items-center justify-between px-5 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0'>
+            <div className='flex items-center gap-2 font-bold text-base text-black dark:text-white'>
                 <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
                 <span>目录导航</span>
             </div>
@@ -116,7 +120,7 @@ export default function FloatTocButton(props) {
         </div>
 
         {/* 内容 */}
-        <div className='px-5 py-4 overflow-y-auto overscroll-contain'>
+        <div className='flex-1 px-5 py-3 overflow-y-auto overscroll-contain'>
             <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
       </div>

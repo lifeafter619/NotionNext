@@ -200,17 +200,15 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     const handleGlobalMouseMove = e => {
       if (!isDragging) return
       e.preventDefault()
-      // 使用 requestAnimationFrame 实现更流畅的拖拽
-      requestAnimationFrame(() => {
-        const newX = e.clientX - dragStartRef.current.x
-        const newY = e.clientY - dragStartRef.current.y
-        positionRef.current = { x: newX, y: newY }
+      // 直接更新位置，不使用 requestAnimationFrame，实现跟手效果
+      const newX = e.clientX - dragStartRef.current.x
+      const newY = e.clientY - dragStartRef.current.y
+      positionRef.current = { x: newX, y: newY }
 
-        // 直接操作 DOM 避免 React 重渲染导致的延迟
-        if (imgRef.current) {
-          imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
-        }
-      })
+      // 直接操作 DOM 避免 React 重渲染导致的延迟
+      if (imgRef.current) {
+        imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+      }
     }
 
     const handleGlobalMouseUp = () => {
@@ -252,14 +250,13 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   const handleTouchMove = useCallback(e => {
     e.preventDefault()
     if (e.touches.length === 1 && isDragging) {
-      requestAnimationFrame(() => {
-        const newX = e.touches[0].clientX - dragStartRef.current.x
-        const newY = e.touches[0].clientY - dragStartRef.current.y
-        positionRef.current = { x: newX, y: newY }
-        if (imgRef.current) {
-          imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
-        }
-      })
+      // 直接更新位置，不使用 requestAnimationFrame，实现跟手效果
+      const newX = e.touches[0].clientX - dragStartRef.current.x
+      const newY = e.touches[0].clientY - dragStartRef.current.y
+      positionRef.current = { x: newX, y: newY }
+      if (imgRef.current) {
+        imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+      }
     } else if (e.touches.length === 2) {
       const touch1 = e.touches[0]
       const touch2 = e.touches[1]
