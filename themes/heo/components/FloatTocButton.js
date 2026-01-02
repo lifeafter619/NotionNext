@@ -168,8 +168,8 @@ export default function FloatTocButton(props) {
       {/* 按钮 */}
       <div
         onClick={toggleToc}
-        className={`${isExpandedButton ? 'w-48 px-4 justify-start' : 'w-14 h-14 justify-center'} transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 rounded-full bg-white drop-shadow-lg flex items-center dark:bg-hexo-black-gray py-2`}>
-        <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-10 h-10 flex items-center justify-center shrink-0'} />
+        className={`${isExpandedButton ? 'w-48 px-4 justify-start' : 'w-11 h-11 justify-center'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 rounded-full bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+        <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'} />
         {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>}
       </div>
     </div>
@@ -196,7 +196,7 @@ export default function FloatTocButton(props) {
           <div className='w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full' />
         </div>
         {/* 头部 */}
-        <div className='flex items-center justify-between px-5 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0'>
+        <div className='flex items-center justify-between px-5 py-2 shrink-0'>
             <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
                 <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
                 <span>目录导航</span>
@@ -207,7 +207,7 @@ export default function FloatTocButton(props) {
         </div>
 
         {/* 内容 */}
-        <div className='flex-1 px-5 py-3 overflow-y-auto overscroll-contain'>
+        <div className='flex-1 px-5 overflow-y-auto overscroll-contain'>
             <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
       </div>

@@ -56,7 +56,9 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
       }
       const index = tocIds.indexOf(currentSectionId) || 0
       if (tRef?.current) {
-        tRef.current.scrollTo({ top: 28 * index, behavior: 'smooth' })
+        // 让当前阅读的目录项居中显示
+        const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
+        tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
       }
     }, 200),
     [toc, activeSection]
