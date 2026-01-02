@@ -22,7 +22,7 @@ const Catalog = ({ toc, onActiveSectionChange }) => {
 
   // 目录自动滚动
   const tRef = useRef(null)
-  const tocIds = []
+  const tocIds = useMemo(() => toc?.map(t => uuidToId(t.id)) || [], [toc])
 
   // 同步选中目录事件
   const [activeSection, setActiveSection] = useState(null)
@@ -55,8 +55,11 @@ const Catalog = ({ toc, onActiveSectionChange }) => {
         onActiveSectionChange(currentSectionId)
       }
       const index = tocIds.indexOf(currentSectionId) || 0
-      tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
-    }, 200)
+      if (tRef?.current) {
+        tRef.current.scrollTo({ top: 28 * index, behavior: 'smooth' })
+      }
+    }, 200),
+    [toc, activeSection, tocIds]
   )
 
   // 无目录就直接返回空
@@ -76,7 +79,6 @@ const Catalog = ({ toc, onActiveSectionChange }) => {
         <nav className='h-full'>
           {toc?.map(tocItem => {
             const id = uuidToId(tocItem.id)
-            tocIds.push(id)
             return (
               <a
                 key={id}
