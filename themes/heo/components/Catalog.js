@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * @returns {JSX.Element}
  * @constructor
  */
-const Catalog = ({ toc, onActiveSectionChange }) => {
+const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
   const { locale } = useGlobal()
   // 监听滚动事件
   useEffect(() => {
@@ -84,6 +84,7 @@ const Catalog = ({ toc, onActiveSectionChange }) => {
               <a
                 key={id}
                 href={`#${id}`}
+                onClick={onItemClick}
                 className={`notion-table-of-contents-item duration-300 transform dark:text-gray-200
             notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item `}>
                 <span

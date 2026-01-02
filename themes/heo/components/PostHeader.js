@@ -3,6 +3,7 @@ import LazyImage from '@/components/LazyImage'
 import NotionIcon from '@/components/NotionIcon'
 import WordCount from '@/components/WordCount'
 import { siteConfig } from '@/lib/config'
+import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import SmartLink from '@/components/SmartLink'
 import WavesArea from './WavesArea'
@@ -13,12 +14,24 @@ import WavesArea from './WavesArea'
  * @returns
  */
 export default function PostHeader({ post, siteInfo, isDarkMode }) {
+  const { setOnLoading } = useGlobal()
+
   if (!post) {
     return <></>
   }
   // 文章头图
   const headerImage = post?.pageCover ? post.pageCover : siteInfo?.pageCover
   const ANALYTICS_BUSUANZI_ENABLE = siteConfig('ANALYTICS_BUSUANZI_ENABLE')
+
+  // 封面图加载完成或出错后隐藏加载指示器
+  const handleCoverLoad = () => {
+    setOnLoading(false)
+  }
+
+  const handleCoverError = () => {
+    setOnLoading(false)
+  }
+
   return (
     <div
       id='post-bg'
@@ -49,6 +62,8 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             id='post-cover'
             className='w-full h-full object-cover max-h-[50rem] min-w-[50vw] min-h-[20rem]'
             src={headerImage}
+            onLoad={handleCoverLoad}
+            onError={handleCoverError}
           />
         </div>
 

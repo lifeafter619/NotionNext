@@ -19,6 +19,7 @@ export default function LazyImage({
   height,
   title,
   onLoad,
+  onError,
   onClick,
   style,
   sizes
@@ -40,6 +41,9 @@ export default function LazyImage({
       e.target.src = placeholderSrc
     } else {
       e.target.src = defaultPlaceholderSrc
+    }
+    if (typeof onError === 'function') {
+      onError(e)
     }
   }
 
