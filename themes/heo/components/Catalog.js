@@ -55,8 +55,11 @@ const Catalog = ({ toc, onActiveSectionChange }) => {
         onActiveSectionChange(currentSectionId)
       }
       const index = tocIds.indexOf(currentSectionId) || 0
-      tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
-    }, 200)
+      if (tRef?.current) {
+        tRef.current.scrollTo({ top: 28 * index, behavior: 'smooth' })
+      }
+    }, 200),
+    [toc, activeSection]
   )
 
   // 无目录就直接返回空

@@ -13,6 +13,8 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   const [mounted, setMounted] = useState(false)
   const dragStartRef = useRef({ x: 0, y: 0 })
   const positionRef = useRef({ x: 0, y: 0 })
+  const initialDistanceRef = useRef(0)
+  const initialScaleRef = useRef(1)
   const imgRef = useRef(null)
 
   useEffect(() => {
@@ -234,21 +236,40 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         x: e.touches[0].clientX - positionRef.current.x,
         y: e.touches[0].clientY - positionRef.current.y
       }
+    } else if (e.touches.length === 2) {
+      setIsDragging(false)
+      // 缩放开始前同步位置状态，防止缩放时位置跳变
+      setPosition(positionRef.current)
+
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      const distance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY)
+      initialDistanceRef.current = distance
+      initialScaleRef.current = scale
     }
   }
 
   const handleTouchMove = useCallback(e => {
-    if (!isDragging || e.touches.length !== 1) return
     e.preventDefault()
-    requestAnimationFrame(() => {
-      const newX = e.touches[0].clientX - dragStartRef.current.x
-      const newY = e.touches[0].clientY - dragStartRef.current.y
-      positionRef.current = { x: newX, y: newY }
-      // setPosition({ x: newX, y: newY })
-      if (imgRef.current) {
-        imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+    if (e.touches.length === 1 && isDragging) {
+      requestAnimationFrame(() => {
+        const newX = e.touches[0].clientX - dragStartRef.current.x
+        const newY = e.touches[0].clientY - dragStartRef.current.y
+        positionRef.current = { x: newX, y: newY }
+        if (imgRef.current) {
+          imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+        }
+      })
+    } else if (e.touches.length === 2) {
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      const distance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY)
+      if (initialDistanceRef.current > 0) {
+        const newScale = initialScaleRef.current * (distance / initialDistanceRef.current)
+        const clampedScale = Math.min(Math.max(newScale, 0.25), 5)
+        setScale(clampedScale)
       }
-    })
+    }
   }, [isDragging, scale, rotation])
 
   const handleTouchEnd = useCallback(() => {
@@ -278,7 +299,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         onTouchEnd={handleTouchEnd}
         style={{
           cursor: isDragging ? 'grabbing' : 'grab',
-          touchAction: 'none'
+          touchAction: 'none' // 明确禁止浏览器处理触摸手势
         }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

@@ -25,6 +25,12 @@ export default function FloatTocButton(props) {
   const checkScrollPosition = useMemo(
     () =>
       throttle(() => {
+        // 移动端直接不显示桌面悬浮按钮，减少DOM操作
+        if (window.innerWidth < 1280) {
+          setShowOnDesktop(false)
+          return
+        }
+
         // 首先检测右侧边栏是否存在（xl屏幕以上才显示）
         const sideRight = document.getElementById('sideRight')
         
@@ -38,7 +44,7 @@ export default function FloatTocButton(props) {
         // 当右侧栏的粘性区域滚动到视口顶部以上时（整个目录不可见），显示悬浮按钮
         const isScrolledPast = rect.bottom < SCROLL_OFFSET
         setShowOnDesktop(isScrolledPast)
-      }, 100),
+      }, 200),
     []
   )
 
@@ -83,27 +89,37 @@ export default function FloatTocButton(props) {
   return (<>
     {/* 移动端始终显示 */}
     <div className='fixed xl:hidden right-4 bottom-24 z-50'>
-        {/* 按钮 */}
-        <div onClick={toggleToc} className={'w-11 h-11 select-none hover:scale-110 transform duration-200 text-black dark:text-gray-200 rounded-full bg-white drop-shadow-lg flex justify-center items-center dark:bg-hexo-black-gray py-2 px-2'}>
-            <button id="toc-button" className={'fa-list-ol cursor-pointer fas'} />
+      {/* 按钮 */}
+      <div onClick={toggleToc} className={'w-11 h-11 select-none hover:scale-110 transform duration-200 text-black dark:text-gray-200 rounded-full bg-white drop-shadow-lg flex justify-center items-center dark:bg-hexo-black-gray py-2 px-2'}>
+        <button id="toc-button" className={'fa-list-ol cursor-pointer fas'} />
+      </div>
+    </div>
+
+    {/* 移动端目录弹窗 - 居中卡片样式 */}
+    <div className={`fixed inset-0 z-[60] flex items-center justify-center xl:hidden ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
+      {/* 背景蒙版 */}
+      <div
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${tocVisible ? 'opacity-100' : 'opacity-0'}`}
+        onClick={toggleToc}
+      />
+      {/* 目录卡片 */}
+      <div className={`w-[85vw] max-w-sm max-h-[70vh] bg-white dark:bg-[#1e1e1e] rounded-2xl shadow-2xl transform transition-all duration-300 overflow-hidden flex flex-col ${tocVisible ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'}`}>
+        {/* 头部 */}
+        <div className='flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0'>
+            <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
+                <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
+                <span>目录导航</span>
+            </div>
+            <button onClick={toggleToc} className='p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'>
+                <i className='fas fa-times' />
+            </button>
         </div>
 
-        {/* 目录Modal */}
-        <div className='fixed top-0 right-0 z-40 '>
-            {/* 侧边菜单 */}
-            <div
-                className={`${tocVisible ? 'shadow-card ' : ' -mr-72  opacity-0'} dark:bg-black w-60 duration-200 fixed right-4 bottom-12 rounded-xl py-2 bg-white dark:bg-gray-900'`}>
-                {post && <>
-                    <div className='dark:text-gray-400 text-gray-600'>
-                        <Catalog toc={post.toc} />
-                    </div>
-                </>
-                }
-            </div>
+        {/* 内容 */}
+        <div className='px-5 py-4 overflow-y-auto overscroll-contain'>
+            <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
         </div>
-        {/* 背景蒙版 */}
-        <div id='right-drawer-background' className={(tocVisible ? 'block' : 'hidden') + ' fixed top-0 left-0 z-30 w-full h-full'}
-            onClick={toggleToc} />
+      </div>
     </div>
 
     {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
