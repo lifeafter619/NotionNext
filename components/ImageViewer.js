@@ -299,7 +299,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         onTouchEnd={handleTouchEnd}
         style={{
           cursor: isDragging ? 'grabbing' : 'grab',
-          touchAction: 'none'
+          touchAction: 'none' // 明确禁止浏览器处理触摸手势
         }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
