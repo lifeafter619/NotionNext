@@ -13,6 +13,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   const [mounted, setMounted] = useState(false)
   const dragStartRef = useRef({ x: 0, y: 0 })
   const positionRef = useRef({ x: 0, y: 0 })
+  const imgRef = useRef(null)
 
   useEffect(() => {
     setMounted(true)
@@ -25,6 +26,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setRotation(0)
     setPosition({ x: 0, y: 0 })
     positionRef.current = { x: 0, y: 0 }
+    if (imgRef.current) {
+      imgRef.current.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`
+    }
   }, [])
 
   // 关闭时重置
@@ -193,17 +197,23 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
 
     const handleGlobalMouseMove = e => {
       if (!isDragging) return
+      e.preventDefault()
       // 使用 requestAnimationFrame 实现更流畅的拖拽
       requestAnimationFrame(() => {
         const newX = e.clientX - dragStartRef.current.x
         const newY = e.clientY - dragStartRef.current.y
         positionRef.current = { x: newX, y: newY }
-        setPosition({ x: newX, y: newY })
+
+        // 直接操作 DOM 避免 React 重渲染导致的延迟
+        if (imgRef.current) {
+          imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+        }
       })
     }
 
     const handleGlobalMouseUp = () => {
       setIsDragging(false)
+      setPosition(positionRef.current) // 拖拽结束时同步状态
     }
 
     // 添加全局事件监听器到 document，确保拖拽在窗口外也能工作
@@ -214,7 +224,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       document.removeEventListener('mouseup', handleGlobalMouseUp)
     }
-  }, [isOpen, isDragging])
+  }, [isOpen, isDragging, scale, rotation])
 
   // 触摸事件支持
   const handleTouchStart = e => {
@@ -234,12 +244,16 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       const newX = e.touches[0].clientX - dragStartRef.current.x
       const newY = e.touches[0].clientY - dragStartRef.current.y
       positionRef.current = { x: newX, y: newY }
-      setPosition({ x: newX, y: newY })
+      // setPosition({ x: newX, y: newY })
+      if (imgRef.current) {
+        imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+      }
     })
-  }, [isDragging])
+  }, [isDragging, scale, rotation])
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false)
+    setPosition(positionRef.current) // 同步状态
   }, [])
 
   if (!isOpen || !mounted) return null
@@ -268,6 +282,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
+          ref={imgRef}
           src={src}
           alt={alt || 'Image'}
           className='max-w-[90vw] max-h-[80vh] object-contain'
