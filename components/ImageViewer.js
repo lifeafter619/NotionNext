@@ -3,16 +3,24 @@ import { createPortal } from 'react-dom'
 
 /**
  * 图片查看器组件
- * 支持放大、缩小、旋转、下载等功能
+ * 支持放大、缩小、旋转、下载、切换图片等功能
  */
-const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
+const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [mounted, setMounted] = useState(false)
 
+  // 当前图片索引
+  const [index, setIndex] = useState(currentIndex)
+
   // 图片显示状态
+  const currentImage = images && images.length > 0 ? images[index] : null
+  const src = currentImage?.src || ''
+  const highResSrc = currentImage?.highResSrc || ''
+  const alt = currentImage?.alt || ''
+
   const [displaySrc, setDisplaySrc] = useState(src) // 当前显示的图片URL
   const [isHighResLoaded, setIsHighResLoaded] = useState(false)
 
@@ -27,12 +35,19 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
     return () => setMounted(false)
   }, [])
 
+  // 当外部传入的 currentIndex 改变时更新内部 index
+  useEffect(() => {
+    setIndex(currentIndex)
+  }, [currentIndex])
+
   // 初始化图片：优先显示缩略图，后台加载高清图
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && src) {
       // 重置状态
       setDisplaySrc(src)
       setIsHighResLoaded(false)
+      // 重置变换状态
+      resetState()
 
       // 如果有高清图，尝试加载
       if (highResSrc && highResSrc !== src) {
@@ -47,7 +62,7 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
         }
       }
     }
-  }, [isOpen, src, highResSrc])
+  }, [isOpen, src, highResSrc, index]) // index 变化时也重新加载
 
   // 重置状态
   const resetState = useCallback(() => {
@@ -60,12 +75,17 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
     }
   }, [])
 
-  // 关闭时重置
-  useEffect(() => {
-    if (!isOpen) {
-      resetState()
-    }
-  }, [isOpen, resetState])
+  // 切换上一张
+  const handlePrev = useCallback((e) => {
+    e?.stopPropagation()
+    setIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))
+  }, [images.length])
+
+  // 切换下一张
+  const handleNext = useCallback((e) => {
+    e?.stopPropagation()
+    setIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))
+  }, [images.length])
 
   // 键盘事件处理
   useEffect(() => {
@@ -75,6 +95,12 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
       switch (e.key) {
         case 'Escape':
           onClose()
+          break
+        case 'ArrowLeft':
+          handlePrev()
+          break
+        case 'ArrowRight':
+          handleNext()
           break
         case '+':
         case '=':
@@ -108,7 +134,7 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
     }
-  }, [isOpen, onClose, resetState])
+  }, [isOpen, onClose, resetState, handlePrev, handleNext])
 
   // 全局滚轮事件处理 - 用于缩放图片，同时防止页面滚动
   useEffect(() => {
@@ -344,7 +370,7 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
 
       {/* 关闭按钮 */}
       <button
-        className='absolute top-4 right-4 p-2 text-white hover:text-gray-300 transition-colors'
+        className='absolute top-4 right-4 p-2 text-white hover:text-gray-300 transition-colors z-50'
         onClick={onClose}
         aria-label='Close image viewer'>
         <svg
@@ -361,8 +387,40 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
         </svg>
       </button>
 
+      {/* 切换按钮 - 仅当有多张图片时显示 */}
+      {images && images.length > 1 && (
+        <>
+          <button
+            className='absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors z-50'
+            onClick={handlePrev}
+            aria-label='Previous image'>
+            <svg className='w-8 h-8' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+            </svg>
+          </button>
+          <button
+            className='absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors z-50'
+            onClick={handleNext}
+            aria-label='Next image'>
+            <svg className='w-8 h-8' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+            </svg>
+          </button>
+        </>
+      )}
+
       {/* 控制栏 */}
-      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 rounded-full px-4 py-2 backdrop-blur-sm'>
+      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 rounded-full px-4 py-2 backdrop-blur-sm z-50'>
+        {/* 图片索引指示器 */}
+        {images && images.length > 1 && (
+            <>
+            <span className='text-white text-sm font-medium'>
+                {index + 1} / {images.length}
+            </span>
+            <div className='w-px h-6 bg-gray-500' />
+            </>
+        )}
+
         {/* 缩小 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors disabled:opacity-50'
@@ -516,8 +574,8 @@ const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
       </div>
 
       {/* 快捷键提示 - Keyboard shortcuts hint */}
-      <div className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs'>
-        ESC 关闭 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
+      <div className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs z-50'>
+        ESC 关闭 | ← → 切换 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
       </div>
     </div>
   )

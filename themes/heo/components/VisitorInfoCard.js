@@ -104,10 +104,8 @@ export default function VisitorInfoCard() {
         if (data.code === 200 && data.ipdata) {
           // 从返回数据中提取城市和ISP信息
           const city = data.ipdata.info2 || data.ipdata.info1 || '未知地区'
-          const isp = data.ipdata.isp || ''
-          // 格式化为 "广州市-电信" 的形式
-          const locationStr = isp ? `${city}-${isp}` : city
-          setLocation(locationStr)
+          // 仅显示城市，不显示运营商
+          setLocation(city)
         } else {
           setLocation('未知地区')
         }
