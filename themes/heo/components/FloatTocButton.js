@@ -15,10 +15,89 @@ export default function FloatTocButton(props) {
   const [showOnDesktop, setShowOnDesktop] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState(null)
 
+  // 移动端按钮展开状态
+  const [isExpandedButton, setIsExpandedButton] = useState(true)
+  // 移动端按钮位置偏移 {x: right, y: bottom}
+  const [buttonPos, setButtonPos] = useState({ x: null, y: null })
+  // 移动端抽屉高度
+  const [drawerHeight, setDrawerHeight] = useState('30vh')
+  const [touchStartY, setTouchStartY] = useState(null)
+  const [touchStartHeight, setTouchStartHeight] = useState(null)
+  const [touchStartButton, setTouchStartButton] = useState({ x: 0, y: 0 })
+
   const { post } = props
 
   const toggleToc = () => {
     changeTocVisible(!tocVisible)
+  }
+
+  // 初始加载6秒后收缩移动端按钮
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsExpandedButton(false)
+    }, 6000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // 移动端拖动按钮逻辑
+  const handleButtonTouchStart = (e) => {
+    e.stopPropagation()
+    const touch = e.touches[0]
+    setTouchStartButton({
+      x: touch.clientX,
+      y: touch.clientY,
+      initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
+      initialBottom: buttonPos.y || 96 // default bottom-24 = 96px
+    })
+  }
+
+  const handleButtonTouchMove = (e) => {
+    e.stopPropagation()
+    e.preventDefault() // 防止页面滚动
+    const touch = e.touches[0]
+    const deltaX = touchStartButton.x - touch.clientX // 向左滑，right增加
+    const deltaY = touchStartButton.y - touch.clientY // 向上滑，bottom增加
+
+    // 计算新位置
+    let newRight = touchStartButton.initialRight + deltaX
+    let newBottom = touchStartButton.initialBottom + deltaY
+
+    // 边界检查
+    const maxRight = window.innerWidth - 44 // 假设按钮宽度约 44px
+    const maxBottom = window.innerHeight - 44 // 假设按钮高度约 44px
+
+    newRight = Math.max(0, Math.min(newRight, maxRight))
+    newBottom = Math.max(0, Math.min(newBottom, maxBottom))
+
+    setButtonPos({
+      x: newRight,
+      y: newBottom
+    })
+  }
+
+  // 移动端抽屉高度调整逻辑
+  const handleDrawerTouchStart = (e) => {
+    const touch = e.touches[0]
+    setTouchStartY(touch.clientY)
+    const currentHeight = document.getElementById('toc-drawer').clientHeight
+    setTouchStartHeight(currentHeight)
+  }
+
+  const handleDrawerTouchMove = (e) => {
+    if (!touchStartY) return
+    const touch = e.touches[0]
+    const deltaY = touchStartY - touch.clientY // 向上滑为正，高度增加
+    const newHeight = touchStartHeight + deltaY
+    const vh = (newHeight / window.innerHeight) * 100
+    // 限制高度在 30vh 到 85vh 之间
+    if (vh >= 25 && vh <= 90) {
+      setDrawerHeight(`${vh}vh`)
+    }
+  }
+
+  const handleDrawerTouchEnd = () => {
+    setTouchStartY(null)
+    setTouchStartHeight(null)
   }
 
   // 监听滚动，检测是否超过右侧边栏目录 - 使用 useMemo 来记忆化 throttle 函数
@@ -76,7 +155,7 @@ export default function FloatTocButton(props) {
 
   // 当目录隐藏且滚动回右侧栏范围时，关闭目录弹窗
   useEffect(() => {
-    if (!showOnDesktop && tocVisible) {
+    if (window.innerWidth >= 1280 && !showOnDesktop && tocVisible) {
       changeTocVisible(false)
     }
   }, [showOnDesktop, tocVisible])
@@ -88,10 +167,21 @@ export default function FloatTocButton(props) {
 
   return (<>
     {/* 移动端始终显示 */}
-    <div className='fixed xl:hidden right-4 bottom-24 z-50'>
+    <div
+      style={{
+        right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
+        bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
+      }}
+      className={`fixed xl:hidden bottom-24 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      onTouchStart={handleButtonTouchStart}
+      onTouchMove={handleButtonTouchMove}
+    >
       {/* 按钮 */}
-      <div onClick={toggleToc} className={'w-11 h-11 select-none hover:scale-110 transform duration-200 text-black dark:text-gray-200 rounded-full bg-white drop-shadow-lg flex justify-center items-center dark:bg-hexo-black-gray py-2 px-2'}>
-        <button id="toc-button" className={'fa-list-ol cursor-pointer fas'} />
+      <div
+        onClick={toggleToc}
+        className={`${isExpandedButton ? 'w-48 px-4 justify-start rounded-r-none' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+        <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'} />
+        {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>}
       </div>
     </div>
 
@@ -103,13 +193,21 @@ export default function FloatTocButton(props) {
         onClick={toggleToc}
       />
       {/* 底部目录抽屉 */}
-      <div className={`absolute bottom-0 left-0 right-0 h-[30vh] bg-white dark:bg-[#1e1e1e] rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col ${tocVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div
+        id="toc-drawer"
+        style={{ height: drawerHeight }}
+        className={`absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1e1e1e] rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col ${tocVisible ? 'translate-y-0' : 'translate-y-full'}`}>
         {/* 顶部拖动条 */}
-        <div className='flex justify-center pt-2 pb-1 shrink-0'>
-          <div className='w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full' />
+        <div
+          className='flex justify-center pt-3 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none'
+          onTouchStart={handleDrawerTouchStart}
+          onTouchMove={handleDrawerTouchMove}
+          onTouchEnd={handleDrawerTouchEnd}
+        >
+          <div className='w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full' />
         </div>
         {/* 头部 */}
-        <div className='flex items-center justify-between px-5 py-2 border-b border-gray-100 dark:border-gray-800 shrink-0'>
+        <div className='flex items-center justify-between px-5 py-2 shrink-0'>
             <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
                 <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
                 <span>目录导航</span>
@@ -120,8 +218,8 @@ export default function FloatTocButton(props) {
         </div>
 
         {/* 内容 */}
-        <div className='flex-1 px-5 py-3 overflow-y-auto overscroll-contain'>
-            <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
+        <div className='flex-1 px-5 overflow-y-auto overscroll-contain'>
+            <Catalog className='!max-h-none h-full' toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
       </div>
     </div>

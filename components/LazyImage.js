@@ -36,6 +36,12 @@ export default function LazyImage({
     }
   }
 
+  useEffect(() => {
+    if (imageRef.current && imageRef.current.complete) {
+      handleImageLoaded()
+    }
+  }, [])
+
   const handleImageError = (e) => {
     if (e.target.src !== placeholderSrc && placeholderSrc) {
       e.target.src = placeholderSrc

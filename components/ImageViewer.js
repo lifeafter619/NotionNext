@@ -309,6 +309,8 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
             ...(isDragging && { willChange: 'transform' })
           }}
           draggable={false}
+          loading='eager'
+          decoding='sync'
         />
       </div>
 

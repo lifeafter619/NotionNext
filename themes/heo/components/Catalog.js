@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * @returns {JSX.Element}
  * @constructor
  */
-const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
+const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
   const { locale } = useGlobal()
   // 监听滚动事件
   useEffect(() => {
@@ -56,7 +56,9 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
       }
       const index = tocIds.indexOf(currentSectionId) || 0
       if (tRef?.current) {
-        tRef.current.scrollTo({ top: 28 * index, behavior: 'smooth' })
+        // 让当前阅读的目录项居中显示
+        const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
+        tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
       }
     }, 200),
     [toc, activeSection]
@@ -74,7 +76,7 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick }) => {
         {locale.COMMON.TABLE_OF_CONTENTS}
       </div>
       <div
-        className='overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden'
+        className={`${className || ''} overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden`}
         ref={tRef}>
         <nav className='h-full'>
           {toc?.map(tocItem => {
