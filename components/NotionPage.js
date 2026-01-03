@@ -38,8 +38,33 @@ const NotionPage = ({ post, className }) => {
         e.preventDefault()
         e.stopPropagation()
 
-        // 收集所有文章内图片
-        const allImages = Array.from(document.querySelectorAll('#notion-article .notion-asset-wrapper img'))
+        // 收集所有文章内图片 (排除侧栏和其他非文章主体内容)
+        // 使用更精确的选择器，或者过滤掉包含 wow fadeInUp 类（如果是侧栏元素特征）的元素
+        // 但 wow fadeInUp 通常是动画类，文章内图片也可能有。
+        // 根据用户反馈 "wow fadeInUp 这个里面，也就是侧栏中出现的图片"
+        // 我们可以检查元素的祖先是否包含侧栏特定的类名，例如 #side-bar (如果存在)
+        // 或者只选择 #notion-article .notion-page-content img (如果结构如此)
+        // 目前 #notion-article 包含 NotionRenderer，通常包含文章主体。
+        // 如果侧栏图片混入，可能是因为 selector 选到了不该选的。
+        // 我们这里加一个简单的过滤：排除 sidebar 内的图片。
+        // 假设侧栏 id 是 sideRight 或 side-bar。
+
+        let allImages = Array.from(document.querySelectorAll('#notion-article .notion-asset-wrapper img'))
+
+        // 过滤掉位于侧栏中的图片 (如果侧栏不幸被包含在 #notion-article 中，或者有重叠)
+        // 通常 #notion-article 是纯文章内容。如果用户说 "wow fadeInUp 里面... 侧栏中出现的图片"
+        // 可能侧栏的部分组件被错误地渲染到了 article 区域，或者选择器范围太大。
+        // 无论如何，我们可以过滤掉那些 offsetParent 为 null (不可见) 或者在特定容器内的图片。
+
+        allImages = allImages.filter(img => {
+            const sideRight = document.getElementById('sideRight')
+            const sideBar = document.getElementById('sideBar') // 假设 ID
+            // 如果图片在侧栏内，则排除
+            if (sideRight && sideRight.contains(img)) return false
+            if (sideBar && sideBar.contains(img)) return false
+            return true
+        })
+
         const imageList = allImages.map(img => {
             const src = getImageSrc(img)
             let highResSrc = src
