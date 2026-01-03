@@ -179,7 +179,7 @@ export default function FloatTocButton(props) {
       {/* 按钮 */}
       <div
         onClick={toggleToc}
-        className={`${isExpandedButton ? 'w-48 px-4 justify-start rounded-r-none' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+        className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
         <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'} />
         {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>}
       </div>
