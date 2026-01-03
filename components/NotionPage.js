@@ -41,7 +41,8 @@ const NotionPage = ({ post, className }) => {
         const src = getImageSrc(target)
         const highResSrc = compressImage(src, IMAGE_ZOOM_IN_WIDTH)
         const alt = target.getAttribute('alt') || ''
-        openViewer(highResSrc, alt)
+        // 传递当前图片作为缩略图，高清图作为目标图
+        openViewer(src, alt, highResSrc)
       }
     },
     [openViewer, IMAGE_ZOOM_IN_WIDTH]

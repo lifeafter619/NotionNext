@@ -2,7 +2,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import CONFIG from '../config'
 
 /**
@@ -12,11 +12,21 @@ import CONFIG from '../config'
  */
 export default function PostAdjacent({ prev, next }) {
   const [isShow, setIsShow] = useState(false)
+  const [isClosed, setIsClosed] = useState(false)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartRef = useRef({ x: 0, y: 0 })
+  const positionRef = useRef({ x: 0, y: 0 })
+  const nextPostRef = useRef(null)
+
   const router = useRouter()
   const { locale } = useGlobal()
 
   useEffect(() => {
     setIsShow(false)
+    setIsClosed(false)
+    setPosition({ x: 0, y: 0 })
+    positionRef.current = { x: 0, y: 0 }
   }, [router])
 
   useEffect(() => {
@@ -55,6 +65,103 @@ export default function PostAdjacent({ prev, next }) {
     }
   }, [])
 
+  // 鼠标拖拽开始
+  const handleMouseDown = useCallback(e => {
+    if (e.target.closest('.close-btn') || e.target.closest('a')) return
+    e.preventDefault()
+    setIsDragging(true)
+    dragStartRef.current = {
+      x: e.clientX - positionRef.current.x,
+      y: e.clientY - positionRef.current.y
+    }
+  }, [])
+
+  // 触摸开始
+  const handleTouchStart = useCallback(e => {
+    if (e.target.closest('.close-btn') || e.target.closest('a')) return
+    setIsDragging(true)
+    dragStartRef.current = {
+      x: e.touches[0].clientX - positionRef.current.x,
+      y: e.touches[0].clientY - positionRef.current.y
+    }
+  }, [])
+
+  // 拖拽逻辑 (使用全局监听以保证流畅)
+  useEffect(() => {
+    const handleMove = (clientX, clientY) => {
+      if (!isDragging) return
+
+      let newX = clientX - dragStartRef.current.x
+      let newY = clientY - dragStartRef.current.y
+
+      // 边界限制 - 严格防止拖出可视区域
+      // 元素初始固定在 right-10 (40px) bottom-4 (16px)
+      // 假设元素尺寸 w=288px (w-72), h=112px (h-28)
+      // 初始位置相对于视口右下角的偏移量
+
+      // 我们通过限制 transform 的位移量来限制位置
+      // 这需要知道当前窗口大小
+      const windowWidth = window.innerWidth
+      const windowHeight = window.innerHeight
+      const elementWidth = 288
+      const elementHeight = 112
+      const initialRight = 40
+      const initialBottom = 16
+
+      // 计算允许的最大/最小位移
+      // 向左最大位移 (x 变负): transformX + initialRight + elementWidth <= windowWidth
+      // x >= -(windowWidth - initialRight - elementWidth) - initialRight (offset)
+      // 简化：left edge >= 0 -> (windowWidth - initialRight - elementWidth + x) >= 0 => x >= -(windowWidth - initialRight - elementWidth)
+
+      const minX = -(windowWidth - initialRight - elementWidth) // 左边界
+      const maxX = initialRight // 右边界 (允许稍微往右靠一点，或者限制为0)
+
+      const minY = -(windowHeight - initialBottom - elementHeight) // 上边界
+      const maxY = initialBottom // 下边界
+
+      if (newX < minX) newX = minX
+      if (newX > 10) newX = 10 // 右侧稍微留余地
+
+      if (newY < minY) newY = minY
+      if (newY > 10) newY = 10 // 底部稍微留余地
+
+      positionRef.current = { x: newX, y: newY }
+
+      if (nextPostRef.current) {
+        nextPostRef.current.style.transform = `translate(${newX}px, ${newY}px)`
+      }
+    }
+
+    const handleMouseMove = e => {
+        e.preventDefault()
+        handleMove(e.clientX, e.clientY)
+    }
+
+    const handleTouchMove = e => {
+        e.preventDefault() // 防止滚动
+        handleMove(e.touches[0].clientX, e.touches[0].clientY)
+    }
+
+    const handleEnd = () => {
+      setIsDragging(false)
+      setPosition(positionRef.current)
+    }
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleEnd)
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('touchend', handleEnd)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleEnd)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleEnd)
+    }
+  }, [isDragging])
+
   if (!prev || !next || !siteConfig('HEO_ARTICLE_ADJACENT', null, CONFIG)) {
     return <></>
   }
@@ -84,18 +191,45 @@ export default function PostAdjacent({ prev, next }) {
       </section>
 
       {/* 桌面端 */}
+      {!isClosed && (
+          <div
+            ref={nextPostRef}
+            id='pc-next-post'
+            className={`${isShow ? 'mb-5 opacity-100' : '-mb-24 opacity-0'} hidden md:block fixed z-40 right-10 bottom-4 duration-200 transition-opacity`}
+            style={{
+                cursor: isDragging ? 'grabbing' : 'move',
+                touchAction: 'none'
+            }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+          >
+            <div className='relative w-72 h-28 bg-white dark:bg-[#1e1e1e] border dark:border-gray-600 rounded-lg drop-shadow-xl overflow-hidden p-4 flex flex-col justify-center'>
+                {/* 关闭按钮 */}
+                <div
+                    className='close-btn absolute top-2 right-2 z-50 p-1 cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors'
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setIsClosed(true)
+                    }}
+                >
+                    <i className="fas fa-times"></i>
+                </div>
 
-      <div
-        id='pc-next-post'
-        className={`${isShow ? 'mb-5 opacity-100' : '-mb-24 opacity-0'} hidden md:block fixed z-40 right-10 bottom-4 duration-200 transition-all`}>
-        <SmartLink
-          href={`/${next.slug}`}
-          className='text-sm block p-4 w-72 h-28 cursor-pointer drop-shadow-xl duration transition-all dark:bg-[#1e1e1e] border dark:border-gray-600 bg-white dark:text-gray-300 dark:hover:text-yellow-600 hover:font-bold hover:text-blue-600 rounded-lg'>
-          <div className='font-semibold'>{locale.COMMON.NEXT_POST}</div>
-          <hr className='mt-2 mb-3' />
-          <div className='line-clamp-2'>{next?.title}</div>
-        </SmartLink>
-      </div>
+                {/* 标签 */}
+                <div className='font-semibold text-sm mb-2 text-gray-500 dark:text-gray-400 select-none pointer-events-none'>
+                    {locale.COMMON.NEXT_POST}
+                </div>
+
+                {/* 标题 - 仅此处可点击跳转 */}
+                <SmartLink
+                    href={`/${next.slug}`}
+                    className='line-clamp-2 font-bold text-gray-800 dark:text-gray-200 dark:hover:text-yellow-600 hover:text-blue-600 select-none cursor-pointer'
+                >
+                    {next?.title}
+                </SmartLink>
+            </div>
+          </div>
+      )}
     </div>
   )
 }

@@ -5,12 +5,17 @@ import { createPortal } from 'react-dom'
  * 图片查看器组件
  * 支持放大、缩小、旋转、下载等功能
  */
-const ImageViewer = ({ isOpen, src, alt, onClose }) => {
+const ImageViewer = ({ isOpen, src, highResSrc, alt, onClose }) => {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  // 图片显示状态
+  const [displaySrc, setDisplaySrc] = useState(src) // 当前显示的图片URL
+  const [isHighResLoaded, setIsHighResLoaded] = useState(false)
+
   const dragStartRef = useRef({ x: 0, y: 0 })
   const positionRef = useRef({ x: 0, y: 0 })
   const initialDistanceRef = useRef(0)
@@ -21,6 +26,28 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setMounted(true)
     return () => setMounted(false)
   }, [])
+
+  // 初始化图片：优先显示缩略图，后台加载高清图
+  useEffect(() => {
+    if (isOpen) {
+      // 重置状态
+      setDisplaySrc(src)
+      setIsHighResLoaded(false)
+
+      // 如果有高清图，尝试加载
+      if (highResSrc && highResSrc !== src) {
+        const img = new Image()
+        img.src = highResSrc
+        img.onload = () => {
+          // 只有当查看器仍然打开且src匹配时才更新
+          if (isOpen) {
+            setDisplaySrc(highResSrc)
+            setIsHighResLoaded(true)
+          }
+        }
+      }
+    }
+  }, [isOpen, src, highResSrc])
 
   // 重置状态
   const resetState = useCallback(() => {
@@ -152,17 +179,18 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
 
   // 下载图片 - 直接触发下载
   const handleDownload = async () => {
-    if (!src) return
+    const currentSrc = displaySrc || src
+    if (!currentSrc) return
 
     try {
       // 尝试使用后端代理下载 (解决跨域和强制下载问题)
-      let fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      let fileName = alt || currentSrc.split('/').pop()?.split('?')[0] || 'image.png'
       // 确保文件名有后缀
       if (!fileName.includes('.')) {
         fileName += '.png'
       }
 
-      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(fileName)}`
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(currentSrc)}&filename=${encodeURIComponent(fileName)}`
       
       // 创建隐藏的 link 来触发下载
       const link = document.createElement('a')
@@ -178,7 +206,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     } catch (error) {
       console.error('Download failed:', error)
       // 降级：直接打开链接
-      window.open(src, '_blank')
+      window.open(currentSrc, '_blank')
     }
   }
 
@@ -301,9 +329,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
-          src={src}
+          src={displaySrc}
           alt={alt || 'Image'}
-          className='max-w-[90vw] max-h-[80vh] object-contain'
+          className={`max-w-[90vw] max-h-[80vh] object-contain transition-opacity duration-300 ${isHighResLoaded ? 'opacity-100' : 'opacity-90 blur-[1px]'}`}
           style={{
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
             ...(isDragging && { willChange: 'transform' })
