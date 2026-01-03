@@ -1977,7 +1977,7 @@ svg + .notion-page-title-text {
 
 /* Notion Button Block (approximate style if not supported by library) */
 .notion-button,
-a[href*="notion.site"] .notion-callout,
+a.notion-link[href*="notion.site"],
 .notion-callout.notion-button-style {
   display: inline-flex;
   justify-content: center;

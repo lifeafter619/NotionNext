@@ -39,7 +39,18 @@ const NotionPage = ({ post, className }) => {
         e.stopPropagation()
         // 获取高清图片URL
         const src = getImageSrc(target)
-        const highResSrc = compressImage(src, IMAGE_ZOOM_IN_WIDTH)
+        // 尝试获取原始图片URL (去除压缩参数)
+        let highResSrc = src
+        try {
+           const urlObj = new URL(src)
+           if (urlObj.searchParams.has('width')) {
+             urlObj.searchParams.delete('width')
+             highResSrc = urlObj.toString()
+           }
+        } catch (e) {
+           // ignore invalid url
+        }
+
         const alt = target.getAttribute('alt') || ''
         // 传递当前图片作为缩略图，高清图作为目标图
         openViewer(src, alt, highResSrc)

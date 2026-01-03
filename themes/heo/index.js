@@ -452,9 +452,9 @@ const LayoutCategoryIndex = props => {
                 </SmartLink>
               </div>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+              <div className='grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-2 gap-5'>
                 {posts?.map(post => (
-                  <BlogPostCard key={post.id} post={post} showSummary={false} />
+                  <BlogPostCard key={post.id} post={post} showSummary={false} siteInfo={props.siteInfo} />
                 ))}
               </div>
             </div>
@@ -500,9 +500,9 @@ const LayoutTagIndex = props => {
                 </SmartLink>
               </div>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+              <div className='grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-2 gap-5'>
                 {posts?.map(post => (
-                  <BlogPostCard key={post.id} post={post} showSummary={false} />
+                  <BlogPostCard key={post.id} post={post} showSummary={false} siteInfo={props.siteInfo} />
                 ))}
               </div>
             </div>

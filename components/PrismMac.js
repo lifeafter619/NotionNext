@@ -171,6 +171,8 @@ const renderMermaid = mermaidCDN => {
           mermaidChart.className = 'mermaid'
           mermaidChart.innerHTML = chart
           m.target.appendChild(mermaidChart)
+          // 隐藏原始代码块
+          m.target.querySelector('code').style.display = 'none'
         }
 
         const mermaidsSvg = document.querySelectorAll('.mermaid')
