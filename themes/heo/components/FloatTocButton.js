@@ -47,7 +47,7 @@ export default function FloatTocButton(props) {
       x: touch.clientX,
       y: touch.clientY,
       initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
-      initialBottom: buttonPos.y || 96 // default bottom-24 = 96px
+      initialBottom: buttonPos.y || 160 // default bottom-40 = 160px
     })
   }
 
@@ -172,7 +172,7 @@ export default function FloatTocButton(props) {
         right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
         bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
       }}
-      className={`fixed xl:hidden bottom-24 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      className={`fixed xl:hidden bottom-40 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       onTouchStart={handleButtonTouchStart}
       onTouchMove={handleButtonTouchMove}
     >

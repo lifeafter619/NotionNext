@@ -42,10 +42,10 @@ import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
 const NotionPage = dynamic(() => import('@/components/NotionPage'), { ssr: true })
-const PostAdjacent = dynamic(() => import('./components/PostAdjacent'), { ssr: true })
-const PostCopyright = dynamic(() => import('./components/PostCopyright'), { ssr: true })
-const PostRecommend = dynamic(() => import('./components/PostRecommend'), { ssr: true })
-const AISummary = dynamic(() => import('@/components/AISummary'), { ssr: true })
+const PostAdjacent = dynamic(() => import('./components/PostAdjacent'), { ssr: false })
+const PostCopyright = dynamic(() => import('./components/PostCopyright'), { ssr: false })
+const PostRecommend = dynamic(() => import('./components/PostRecommend'), { ssr: false })
+const AISummary = dynamic(() => import('@/components/AISummary'), { ssr: false })
 
 /**
  * 基础布局 采用上中下布局，移动端使用顶部侧边导航栏
