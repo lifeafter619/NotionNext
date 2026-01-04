@@ -48,8 +48,10 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
   // 当外部传入的 currentIndex 改变时更新内部 index
   useEffect(() => {
-    setIndex(currentIndex)
-  }, [currentIndex])
+    if (isOpen) {
+      setIndex(currentIndex)
+    }
+  }, [isOpen, currentIndex])
 
   // 初始化图片：优先显示缩略图，后台加载高清图
   useEffect(() => {
