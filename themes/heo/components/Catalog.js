@@ -60,7 +60,7 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
         const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
         tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
       }
-    }, 200),
+    }, 500),
     [toc, activeSection]
   )
 
@@ -115,7 +115,14 @@ const JumpToCommentButton = () => {
     setSavedScrollY(window.scrollY)
     const commentNode = document.getElementById('comment')
     if (commentNode) {
-      commentNode.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const headerHeight = 80 // approximate header height
+      const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+      const offsetPosition = elementPosition - headerHeight
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     }

@@ -185,6 +185,17 @@ export default function FloatTocButton(props) {
       </div>
     </div>
 
+    {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
+    <div
+      className={`fixed xl:hidden z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      style={{
+        right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
+        bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '100px' // 位于目录按钮下方约60px
+      }}
+    >
+        <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
+    </div>
+
     {/* 移动端目录弹窗 - 底部抽屉样式 */}
     <div className={`fixed inset-0 z-[60] xl:hidden ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
       {/* 背景蒙版 */}
@@ -265,4 +276,86 @@ export default function FloatTocButton(props) {
       </div>
     )}
   </>)
+}
+
+const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
+  const [showToast, setShowToast] = useState(false)
+  const [savedScrollY, setSavedScrollY] = useState(0)
+
+  const handleJump = () => {
+    setSavedScrollY(window.scrollY)
+    const commentNode = document.getElementById('comment')
+    if (commentNode) {
+      const headerHeight = 80 // approximate header height
+      const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+      const offsetPosition = elementPosition - headerHeight
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    }
+  }
+
+  const handleBack = () => {
+    window.scrollTo({ top: savedScrollY, behavior: 'smooth' })
+    setShowToast(false)
+  }
+
+  return (
+    <>
+      <div
+        onClick={handleJump}
+        className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none cursor-pointer`}>
+        <button className={'fas fa-comments cursor-pointer w-7 h-7 flex items-center justify-center shrink-0'} />
+        {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>跳转评论</span>}
+      </div>
+
+      {showToast && (
+        <div className='fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 z-[70] w-[90vw] md:w-auto max-w-md animate-fade-in'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3'>
+            <div className='flex items-center gap-2 flex-1 min-w-0'>
+              <svg
+                className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z'
+                />
+              </svg>
+              <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
+                <span className='font-bold'>已跳转至：</span>
+                <span className='truncate'>评论区</span>
+              </div>
+            </div>
+            <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
+              <button
+                onClick={handleBack}
+                className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
+                回到原位置
+              </button>
+              <button
+                onClick={() => setShowToast(false)}
+                className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
