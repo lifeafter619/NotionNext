@@ -204,6 +204,12 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
     if (scrollBarWidth > 0) {
       document.body.style.paddingRight = `${scrollBarWidth}px`
+      // 处理 fixed 元素的布局偏移
+      const fixedElements = document.querySelectorAll('.prevent-scroll-jump, #float-toc-button')
+      fixedElements.forEach(el => {
+        el.dataset.originalPaddingRight = el.style.paddingRight || ''
+        el.style.paddingRight = `${scrollBarWidth}px`
+      })
     }
 
     const originalOverflow = document.body.style.overflow
@@ -223,6 +229,16 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       document.body.style.top = originalTop
       document.body.style.width = ''
       document.body.style.paddingRight = originalPaddingRight
+
+      // 恢复 fixed 元素
+      if (scrollBarWidth > 0) {
+        const fixedElements = document.querySelectorAll('.prevent-scroll-jump, #float-toc-button')
+        fixedElements.forEach(el => {
+          el.style.paddingRight = el.dataset.originalPaddingRight || ''
+          delete el.dataset.originalPaddingRight
+        })
+      }
+
       window.scrollTo(0, scrollY)
     }
   }, [isOpen])
