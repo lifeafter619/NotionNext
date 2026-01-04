@@ -268,9 +268,29 @@ export default function FloatTocButton(props) {
 
           {/* 提示文字 */}
           {!tocVisible && (
-            <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
-              点击展开目录
-            </div>
+            <>
+              <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
+                点击展开目录
+              </div>
+              <div
+                className='text-xs text-gray-400 mt-2 text-center truncate px-2 hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  const commentNode = document.getElementById('comment')
+                  if (commentNode) {
+                    const headerHeight = 80
+                    const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+                    const offsetPosition = elementPosition - headerHeight
+                    window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth'
+                    })
+                  }
+                }}
+              >
+                <i className='fas fa-comments mr-1'/>跳转评论
+              </div>
+            </>
           )}
         </div>
       </div>
