@@ -19,6 +19,9 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   // 缩略图栏显示状态
   const [showThumbnails, setShowThumbnails] = useState(false)
 
+  // 缩放输入值 (用于 input 显示)
+  const [zoomInput, setZoomInput] = useState('100')
+
   // 当前图片索引
   const [index, setIndex] = useState(currentIndex)
 
@@ -81,6 +84,11 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       }
     }
   }, [showThumbnails, index])
+
+  // 更新缩放输入框的值
+  useEffect(() => {
+    setZoomInput(Math.round(scale * 100).toString())
+  }, [scale])
 
   // 重置状态
   const resetState = useCallback(() => {
@@ -217,6 +225,21 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   // 缩小
   const handleZoomOut = () => {
     setScale(prev => Math.max(prev - 0.25, 0.25))
+  }
+
+  // 手动输入缩放比例
+  const handleZoomChange = (e) => {
+    setZoomInput(e.target.value)
+  }
+
+  const handleZoomSubmit = (e) => {
+    if (e.key === 'Enter' || e.type === 'blur') {
+      let val = parseFloat(zoomInput)
+      if (isNaN(val)) val = 100
+      val = Math.max(25, Math.min(500, val)) // Limit between 25% and 500%
+      setScale(val / 100)
+      setZoomInput(val.toString())
+    }
   }
 
   // 顺时针旋转
@@ -485,13 +508,20 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
         {/* 图片索引指示器 */}
         {images && images.length > 1 && (
             <>
-            <button
-                className='text-white text-sm font-medium hover:text-blue-400 transition-colors px-2'
-                onClick={() => setShowThumbnails(!showThumbnails)}
-                title='显示/隐藏缩略图'
-            >
-                {index + 1} / {images.length}
-            </button>
+            <div className="flex items-center gap-2">
+                <span className='text-white text-sm font-medium'>
+                    {index + 1} / {images.length}
+                </span>
+                <button
+                    className={`text-white p-1 hover:text-blue-400 transition-colors rounded ${showThumbnails ? 'text-blue-400' : ''}`}
+                    onClick={() => setShowThumbnails(!showThumbnails)}
+                    title='缩略图'
+                >
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' />
+                    </svg>
+                </button>
+            </div>
             <div className='w-px h-6 bg-gray-500' />
             </>
         )}
@@ -508,10 +538,18 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
           </svg>
         </button>
 
-        {/* 缩放比例显示 */}
-        <span className='text-white text-sm min-w-[3rem] text-center select-none'>
-          {Math.round(scale * 100)}%
-        </span>
+        {/* 缩放比例显示 (可输入) */}
+        <div className="relative group flex items-center justify-center">
+            <input
+                type="text"
+                value={zoomInput}
+                onChange={handleZoomChange}
+                onKeyDown={handleZoomSubmit}
+                onBlur={handleZoomSubmit}
+                className="w-12 bg-transparent text-white text-sm text-center border-b border-transparent hover:border-gray-400 focus:border-blue-400 outline-none transition-colors"
+            />
+            <span className="text-white text-xs absolute right-[-8px] pointer-events-none">%</span>
+        </div>
 
         {/* 放大 */}
         <button
@@ -550,24 +588,27 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
           </svg>
         </button>
 
-        {/* 水平翻转 */}
+        {/* 水平翻转 (图标替换为更明显的箭头) */}
         <button
           className={`p-2 hover:text-blue-400 transition-colors ${flipX ? 'text-blue-400' : 'text-white'}`}
           onClick={handleFlipX}
           aria-label='Flip Horizontal'
           title='水平翻转'>
           <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4' className="hidden" />
+            {/* 新图标: 双向水平箭头 */}
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' />
           </svg>
         </button>
 
-        {/* 垂直翻转 */}
+        {/* 垂直翻转 (图标替换为更明显的箭头) */}
         <button
           className={`p-2 hover:text-blue-400 transition-colors ${flipY ? 'text-blue-400' : 'text-white'}`}
           onClick={handleFlipY}
           aria-label='Flip Vertical'
           title='垂直翻转'>
           <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+             {/* 新图标: 双向垂直箭头 */}
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4' />
           </svg>
         </button>

@@ -85,7 +85,16 @@ const NotionPage = ({ post, className }) => {
         })
 
         const currentSrc = getImageSrc(target)
-        const currentIndex = imageList.findIndex(item => item.src === currentSrc)
+        // 修正：确保找到正确的索引
+        // 有时候 src 可能经过了处理，这里尝试更宽松的匹配，或者回退到 0
+        let currentIndex = imageList.findIndex(item => item.src === currentSrc)
+        if (currentIndex === -1) {
+            // 尝试通过 highResSrc 匹配 (假设 target 也是原始链接)
+            currentIndex = imageList.findIndex(item => item.highResSrc === currentSrc)
+        }
+        if (currentIndex === -1) {
+            currentIndex = 0 // Fallback
+        }
 
         // 传递图片列表和当前索引
         openViewer(imageList, currentIndex)
