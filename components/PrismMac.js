@@ -32,7 +32,7 @@ const PrismMac = () => {
   const prismThemeLightPath = siteConfig('PRISM_THEME_LIGHT_PATH')
   const prismThemePrefixPath = siteConfig('PRISM_THEME_PREFIX_PATH')
 
-  const mermaidCDN = siteConfig('MERMAID_CDN')
+  const mermaidCDN = siteConfig('MERMAID_CDN') || 'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js'
   const codeLineNumbers = siteConfig('CODE_LINE_NUMBERS')
 
   const codeCollapse = siteConfig('CODE_COLLAPSE')
@@ -164,15 +164,13 @@ const renderMermaid = mermaidCDN => {
   const observer = new MutationObserver(mutationsList => {
     for (const m of mutationsList) {
       // 检查节点是否是 mermaid 代码块
-      if (m.target.className === 'notion-code language-mermaid') {
+      if (m.target.classList.contains('language-mermaid')) {
         const chart = m.target.querySelector('code').textContent
         if (chart && !m.target.querySelector('.mermaid')) {
           const mermaidChart = document.createElement('div')
           mermaidChart.className = 'mermaid'
           mermaidChart.innerHTML = chart
           m.target.appendChild(mermaidChart)
-          // 隐藏原始代码块
-          m.target.querySelector('code').style.display = 'none'
         }
 
         const mermaidsSvg = document.querySelectorAll('.mermaid')
@@ -194,6 +192,12 @@ const renderMermaid = mermaidCDN => {
                     const svgs = document.querySelectorAll('.mermaid svg')
                     svgs.forEach(svg => {
                       if (!svg.closest('.mermaid-container')) {
+                        // 成功渲染后隐藏原始代码块
+                        const codeBlock = svg.closest('.notion-code')
+                        if (codeBlock) {
+                          const code = codeBlock.querySelector('code')
+                          if (code) code.style.display = 'none'
+                        }
                         wrapMermaid(svg)
                       }
                     })

@@ -168,7 +168,7 @@ export default function VisitorInfoCard() {
   }, [])
 
   return (
-    <Card className='bg-white dark:bg-[#1e1e1e] hover:border-indigo-600 dark:hover:border-yellow-600 duration-200 dark:border-gray-700 wow fadeInUp'>
+    <Card className='bg-white dark:bg-[#1e1e1e] hover:border-indigo-600 dark:hover:border-yellow-600 duration-200 dark:border-gray-700'>
       <div className='flex flex-col space-y-3 p-2'>
         {/* 标题 */}
         <div className='flex items-center space-x-2 text-indigo-600 dark:text-yellow-500'>
