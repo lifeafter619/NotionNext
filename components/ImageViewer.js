@@ -3,42 +3,117 @@ import { createPortal } from 'react-dom'
 
 /**
  * 图片查看器组件
- * 支持放大、缩小、旋转、下载等功能
+ * 支持放大、缩小、旋转、翻转、下载、切换图片、缩略图预览等功能
  */
-const ImageViewer = ({ isOpen, src, alt, onClose }) => {
+const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [mounted, setMounted] = useState(false)
+
+  // 翻转状态
+  const [flipX, setFlipX] = useState(false)
+  const [flipY, setFlipY] = useState(false)
+
+  // 缩略图栏显示状态
+  const [showThumbnails, setShowThumbnails] = useState(false)
+
+  // 缩放输入值 (用于 input 显示)
+  const [zoomInput, setZoomInput] = useState('100')
+
+  // 当前图片索引
+  const [index, setIndex] = useState(currentIndex)
+
+  // 图片显示状态
+  const currentImage = images && images.length > 0 ? images[index] : null
+  const src = currentImage?.src || ''
+  const highResSrc = currentImage?.highResSrc || ''
+  const alt = currentImage?.alt || ''
+
+  const [displaySrc, setDisplaySrc] = useState(src) // 当前显示的图片URL
+  const [isHighResLoaded, setIsHighResLoaded] = useState(false)
+
   const dragStartRef = useRef({ x: 0, y: 0 })
   const positionRef = useRef({ x: 0, y: 0 })
   const initialDistanceRef = useRef(0)
   const initialScaleRef = useRef(1)
   const imgRef = useRef(null)
+  const thumbnailScrollRef = useRef(null)
 
   useEffect(() => {
     setMounted(true)
     return () => setMounted(false)
   }, [])
 
+  // 当外部传入的 currentIndex 改变时更新内部 index
+  useEffect(() => {
+    setIndex(currentIndex)
+  }, [currentIndex])
+
+  // 初始化图片：优先显示缩略图，后台加载高清图
+  useEffect(() => {
+    if (isOpen && src) {
+      // 重置状态
+      setDisplaySrc(src)
+      setIsHighResLoaded(false)
+      // 重置变换状态
+      resetState()
+
+      // 如果有高清图，尝试加载
+      if (highResSrc && highResSrc !== src) {
+        const img = new Image()
+        img.src = highResSrc
+        img.onload = () => {
+          // 只有当查看器仍然打开且src匹配时才更新
+          if (isOpen) {
+            setDisplaySrc(highResSrc)
+            setIsHighResLoaded(true)
+          }
+        }
+      }
+    }
+  }, [isOpen, src, highResSrc, index]) // index 变化时也重新加载
+
+  // 自动滚动缩略图到当前选中项
+  useEffect(() => {
+    if (showThumbnails && thumbnailScrollRef.current) {
+      const activeThumb = thumbnailScrollRef.current.children[index]
+      if (activeThumb) {
+        activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+      }
+    }
+  }, [showThumbnails, index])
+
+  // 更新缩放输入框的值
+  useEffect(() => {
+    setZoomInput(Math.round(scale * 100).toString())
+  }, [scale])
+
   // 重置状态
   const resetState = useCallback(() => {
     setScale(1)
     setRotation(0)
+    setFlipX(false)
+    setFlipY(false)
     setPosition({ x: 0, y: 0 })
     positionRef.current = { x: 0, y: 0 }
     if (imgRef.current) {
-      imgRef.current.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`
+      // transform 将在 render 中应用
     }
   }, [])
 
-  // 关闭时重置
-  useEffect(() => {
-    if (!isOpen) {
-      resetState()
-    }
-  }, [isOpen, resetState])
+  // 切换上一张
+  const handlePrev = useCallback((e) => {
+    e?.stopPropagation()
+    setIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))
+  }, [images.length])
+
+  // 切换下一张
+  const handleNext = useCallback((e) => {
+    e?.stopPropagation()
+    setIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))
+  }, [images.length])
 
   // 键盘事件处理
   useEffect(() => {
@@ -48,6 +123,12 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       switch (e.key) {
         case 'Escape':
           onClose()
+          break
+        case 'ArrowLeft':
+          handlePrev()
+          break
+        case 'ArrowRight':
+          handleNext()
           break
         case '+':
         case '=':
@@ -81,13 +162,16 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
     }
-  }, [isOpen, onClose, resetState])
+  }, [isOpen, onClose, resetState, handlePrev, handleNext])
 
   // 全局滚轮事件处理 - 用于缩放图片，同时防止页面滚动
   useEffect(() => {
     if (!isOpen) return
 
     const handleGlobalWheel = e => {
+      // 如果是在缩略图栏上滚动，允许默认行为
+      if (e.target.closest('.thumbnail-strip')) return
+
       e.preventDefault()
       e.stopPropagation()
       // 使用滚轮进行缩放
@@ -100,6 +184,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     }
 
     const preventTouchScroll = e => {
+      // 如果是在缩略图栏上滑动，允许默认行为
+      if (e.target.closest('.thumbnail-strip')) return
+
       e.preventDefault()
       e.stopPropagation()
       return false
@@ -140,6 +227,21 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setScale(prev => Math.max(prev - 0.25, 0.25))
   }
 
+  // 手动输入缩放比例
+  const handleZoomChange = (e) => {
+    setZoomInput(e.target.value)
+  }
+
+  const handleZoomSubmit = (e) => {
+    if (e.key === 'Enter' || e.type === 'blur') {
+      let val = parseFloat(zoomInput)
+      if (isNaN(val)) val = 100
+      val = Math.max(25, Math.min(500, val)) // Limit between 25% and 500%
+      setScale(val / 100)
+      setZoomInput(val.toString())
+    }
+  }
+
   // 顺时针旋转
   const handleRotateRight = () => {
     setRotation(prev => prev + 90)
@@ -150,19 +252,30 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     setRotation(prev => prev - 90)
   }
 
+  // 水平翻转
+  const handleFlipX = () => {
+    setFlipX(prev => !prev)
+  }
+
+  // 垂直翻转
+  const handleFlipY = () => {
+    setFlipY(prev => !prev)
+  }
+
   // 下载图片 - 直接触发下载
   const handleDownload = async () => {
-    if (!src) return
+    const currentSrc = displaySrc || src
+    if (!currentSrc) return
 
     try {
       // 尝试使用后端代理下载 (解决跨域和强制下载问题)
-      let fileName = alt || src.split('/').pop()?.split('?')[0] || 'image.png'
+      let fileName = alt || currentSrc.split('/').pop()?.split('?')[0] || 'image.png'
       // 确保文件名有后缀
       if (!fileName.includes('.')) {
         fileName += '.png'
       }
 
-      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(src)}&filename=${encodeURIComponent(fileName)}`
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(currentSrc)}&filename=${encodeURIComponent(fileName)}`
       
       // 创建隐藏的 link 来触发下载
       const link = document.createElement('a')
@@ -178,7 +291,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
     } catch (error) {
       console.error('Download failed:', error)
       // 降级：直接打开链接
-      window.open(src, '_blank')
+      window.open(currentSrc, '_blank')
     }
   }
 
@@ -206,8 +319,10 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       positionRef.current = { x: newX, y: newY }
 
       // 直接操作 DOM 避免 React 重渲染导致的延迟
+      // 注意：这里我们手动应用所有变换
       if (imgRef.current) {
-        imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+        const transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg) scaleX(${flipX ? -1 : 1}) scaleY(${flipY ? -1 : 1})`
+        imgRef.current.style.transform = transform
       }
     }
 
@@ -224,7 +339,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       document.removeEventListener('mouseup', handleGlobalMouseUp)
     }
-  }, [isOpen, isDragging, scale, rotation])
+  }, [isOpen, isDragging, scale, rotation, flipX, flipY])
 
   // 触摸事件支持
   const handleTouchStart = e => {
@@ -255,7 +370,8 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       const newY = e.touches[0].clientY - dragStartRef.current.y
       positionRef.current = { x: newX, y: newY }
       if (imgRef.current) {
-        imgRef.current.style.transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg)`
+        const transform = `translate(${newX}px, ${newY}px) scale(${scale}) rotate(${rotation}deg) scaleX(${flipX ? -1 : 1}) scaleY(${flipY ? -1 : 1})`
+        imgRef.current.style.transform = transform
       }
     } else if (e.touches.length === 2) {
       const touch1 = e.touches[0]
@@ -267,7 +383,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         setScale(clampedScale)
       }
     }
-  }, [isDragging, scale, rotation])
+  }, [isDragging, scale, rotation, flipX, flipY])
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false)
@@ -275,6 +391,9 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
   }, [])
 
   if (!isOpen || !mounted) return null
+
+  // 计算当前的 transform 字符串，用于初始渲染和非拖拽状态
+  const transformStyle = `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg) scaleX(${flipX ? -1 : 1}) scaleY(${flipY ? -1 : 1})`
 
   const content = (
     <div
@@ -289,7 +408,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
       {/* 图片容器 */}
       <div
         className='relative max-w-full max-h-full select-none'
-        onClick={e => e.stopPropagation()}
+        onClick={e => e.stopPropagation()} // 防止点击图片关闭
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -301,12 +420,12 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           ref={imgRef}
-          src={src}
+          src={displaySrc}
           alt={alt || 'Image'}
-          className='max-w-[90vw] max-h-[80vh] object-contain'
+          className={`max-w-[90vw] max-h-[80vh] object-contain transition-opacity duration-300 ${isHighResLoaded ? 'opacity-100' : 'opacity-90 blur-[1px]'}`}
           style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
-            ...(isDragging && { willChange: 'transform' })
+            transform: transformStyle,
+            ...(isDragging && { willChange: 'transform' }) // 拖拽时优化性能
           }}
           draggable={false}
           loading='eager'
@@ -316,7 +435,7 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
 
       {/* 关闭按钮 */}
       <button
-        className='absolute top-4 right-4 p-2 text-white hover:text-gray-300 transition-colors'
+        className='absolute top-4 right-4 p-2 text-white hover:text-gray-300 transition-colors z-50 rounded-full bg-black/20 hover:bg-black/40'
         onClick={onClose}
         aria-label='Close image viewer'>
         <svg
@@ -333,58 +452,114 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         </svg>
       </button>
 
+      {/* 切换按钮 - 仅当有多张图片时显示 */}
+      {images && images.length > 1 && (
+        <>
+          <button
+            className='absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors z-50'
+            onClick={handlePrev}
+            aria-label='Previous image'>
+            <svg className='w-8 h-8' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+            </svg>
+          </button>
+          <button
+            className='absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors z-50'
+            onClick={handleNext}
+            aria-label='Next image'>
+            <svg className='w-8 h-8' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* 缩略图栏 */}
+      {showThumbnails && images && images.length > 1 && (
+        <div
+            className='thumbnail-strip absolute bottom-20 left-0 right-0 h-20 bg-black/80 flex items-center gap-2 overflow-x-auto px-4 py-2 z-50 backdrop-blur-md transition-all duration-300'
+            onClick={e => e.stopPropagation()} // 防止点击缩略图栏关闭
+        >
+            <div ref={thumbnailScrollRef} className='flex gap-2 mx-auto'>
+                {images.map((img, i) => (
+                    <div
+                        key={i}
+                        className={`relative w-16 h-16 flex-shrink-0 cursor-pointer rounded overflow-hidden border-2 transition-colors ${i === index ? 'border-blue-500' : 'border-transparent hover:border-gray-500'}`}
+                        onClick={() => setIndex(i)}
+                    >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={img.src}
+                            alt={`Thumbnail ${i + 1}`}
+                            className='w-full h-full object-cover'
+                            loading="lazy"
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
+      )}
+
       {/* 控制栏 */}
-      <div className='absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 rounded-full px-4 py-2 backdrop-blur-sm'>
+      <div
+        className='absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 rounded-full px-4 py-2 backdrop-blur-sm z-50'
+        onClick={e => e.stopPropagation()} // 防止点击控制栏关闭
+      >
+        {/* 图片索引指示器 */}
+        {images && images.length > 1 && (
+            <>
+            <div className="flex items-center gap-2">
+                <span className='text-white text-sm font-medium'>
+                    {index + 1} / {images.length}
+                </span>
+                <button
+                    className={`text-white p-1 hover:text-blue-400 transition-colors rounded ${showThumbnails ? 'text-blue-400' : ''}`}
+                    onClick={() => setShowThumbnails(!showThumbnails)}
+                    title='缩略图'
+                >
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' />
+                    </svg>
+                </button>
+            </div>
+            <div className='w-px h-6 bg-gray-500' />
+            </>
+        )}
+
         {/* 缩小 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors disabled:opacity-50'
-          onClick={e => {
-            e.stopPropagation()
-            handleZoomOut()
-          }}
+          onClick={handleZoomOut}
           disabled={scale <= 0.25}
           aria-label='Zoom out'
           title='缩小 (-)'>
-          <svg
-            className='w-6 h-6'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7'
-            />
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M20 12H4' />
           </svg>
         </button>
 
-        {/* 缩放比例显示 */}
-        <span className='text-white text-sm min-w-[60px] text-center'>
-          {Math.round(scale * 100)}%
-        </span>
+        {/* 缩放比例显示 (可输入) */}
+        <div className="relative group flex items-center justify-center">
+            <input
+                type="text"
+                value={zoomInput}
+                onChange={handleZoomChange}
+                onKeyDown={handleZoomSubmit}
+                onBlur={handleZoomSubmit}
+                className="w-12 bg-transparent text-white text-sm text-center border-b border-transparent hover:border-gray-400 focus:border-blue-400 outline-none transition-colors"
+            />
+            <span className="text-white text-xs absolute right-[-8px] pointer-events-none">%</span>
+        </div>
 
         {/* 放大 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors disabled:opacity-50'
-          onClick={e => {
-            e.stopPropagation()
-            handleZoomIn()
-          }}
+          onClick={handleZoomIn}
           disabled={scale >= 5}
           aria-label='Zoom in'
           title='放大 (+)'>
-          <svg
-            className='w-6 h-6'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7'
-            />
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4v16m8-8H4' />
           </svg>
         </button>
 
@@ -394,46 +569,47 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         {/* 逆时针旋转 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors'
-          onClick={e => {
-            e.stopPropagation()
-            handleRotateLeft()
-          }}
+          onClick={handleRotateLeft}
           aria-label='Rotate left'
           title='逆时针旋转 (L)'>
-          <svg
-            className='w-6 h-6'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6'
-            />
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6' />
           </svg>
         </button>
 
         {/* 顺时针旋转 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors'
-          onClick={e => {
-            e.stopPropagation()
-            handleRotateRight()
-          }}
+          onClick={handleRotateRight}
           aria-label='Rotate right'
           title='顺时针旋转 (R)'>
-          <svg
-            className='w-6 h-6'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6'
-            />
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6' />
+          </svg>
+        </button>
+
+        {/* 水平翻转 (图标替换为更明显的箭头) */}
+        <button
+          className={`p-2 hover:text-blue-400 transition-colors ${flipX ? 'text-blue-400' : 'text-white'}`}
+          onClick={handleFlipX}
+          aria-label='Flip Horizontal'
+          title='水平翻转'>
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4' className="hidden" />
+            {/* 新图标: 双向水平箭头 */}
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' />
+          </svg>
+        </button>
+
+        {/* 垂直翻转 (图标替换为更明显的箭头) */}
+        <button
+          className={`p-2 hover:text-blue-400 transition-colors ${flipY ? 'text-blue-400' : 'text-white'}`}
+          onClick={handleFlipY}
+          aria-label='Flip Vertical'
+          title='垂直翻转'>
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+             {/* 新图标: 双向垂直箭头 */}
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4' />
           </svg>
         </button>
 
@@ -443,53 +619,32 @@ const ImageViewer = ({ isOpen, src, alt, onClose }) => {
         {/* 重置 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors'
-          onClick={e => {
-            e.stopPropagation()
-            resetState()
-          }}
+          onClick={resetState}
           aria-label='Reset'
           title='重置 (0)'>
-          <svg
-            className='w-6 h-6'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
-            />
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
           </svg>
         </button>
 
         {/* 下载 */}
         <button
           className='p-2 text-white hover:text-blue-400 transition-colors'
-          onClick={e => {
-            e.stopPropagation()
-            handleDownload()
-          }}
+          onClick={handleDownload}
           aria-label='Download'
           title='下载图片'>
-          <svg
-            className='w-6 h-6'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'
-            />
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
           </svg>
         </button>
       </div>
 
       {/* 快捷键提示 - Keyboard shortcuts hint */}
-      <div className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs'>
-        ESC 关闭 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
+      <div
+        className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs z-50 select-none'
+        onClick={e => e.stopPropagation()}
+      >
+        ESC 关闭 | ← → 切换 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
       </div>
     </div>
   )

@@ -5,7 +5,7 @@ import SmartLink from '@/components/SmartLink'
 import CONFIG from '../config'
 import TagItemMini from './TagItemMini'
 
-const BlogPostCard = ({ index, post, showSummary, siteInfo }) => {
+const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
   const showPreview =
     siteConfig('HEO_POST_LIST_PREVIEW', null, CONFIG) && post.blockMap
   if (
@@ -27,21 +27,28 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo }) => {
     CONFIG
   )
 
+  // 如果传入了className，则使用传入的样式，否则使用默认样式
+  // 默认样式为：2xl:h-96 2xl:flex-col h-[23rem] md:h-52 md:flex-row
+  // 传入样式为：h-40 text-sm
+
+  const isDefaultStyle = !className
+  const containerClass = className
+    ? `wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col group w-full dark:border-gray-600 hover:border-indigo-600 dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl ${className}`
+    : (POST_TWO_COLS ? '2xl:h-96 2xl:flex-col' : '') +
+      ' wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col h-[23rem] md:h-52 md:flex-row  group w-full dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl'
+
   return (
     <article
       className={` ${COVER_HOVER_ENLARGE} ? ' hover:transition-all duration-150' : ''}`}>
       <div
         data-wow-delay='.2s'
-        className={
-          (POST_TWO_COLS ? '2xl:h-96 2xl:flex-col' : '') +
-          ' wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col h-[23rem] md:h-52 md:flex-row  group w-full dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl'
-        }>
+        className={containerClass}>
         {/* 图片封面 */}
         {showPageCover && (
           <SmartLink href={post?.href} passHref legacyBehavior>
             <div
               className={
-                (POST_TWO_COLS ? ' 2xl:w-full' : '') +
+                (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +
                 ' w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
               }>
               <LazyImage
@@ -57,8 +64,8 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo }) => {
         {/* 文字区块 */}
         <div
           className={
-            (POST_TWO_COLS ? '2xl:p-4 2xl:h-48 2xl:w-full' : '') +
-            ' flex p-6  flex-col justify-between h-48 md:h-full w-full md:w-7/12'
+            (isDefaultStyle && POST_TWO_COLS ? '2xl:p-4 2xl:h-48 2xl:w-full' : '') +
+            ` flex ${isDefaultStyle ? 'p-6' : 'p-3'} flex-col justify-between h-48 md:h-full w-full md:w-7/12`
           }>
           <header>
             {/* 分类 */}

@@ -36,7 +36,9 @@ export default function SideRight(props) {
 
   return (
     <div id='sideRight' className='hidden xl:block w-72 space-y-4 h-full'>
-      <InfoCard {...props} className='w-72 wow fadeInUp' />
+      <div className="pointer-events-auto">
+        <InfoCard {...props} className='w-72 wow fadeInUp' />
+      </div>
 
       <div className='sticky top-20 space-y-4'>
         {/* 访客信息卡片 */}

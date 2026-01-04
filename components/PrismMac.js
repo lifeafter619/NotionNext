@@ -163,13 +163,16 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
 const renderMermaid = mermaidCDN => {
   const observer = new MutationObserver(mutationsList => {
     for (const m of mutationsList) {
+      // 检查节点是否是 mermaid 代码块
       if (m.target.className === 'notion-code language-mermaid') {
         const chart = m.target.querySelector('code').textContent
         if (chart && !m.target.querySelector('.mermaid')) {
-          const mermaidChart = document.createElement('pre')
+          const mermaidChart = document.createElement('div')
           mermaidChart.className = 'mermaid'
           mermaidChart.innerHTML = chart
           m.target.appendChild(mermaidChart)
+          // 隐藏原始代码块
+          m.target.querySelector('code').style.display = 'none'
         }
 
         const mermaidsSvg = document.querySelectorAll('.mermaid')
@@ -184,7 +187,18 @@ const renderMermaid = mermaidCDN => {
             loadExternalResource(mermaidCDN, 'js').then(url => {
               setTimeout(() => {
                 const mermaid = window.mermaid
-                mermaid?.contentLoaded()
+                if (mermaid) {
+                  mermaid.contentLoaded()
+                  // 渲染完成后添加容器和控制
+                  setTimeout(() => {
+                    const svgs = document.querySelectorAll('.mermaid svg')
+                    svgs.forEach(svg => {
+                      if (!svg.closest('.mermaid-container')) {
+                        wrapMermaid(svg)
+                      }
+                    })
+                  }, 300)
+                }
               }, 100)
             })
           }
@@ -192,11 +206,133 @@ const renderMermaid = mermaidCDN => {
       }
     }
   })
-  if (document.querySelector('#notion-article')) {
-    observer.observe(document.querySelector('#notion-article'), {
+
+  const article = document.querySelector('#notion-article')
+  if (article) {
+    observer.observe(article, {
       attributes: true,
       subtree: true
     })
+  }
+}
+
+/**
+ * 包装 Mermaid SVG 以支持拖拽和缩放
+ */
+const wrapMermaid = (svg) => {
+  const container = document.createElement('div')
+  container.className = 'mermaid-container relative overflow-hidden bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 my-4'
+  container.style.height = '400px' // 默认高度
+  container.style.cursor = 'grab'
+
+  const content = document.createElement('div')
+  content.className = 'mermaid-content w-full h-full flex items-center justify-center'
+  content.style.transformOrigin = 'center'
+  content.style.transition = 'transform 0.1s ease-out'
+
+  svg.parentNode.insertBefore(container, svg)
+  content.appendChild(svg)
+  container.appendChild(content)
+
+  // 初始化状态
+  let scale = 1
+  let contentX = 0
+  let contentY = 0
+  let isDragging = false
+  let startX = 0
+  let startY = 0
+
+  const updateTransform = () => {
+    content.style.transform = `translate(${contentX}px, ${contentY}px) scale(${scale})`
+  }
+
+  // 添加控制按钮
+  const controls = document.createElement('div')
+  controls.className = 'absolute bottom-2 right-2 flex gap-2 z-10'
+  controls.innerHTML = `
+    <button class="p-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Zoom In"><i class="fas fa-plus"></i></button>
+    <button class="p-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Zoom Out"><i class="fas fa-minus"></i></button>
+    <button class="p-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Reset"><i class="fas fa-compress"></i></button>
+  `
+
+  const [btnIn, btnOut, btnReset] = controls.querySelectorAll('button')
+
+  btnIn.onclick = (e) => {
+    e.stopPropagation()
+    scale = Math.min(scale + 0.2, 5)
+    updateTransform()
+  }
+
+  btnOut.onclick = (e) => {
+    e.stopPropagation()
+    scale = Math.max(scale - 0.2, 0.5)
+    updateTransform()
+  }
+
+  btnReset.onclick = (e) => {
+    e.stopPropagation()
+    scale = 1
+    contentX = 0
+    contentY = 0
+    updateTransform()
+  }
+
+  container.appendChild(controls)
+
+  // 鼠标拖拽逻辑
+  container.onmousedown = (e) => {
+    if (e.target.closest('button')) return
+    isDragging = true
+    container.style.cursor = 'grabbing'
+    startX = e.clientX - contentX
+    startY = e.clientY - contentY
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return
+    e.preventDefault()
+    contentX = e.clientX - startX
+    contentY = e.clientY - startY
+    updateTransform()
+  })
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false
+    container.style.cursor = 'grab'
+  })
+
+  // 触摸拖拽逻辑
+  container.ontouchstart = (e) => {
+    if (e.target.closest('button')) return
+    if (e.touches.length === 1) {
+      isDragging = true
+      startX = e.touches[0].clientX - contentX
+      startY = e.touches[0].clientY - contentY
+    }
+  }
+
+  container.ontouchmove = (e) => {
+    if (!isDragging) return
+    e.preventDefault() // 防止滚动
+    if (e.touches.length === 1) {
+      contentX = e.touches[0].clientX - startX
+      contentY = e.touches[0].clientY - startY
+      updateTransform()
+    }
+  }
+
+  container.ontouchend = () => {
+    isDragging = false
+  }
+
+  // 滚轮缩放
+  container.onwheel = (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        e.preventDefault()
+        const delta = e.deltaY > 0 ? -0.1 : 0.1
+        scale = Math.min(Math.max(scale + delta, 0.5), 5)
+        updateTransform()
+    }
   }
 }
 

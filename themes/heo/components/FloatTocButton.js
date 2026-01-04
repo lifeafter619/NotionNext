@@ -47,7 +47,7 @@ export default function FloatTocButton(props) {
       x: touch.clientX,
       y: touch.clientY,
       initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
-      initialBottom: buttonPos.y || 96 // default bottom-24 = 96px
+      initialBottom: buttonPos.y || 160 // default bottom-40 = 160px
     })
   }
 
@@ -172,14 +172,14 @@ export default function FloatTocButton(props) {
         right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
         bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
       }}
-      className={`fixed xl:hidden bottom-24 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      className={`fixed xl:hidden bottom-40 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       onTouchStart={handleButtonTouchStart}
       onTouchMove={handleButtonTouchMove}
     >
       {/* 按钮 */}
       <div
         onClick={toggleToc}
-        className={`${isExpandedButton ? 'w-48 px-4 justify-start rounded-r-none' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+        className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
         <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'} />
         {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>}
       </div>

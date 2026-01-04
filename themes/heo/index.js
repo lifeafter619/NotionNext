@@ -6,14 +6,11 @@
  *  2. 更多说明参考此[文档](https://docs.tangly1024.com/article/notionnext-heo)
  */
 
-import Comment from '@/components/Comment'
 import { AdSlot } from '@/components/GoogleAdsense'
 import { HashTag } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import LoadingCover from '@/components/LoadingCover'
 import replaceSearchResult from '@/components/Mark'
-import NotionPage from '@/components/NotionPage'
-import ShareBar from '@/components/ShareBar'
 import WWAds from '@/components/WWAds'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
@@ -23,9 +20,11 @@ import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
 import BlogPostListScroll from './components/BlogPostListScroll'
+import BlogPostCard from './components/BlogPostCard'
 import CategoryBar from './components/CategoryBar'
 import FloatTocButton from './components/FloatTocButton'
 import Footer from './components/Footer'
@@ -33,17 +32,21 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import LatestPostsGroup from './components/LatestPostsGroup'
 import { NoticeBar } from './components/NoticeBar'
-import PostAdjacent from './components/PostAdjacent'
-import PostCopyright from './components/PostCopyright'
 import PostHeader from './components/PostHeader'
 import { PostLock } from './components/PostLock'
-import PostRecommend from './components/PostRecommend'
 import SearchNav from './components/SearchNav'
 import SideRight from './components/SideRight'
 import CONFIG from './config'
 import { Style } from './style'
-import AISummary from '@/components/AISummary'
 import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
+
+const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
+const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
+const NotionPage = dynamic(() => import('@/components/NotionPage'), { ssr: true })
+const PostAdjacent = dynamic(() => import('./components/PostAdjacent'), { ssr: false })
+const PostCopyright = dynamic(() => import('./components/PostCopyright'), { ssr: false })
+const PostRecommend = dynamic(() => import('./components/PostRecommend'), { ssr: false })
+const AISummary = dynamic(() => import('@/components/AISummary'), { ssr: false })
 
 /**
  * 基础布局 采用上中下布局，移动端使用顶部侧边导航栏
@@ -422,7 +425,7 @@ const Layout404 = props => {
  * @returns
  */
 const LayoutCategoryIndex = props => {
-  const { categoryOptions } = props
+  const { categoryOptions, allPages } = props
   const { locale } = useGlobal()
 
   return (
@@ -430,27 +433,31 @@ const LayoutCategoryIndex = props => {
       <div className='text-4xl font-extrabold dark:text-gray-200 mb-5'>
         {locale.COMMON.CATEGORY}
       </div>
-      <div
-        id='category-list'
-        className='duration-200 flex flex-wrap m-10 justify-center'>
+      <div id='category-list' className='duration-200'>
         {categoryOptions?.map(category => {
+          const posts = allPages?.filter(
+            p => p.category === category.name && p.status === 'Published'
+          ).slice(0, 6) // 每个分类只显示前6篇文章
+
           return (
-            <SmartLink
-              key={category.name}
-              href={`/category/${category.name}`}
-              passHref
-              legacyBehavior>
-              <div
-                className={
-                  'group mr-5 mb-5 flex flex-nowrap items-center border bg-white text-2xl rounded-xl dark:hover:text-white px-4 cursor-pointer py-3 hover:text-white hover:bg-indigo-600 transition-all hover:scale-110 duration-150'
-                }>
-                <HashTag className={'w-5 h-5 stroke-gray-500 stroke-2'} />
-                {category.name}
-                <div className='bg-[#f1f3f8] ml-1 px-2 rounded-lg group-hover:text-indigo-600 '>
-                  {category.count}
+            <div key={category.name} className='mb-12'>
+              <div className='flex items-center justify-between mb-6'>
+                <div className='flex items-center gap-3'>
+                  <HashTag className={'w-6 h-6 stroke-gray-500'} />
+                  <h2 className='text-2xl font-bold dark:text-white'>{category.name}</h2>
+                  <span className='px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500'>{category.count}</span>
                 </div>
+                <SmartLink href={`/category/${category.name}`} className='text-indigo-500 hover:text-indigo-600 font-medium flex items-center gap-1'>
+                  {locale.COMMON.MORE} <i className='fas fa-arrow-right text-sm'/>
+                </SmartLink>
               </div>
-            </SmartLink>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+                {posts?.map(post => (
+                  <BlogPostCard key={post.id} post={post} showSummary={false} siteInfo={props.siteInfo} className="h-40 text-sm" />
+                ))}
+              </div>
+            </div>
           )
         })}
       </div>
@@ -464,7 +471,7 @@ const LayoutCategoryIndex = props => {
  * @returns
  */
 const LayoutTagIndex = props => {
-  const { tagOptions } = props
+  const { tagOptions, allPages } = props
   const { locale } = useGlobal()
 
   return (
@@ -472,27 +479,33 @@ const LayoutTagIndex = props => {
       <div className='text-4xl font-extrabold dark:text-gray-200 mb-5'>
         {locale.COMMON.TAGS}
       </div>
-      <div
-        id='tag-list'
-        className='duration-200 flex flex-wrap space-x-5 space-y-5 m-10 justify-center'>
-        {tagOptions.map(tag => {
+      <div id='tag-list' className='duration-200'>
+        {tagOptions?.map(tag => {
+          const posts = allPages?.filter(
+            p => p.tags && p.tags.includes(tag.name) && p.status === 'Published'
+          ).slice(0, 6)
+
+          if (!posts || posts.length === 0) return null
+
           return (
-            <SmartLink
-              key={tag.name}
-              href={`/tag/${tag.name}`}
-              passHref
-              legacyBehavior>
-              <div
-                className={
-                  'group flex flex-nowrap items-center border bg-white text-2xl rounded-xl dark:hover:text-white px-4 cursor-pointer py-3 hover:text-white hover:bg-indigo-600 transition-all hover:scale-110 duration-150'
-                }>
-                <HashTag className={'w-5 h-5 stroke-gray-500 stroke-2'} />
-                {tag.name}
-                <div className='bg-[#f1f3f8] ml-1 px-2 rounded-lg group-hover:text-indigo-600 '>
-                  {tag.count}
+            <div key={tag.name} className='mb-12'>
+              <div className='flex items-center justify-between mb-6'>
+                <div className='flex items-center gap-3'>
+                  <HashTag className={'w-6 h-6 stroke-gray-500'} />
+                  <h2 className='text-2xl font-bold dark:text-white'>{tag.name}</h2>
+                  <span className='px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500'>{tag.count}</span>
                 </div>
+                <SmartLink href={`/tag/${tag.name}`} className='text-indigo-500 hover:text-indigo-600 font-medium flex items-center gap-1'>
+                  {locale.COMMON.MORE} <i className='fas fa-arrow-right text-sm'/>
+                </SmartLink>
               </div>
-            </SmartLink>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+                {posts?.map(post => (
+                  <BlogPostCard key={post.id} post={post} showSummary={false} siteInfo={props.siteInfo} className="h-40 text-sm" />
+                ))}
+              </div>
+            </div>
           )
         })}
       </div>
