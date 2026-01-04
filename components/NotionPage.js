@@ -70,10 +70,21 @@ const NotionPage = ({ post, className }) => {
             let highResSrc = src
             try {
                const urlObj = new URL(src)
-               if (urlObj.searchParams.has('width')) {
-                 urlObj.searchParams.delete('width')
-                 highResSrc = urlObj.toString()
+               // Remove resize parameters to get high quality image
+               urlObj.searchParams.delete('width')
+               urlObj.searchParams.delete('height')
+               urlObj.searchParams.delete('quality')
+               urlObj.searchParams.delete('fmt')
+               urlObj.searchParams.delete('fm') // Unsplash
+               urlObj.searchParams.delete('crop')
+               urlObj.searchParams.delete('fit')
+
+               // Special handling for Unsplash to ensure high res
+               if (src.includes('unsplash.com')) {
+                  urlObj.searchParams.set('q', '100') // Set max quality
                }
+
+               highResSrc = urlObj.toString()
             } catch (e) {
                // ignore
             }

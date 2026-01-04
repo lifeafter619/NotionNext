@@ -47,7 +47,7 @@ export default function FloatTocButton(props) {
       x: touch.clientX,
       y: touch.clientY,
       initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
-      initialBottom: buttonPos.y || 160 // default bottom-40 = 160px
+      initialBottom: buttonPos.y || 320 // default bottom-80 = 320px (moved up)
     })
   }
 
@@ -123,7 +123,7 @@ export default function FloatTocButton(props) {
         // 当右侧栏的粘性区域滚动到视口顶部以上时（整个目录不可见），显示悬浮按钮
         const isScrolledPast = rect.bottom < SCROLL_OFFSET
         setShowOnDesktop(isScrolledPast)
-      }, 200),
+      }, 500),
     []
   )
 
@@ -136,7 +136,7 @@ export default function FloatTocButton(props) {
           const isVisible = window.getComputedStyle(nextPost).opacity === '1'
           setHasNextPost(isVisible)
         }
-      }, 200),
+      }, 500),
     []
   )
 
@@ -172,7 +172,7 @@ export default function FloatTocButton(props) {
         right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
         bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
       }}
-      className={`fixed xl:hidden bottom-40 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      className={`fixed xl:hidden bottom-80 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       onTouchStart={handleButtonTouchStart}
       onTouchMove={handleButtonTouchMove}
     >
@@ -183,6 +183,17 @@ export default function FloatTocButton(props) {
         <button id="toc-button" className={'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'} />
         {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>}
       </div>
+    </div>
+
+    {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
+    <div
+      className={`fixed xl:hidden z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      style={{
+        right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
+        bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '260px' // 位于目录按钮下方约60px (320 - 60 = 260)
+      }}
+    >
+        <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
     </div>
 
     {/* 移动端目录弹窗 - 底部抽屉样式 */}
@@ -226,7 +237,7 @@ export default function FloatTocButton(props) {
 
     {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
     {showOnDesktop && (
-      <div className={`hidden xl:block fixed ${hasNextPost ? 'right-10 bottom-40' : 'right-4 bottom-4'} z-50 duration-200 transition-all`}>
+      <div id="float-toc-button" className={`hidden xl:block fixed ${hasNextPost ? 'right-10 bottom-40' : 'right-4 bottom-4'} z-50 duration-200 transition-all`}>
         {/* 悬浮目录框 - 简洁盒子样式 */}
         <div
           onClick={toggleToc}
@@ -265,4 +276,86 @@ export default function FloatTocButton(props) {
       </div>
     )}
   </>)
+}
+
+const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
+  const [showToast, setShowToast] = useState(false)
+  const [savedScrollY, setSavedScrollY] = useState(0)
+
+  const handleJump = () => {
+    setSavedScrollY(window.scrollY)
+    const commentNode = document.getElementById('comment')
+    if (commentNode) {
+      const headerHeight = 80 // approximate header height
+      const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+      const offsetPosition = elementPosition - headerHeight
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    }
+  }
+
+  const handleBack = () => {
+    window.scrollTo({ top: savedScrollY, behavior: 'smooth' })
+    setShowToast(false)
+  }
+
+  return (
+    <>
+      <div
+        onClick={handleJump}
+        className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none cursor-pointer`}>
+        <button className={'fas fa-comments cursor-pointer w-7 h-7 flex items-center justify-center shrink-0'} />
+        {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>跳转评论</span>}
+      </div>
+
+      {showToast && (
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[70] animate-fade-in'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
+            <div className='flex items-center gap-2 flex-1 min-w-0'>
+              <svg
+                className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z'
+                />
+              </svg>
+              <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
+                <span className='font-bold'>已跳转至：</span>
+                <span className='truncate'>评论区</span>
+              </div>
+            </div>
+            <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
+              <button
+                onClick={handleBack}
+                className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
+                回到原位置
+              </button>
+              <button
+                onClick={() => setShowToast(false)}
+                className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }

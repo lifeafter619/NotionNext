@@ -48,8 +48,10 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
   // 当外部传入的 currentIndex 改变时更新内部 index
   useEffect(() => {
-    setIndex(currentIndex)
-  }, [currentIndex])
+    if (isOpen) {
+      setIndex(currentIndex)
+    }
+  }, [isOpen, currentIndex])
 
   // 初始化图片：优先显示缩略图，后台加载高清图
   useEffect(() => {
@@ -196,7 +198,20 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
     document.addEventListener('wheel', handleGlobalWheel, { passive: false })
     document.addEventListener('touchmove', preventTouchScroll, { passive: false })
 
-    // 防止 body 滚动
+    // 防止 body 滚动并处理滚动条消失引起的布局偏移
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth
+    const originalPaddingRight = document.body.style.paddingRight
+
+    if (scrollBarWidth > 0) {
+      document.body.style.paddingRight = `${scrollBarWidth}px`
+      // 处理 fixed 元素的布局偏移
+      const fixedElements = document.querySelectorAll('.prevent-scroll-jump, #float-toc-button')
+      fixedElements.forEach(el => {
+        el.dataset.originalPaddingRight = el.style.paddingRight || ''
+        el.style.paddingRight = `${scrollBarWidth}px`
+      })
+    }
+
     const originalOverflow = document.body.style.overflow
     const originalPosition = document.body.style.position
     const originalTop = document.body.style.top
@@ -213,6 +228,17 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       document.body.style.position = originalPosition
       document.body.style.top = originalTop
       document.body.style.width = ''
+      document.body.style.paddingRight = originalPaddingRight
+
+      // 恢复 fixed 元素
+      if (scrollBarWidth > 0) {
+        const fixedElements = document.querySelectorAll('.prevent-scroll-jump, #float-toc-button')
+        fixedElements.forEach(el => {
+          el.style.paddingRight = el.dataset.originalPaddingRight || ''
+          delete el.dataset.originalPaddingRight
+        })
+      }
+
       window.scrollTo(0, scrollY)
     }
   }, [isOpen])
@@ -475,7 +501,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       )}
 
       {/* 缩略图栏 */}
-      {showThumbnails && images && images.length > 1 && (
+      {showThumbnails && images && images.length > 0 && (
         <div
             className='thumbnail-strip absolute bottom-20 left-0 right-0 h-20 bg-black/80 flex items-center gap-2 overflow-x-auto px-4 py-2 z-50 backdrop-blur-md transition-all duration-300'
             onClick={e => e.stopPropagation()} // 防止点击缩略图栏关闭
@@ -506,7 +532,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
         onClick={e => e.stopPropagation()} // 防止点击控制栏关闭
       >
         {/* 图片索引指示器 */}
-        {images && images.length > 1 && (
+        {images && images.length > 0 && (
             <>
             <div className="flex items-center gap-2">
                 <span className='text-white text-sm font-medium'>
