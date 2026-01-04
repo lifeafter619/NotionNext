@@ -46,20 +46,20 @@ export default function SideRight(props) {
 
         {/* 文章页显示目录 */}
         {post && post.toc && post.toc.length > 0 && (
-          <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
+          <Card className='bg-white dark:bg-[#1e1e1e]'>
             <Catalog toc={post.toc} />
           </Card>
         )}
 
         {/* 联系交流群 */}
-        <div className='wow fadeInUp'>
+        <div>
           <TouchMeCard />
         </div>
 
         {/* 最新文章列表 */}
         <div
           className={
-            'border wow fadeInUp  hover:border-indigo-600  dark:hover:border-yellow-600 duration-200 dark:border-gray-700 dark:bg-[#1e1e1e] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-white'
+            'border hover:border-indigo-600  dark:hover:border-yellow-600 duration-200 dark:border-gray-700 dark:bg-[#1e1e1e] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-white'
           }>
           <LatestPostsGroupMini {...props} />
         </div>
