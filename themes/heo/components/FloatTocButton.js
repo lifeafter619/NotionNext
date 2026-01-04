@@ -47,7 +47,7 @@ export default function FloatTocButton(props) {
       x: touch.clientX,
       y: touch.clientY,
       initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
-      initialBottom: buttonPos.y || 160 // default bottom-40 = 160px
+      initialBottom: buttonPos.y || 320 // default bottom-80 = 320px (moved up)
     })
   }
 
@@ -123,7 +123,7 @@ export default function FloatTocButton(props) {
         // 当右侧栏的粘性区域滚动到视口顶部以上时（整个目录不可见），显示悬浮按钮
         const isScrolledPast = rect.bottom < SCROLL_OFFSET
         setShowOnDesktop(isScrolledPast)
-      }, 200),
+      }, 500),
     []
   )
 
@@ -136,7 +136,7 @@ export default function FloatTocButton(props) {
           const isVisible = window.getComputedStyle(nextPost).opacity === '1'
           setHasNextPost(isVisible)
         }
-      }, 200),
+      }, 500),
     []
   )
 
@@ -172,7 +172,7 @@ export default function FloatTocButton(props) {
         right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
         bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
       }}
-      className={`fixed xl:hidden bottom-40 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+      className={`fixed xl:hidden bottom-80 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       onTouchStart={handleButtonTouchStart}
       onTouchMove={handleButtonTouchMove}
     >
@@ -190,7 +190,7 @@ export default function FloatTocButton(props) {
       className={`fixed xl:hidden z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       style={{
         right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
-        bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '100px' // 位于目录按钮下方约60px
+        bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '260px' // 位于目录按钮下方约60px (320 - 60 = 260)
       }}
     >
         <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
@@ -314,8 +314,8 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
       </div>
 
       {showToast && (
-        <div className='fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 z-[70] w-[90vw] md:w-auto max-w-md animate-fade-in'>
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3'>
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[70] animate-fade-in'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
             <div className='flex items-center gap-2 flex-1 min-w-0'>
               <svg
                 className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'

@@ -198,7 +198,14 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
     document.addEventListener('wheel', handleGlobalWheel, { passive: false })
     document.addEventListener('touchmove', preventTouchScroll, { passive: false })
 
-    // 防止 body 滚动
+    // 防止 body 滚动并处理滚动条消失引起的布局偏移
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth
+    const originalPaddingRight = document.body.style.paddingRight
+
+    if (scrollBarWidth > 0) {
+      document.body.style.paddingRight = `${scrollBarWidth}px`
+    }
+
     const originalOverflow = document.body.style.overflow
     const originalPosition = document.body.style.position
     const originalTop = document.body.style.top
@@ -215,6 +222,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       document.body.style.position = originalPosition
       document.body.style.top = originalTop
       document.body.style.width = ''
+      document.body.style.paddingRight = originalPaddingRight
       window.scrollTo(0, scrollY)
     }
   }, [isOpen])

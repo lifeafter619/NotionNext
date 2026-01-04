@@ -143,8 +143,8 @@ const JumpToCommentButton = () => {
       </div>
 
       {showToast && (
-        <div className='fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 z-50 w-[90vw] md:w-auto max-w-md animate-fade-in'>
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3'>
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-50 animate-fade-in'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
             <div className='flex items-center gap-2 flex-1 min-w-0'>
               <svg
                 className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
