@@ -169,9 +169,9 @@ export default function FloatTocButton(props) {
         // 首先检测右侧边栏是否存在（xl屏幕以上才显示）
         const sideRight = document.getElementById('sideRight')
         
-        // 如果右侧边栏不存在或不可见，不显示悬浮按钮
-        if (!sideRight || window.getComputedStyle(sideRight).display === 'none') {
-          setShowOnDesktop(false)
+        // 如果右侧边栏不存在或不可见，说明宽度不够，此时需要显示悬浮按钮
+        if (!sideRight || (sideRight && (sideRight.offsetParent === null || window.getComputedStyle(sideRight).display === 'none'))) {
+          setShowOnDesktop(true)
           return
         }
 
@@ -338,7 +338,7 @@ export default function FloatTocButton(props) {
           {/* 跳转评论按钮 - 独立卡片 */}
           {!tocVisible && (
             <div
-              className='text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200'
+              className='text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 dark:text-gray-200 transition-all duration-200'
               onClick={(e) => {
                 e.stopPropagation()
                 const commentNode = document.getElementById('comment')

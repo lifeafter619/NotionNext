@@ -137,7 +137,7 @@ const JumpToCommentButton = () => {
     <>
       <div
         onClick={handleJump}
-        className='mt-4 p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-indigo-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-bold text-sm text-gray-500 dark:text-gray-400'>
+        className='mt-4 p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-indigo-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-bold text-sm text-gray-500 dark:text-gray-200'>
         <i className="fas fa-comments" />
         跳转到评论区
       </div>
