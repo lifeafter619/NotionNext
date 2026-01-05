@@ -25,9 +25,17 @@ export default function FloatTocButton(props) {
   const [touchStartHeight, setTouchStartHeight] = useState(null)
   const [touchStartButton, setTouchStartButton] = useState({ x: 0, y: 0 })
 
+  // 桌面端拖拽状态
+  const [desktopPos, setDesktopPos] = useState({ x: 16, y: 80 }) // default right-4 (16px), bottom-20 (80px) moved up
+  const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
+  const [dragStartDesktop, setDragStartDesktop] = useState({ x: 0, y: 0 })
+  const [initialDragPos, setInitialDragPos] = useState({ x: 0, y: 0 })
+
   const { post } = props
 
   const toggleToc = () => {
+    // 如果正在拖拽，不触发点击
+    if (isDraggingDesktop) return
     changeTocVisible(!tocVisible)
   }
 
@@ -74,6 +82,54 @@ export default function FloatTocButton(props) {
       y: newBottom
     })
   }
+
+  // 桌面端拖拽逻辑
+  const handleDesktopMouseDown = (e) => {
+    e.preventDefault() // 防止选中文本
+    setIsDraggingDesktop(true)
+    setDragStartDesktop({ x: e.clientX, y: e.clientY })
+    setInitialDragPos({ x: desktopPos.x, y: desktopPos.y })
+  }
+
+  const handleDesktopMouseMove = (e) => {
+    if (!isDraggingDesktop) return
+    e.preventDefault()
+    const deltaX = dragStartDesktop.x - e.clientX // 向左移动，right增加
+    const deltaY = dragStartDesktop.y - e.clientY // 向上移动，bottom增加
+
+    let newX = initialDragPos.x + deltaX
+    let newY = initialDragPos.y + deltaY
+
+    // 边界检查 (假设容器宽度约 300px，高度视展开情况而定，这里简单限制在窗口内)
+    const maxRight = window.innerWidth - 300
+    const maxBottom = window.innerHeight - 100
+
+    newX = Math.max(0, Math.min(newX, maxRight))
+    newY = Math.max(0, Math.min(newY, maxBottom))
+
+    setDesktopPos({ x: newX, y: newY })
+  }
+
+  const handleDesktopMouseUp = () => {
+    // 延迟一点设置 dragging 为 false，防止触发 click 事件
+    setTimeout(() => {
+      setIsDraggingDesktop(false)
+    }, 0)
+  }
+
+  useEffect(() => {
+    if (isDraggingDesktop) {
+      window.addEventListener('mousemove', handleDesktopMouseMove)
+      window.addEventListener('mouseup', handleDesktopMouseUp)
+    } else {
+      window.removeEventListener('mousemove', handleDesktopMouseMove)
+      window.removeEventListener('mouseup', handleDesktopMouseUp)
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleDesktopMouseMove)
+      window.removeEventListener('mouseup', handleDesktopMouseUp)
+    }
+  }, [isDraggingDesktop])
 
   // 移动端抽屉高度调整逻辑
   const handleDrawerTouchStart = (e) => {
@@ -237,60 +293,68 @@ export default function FloatTocButton(props) {
 
     {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
     {showOnDesktop && (
-      <div id="float-toc-button" className={`hidden xl:block fixed ${hasNextPost ? 'right-10 bottom-40' : 'right-4 bottom-4'} z-50 duration-200 transition-all`}>
-        {/* 悬浮目录框 - 简洁盒子样式 */}
+      <div
+        id="float-toc-button"
+        className='hidden xl:block fixed z-50'
+        style={{ right: `${desktopPos.x}px`, bottom: `${desktopPos.y}px` }}
+      >
         <div
-          onClick={toggleToc}
-          className={`text-sm block p-4 w-72 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
-          {/* 标题栏 */}
-          <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
-            <div className='flex items-center gap-2'>
-              <i className='fa-list-ol fas' />
-              <span>目录导航</span>
-            </div>
-            <i className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`} />
-          </div>
-
-          {/* 目录内容 - 点击展开/收起 */}
-          <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
-            {/* 始终挂载 Catalog 以监听滚动，但仅在展开时显示完整列表 */}
-            <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
-              <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
+          className='w-72 flex flex-col gap-3'
+          onMouseDown={handleDesktopMouseDown}
+        >
+          {/* 悬浮目录框 */}
+          <div
+            onClick={toggleToc}
+            className={`text-sm block p-4 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
+            {/* 标题栏 */}
+            <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
+              <div className='flex items-center gap-2'>
+                <i className='fa-list-ol fas' />
+                <span>目录导航</span>
+              </div>
+              <i className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`} />
             </div>
 
-            {/* 收起时显示当前标题 */}
+            {/* 目录内容 */}
+            <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
+              <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
+                <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
+              </div>
+
+              {!tocVisible && (
+                <div className="h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500">
+                  {activeSectionId && post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text || '目录'}
+                </div>
+              )}
+            </div>
+
             {!tocVisible && (
-              <div className="h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500">
-                 {activeSectionId && post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text || '目录'}
+              <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
+                点击展开目录
               </div>
             )}
           </div>
 
-          {/* 提示文字 */}
+          {/* 跳转评论按钮 - 独立卡片 */}
           {!tocVisible && (
-            <>
-              <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
-                点击展开目录
-              </div>
-              <div
-                className='text-xs text-gray-400 mt-2 text-center truncate px-2 hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors'
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const commentNode = document.getElementById('comment')
-                  if (commentNode) {
-                    const headerHeight = 80
-                    const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
-                    const offsetPosition = elementPosition - headerHeight
-                    window.scrollTo({
-                      top: offsetPosition,
-                      behavior: 'smooth'
-                    })
-                  }
-                }}
-              >
-                <i className='fas fa-comments mr-1'/>跳转评论
-              </div>
-            </>
+            <div
+              className='text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200'
+              onClick={(e) => {
+                e.stopPropagation()
+                const commentNode = document.getElementById('comment')
+                if (commentNode) {
+                  const headerHeight = 80
+                  const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+                  const offsetPosition = elementPosition - headerHeight
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                  })
+                }
+              }}
+            >
+              <i className='fas fa-comments mr-2'/>跳转评论
+            </div>
           )}
         </div>
       </div>
