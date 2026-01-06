@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Catalog from './Catalog'
 import throttle from 'lodash.throttle'
 import { uuidToId } from 'notion-utils'
@@ -30,6 +30,7 @@ export default function FloatTocButton(props) {
   const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
   const [dragStartDesktop, setDragStartDesktop] = useState({ x: 0, y: 0 })
   const [initialDragPos, setInitialDragPos] = useState({ x: 0, y: 0 })
+  const isMouseDownRef = useRef(false)
 
   const { post } = props
 
@@ -85,17 +86,25 @@ export default function FloatTocButton(props) {
 
   // 桌面端拖拽逻辑
   const handleDesktopMouseDown = (e) => {
-    e.preventDefault() // 防止选中文本
-    setIsDraggingDesktop(true)
+    // e.preventDefault() // 允许点击事件穿透
+    isMouseDownRef.current = true
     setDragStartDesktop({ x: e.clientX, y: e.clientY })
     setInitialDragPos({ x: desktopPos.x, y: desktopPos.y })
   }
 
   const handleDesktopMouseMove = (e) => {
-    if (!isDraggingDesktop) return
-    e.preventDefault()
+    if (!isMouseDownRef.current) return
+
     const deltaX = dragStartDesktop.x - e.clientX // 向左移动，right增加
     const deltaY = dragStartDesktop.y - e.clientY // 向上移动，bottom增加
+
+    // 移动距离检查，防止微小抖动误判为拖拽
+    if (!isDraggingDesktop) {
+        if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) return
+        setIsDraggingDesktop(true)
+    }
+
+    e.preventDefault() // 拖拽开始后阻止默认行为
 
     let newX = initialDragPos.x + deltaX
     let newY = initialDragPos.y + deltaY
@@ -111,6 +120,7 @@ export default function FloatTocButton(props) {
   }
 
   const handleDesktopMouseUp = () => {
+    isMouseDownRef.current = false
     // 延迟一点设置 dragging 为 false，防止触发 click 事件
     setTimeout(() => {
       setIsDraggingDesktop(false)
@@ -299,7 +309,7 @@ export default function FloatTocButton(props) {
         style={{ right: `${desktopPos.x}px`, bottom: `${desktopPos.y}px` }}
       >
         <div
-          className='w-72 flex flex-col gap-3'
+          className='w-72 flex flex-col gap-3 select-none'
           onMouseDown={handleDesktopMouseDown}
         >
           {/* 悬浮目录框 */}
@@ -337,29 +347,94 @@ export default function FloatTocButton(props) {
 
           {/* 跳转评论按钮 - 独立卡片 */}
           {!tocVisible && (
-            <div
-              className='text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 dark:text-gray-200 transition-all duration-200'
-              onClick={(e) => {
-                e.stopPropagation()
-                const commentNode = document.getElementById('comment')
-                if (commentNode) {
-                  const headerHeight = 80
-                  const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
-                  const offsetPosition = elementPosition - headerHeight
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                  })
-                }
-              }}
-            >
-              <i className='fas fa-comments mr-2'/>跳转评论
-            </div>
+             <JumpToCommentButtonDesktop />
           )}
         </div>
       </div>
     )}
   </>)
+}
+
+const JumpToCommentButtonDesktop = () => {
+  const [showToast, setShowToast] = useState(false)
+  const [savedScrollY, setSavedScrollY] = useState(0)
+
+  const handleJump = (e) => {
+    e.stopPropagation()
+    setSavedScrollY(window.scrollY)
+    const commentNode = document.getElementById('comment')
+    if (commentNode) {
+      const headerHeight = 80
+      const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+      const offsetPosition = elementPosition - headerHeight
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    }
+  }
+
+  const handleBack = () => {
+    window.scrollTo({ top: savedScrollY, behavior: 'smooth' })
+    setShowToast(false)
+  }
+
+  return (
+    <>
+      <div
+        className='text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 dark:text-gray-200 transition-all duration-200 select-none'
+        onClick={handleJump}
+      >
+        <i className='fas fa-comments mr-2'/>跳转评论
+      </div>
+
+      {showToast && (
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[70] animate-fade-in'>
+          <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
+            <div className='flex items-center gap-2 flex-1 min-w-0'>
+              <svg
+                className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'>
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z'
+                />
+              </svg>
+              <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
+                <span className='font-bold'>已跳转至：</span>
+                <span className='truncate'>评论区</span>
+              </div>
+            </div>
+            <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
+              <button
+                onClick={handleBack}
+                className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
+                回到原位置
+              </button>
+              <button
+                onClick={() => setShowToast(false)}
+                className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
+                <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
