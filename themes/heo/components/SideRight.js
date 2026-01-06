@@ -35,7 +35,7 @@ export default function SideRight(props) {
   const sortedTags = tagOptions?.slice(0, 60) || []
 
   return (
-    <div id='sideRight' className='hidden xl:block w-72 space-y-4 h-full'>
+    <div id='sideRight' className='hidden xl:block w-72 space-y-4 h-full overflow-visible'>
       <div className="pointer-events-auto">
         <InfoCard {...props} className='w-72' />
       </div>
