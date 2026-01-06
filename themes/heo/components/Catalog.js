@@ -29,6 +29,10 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
 
   const actionSectionScrollSpy = useCallback(
     throttle(() => {
+      // 性能优化：如果目录不可见（如在折叠的浮动按钮中），不进行计算
+      if (tRef.current && tRef.current.offsetParent === null) {
+        return
+      }
       const sections = document.getElementsByClassName('notion-h')
       let prevBBox = null
       let currentSectionId = activeSection
