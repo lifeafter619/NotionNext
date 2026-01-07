@@ -294,7 +294,7 @@ export default function FloatTocButton(props) {
 
             <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
               <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
-                <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
+                <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} forceSpy={true} />
               </div>
 
               {!tocVisible && (

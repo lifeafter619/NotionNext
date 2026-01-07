@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * @returns {JSX.Element}
  * @constructor
  */
-const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
+const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy }) => {
   const { locale } = useGlobal()
   // 监听滚动事件
   useEffect(() => {
@@ -30,7 +30,7 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
   const actionSectionScrollSpy = useCallback(
     throttle(() => {
       // 性能优化：如果目录不可见（如在折叠的浮动按钮中），不进行计算
-      if (tRef.current && tRef.current.offsetParent === null) {
+      if (!forceSpy && tRef.current && tRef.current.offsetParent === null) {
         return
       }
       const sections = document.getElementsByClassName('notion-h')
@@ -65,7 +65,7 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
         tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
       }
     }, 500),
-    [toc, activeSection]
+    [toc, activeSection, forceSpy]
   )
 
   // 无目录就直接返回空
@@ -92,13 +92,15 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className }) => {
                 href={`#${id}`}
                 onClick={onItemClick}
                 className={`notion-table-of-contents-item duration-300 transform dark:text-gray-200
-            notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item `}>
+            notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item
+            ${activeSection === id ? 'bg-indigo-50 dark:bg-yellow-900/40 text-indigo-600 dark:text-yellow-500 border-l-4 border-indigo-600 dark:border-yellow-500' : 'border-l-4 border-transparent'}
+            `}>
                 <span
                   style={{
                     display: 'inline-block',
                     marginLeft: tocItem.indentLevel * 16
                   }}
-                  className={`truncate ${activeSection === id ? 'font-bold text-indigo-600' : ''}`}>
+                  className={`truncate ${activeSection === id ? 'font-bold' : ''}`}>
                   {tocItem.text}
                 </span>
               </a>
