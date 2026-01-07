@@ -11,7 +11,6 @@ import { HashTag } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import LoadingCover from '@/components/LoadingCover'
 import replaceSearchResult from '@/components/Mark'
-import WWAds from '@/components/WWAds'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { loadWowJS } from '@/lib/plugins/wow'
@@ -47,6 +46,7 @@ const PostAdjacent = dynamic(() => import('./components/PostAdjacent'), { ssr: f
 const PostCopyright = dynamic(() => import('./components/PostCopyright'), { ssr: false })
 const PostRecommend = dynamic(() => import('./components/PostRecommend'), { ssr: false })
 const AISummary = dynamic(() => import('@/components/AISummary'), { ssr: false })
+const WWAds = dynamic(() => import('@/components/WWAds'), { ssr: false })
 
 /**
  * 基础布局 采用上中下布局，移动端使用顶部侧边导航栏

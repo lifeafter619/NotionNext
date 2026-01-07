@@ -3,9 +3,6 @@ import Catalog from './Catalog'
 import throttle from 'lodash.throttle'
 import { uuidToId } from 'notion-utils'
 
-// 滚动偏移量常量 - 目录滚动超过此值后显示悬浮按钮
-const SCROLL_OFFSET = 100
-
 /**
  * 悬浮目录按钮
  * 移动端始终显示，桌面端滚动超过右侧边栏目录时显示
@@ -26,10 +23,12 @@ export default function FloatTocButton(props) {
   const [touchStartButton, setTouchStartButton] = useState({ x: 0, y: 0 })
 
   // 桌面端拖拽状态
-  const [desktopPos, setDesktopPos] = useState({ x: 16, y: 80 }) // default right-4 (16px), bottom-20 (80px) moved up
+  const [desktopPos, setDesktopPos] = useState({ x: 16, y: 180 })
   const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
-  const [dragStartDesktop, setDragStartDesktop] = useState({ x: 0, y: 0 })
-  const [initialDragPos, setInitialDragPos] = useState({ x: 0, y: 0 })
+
+  // Use Refs for drag calculations to avoid stale closures in event listeners
+  const dragStartMouseRef = useRef({ x: 0, y: 0 })
+  const initialDragPosRef = useRef({ x: 0, y: 0 })
   const isMouseDownRef = useRef(false)
 
   const { post } = props
@@ -55,25 +54,23 @@ export default function FloatTocButton(props) {
     setTouchStartButton({
       x: touch.clientX,
       y: touch.clientY,
-      initialRight: buttonPos.x || 0, // default right-0 = 0px (初始不留空)
-      initialBottom: buttonPos.y || 320 // default bottom-80 = 320px (moved up)
+      initialRight: buttonPos.x || 0,
+      initialBottom: buttonPos.y || 320
     })
   }
 
   const handleButtonTouchMove = (e) => {
     e.stopPropagation()
-    e.preventDefault() // 防止页面滚动
+    e.preventDefault()
     const touch = e.touches[0]
-    const deltaX = touchStartButton.x - touch.clientX // 向左滑，right增加
-    const deltaY = touchStartButton.y - touch.clientY // 向上滑，bottom增加
+    const deltaX = touchStartButton.x - touch.clientX
+    const deltaY = touchStartButton.y - touch.clientY
 
-    // 计算新位置
     let newRight = touchStartButton.initialRight + deltaX
     let newBottom = touchStartButton.initialBottom + deltaY
 
-    // 边界检查
-    const maxRight = window.innerWidth - 44 // 假设按钮宽度约 44px
-    const maxBottom = window.innerHeight - 44 // 假设按钮高度约 44px
+    const maxRight = window.innerWidth - 44
+    const maxBottom = window.innerHeight - 44
 
     newRight = Math.max(0, Math.min(newRight, maxRight))
     newBottom = Math.max(0, Math.min(newBottom, maxBottom))
@@ -85,61 +82,57 @@ export default function FloatTocButton(props) {
   }
 
   // 桌面端拖拽逻辑
-  const handleDesktopMouseDown = (e) => {
-    // e.preventDefault() // 允许点击事件穿透
-    isMouseDownRef.current = true
-    setDragStartDesktop({ x: e.clientX, y: e.clientY })
-    setInitialDragPos({ x: desktopPos.x, y: desktopPos.y })
-  }
-
+  // 注意：事件处理函数定义在 useEffect 外部，且使用了 Ref，所以不需要作为依赖项
   const handleDesktopMouseMove = (e) => {
     if (!isMouseDownRef.current) return
 
-    const deltaX = dragStartDesktop.x - e.clientX // 向左移动，right增加
-    const deltaY = dragStartDesktop.y - e.clientY // 向上移动，bottom增加
+    const deltaX = dragStartMouseRef.current.x - e.clientX // 向左移动，right增加
+    const deltaY = dragStartMouseRef.current.y - e.clientY // 向上移动，bottom增加
 
-    // 移动距离检查，防止微小抖动误判为拖拽
+    // 移动距离检查
     if (!isDraggingDesktop) {
         if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) return
         setIsDraggingDesktop(true)
     }
 
-    e.preventDefault() // 拖拽开始后阻止默认行为
+    e.preventDefault()
 
-    let newX = initialDragPos.x + deltaX
-    let newY = initialDragPos.y + deltaY
+    let newRight = initialDragPosRef.current.x + deltaX
+    let newBottom = initialDragPosRef.current.y + deltaY
 
-    // 边界检查 (假设容器宽度约 300px，高度视展开情况而定，这里简单限制在窗口内)
-    const maxRight = window.innerWidth - 300
-    const maxBottom = window.innerHeight - 100
+    // 严格边界检查
+    const element = document.getElementById('float-toc-button')
+    const width = element ? element.offsetWidth : 288
+    const height = element ? element.offsetHeight : 120
 
-    newX = Math.max(0, Math.min(newX, maxRight))
-    newY = Math.max(0, Math.min(newY, maxBottom))
+    const maxRight = window.innerWidth - width
+    const maxBottom = window.innerHeight - height
 
-    setDesktopPos({ x: newX, y: newY })
+    newRight = Math.max(0, Math.min(newRight, maxRight))
+    newBottom = Math.max(0, Math.min(newBottom, maxBottom))
+
+    setDesktopPos({ x: newRight, y: newBottom })
   }
 
-  const handleDesktopMouseUp = () => {
+  const handleDesktopMouseUp = (e) => {
     isMouseDownRef.current = false
+    window.removeEventListener('mousemove', handleDesktopMouseMove)
+    window.removeEventListener('mouseup', handleDesktopMouseUp)
+
     // 延迟一点设置 dragging 为 false，防止触发 click 事件
     setTimeout(() => {
       setIsDraggingDesktop(false)
     }, 0)
   }
 
-  useEffect(() => {
-    if (isDraggingDesktop) {
-      window.addEventListener('mousemove', handleDesktopMouseMove)
-      window.addEventListener('mouseup', handleDesktopMouseUp)
-    } else {
-      window.removeEventListener('mousemove', handleDesktopMouseMove)
-      window.removeEventListener('mouseup', handleDesktopMouseUp)
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleDesktopMouseMove)
-      window.removeEventListener('mouseup', handleDesktopMouseUp)
-    }
-  }, [isDraggingDesktop])
+  const handleDesktopMouseDown = (e) => {
+    isMouseDownRef.current = true
+    dragStartMouseRef.current = { x: e.clientX, y: e.clientY }
+    initialDragPosRef.current = { x: desktopPos.x, y: desktopPos.y }
+
+    window.addEventListener('mousemove', handleDesktopMouseMove)
+    window.addEventListener('mouseup', handleDesktopMouseUp)
+  }
 
   // 移动端抽屉高度调整逻辑
   const handleDrawerTouchStart = (e) => {
@@ -152,10 +145,9 @@ export default function FloatTocButton(props) {
   const handleDrawerTouchMove = (e) => {
     if (!touchStartY) return
     const touch = e.touches[0]
-    const deltaY = touchStartY - touch.clientY // 向上滑为正，高度增加
+    const deltaY = touchStartY - touch.clientY
     const newHeight = touchStartHeight + deltaY
     const vh = (newHeight / window.innerHeight) * 100
-    // 限制高度在 30vh 到 85vh 之间
     if (vh >= 25 && vh <= 90) {
       setDrawerHeight(`${vh}vh`)
     }
@@ -166,58 +158,40 @@ export default function FloatTocButton(props) {
     setTouchStartHeight(null)
   }
 
-  // 监听滚动，检测是否超过右侧边栏目录 - 使用 useMemo 来记忆化 throttle 函数
-  const checkScrollPosition = useMemo(
-    () =>
-      throttle(() => {
-        // 移动端直接不显示桌面悬浮按钮，减少DOM操作
-        if (window.innerWidth < 1280) {
-          setShowOnDesktop(false)
-          return
-        }
-
-        // 首先检测右侧边栏是否存在（xl屏幕以上才显示）
-        const sideRight = document.getElementById('sideRight')
-        
-        // 如果右侧边栏不存在或不可见，说明宽度不够，此时需要显示悬浮按钮
-        if (!sideRight || (sideRight && (sideRight.offsetParent === null || window.getComputedStyle(sideRight).display === 'none'))) {
-          setShowOnDesktop(true)
-          return
-        }
-
-        const rect = sideRight.getBoundingClientRect()
-        // 当右侧栏的粘性区域滚动到视口顶部以上时（整个目录不可见），显示悬浮按钮
-        const isScrolledPast = rect.bottom < SCROLL_OFFSET
-        setShowOnDesktop(isScrolledPast)
-      }, 500),
-    []
-  )
-
-  const [hasNextPost, setHasNextPost] = useState(false)
-  const checkNextPost = useMemo(
-    () =>
-      throttle(() => {
-        const nextPost = document.getElementById('pc-next-post')
-        if (nextPost) {
-          const isVisible = window.getComputedStyle(nextPost).opacity === '1'
-          setHasNextPost(isVisible)
-        }
-      }, 500),
-    []
-  )
-
+  // 监听滚动，使用 IntersectionObserver 替代 scroll 事件以优化性能
   useEffect(() => {
-    window.addEventListener('scroll', checkScrollPosition, { passive: true })
-    window.addEventListener('resize', checkScrollPosition, { passive: true })
-    window.addEventListener('scroll', checkNextPost, { passive: true })
-    checkScrollPosition()
-    checkNextPost()
-    return () => {
-      window.removeEventListener('scroll', checkScrollPosition)
-      window.removeEventListener('resize', checkScrollPosition)
-      window.removeEventListener('scroll', checkNextPost)
+    if (window.innerWidth < 1280) {
+      setShowOnDesktop(false)
+      return
     }
-  }, [checkScrollPosition, checkNextPost])
+
+    const sideRight = document.getElementById('sideRight')
+    if (!sideRight || (sideRight && (sideRight.offsetParent === null || window.getComputedStyle(sideRight).display === 'none'))) {
+      setShowOnDesktop(true)
+      return
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) {
+           if (entry.boundingClientRect.top < 0) {
+               setShowOnDesktop(true)
+           }
+        } else {
+            setShowOnDesktop(false)
+        }
+      })
+    }, {
+        threshold: 0,
+        rootMargin: "-80px 0px 0px 0px"
+    })
+
+    observer.observe(sideRight)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   // 当目录隐藏且滚动回右侧栏范围时，关闭目录弹窗
   useEffect(() => {
@@ -226,7 +200,6 @@ export default function FloatTocButton(props) {
     }
   }, [showOnDesktop, tocVisible])
 
-  //   没有目录就隐藏该按钮
   if (!post || !post.toc || post.toc.length < 1) {
     return <></>
   }
@@ -256,7 +229,7 @@ export default function FloatTocButton(props) {
       className={`fixed xl:hidden z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
       style={{
         right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
-        bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '260px' // 位于目录按钮下方约60px (320 - 60 = 260)
+        bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '260px'
       }}
     >
         <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
@@ -264,17 +237,14 @@ export default function FloatTocButton(props) {
 
     {/* 移动端目录弹窗 - 底部抽屉样式 */}
     <div className={`fixed inset-0 z-[60] xl:hidden ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
-      {/* 背景蒙版 */}
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${tocVisible ? 'opacity-100' : 'opacity-0'}`}
         onClick={toggleToc}
       />
-      {/* 底部目录抽屉 */}
       <div
         id="toc-drawer"
         style={{ height: drawerHeight }}
         className={`absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1e1e1e] rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col ${tocVisible ? 'translate-y-0' : 'translate-y-full'}`}>
-        {/* 顶部拖动条 */}
         <div
           className='flex justify-center pt-3 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none'
           onTouchStart={handleDrawerTouchStart}
@@ -283,7 +253,6 @@ export default function FloatTocButton(props) {
         >
           <div className='w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full' />
         </div>
-        {/* 头部 */}
         <div className='flex items-center justify-between px-5 py-2 shrink-0'>
             <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
                 <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
@@ -294,7 +263,6 @@ export default function FloatTocButton(props) {
             </button>
         </div>
 
-        {/* 内容 */}
         <div className='flex-1 px-5 overflow-y-auto overscroll-contain'>
             <Catalog className='!max-h-none h-full' toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
@@ -316,7 +284,6 @@ export default function FloatTocButton(props) {
           <div
             onClick={toggleToc}
             className={`text-sm block p-4 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
-            {/* 标题栏 */}
             <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
               <div className='flex items-center gap-2'>
                 <i className='fa-list-ol fas' />
@@ -325,7 +292,6 @@ export default function FloatTocButton(props) {
               <i className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`} />
             </div>
 
-            {/* 目录内容 */}
             <div className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
               <div className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
                 <Catalog toc={post.toc} onActiveSectionChange={setActiveSectionId} />
