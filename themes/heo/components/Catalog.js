@@ -11,6 +11,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  */
 const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy }) => {
   const { locale } = useGlobal()
+  const [activeSection, setActiveSection] = useState(null)
+
+  // 统一的跳转提示 Toast 状态
+  const [toastState, setToastState] = useState({
+    show: false,
+    message: '',
+    savedScrollY: 0
+  })
+
   // 监听滚动事件
   useEffect(() => {
     window.addEventListener('scroll', actionSectionScrollSpy)
@@ -23,9 +32,6 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
   // 目录自动滚动
   const tRef = useRef(null)
   const tocIds = []
-
-  // 同步选中目录事件
-  const [activeSection, setActiveSection] = useState(null)
 
   const actionSectionScrollSpy = useCallback(
     throttle(() => {
@@ -68,6 +74,31 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
     [toc, activeSection, forceSpy]
   )
 
+  // 处理跳转逻辑
+  const handleJump = (title, targetScrollY) => {
+      const currentScrollY = window.scrollY
+      setToastState({
+          show: true,
+          message: '已跳转至：\n' + title,
+          savedScrollY: currentScrollY
+      })
+
+      // 3秒后自动关闭
+      setTimeout(() => {
+          setToastState(prev => ({ ...prev, show: false }))
+      }, 3000)
+
+      // 如果有目标位置则滚动
+      if (typeof targetScrollY === 'number') {
+          window.scrollTo({ top: targetScrollY, behavior: 'smooth' })
+      }
+  }
+
+  const handleBack = () => {
+      window.scrollTo({ top: toastState.savedScrollY, behavior: 'smooth' })
+      setToastState(prev => ({ ...prev, show: false }))
+  }
+
   // 无目录就直接返回空
   if (!toc || toc.length < 1) {
     return <></>
@@ -90,7 +121,21 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
               <a
                 key={id}
                 href={`#${id}`}
-                onClick={onItemClick}
+                onClick={(e) => {
+                    // 记录当前位置用于返回
+                    const currentY = window.scrollY
+                    setToastState({
+                        show: true,
+                        message: '已跳转至：\n' + tocItem.text,
+                        savedScrollY: currentY
+                    })
+                    // 3秒后自动关闭
+                    setTimeout(() => {
+                        setToastState(prev => ({ ...prev, show: false }))
+                    }, 3000)
+
+                    if (onItemClick) onItemClick(e)
+                }}
                 className={`notion-table-of-contents-item duration-300 transform dark:text-gray-200
             notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item
             ${activeSection === id ? 'bg-indigo-50 dark:bg-yellow-900/40 text-indigo-600 dark:text-yellow-500 border-l-4 border-indigo-600 dark:border-yellow-500' : 'border-l-4 border-transparent'}
@@ -108,47 +153,11 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
           })}
         </nav>
       </div>
-      <JumpToCommentButton />
-    </div>
-  )
-}
 
-const JumpToCommentButton = () => {
-  const [showToast, setShowToast] = useState(false)
-  const [savedScrollY, setSavedScrollY] = useState(0)
+      <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
 
-  const handleJump = () => {
-    setSavedScrollY(window.scrollY)
-    const commentNode = document.getElementById('comment')
-    if (commentNode) {
-      const headerHeight = 80 // approximate header height
-      const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
-      const offsetPosition = elementPosition - headerHeight
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
-      setShowToast(true)
-      setTimeout(() => setShowToast(false), 3000)
-    }
-  }
-
-  const handleBack = () => {
-    window.scrollTo({ top: savedScrollY, behavior: 'smooth' })
-    setShowToast(false)
-  }
-
-  return (
-    <>
-      <div
-        onClick={handleJump}
-        className='mt-4 p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-indigo-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-bold text-sm text-gray-500 dark:text-gray-200'>
-        <i className="fas fa-comments" />
-        跳转到评论区
-      </div>
-
-      {showToast && (
+      {/* 统一的 Toast 提示框 */}
+      {toastState.show && (
         <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-50 animate-fade-in'>
           <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
             <div className='flex items-center gap-2 flex-1 min-w-0'>
@@ -165,8 +174,7 @@ const JumpToCommentButton = () => {
                 />
               </svg>
               <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
-                <span className='font-bold'>已跳转至：</span>
-                <span className='truncate'>评论区</span>
+                <span className='font-bold whitespace-pre-wrap'>{toastState.message}</span>
               </div>
             </div>
             <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
@@ -176,7 +184,7 @@ const JumpToCommentButton = () => {
                 回到原位置
               </button>
               <button
-                onClick={() => setShowToast(false)}
+                onClick={() => setToastState(prev => ({ ...prev, show: false }))}
                 className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
                 <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                   <path
@@ -191,7 +199,35 @@ const JumpToCommentButton = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
+  )
+}
+
+const JumpToCommentButton = ({ onJump }) => {
+  const handleJumpClick = () => {
+    const commentNode = document.getElementById('comment')
+    if (commentNode) {
+      const headerHeight = 80 // approximate header height
+      const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
+      const offsetPosition = elementPosition - headerHeight
+
+      // 调用父组件的跳转处理，传入目标位置
+      if (onJump) {
+          onJump('评论区', offsetPosition)
+      } else {
+          // Fallback if no onJump (shouldn't happen in new structure)
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+      }
+    }
+  }
+
+  return (
+    <div
+      onClick={handleJumpClick}
+      className='mt-4 p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-indigo-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-bold text-sm text-gray-500 dark:text-gray-200'>
+      <i className="fas fa-comments" />
+      跳转到评论区
+    </div>
   )
 }
 

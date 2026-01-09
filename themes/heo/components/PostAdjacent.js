@@ -4,6 +4,7 @@ import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import CONFIG from '../config'
+import LazyImage from '@/components/LazyImage'
 
 /**
  * 上一篇，下一篇文章
@@ -96,40 +97,34 @@ export default function PostAdjacent({ prev, next }) {
 
       // 边界限制 - 严格防止拖出可视区域
       // 元素初始固定在 right-10 (40px) bottom-4 (16px)
-      // 假设元素尺寸 w=288px (w-72), h=112px (h-28)
-      // 初始位置相对于视口右下角的偏移量
+      // 假设元素尺寸 w=288px (w-72) -> 实际可能更宽，根据内容自适应
+      // 这里使用 ref 获取实际宽高
 
-      // 我们通过限制 transform 的位移量来限制位置
-      // 这需要知道当前窗口大小
+      const element = nextPostRef.current
+      if (!element) return
+
+      const elementWidth = element.offsetWidth
+      const elementHeight = element.offsetHeight
       const windowWidth = window.innerWidth
       const windowHeight = window.innerHeight
-      const elementWidth = 288
-      const elementHeight = 112
       const initialRight = 40
       const initialBottom = 16
 
       // 计算允许的最大/最小位移
-      // 向左最大位移 (x 变负): transformX + initialRight + elementWidth <= windowWidth
-      // x >= -(windowWidth - initialRight - elementWidth) - initialRight (offset)
-      // 简化：left edge >= 0 -> (windowWidth - initialRight - elementWidth + x) >= 0 => x >= -(windowWidth - initialRight - elementWidth)
-
       const minX = -(windowWidth - initialRight - elementWidth) // 左边界
-      const maxX = initialRight // 右边界 (允许稍微往右靠一点，或者限制为0)
+      const maxX = initialRight // 右边界
 
       const minY = -(windowHeight - initialBottom - elementHeight) // 上边界
       const maxY = initialBottom // 下边界
 
       if (newX < minX) newX = minX
-      if (newX > 10) newX = 10 // 右侧稍微留余地
+      if (newX > 10) newX = 10
 
       if (newY < minY) newY = minY
-      if (newY > 10) newY = 10 // 底部稍微留余地
+      if (newY > 10) newY = 10
 
       positionRef.current = { x: newX, y: newY }
-
-      if (nextPostRef.current) {
-        nextPostRef.current.style.transform = `translate(${newX}px, ${newY}px)`
-      }
+      element.style.transform = `translate(${newX}px, ${newY}px)`
     }
 
     const handleMouseMove = e => {
@@ -195,7 +190,7 @@ export default function PostAdjacent({ prev, next }) {
           <div
             ref={nextPostRef}
             id='pc-next-post'
-            className={`${isShow ? 'mb-5 opacity-100' : '-mb-24 opacity-0'} hidden md:block fixed z-40 right-10 bottom-4 duration-200 transition-opacity`}
+            className={`${isShow ? 'mb-5 opacity-100' : '-mb-24 opacity-0'} hidden md:flex fixed z-40 right-10 bottom-4 duration-200 transition-opacity`}
             style={{
                 cursor: isDragging ? 'grabbing' : 'move',
                 touchAction: 'none'
@@ -203,30 +198,46 @@ export default function PostAdjacent({ prev, next }) {
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            <div className='relative w-72 h-28 bg-white dark:bg-[#1e1e1e] border dark:border-gray-600 rounded-lg drop-shadow-xl overflow-hidden p-4 flex flex-col justify-center'>
+            <div className='relative w-80 min-h-24 bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden flex flex-col'>
+                {/* 顶部图片部分 */}
+                {next.pageCoverThumbnail && (
+                   <div className="h-32 w-full relative overflow-hidden group">
+                       <LazyImage
+                          src={next.pageCoverThumbnail}
+                          alt={next.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       />
+                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                   </div>
+                )}
+
+                {/* 内容部分 */}
+                <div className={`p-4 flex flex-col justify-center ${next.pageCoverThumbnail ? '-mt-8 z-10' : 'h-full'}`}>
+                   {/* 标签 */}
+                   <div className={`text-xs font-bold mb-1 ${next.pageCoverThumbnail ? 'text-white text-shadow-md' : 'text-gray-500 dark:text-gray-400'}`}>
+                      {locale.COMMON.NEXT_POST}
+                      <i className="fas fa-arrow-right ml-1"></i>
+                   </div>
+
+                   {/* 标题 */}
+                   <SmartLink
+                      href={`/${next.slug}`}
+                      className={`line-clamp-2 font-bold text-base leading-tight select-none cursor-pointer hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors ${next.pageCoverThumbnail ? 'text-white text-shadow-md hover:text-white' : 'text-gray-800 dark:text-gray-200'}`}
+                  >
+                      {next?.title}
+                  </SmartLink>
+                </div>
+
                 {/* 关闭按钮 */}
                 <div
-                    className='close-btn absolute top-2 right-2 z-50 p-1 cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors'
+                    className='close-btn absolute top-2 right-2 z-20 p-1.5 bg-black/20 hover:bg-black/40 rounded-full cursor-pointer text-white transition-colors backdrop-blur-sm'
                     onClick={(e) => {
                         e.stopPropagation()
                         setIsClosed(true)
                     }}
                 >
-                    <i className="fas fa-times"></i>
+                    <i className="fas fa-times text-xs"></i>
                 </div>
-
-                {/* 标签 */}
-                <div className='font-semibold text-sm mb-2 text-gray-500 dark:text-gray-400 select-none pointer-events-none'>
-                    {locale.COMMON.NEXT_POST}
-                </div>
-
-                {/* 标题 - 仅此处可点击跳转 */}
-                <SmartLink
-                    href={`/${next.slug}`}
-                    className='line-clamp-2 font-bold text-gray-800 dark:text-gray-200 dark:hover:text-yellow-600 hover:text-blue-600 select-none cursor-pointer'
-                >
-                    {next?.title}
-                </SmartLink>
             </div>
           </div>
       )}
