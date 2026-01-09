@@ -190,7 +190,7 @@ export default function PostAdjacent({ prev, next }) {
           <div
             ref={nextPostRef}
             id='pc-next-post'
-            className={`${isShow ? 'mb-5 opacity-100' : '-mb-24 opacity-0'} hidden md:flex fixed z-40 right-10 bottom-4 duration-200 transition-opacity`}
+            className={`${isShow ? 'mb-5 opacity-100' : '-mb-24 opacity-0'} hidden md:flex fixed z-40 right-10 bottom-2 duration-200 transition-opacity`}
             style={{
                 cursor: isDragging ? 'grabbing' : 'move',
                 touchAction: 'none'
@@ -230,7 +230,11 @@ export default function PostAdjacent({ prev, next }) {
 
                 {/* 关闭按钮 */}
                 <div
-                    className='close-btn absolute top-2 right-2 z-20 p-1.5 bg-black/20 hover:bg-black/40 rounded-full cursor-pointer text-white transition-colors backdrop-blur-sm'
+                    className={`close-btn absolute top-2 right-2 z-20 w-6 h-6 flex items-center justify-center rounded-full cursor-pointer transition-colors backdrop-blur-sm ${
+                        next.pageCoverThumbnail
+                            ? 'bg-black/20 hover:bg-black/40 text-white'
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-500'
+                    }`}
                     onClick={(e) => {
                         e.stopPropagation()
                         setIsClosed(true)

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Catalog from './Catalog'
 import throttle from 'lodash.throttle'
 import { uuidToId } from 'notion-utils'
@@ -356,8 +357,8 @@ const JumpToCommentButtonDesktop = () => {
         <i className='fas fa-comments mr-2'/>跳转评论
       </div>
 
-      {showToast && (
-        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[70] animate-fade-in'>
+      {showToast && createPortal(
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[99] animate-fade-in'>
           <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
             <div className='flex items-center gap-2 flex-1 min-w-0'>
               <svg
@@ -397,7 +398,8 @@ const JumpToCommentButtonDesktop = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
@@ -438,8 +440,8 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
         {isExpandedButton && <span className='font-bold ml-1 whitespace-nowrap'>跳转评论</span>}
       </div>
 
-      {showToast && (
-        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[70] animate-fade-in'>
+      {showToast && createPortal(
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[99] animate-fade-in'>
           <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
             <div className='flex items-center gap-2 flex-1 min-w-0'>
               <svg
@@ -479,7 +481,8 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
