@@ -119,3 +119,32 @@ Algolia异常 {
 }
  ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
  ⨯ The requested resource isn't a valid image for /svg/not-by-ai/zh/Written-By-Human-Not-By-AI-Badge-white.svg received null
+ ✓ Compiled in 20.8s (2915 modules)
+ ✓ Compiled in 22.8s (2915 modules)
+ GET /article/chinese-teens-coding 200 in 1394ms
+[API-->>请求] from:slug-props-article/chinese-teens-coding id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1024ms - from:slug-props-article/chinese-teens-coding
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:408ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:391ms - from:data-notice
+[API-->>请求] from:slug-props-article/chinese-teens-coding id:24f4d291-ba2c-8136-9ed5-d7df281fc144
+[API<<--响应] 耗时:537ms - from:slug-props-article/chinese-teens-coding
+Warning: data for page "/[prefix]/[slug]" (path "/article/chinese-teens-coding") is 134 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+ GET /_next/data/development/zh-CN/article/chinese-teens-coding.json?prefix=article&slug=chinese-teens-coding 200 in 2641ms
+Algolia异常 {
+  name: 'ApiError',
+  message: 'Invalid Application-ID or API key',
+  status: 403,
+  transporterStackTrace: [
+    {
+      request: [Object],
+      response: [Object],
+      host: [Object],
+      triesLeft: 3
+    }
+  ]
+}
+ ⨯ The requested resource isn't a valid image for /svg/not-by-ai/zh/Written-By-Human-Not-By-AI-Badge-white.svg received null
+ ✓ Compiled in 3.6s (2915 modules)

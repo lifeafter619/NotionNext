@@ -137,6 +137,7 @@ export default function FloatTocButton(props) {
 
   // 移动端抽屉高度调整逻辑
   const handleDrawerTouchStart = (e) => {
+    e.stopPropagation()
     const touch = e.touches[0]
     setTouchStartY(touch.clientY)
     const currentHeight = document.getElementById('toc-drawer').clientHeight
@@ -145,6 +146,8 @@ export default function FloatTocButton(props) {
 
   const handleDrawerTouchMove = (e) => {
     if (!touchStartY) return
+    e.stopPropagation()
+    e.preventDefault()
     const touch = e.touches[0]
     const deltaY = touchStartY - touch.clientY
     const newHeight = touchStartHeight + deltaY
@@ -157,6 +160,57 @@ export default function FloatTocButton(props) {
   const handleDrawerTouchEnd = () => {
     setTouchStartY(null)
     setTouchStartHeight(null)
+  }
+
+  // 移动端抽屉（及桌面端模拟移动端抽屉时）的鼠标拖动调整高度逻辑
+  const handleDrawerMouseDown = (e) => {
+      e.stopPropagation()
+      setTouchStartY(e.clientY)
+      const currentHeight = document.getElementById('toc-drawer').clientHeight
+      setTouchStartHeight(currentHeight)
+
+      // 添加全局鼠标事件监听
+      window.addEventListener('mousemove', handleDrawerMouseMove)
+      window.addEventListener('mouseup', handleDrawerMouseUp)
+  }
+
+  const handleDrawerMouseMove = (e) => {
+      e.preventDefault()
+      // 这里需要使用 useRef 或者直接访问 state (注意闭包问题)
+      // 由于 handleDrawerMouseMove 是定义在组件内的闭包，且 touchStartY 是 state
+      // 在 useEffect 绑定的监听器中，state 可能是旧的。
+      // 因此推荐使用 Ref 来保存拖动状态，或者直接在组件内如果不通过 addEventListener 绑定
+  }
+  // 重新设计: 使用 Ref 来存储 startY 和 startHeight 以避免闭包陷阱
+  const drawerDragRef = useRef({ startY: 0, startHeight: 0, isDragging: false })
+
+  const handleDrawerMouseDownV2 = (e) => {
+      e.stopPropagation()
+      const currentHeight = document.getElementById('toc-drawer').clientHeight
+      drawerDragRef.current = {
+          startY: e.clientY,
+          startHeight: currentHeight,
+          isDragging: true
+      }
+      window.addEventListener('mousemove', handleDrawerMouseMoveV2)
+      window.addEventListener('mouseup', handleDrawerMouseUpV2)
+  }
+
+  const handleDrawerMouseMoveV2 = (e) => {
+      if (!drawerDragRef.current.isDragging) return
+      e.preventDefault()
+      const deltaY = drawerDragRef.current.startY - e.clientY
+      const newHeight = drawerDragRef.current.startHeight + deltaY
+      const vh = (newHeight / window.innerHeight) * 100
+      if (vh >= 25 && vh <= 90) {
+          setDrawerHeight(`${vh}vh`)
+      }
+  }
+
+  const handleDrawerMouseUpV2 = () => {
+      drawerDragRef.current.isDragging = false
+      window.removeEventListener('mousemove', handleDrawerMouseMoveV2)
+      window.removeEventListener('mouseup', handleDrawerMouseUpV2)
   }
 
   // 监听滚动，使用 IntersectionObserver 替代 scroll 事件以优化性能
@@ -251,6 +305,7 @@ export default function FloatTocButton(props) {
           onTouchStart={handleDrawerTouchStart}
           onTouchMove={handleDrawerTouchMove}
           onTouchEnd={handleDrawerTouchEnd}
+          onMouseDown={handleDrawerMouseDownV2}
         >
           <div className='w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full' />
         </div>
