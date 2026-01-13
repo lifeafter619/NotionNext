@@ -2,6 +2,7 @@ import { useGlobal } from '@/lib/global'
 import throttle from 'lodash.throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 /**
  * 目录导航组件
@@ -157,8 +158,8 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
       <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
 
       {/* 统一的 Toast 提示框 */}
-      {toastState.show && (
-        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-50 animate-fade-in'>
+      {toastState.show && createPortal(
+        <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[99] animate-fade-in'>
           <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
             <div className='flex items-center gap-2 flex-1 min-w-0'>
               <svg
@@ -197,7 +198,8 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

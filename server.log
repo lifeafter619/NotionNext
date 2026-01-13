@@ -14,19 +14,19 @@ You can learn more, including how to opt-out if you'd not like to participate in
 https://nextjs.org/telemetry
 
 [默认主题] /app/themes/heo
- ✓ Ready in 1668ms
+ ✓ Ready in 1666ms
  ○ Compiling /middleware ...
- ✓ Compiled /middleware in 1796ms (215 modules)
+ ✓ Compiled /middleware in 1757ms (215 modules)
  ○ Compiling / ...
- ✓ Compiled / in 34.3s (2898 modules)
- GET / 200 in 57847ms
- ✓ Compiled in 33.2s (2898 modules)
+ ✓ Compiled / in 30.5s (2898 modules)
+ GET / 200 in 57894ms
+ ✓ Compiled in 29.9s (2898 modules)
 [API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:1350ms - from:index
+[API<<--响应] 耗时:1059ms - from:index
 [API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:436ms - from:config-table
+[API<<--响应] 耗时:564ms - from:config-table
 [API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:289ms - from:data-notice
+[API<<--响应] 耗时:277ms - from:data-notice
 Warning: Invalid DOM property `imagesrcset`. Did you mean `imageSrcSet`?
     at link
     at head
@@ -42,555 +42,68 @@ Warning: Invalid DOM property `imagesizes`. Did you mean `imageSizes`?
     at Html (webpack-internal:///./node_modules/next/dist/pages/_document.js:782:132)
     at MyDocument (webpack-internal:///./pages/_document.js:47:1)
 [API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:1644ms - from:index
+[API<<--响应] 耗时:1057ms - from:index
 [API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:340ms - from:config-table
+[API<<--响应] 耗时:338ms - from:config-table
 [API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:345ms - from:data-notice
- GET / 200 in 2580ms
+[API<<--响应] 耗时:307ms - from:data-notice
+ GET / 200 in 1907ms
 [API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:808ms - from:index
+[API<<--响应] 耗时:865ms - from:index
 [API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:337ms - from:config-table
+[API<<--响应] 耗时:744ms - from:config-table
 [API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:530ms - from:data-notice
- GET / 200 in 2117ms
+[API<<--响应] 耗时:306ms - from:data-notice
+ GET / 200 in 2344ms
 [API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:1005ms - from:index
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:383ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:327ms - from:data-notice
- GET / 200 in 2002ms
- ○ Compiling /search ...
- ✓ Compiled /search in 3.4s (2902 modules)
-[API-->>请求] from:search-props id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:2398ms - from:search-props
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:366ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:435ms - from:data-notice
-Warning: React does not recognize the `currentSearch` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `currentsearch` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
-    at div
-    at LayoutSearch (webpack-internal:///./themes/heo/index.js:371:13)
-    at DynamicLayout (webpack-internal:///./themes/theme.js:90:13)
-    at Search (webpack-internal:///./pages/search/index.js:30:13)
-    at div
-    at div
-    at main
-    at div
-    at LayoutBase (webpack-internal:///./themes/heo/index.js:163:13)
-    at ImageViewerProvider (webpack-internal:///./lib/ImageViewerContext.js:21:36)
-    at GlobalContextProvider (webpack-internal:///./lib/global.js:32:13)
-    at MyApp (webpack-internal:///./pages/_app.js:66:22)
-    at StyleRegistry (/app/node_modules/styled-jsx/dist/index/index.js:449:36)
-    at eU (/app/node_modules/next/dist/compiled/next-server/pages.runtime.dev.js:8:20506)
-    at eH (/app/node_modules/next/dist/compiled/next-server/pages.runtime.dev.js:17:1788)
-    at eJ (/app/node_modules/next/dist/compiled/next-server/pages.runtime.dev.js:17:3091)
-    at div
-    at e9 (/app/node_modules/next/dist/compiled/next-server/pages.runtime.dev.js:26:761)
- GET /search 200 in 7102ms
-[API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:1027ms - from:index
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:369ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:310ms - from:data-notice
- GET / 200 in 1931ms
- ○ Compiling /[prefix] ...
- ✓ Compiled /[prefix] in 12s (2917 modules)
- GET /thought 200 in 13184ms
-[API-->>请求] from:slug-props-thought id:24f4d291ba2c806c8850ddcb3fe8c012
- ○ Compiling /[prefix]/[slug] ...
- ✓ Compiled /[prefix]/[slug] in 1269ms (2921 modules)
-[API<<--响应] 耗时:1545ms - from:slug-props-thought
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:370ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:328ms - from:data-notice
-[API-->>请求] from:slug-props-thought id:24f4d291-ba2c-81b0-bccd-e5a990a86610
- GET /article/ppt-works 200 in 2500ms
- GET /_next/data/development/zh-CN/thought.json?prefix=thought 200 in 2507ms
-[API<<--响应] 耗时:712ms - from:slug-props-thought
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- GET /article/auto-links 200 in 84ms
- GET /article/2023-innoasso-new 200 in 88ms
-[API-->>请求] from:slug-props-article/auto-links id:24f4d291ba2c806c8850ddcb3fe8c012
- GET /_next/data/development/zh-CN/article/auto-links.json?prefix=article&slug=auto-links 200 in 33ms
-[API<<--响应] 耗时:1051ms - from:slug-props-article/auto-links
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
- GET /article/2024-fireworks 200 in 68ms
-[API<<--响应] 耗时:358ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:296ms - from:data-notice
-[API-->>请求] from:slug-props-article/auto-links id:24f4d291-ba2c-803b-9745-ebea632fbe7e
- GET /article/aboard 200 in 65ms
-[API<<--响应] 耗时:1173ms - from:slug-props-article/auto-links
-skipping missing collection view for block 24f4d291-ba2c-80ef-b63a-dc1521442b45 {
-  collectionId: null,
-  collectionViewId: '24f4d291-ba2c-8055-9426-000c11ce529f',
-  collectionView: undefined,
-  collectionData: undefined,
-  recordMap: {
-    block: {
-      '24f4d291-ba2c-803b-9745-ebea632fbe7e': [Object],
-      '24f4d291-ba2c-806c-8850-ddcb3fe8c012': [Object],
-      '24f4d291-ba2c-80d6-9824-d028ad6eeb73': [Object],
-      '25c4d291-ba2c-808d-88df-eb4702afa016': [Object],
-      '24f4d291-ba2c-803f-8172-dd145e81631b': [Object],
-      '24f4d291-ba2c-80d4-b8f8-da8540ec7433': [Object],
-      '24f4d291-ba2c-80f2-9575-e61f6dd307c1': [Object],
-      '24f4d291-ba2c-80e2-b73e-eb13ac60846d': [Object],
-      '25c4d291-ba2c-804c-a27a-d2a1adf02312': [Object],
-      '24f4d291-ba2c-80c8-a8aa-cb15fc88c4d0': [Object],
-      '25c4d291-ba2c-8027-aad3-ffd30ba65587': [Object],
-      '25c4d291-ba2c-803d-94c0-e7c0c31a50ee': [Object],
-      '25c4d291-ba2c-800c-845e-c4f1364b6ac1': [Object],
-      '25c4d291-ba2c-803d-97a5-ca205a1095b0': [Object],
-      '25c4d291-ba2c-8016-beab-f0dcb1607b0c': [Object],
-      '25c4d291-ba2c-803e-9592-f1adbc22887f': [Object],
-      '24f4d291-ba2c-80a5-967a-e4a6dc0719df': [Object],
-      '24f4d291-ba2c-80a7-8148-d6970552a559': [Object],
-      '24f4d291-ba2c-8026-ac41-d4b49ff89323': [Object],
-      '24f4d291-ba2c-8002-a799-fec9b7f76c9e': [Object],
-      '24f4d291-ba2c-8022-bdc5-f44b009fc386': [Object],
-      '25c4d291-ba2c-804f-b355-fb8bb853496f': [Object],
-      '25c4d291-ba2c-8066-b0de-c23c830b98fc': [Object],
-      '25c4d291-ba2c-8015-a445-de5d9259ae6c': [Object],
-      '25c4d291-ba2c-803b-ba9e-e95ffe491344': [Object],
-      '25c4d291-ba2c-80b3-ae07-ca7c7443f194': [Object],
-      '25c4d291-ba2c-8068-b4bd-c7f82c177efc': [Object],
-      '24f4d291-ba2c-80f4-a29e-d34a22547896': [Object],
-      '24f4d291-ba2c-80c7-b560-ecae1af86ba2': [Object],
-      '24f4d291-ba2c-80b5-b806-c9ef980266db': [Object],
-      '24f4d291-ba2c-80a1-90b8-d952c2ee46f3': [Object],
-      '24f4d291-ba2c-803a-a213-c054df983388': [Object],
-      '25c4d291-ba2c-80b3-995f-f300eb040938': [Object],
-      '2504d291-ba2c-8050-b117-cb217c171de4': [Object],
-      '2504d291-ba2c-8095-8fcf-f8168e548cb4': [Object],
-      '25c4d291-ba2c-80ab-b97b-cdb204625110': [Object],
-      '24f4d291-ba2c-8008-a20c-f953506bb32d': [Object],
-      '24f4d291-ba2c-80ae-96a8-d6c71d190276': [Object],
-      '24f4d291-ba2c-8068-a11c-d1eb0fc572b0': [Object],
-      '25c4d291-ba2c-80d3-bff2-ee4cbbf60bc0': [Object],
-      '25c4d291-ba2c-8051-b5b3-d11f9e485b3e': [Object],
-      '25c4d291-ba2c-804a-9a93-f8fab49d9127': [Object],
-      '25c4d291-ba2c-805a-a3ac-ea55177d65cd': [Object],
-      '25c4d291-ba2c-8088-b0de-f8e9087593e5': [Object],
-      '25c4d291-ba2c-801e-bd67-fea264b709ee': [Object],
-      '24f4d291-ba2c-80ce-9da9-e035eaf60fbb': [Object],
-      '24f4d291-ba2c-807f-819b-e349cb40b79d': [Object],
-      '25c4d291-ba2c-805f-8d35-c7a68aab38a9': [Object],
-      '25c4d291-ba2c-80ab-b234-ff30a4e589c2': [Object],
-      '25c4d291-ba2c-8021-863d-d7082e58d1c7': [Object],
-      '25c4d291-ba2c-80d0-acb1-f0a9bda50d08': [Object],
-      '25c4d291-ba2c-80d7-a35d-e92ef404e6cf': [Object],
-      '24f4d291-ba2c-80f4-9a22-f2ef091258f0': [Object],
-      '25c4d291-ba2c-80f2-b573-cf5018516ad8': [Object],
-      '24f4d291-ba2c-8039-ab0e-f33107761f91': [Object],
-      '25c4d291-ba2c-807f-8727-eb67f3949631': [Object],
-      '24f4d291-ba2c-80ac-82c4-ffdaf58bbc66': [Object],
-      '25c4d291-ba2c-800a-a9ea-de7445830dfa': [Object],
-      '25c4d291-ba2c-8043-93a1-c2f8d027a3b3': [Object],
-      '24f4d291-ba2c-80c1-87d7-c28af571e2a2': [Object],
-      '25c4d291-ba2c-800f-b46b-fcb27d6ae300': [Object],
-      '25c4d291-ba2c-800d-a487-ccde8aca260b': [Object],
-      '25c4d291-ba2c-804d-bf33-f5763397c96f': [Object],
-      '25c4d291-ba2c-800b-b223-e88be79beed8': [Object],
-      '25c4d291-ba2c-806d-ab8a-c79bfa85de0f': [Object],
-      '25c4d291-ba2c-802f-a6ee-d8a8a056db93': [Object],
-      '25c4d291-ba2c-8068-b367-fb68f37655b5': [Object],
-      '25c4d291-ba2c-808e-a43b-e69c9658f761': [Object],
-      '25c4d291-ba2c-803b-964e-fe3d91871538': [Object],
-      '25c4d291-ba2c-80ca-b711-de932e79be7b': [Object],
-      '25c4d291-ba2c-8063-be6f-d0d892684280': [Object],
-      '25c4d291-ba2c-80fb-9d37-d3dce6d45533': [Object],
-      '25c4d291-ba2c-801c-852a-c53ec70804f6': [Object],
-      '25c4d291-ba2c-80f4-8cd4-dbe6f0fc32bc': [Object],
-      '25c4d291-ba2c-804d-bf09-f3c752fc900f': [Object],
-      '25c4d291-ba2c-809f-ae7f-fe916b2e453f': [Object],
-      '25c4d291-ba2c-80d1-a0a5-ec152483dd82': [Object],
-      '25c4d291-ba2c-80b3-a315-f7dc3e23eb6d': [Object],
-      '25c4d291-ba2c-80b4-8f47-c4d8bcf12c5a': [Object],
-      '25c4d291-ba2c-80bc-b4fb-fb5f8e02420c': [Object],
-      '25c4d291-ba2c-8045-88ed-d840e0215b25': [Object],
-      '25c4d291-ba2c-80a8-8061-f5ff07424ef4': [Object],
-      '25c4d291-ba2c-8023-9377-e947c043f4d3': [Object],
-      '25c4d291-ba2c-802b-b16e-fc2fd3dbc43a': [Object],
-      '25c4d291-ba2c-809d-a8aa-c6fd1681ed71': [Object],
-      '25c4d291-ba2c-808a-b0e7-c312715bbf7a': [Object],
-      '25c4d291-ba2c-80bc-bff5-e0812380dc83': [Object],
-      '25c4d291-ba2c-8024-9cf0-c50b558219fe': [Object],
-      '25c4d291-ba2c-8053-9e73-cdc32c4f1cc8': [Object],
-      '25c4d291-ba2c-8047-9047-f64aad3447c9': [Object],
-      '25c4d291-ba2c-80ff-a670-c8f3b1e7ec0a': [Object],
-      '25c4d291-ba2c-80ef-a491-cfea0ac1c861': [Object],
-      '25c4d291-ba2c-80e6-95be-cafe81a7a787': [Object],
-      '25c4d291-ba2c-80f0-a2fc-d4689850d5b5': [Object],
-      '25c4d291-ba2c-8031-9e5c-ccf00dae5dad': [Object],
-      '25c4d291-ba2c-8075-a459-dce6aea8cb84': [Object],
-      '25c4d291-ba2c-8087-a0c5-c847561390c5': [Object],
-      '25c4d291-ba2c-8097-b5e2-f9257f0cda38': [Object],
-      '25c4d291-ba2c-80b4-b1ef-e49f3a8654bb': [Object],
-      '25c4d291-ba2c-80f0-b87a-f2e830259b36': [Object],
-      '25c4d291-ba2c-8047-aa48-e6a97088af86': [Object],
-      '25c4d291-ba2c-8082-bac5-c036b63bcc67': [Object],
-      '25c4d291-ba2c-80e3-b4f7-d1338915657f': [Object],
-      '25c4d291-ba2c-8034-972f-c9b3389baa22': [Object],
-      '25c4d291-ba2c-8075-b703-d4f3324a7078': [Object],
-      '25c4d291-ba2c-80fc-9725-e495ac3e446a': [Object],
-      '25c4d291-ba2c-80e5-bd12-e6caf7fbe803': [Object],
-      '25c4d291-ba2c-80d1-803f-e63e8a1a740f': [Object],
-      '25c4d291-ba2c-8054-80b3-c39ac8801238': [Object],
-      '25c4d291-ba2c-8035-abc4-ec42d6c05d6c': [Object],
-      '25c4d291-ba2c-80ea-b343-e1f4f1b9fb99': [Object],
-      '25c4d291-ba2c-8029-b72e-dc0b0550f473': [Object],
-      '25c4d291-ba2c-8082-bc39-e629c001724f': [Object],
-      '25c4d291-ba2c-8058-b072-e63358a8a3e2': [Object],
-      '25c4d291-ba2c-8000-98cb-d6cdf2eadcbb': [Object],
-      '25c4d291-ba2c-8003-b4af-d74d561f539d': [Object],
-      '24f4d291-ba2c-80ef-b63a-dc1521442b45': [Object],
-      '25c4d291-ba2c-80ac-999f-c7767a7ec99b': [Object],
-      '25c4d291-ba2c-8054-94a8-f53ea920667b': [Object],
-      '25c4d291-ba2c-808d-8684-cc1f67ef1e09': [Object],
-      '25c4d291-ba2c-807d-a00c-cdbb9c22a07c': [Object],
-      '25c4d291-ba2c-804e-8aaf-fa16aa3d4ee8': [Object],
-      '25c4d291-ba2c-8019-8521-fb2e34aeae99': [Object],
-      '25c4d291-ba2c-80b7-a77e-c740481eaf1d': [Object],
-      '25c4d291-ba2c-80a3-9794-d79d94f7099f': [Object],
-      '25c4d291-ba2c-80cf-8477-d3556b351c3b': [Object],
-      '25c4d291-ba2c-8085-a15b-d8d284cc1aa9': [Object],
-      '25c4d291-ba2c-8041-852d-fd3611e09d3e': [Object]
-    },
-    collection: { '24f4d291-ba2c-81b8-9524-000b40600c46': [Object] },
-    automation: { '24f4d291-ba2c-811e-8d2a-004d1bf24b2e': [Object] },
-    automation_action: { '24f4d291-ba2c-81b5-8ac3-005a8b178e8c': [Object] },
-    collection_view: { '24f4d291-ba2c-8114-bb73-000c125cb117': [Object] },
-    notion_user: {},
-    collection_query: {},
-    signed_urls: {
-      '24f4d291-ba2c-803b-9745-ebea632fbe7e': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/f01c0812-6dc6-426d-9b8a-e08331ea3b0e/博客封面图-自动化友链_(1).png?table=block&id=24f4d291-ba2c-803b-9745-ebea632fbe7e&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=lJW_RWXg5OdKxhFRbMfm_v5qHNe6Qza3vXrjG5uEKZ4',
-      '24f4d291-ba2c-8068-a11c-d1eb0fc572b0': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/83fbaf57-149d-4aa3-bbf5-4ee367176169/image.png?table=block&id=24f4d291-ba2c-8068-a11c-d1eb0fc572b0&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=e-0eVMN3-6hdoGxHpjxXnulrED8yViUZ6XXAunfmHpg',
-      '25c4d291-ba2c-8088-b0de-f8e9087593e5': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/bce341dc-2a05-4928-b1d4-b67320745b3a/image.png?table=block&id=25c4d291-ba2c-8088-b0de-f8e9087593e5&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=nDGy6sF0eSNzTO0mKmmHKrMvSW8nf8Q7M_EZiMXT9vM',
-      '24f4d291-ba2c-807f-819b-e349cb40b79d': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/894ffdb8-907d-443e-8721-d6d6dd8ee068/image.png?table=block&id=24f4d291-ba2c-807f-819b-e349cb40b79d&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=uWUaIoLcTabeLQ9TQBZhYtQixaCP33HpG-FGF9m5sLQ',
-      '25c4d291-ba2c-80d0-acb1-f0a9bda50d08': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/558011db-d96a-49a2-91ab-50303638c95f/image.png?table=block&id=25c4d291-ba2c-80d0-acb1-f0a9bda50d08&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=xFJGeLgeLRg-6zdBizuOnSfhHIzNzHYawXosQvojpZA',
-      '24f4d291-ba2c-8039-ab0e-f33107761f91': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/ece9ff5e-5a92-477c-bf11-95c7d4f84b30/image.png?table=block&id=24f4d291-ba2c-8039-ab0e-f33107761f91&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=QNgm-7qRwIVHIk26MywbjVRKUwuKO8RmKdIEKe7huZM',
-      '24f4d291-ba2c-80c1-87d7-c28af571e2a2': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/c7c7ed23-a79a-45e2-9b2a-267f184aa958/image.png?table=block&id=24f4d291-ba2c-80c1-87d7-c28af571e2a2&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=645TvKS_jg3G--p0h8XElCCk8TJxgn8WQFeojuPB9jc',
-      '25c4d291-ba2c-8063-be6f-d0d892684280': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/f05f5257-b63c-4e1b-9afb-adfab732533a/image.png?table=block&id=25c4d291-ba2c-8063-be6f-d0d892684280&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=FxMB3q5dnrS9kZb-QXlD0xhS2k1Os0CyTc32VufEILI',
-      '25c4d291-ba2c-80b3-a315-f7dc3e23eb6d': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/9504c979-2687-4a0a-8e8e-f96eb6f11b84/image.png?table=block&id=25c4d291-ba2c-80b3-a315-f7dc3e23eb6d&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=JHqYOSmaBSs3QJoBZm_DXLP-ppPUFhuR-MjL6ip6tCQ',
-      '25c4d291-ba2c-80bc-b4fb-fb5f8e02420c': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/63f78714-6b6b-4ec4-ac6a-de61d83b05c1/image.png?table=block&id=25c4d291-ba2c-80bc-b4fb-fb5f8e02420c&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=u6uC60n1IXwq1wwMdIuDzfY7aNpnB8PJRTKDAqFsUCQ',
-      '25c4d291-ba2c-802b-b16e-fc2fd3dbc43a': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/070ed420-9a09-4d2d-b3fc-c41872901197/image.png?table=block&id=25c4d291-ba2c-802b-b16e-fc2fd3dbc43a&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=z7nFSDuAHiGRFDsTiKChY37YC4Hr_UY6ed7P9xvNFU4',
-      '25c4d291-ba2c-809d-a8aa-c6fd1681ed71': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/a80f2596-c23e-4aa7-b062-6136aa50ee4a/image.png?table=block&id=25c4d291-ba2c-809d-a8aa-c6fd1681ed71&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=KIsIsZ5c8TzvjrwNwuDMIlqNEecwBneYWySzEZIWXW8',
-      '25c4d291-ba2c-80bc-bff5-e0812380dc83': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/14f236e2-48c6-4959-b5b1-faf236c40c16/image.png?table=block&id=25c4d291-ba2c-80bc-bff5-e0812380dc83&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=ryjI2tAmJeswuaBQGDuKIuYAAdPNBSMTdsTOaVLSpu0',
-      '25c4d291-ba2c-8047-9047-f64aad3447c9': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/708fde75-35b2-47fa-bed1-b740929bfd71/image.png?table=block&id=25c4d291-ba2c-8047-9047-f64aad3447c9&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=Rc5tXqF_2X8R-mIMfAF_Y_kzwvsKnyPdtuFRgu1-9cI',
-      '25c4d291-ba2c-8087-a0c5-c847561390c5': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/348bd956-94b6-45d4-9b76-2f02e549e6ec/image.png?table=block&id=25c4d291-ba2c-8087-a0c5-c847561390c5&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=yCXRdMiQMODgVE-IISAKJv9onIdRTUp9Vy2Zjxguysk',
-      '25c4d291-ba2c-80f0-b87a-f2e830259b36': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/c26ab5c9-7eff-4a84-89e7-ac28f68bbf07/image.png?table=block&id=25c4d291-ba2c-80f0-b87a-f2e830259b36&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=x_4HEBIwEWZ8HFtin3EtW38d4UWyH5Up7wjOXP2CpaI',
-      '25c4d291-ba2c-8029-b72e-dc0b0550f473': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/a7375f02-5a03-488e-a3b2-ffd2de60a3f5/image.png?table=block&id=25c4d291-ba2c-8029-b72e-dc0b0550f473&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=ukuKKRc3G_Xdn-6yz1k4xo_MXEwf5VQF6zT4TFdIwd4',
-      '25c4d291-ba2c-8085-a15b-d8d284cc1aa9': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/6dec09fb-5541-4974-8eda-bf4e59010905/image.png?table=block&id=25c4d291-ba2c-8085-a15b-d8d284cc1aa9&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=gDOQR8N741IcJTCZ9_7sSNS4bDt7IS_rdkQoExqjkuw',
-      '25c4d291-ba2c-8041-852d-fd3611e09d3e': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/8334007e-6883-41d6-b41f-7b207f6e286f/image.png?table=block&id=25c4d291-ba2c-8041-852d-fd3611e09d3e&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=R8WFxSiFC2eQ9I04AFNTNDW0Ld3a6C-b-_y5HjYELNg',
-      '25c4d291-ba2c-807d-a00c-cdbb9c22a07c': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/b6c3c1de-5844-401f-a5e6-bd7cc2029467/image.png?table=block&id=25c4d291-ba2c-807d-a00c-cdbb9c22a07c&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=PxlqZ2ZiXJMRTtiyqJFX7MmiFfWS5s6_gvmbMoYEHNY',
-      '25c4d291-ba2c-80cf-8477-d3556b351c3b': 'https://file.notion.so/f/f/7d3c019b-9700-4860-83dd-9d5200e05cc7/b7927887-8ea4-4d34-8950-e1af1d8030ee/结束图.png?table=block&id=25c4d291-ba2c-80cf-8477-d3556b351c3b&spaceId=7d3c019b-9700-4860-83dd-9d5200e05cc7&expirationTimestamp=1767823200000&signature=7eXrCEfCMZZQn3P06Ew4xOEwHz179NPYtnyookEulYw'
-    }
-  }
-}
-Warning: data for page "/[prefix]/[slug]" (path "/article/auto-links") is 329 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- GET /article/hust-trip 200 in 69ms
-[API-->>请求] from:slug-props-article/aboard id:24f4d291ba2c806c8850ddcb3fe8c012
- GET /_next/data/development/zh-CN/article/aboard.json?prefix=article&slug=aboard 200 in 41ms
-[API<<--响应] 耗时:694ms - from:slug-props-article/aboard
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:366ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
- GET /article/project 200 in 90ms
-[API<<--响应] 耗时:342ms - from:data-notice
-[API-->>请求] from:slug-props-article/aboard id:2ad4d291-ba2c-805b-b5a5-c1ae376ceb52
-[API-->>请求] from:slug-props-article/hust-trip id:24f4d291ba2c806c8850ddcb3fe8c012
- GET /_next/data/development/zh-CN/article/hust-trip.json?prefix=article&slug=hust-trip 200 in 24ms
-[API<<--响应] 耗时:808ms - from:slug-props-article/hust-trip
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
- GET /article/chinese-teens-coding 200 in 75ms
-[API<<--响应] 耗时:1470ms - from:slug-props-article/aboard
-Unsupported external_object_instance domain "undefined" {
-  "id": "2b34d291-ba2c-80ff-bcef-d707954ed83f",
-  "version": 28,
-  "type": "external_object_instance",
-  "format": {
-    "uri": "https://github.com/lifeafter619/Aboard",
-    "stale": false,
-    "bot_id": "2b34d291-ba2c-814a-b837-002789acdfed",
-    "attributes": [
-      {
-        "id": "title",
-        "name": "Name",
-        "type": "inline",
-        "format": {
-          "type": "title",
-          "section": "title"
-        },
-        "values": [
-          "Aboard"
-        ]
-      },
-      {
-        "id": "owner",
-        "name": "Owner",
-        "type": "relation",
-        "values": [
-          "https://github.com/lifeafter619"
-        ]
-      },
-      {
-        "id": "updated_at",
-        "name": "Updated At",
-        "type": "inline",
-        "format": {
-          "type": "last_edited_time"
-        },
-        "values": [
-          {
-            "type": "datetime",
-            "time_zone": "UTC",
-            "start_date": "2025-11-23",
-            "start_time": "02:28"
-          }
-        ]
-      }
-    ],
-    "original_url": "https://github.com/lifeafter619/Aboard",
-    "external_object_id": "2b34d291-ba2c-81a9-8f7e-00401f6db0ee",
-    "related_external_object_uris_to_instance_ids": {
-      "https://github.com/lifeafter619": "2b34d291-ba2c-802d-80b0-cefcf34003fc"
-    }
-  },
-  "created_time": 1763783875890,
-  "last_edited_time": 1763886387161,
-  "parent_id": "2b24d291-ba2c-80ed-930e-e6365f84862e",
-  "parent_table": "block",
-  "alive": true,
-  "space_id": "7d3c019b-9700-4860-83dd-9d5200e05cc7",
-  "crdt_format_version": 1,
-  "crdt_data": {
-    "title": {
-      "r": "518b67XWgMa1vKKijLGCWA,\"start\",\"end\"",
-      "n": {
-        "518b67XWgMa1vKKijLGCWA,\"start\",\"end\"": {
-          "s": {
-            "x": "518b67XWgMa1vKKijLGCWA",
-            "i": [
-              {
-                "t": "s"
-              },
-              {
-                "t": "e"
-              }
-            ],
-            "l": ""
-          },
-          "c": []
-        }
-      }
-    }
-  }
-}
-Warning: data for page "/[prefix]/[slug]" (path "/article/aboard") is 646 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
-[API<<--响应] 耗时:878ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:293ms - from:data-notice
-[API-->>请求] from:slug-props-article/hust-trip id:24f4d291-ba2c-8172-8cee-e1d55b41bfbc
-[API<<--响应] 耗时:508ms - from:slug-props-article/hust-trip
-Warning: data for page "/[prefix]/[slug]" (path "/article/hust-trip") is 163 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /about 200 in 76ms
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
-[API-->>请求] from:slug-props-about id:24f4d291ba2c806c8850ddcb3fe8c012
- GET /article/2024-the-border-town-feelings 200 in 128ms
- GET /_next/data/development/zh-CN/about.json?prefix=about 200 in 499ms
-[API<<--响应] 耗时:841ms - from:slug-props-about
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:341ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:284ms - from:data-notice
-[API-->>请求] from:slug-props-about id:24f4d291-ba2c-81a2-ba3e-d65f34c420a0
- GET /article/2023-speech-feelings 200 in 69ms
-[API-->>请求] from:slug-props-article/2024-the-border-town-feelings id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:864ms - from:slug-props-about
-Warning: data for page "/[prefix]" (path "/about") is 166 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /_next/data/development/zh-CN/article/2024-the-border-town-feelings.json?prefix=article&slug=2024-the-border-town-feelings 200 in 542ms
-[API<<--响应] 耗时:902ms - from:slug-props-article/2024-the-border-town-feelings
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:379ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
-[API<<--响应] 耗时:232ms - from:data-notice
-[API-->>请求] from:slug-props-article/2024-the-border-town-feelings id:24f4d291-ba2c-8186-988d-f3afd41c5cf0
-[API<<--响应] 耗时:311ms - from:slug-props-article/2024-the-border-town-feelings
- GET /links 200 in 116ms
-[API-->>请求] from:slug-props-article/2023-speech-feelings id:24f4d291ba2c806c8850ddcb3fe8c012
- GET /_next/data/development/zh-CN/article/2023-speech-feelings.json?prefix=article&slug=2023-speech-feelings 200 in 164ms
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
-[API<<--响应] 耗时:974ms - from:slug-props-article/2023-speech-feelings
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:477ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:272ms - from:data-notice
-[API-->>请求] from:slug-props-article/2023-speech-feelings id:24f4d291-ba2c-81d9-abb6-c9029fe344c9
- GET /article/heroes 200 in 67ms
-[API<<--响应] 耗时:486ms - from:slug-props-article/2023-speech-feelings
-Warning: data for page "/[prefix]/[slug]" (path "/article/2023-speech-feelings") is 191 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- GET /article/2023-sports-meeting 200 in 68ms
- GET /social 200 in 92ms
- GET /article/smart-questions 200 in 67ms
-[API-->>请求] from:slug-props-social id:24f4d291ba2c806c8850ddcb3fe8c012
- GET /_next/data/development/zh-CN/social.json?prefix=social 200 in 59ms
-[API<<--响应] 耗时:1301ms - from:slug-props-social
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
- GET /message 200 in 62ms
-[API<<--响应] 耗时:359ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:503ms - from:data-notice
-[API-->>请求] from:slug-props-social id:24f4d291-ba2c-811e-b4d3-c61de9054468
-[API<<--响应] 耗时:156ms - from:slug-props-social
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- GET /article/smart-questions 200 in 69ms
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:1063ms - from:slug-props-article/smart-questions
+[API<<--响应] 耗时:870ms - from:index
 [API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
 [API<<--响应] 耗时:333ms - from:config-table
 [API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:377ms - from:data-notice
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291-ba2c-81c5-957d-f370442b4af9
-[API<<--响应] 耗时:683ms - from:slug-props-article/smart-questions
-Warning: data for page "/[prefix]/[slug]" (path "/article/smart-questions") is 593 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /_next/data/development/zh-CN/article/smart-questions.json?prefix=article&slug=smart-questions 200 in 2857ms
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- GET /article/smart-questions 200 in 122ms
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:768ms - from:slug-props-article/smart-questions
+[API<<--响应] 耗时:510ms - from:data-notice
+ GET / 200 in 1972ms
+[API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1411ms - from:index
 [API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:590ms - from:config-table
+[API<<--响应] 耗时:988ms - from:config-table
 [API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:472ms - from:data-notice
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291-ba2c-81c5-957d-f370442b4af9
-[API<<--响应] 耗时:679ms - from:slug-props-article/smart-questions
-Warning: data for page "/[prefix]/[slug]" (path "/article/smart-questions") is 593 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+[API<<--响应] 耗时:692ms - from:data-notice
+ GET / 200 in 3301ms
+[API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1302ms - from:index
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:356ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:562ms - from:data-notice
+ GET / 200 in 2383ms
+[API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:793ms - from:index
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:418ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:292ms - from:data-notice
+ GET / 200 in 1680ms
+[API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1015ms - from:index
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:337ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:300ms - from:data-notice
+ GET / 200 in 1828ms
+ ○ Compiling /[prefix]/[slug] ...
+ ✓ Compiled /[prefix]/[slug] in 2s (2915 modules)
+ GET /article/chinese-teens-coding 200 in 3218ms
+[API-->>请求] from:slug-props-article/chinese-teens-coding id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1127ms - from:slug-props-article/chinese-teens-coding
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:395ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:563ms - from:data-notice
+[API-->>请求] from:slug-props-article/chinese-teens-coding id:24f4d291-ba2c-8136-9ed5-d7df281fc144
+[API<<--响应] 耗时:346ms - from:slug-props-article/chinese-teens-coding
+Warning: data for page "/[prefix]/[slug]" (path "/article/chinese-teens-coding") is 134 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
 See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /_next/data/development/zh-CN/article/smart-questions.json?prefix=article&slug=smart-questions 200 in 2937ms
+ GET /_next/data/development/zh-CN/article/chinese-teens-coding.json?prefix=article&slug=chinese-teens-coding 200 in 2656ms
 Algolia异常 {
   name: 'ApiError',
   message: 'Invalid Application-ID or API key',
@@ -606,60 +119,20 @@ Algolia异常 {
 }
  ⚠ The "images.domains" configuration is deprecated. Please use "images.remotePatterns" configuration instead.
  ⨯ The requested resource isn't a valid image for /svg/not-by-ai/zh/Written-By-Human-Not-By-AI-Badge-white.svg received null
- GET /article/smart-questions 200 in 74ms
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:870ms - from:slug-props-article/smart-questions
+ ✓ Compiled in 20.8s (2915 modules)
+ ✓ Compiled in 22.8s (2915 modules)
+ GET /article/chinese-teens-coding 200 in 1394ms
+[API-->>请求] from:slug-props-article/chinese-teens-coding id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1024ms - from:slug-props-article/chinese-teens-coding
 [API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:330ms - from:config-table
+[API<<--响应] 耗时:408ms - from:config-table
 [API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:376ms - from:data-notice
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291-ba2c-81c5-957d-f370442b4af9
-[API<<--响应] 耗时:730ms - from:slug-props-article/smart-questions
-Warning: data for page "/[prefix]/[slug]" (path "/article/smart-questions") is 593 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+[API<<--响应] 耗时:391ms - from:data-notice
+[API-->>请求] from:slug-props-article/chinese-teens-coding id:24f4d291-ba2c-8136-9ed5-d7df281fc144
+[API<<--响应] 耗时:537ms - from:slug-props-article/chinese-teens-coding
+Warning: data for page "/[prefix]/[slug]" (path "/article/chinese-teens-coding") is 134 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
 See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /_next/data/development/zh-CN/article/smart-questions.json?prefix=article&slug=smart-questions 200 in 2707ms
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- GET /article/smart-questions 200 in 182ms
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--异常]: FetchError: [POST] "https://sbbb.notion.site/api/v3/loadPageChunk": 400 Bad Request
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async $fetch2 (file:///app/node_modules/ofetch/dist/shared/ofetch.CWycOUEr.mjs:332:15)
-    at async NotionAPI.getPage (file:///app/node_modules/notion-client/build/index.js:41:18)
-FetchError: [POST] "https://sbbb.notion.site/api/v3/loadPageChunk": 400 Bad Request
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async $fetch2 (file:///app/node_modules/ofetch/dist/shared/ofetch.CWycOUEr.mjs:332:15)
-    at async NotionAPI.getPage (file:///app/node_modules/notion-client/build/index.js:41:18)
- ⨯ unhandledRejection: FetchError: [POST] "https://sbbb.notion.site/api/v3/loadPageChunk": 400 Bad Request
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async $fetch2 (file:///app/node_modules/ofetch/dist/shared/ofetch.CWycOUEr.mjs:332:15)
-    at async NotionAPI.getPage (file:///app/node_modules/notion-client/build/index.js:41:18)
- ⨯ unhandledRejection: FetchError: [POST] "https://sbbb.notion.site/api/v3/loadPageChunk": 400 Bad Request
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async $fetch2 (file:///app/node_modules/ofetch/dist/shared/ofetch.CWycOUEr.mjs:332:15)
-    at async NotionAPI.getPage (file:///app/node_modules/notion-client/build/index.js:41:18)
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291ba2c806c8850ddcb3fe8c012 剩余重试次数:2
-[API<<--响应] 耗时:767ms - from:slug-props-article/smart-questions
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:348ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:543ms - from:data-notice
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291-ba2c-81c5-957d-f370442b4af9
-[API<<--响应] 耗时:1018ms - from:slug-props-article/smart-questions
-Warning: data for page "/[prefix]/[slug]" (path "/article/smart-questions") is 593 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /_next/data/development/zh-CN/article/smart-questions.json?prefix=article&slug=smart-questions 200 in 4297ms
+ GET /_next/data/development/zh-CN/article/chinese-teens-coding.json?prefix=article&slug=chinese-teens-coding 200 in 2641ms
 Algolia异常 {
   name: 'ApiError',
   message: 'Invalid Application-ID or API key',
@@ -674,29 +147,4 @@ Algolia异常 {
   ]
 }
  ⨯ The requested resource isn't a valid image for /svg/not-by-ai/zh/Written-By-Human-Not-By-AI-Badge-white.svg received null
- GET /article/smart-questions 200 in 75ms
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291ba2c806c8850ddcb3fe8c012
-[API<<--响应] 耗时:1296ms - from:slug-props-article/smart-questions
-[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
-[API<<--响应] 耗时:610ms - from:config-table
-[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
-[API<<--响应] 耗时:297ms - from:data-notice
-[API-->>请求] from:slug-props-article/smart-questions id:24f4d291-ba2c-81c5-957d-f370442b4af9
-[API<<--响应] 耗时:715ms - from:slug-props-article/smart-questions
-Warning: data for page "/[prefix]/[slug]" (path "/article/smart-questions") is 593 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
-See more info here: https://nextjs.org/docs/messages/large-page-data
- GET /_next/data/development/zh-CN/article/smart-questions.json?prefix=article&slug=smart-questions 200 in 3246ms
-Algolia异常 {
-  name: 'ApiError',
-  message: 'Invalid Application-ID or API key',
-  status: 403,
-  transporterStackTrace: [
-    {
-      request: [Object],
-      response: [Object],
-      host: [Object],
-      triesLeft: 3
-    }
-  ]
-}
- ⨯ The requested resource isn't a valid image for /svg/not-by-ai/zh/Written-By-Human-Not-By-AI-Badge-white.svg received null
+ ✓ Compiled in 3.6s (2915 modules)
