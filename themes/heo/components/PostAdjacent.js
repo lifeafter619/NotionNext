@@ -223,7 +223,7 @@ export default function PostAdjacent({ prev, next }) {
                    {/* 标题 */}
                    <SmartLink
                       href={`/${next.slug}`}
-                      className={`line-clamp-2 font-bold text-base leading-tight select-none cursor-pointer hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors ${next.pageCoverThumbnail ? 'text-white text-shadow-md hover:text-white' : 'text-black dark:text-gray-200'}`}
+                      className={`line-clamp-2 font-bold text-base leading-tight select-none cursor-pointer hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors ${next.pageCoverThumbnail ? 'text-white text-shadow-md hover:text-white' : 'text-gray-900 dark:text-gray-100'}`}
                   >
                       {next?.title}
                   </SmartLink>

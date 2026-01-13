@@ -24,8 +24,12 @@ export default function FloatTocButton(props) {
   const [touchStartButton, setTouchStartButton] = useState({ x: 0, y: 0 })
 
   // 桌面端拖拽状态
-  const [desktopPos, setDesktopPos] = useState({ x: 16, y: 180 })
+  const [desktopPos, setDesktopPos] = useState({ x: 20, y: 300 })
   const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
+
+  useEffect(() => {
+    setDesktopPos(prev => ({ ...prev, y: window.innerHeight / 2 - 100 }))
+  }, [])
 
   // Use Refs for drag calculations to avoid stale closures in event listeners
   const dragStartMouseRef = useRef({ x: 0, y: 0 })
