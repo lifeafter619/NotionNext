@@ -208,14 +208,14 @@ export default function PostAdjacent({ prev, next }) {
                           alt={next.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                        />
-                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                       <div className="absolute inset-0 bg-gradient-to-t dark:from-black/60 from-transparent pointer-events-none"></div>
                    </div>
                 )}
 
                 {/* 内容部分 */}
                 <div className={`p-4 flex flex-col justify-center ${next.pageCoverThumbnail ? '-mt-8 z-10' : 'h-full'}`}>
                    {/* 标签 */}
-                   <div className={`text-xs font-bold mb-1 ${next.pageCoverThumbnail ? 'text-white text-shadow-md' : 'text-gray-500 dark:text-gray-400'}`}>
+                   <div className={`text-xs font-bold mb-1 text-gray-500 dark:text-gray-400`}>
                       {locale.COMMON.NEXT_POST}
                       <i className="fas fa-arrow-right ml-1"></i>
                    </div>
@@ -223,7 +223,7 @@ export default function PostAdjacent({ prev, next }) {
                    {/* 标题 */}
                    <SmartLink
                       href={`/${next.slug}`}
-                      className={`line-clamp-2 font-bold text-base leading-tight select-none cursor-pointer hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors ${next.pageCoverThumbnail ? 'text-white text-shadow-md hover:text-white' : 'text-gray-900 dark:text-gray-100'}`}
+                      className={`line-clamp-2 font-bold text-base leading-tight select-none cursor-pointer hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors text-gray-900 dark:text-gray-100`}
                   >
                       {next?.title}
                   </SmartLink>
