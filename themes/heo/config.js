@@ -1,6 +1,7 @@
 const CONFIG = {
   HEO_HOME_POST_TWO_COLS: true, // 首页博客两列显示，若为false则只显示一列
   HEO_LOADING_COVER: true, // 页面加载的遮罩动画
+  HEO_ANIMATE_ON_SCROLL: false, // 是否开启滚动动画，关闭可降低设备消耗
 
   HEO_HOME_BANNER_ENABLE: true,
 
@@ -154,6 +155,8 @@ const CONFIG = {
   HEO_WIDGET_TO_TOP: true,
   HEO_WIDGET_TO_COMMENT: true, // 跳到评论区
   HEO_WIDGET_DARK_MODE: true, // 夜间模式
-  HEO_WIDGET_TOC: true // 移动端悬浮目录
+  HEO_WIDGET_TOC: true, // 移动端悬浮目录
+
+  WIDGET_PET: false, // 是否显示宠物挂件
 }
 export default CONFIG

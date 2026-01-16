@@ -108,7 +108,7 @@ export default function LazyImage({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img {...imgProps} />
       {/* 预加载优先级高的图片 */}
-      {priority && (
+      {priority && baseSrc && (
         <Head>
           <link rel='preload' as='image' href={baseSrc} imagesrcset={srcSet} imagesizes={imgProps.sizes} />
         </Head>
