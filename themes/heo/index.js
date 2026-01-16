@@ -89,11 +89,14 @@ const LayoutBase = props => {
     CONFIG
   )
   const HEO_LOADING_COVER = siteConfig('HEO_LOADING_COVER', true, CONFIG)
+  const HEO_ANIMATE_ON_SCROLL = siteConfig('HEO_ANIMATE_ON_SCROLL', true, CONFIG)
 
   // 加载wow动画
   useEffect(() => {
-    loadWowJS()
-  }, [])
+    if (HEO_ANIMATE_ON_SCROLL) {
+      loadWowJS()
+    }
+  }, [HEO_ANIMATE_ON_SCROLL])
 
   return (
     <div
@@ -253,8 +256,8 @@ const LayoutArchive = props => {
 const LayoutSlug = props => {
   const { post, lock, validPassword } = props
   const { locale, fullWidth } = useGlobal()
-
   const [hasCode, setHasCode] = useState(false)
+  const [showRecommended, setShowRecommended] = useState(false)
 
   useEffect(() => {
     const hasCode = document.querySelectorAll('[class^="language-"]').length > 0
@@ -273,6 +276,26 @@ const LayoutSlug = props => {
 
   const router = useRouter()
   const waiting404 = siteConfig('POST_WAITING_TIME_FOR_404') * 1000
+
+  // 监听滚动，延迟加载底部推荐和评论
+  useEffect(() => {
+    if (!post) return
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          setShowRecommended(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    )
+    const target = document.getElementById('article-end-observer')
+    if (target) {
+      observer.observe(target)
+    }
+    return () => observer.disconnect()
+  }, [post])
+
   useEffect(() => {
     // 404
     if (!post) {
@@ -293,6 +316,7 @@ const LayoutSlug = props => {
       )
     }
   }, [post])
+
   return (
     <>
       <div
@@ -318,24 +342,32 @@ const LayoutSlug = props => {
                 <WWAds orientation='horizontal' className='w-full' />
               </section>
 
+              {/* 用于检测滚动的锚点 */}
+              <div id="article-end-observer" className="h-1" />
+
               {/* 上一篇\下一篇文章 */}
               <PostAdjacent {...props} />
 
-              {/* 分享 */}
-              <ShareBar post={post} />
-              {post?.type === 'Post' && (
-                <div className='px-5'>
-                  {/* 版权 */}
-                  <PostCopyright {...props} />
-                  {/* 文章推荐 */}
-                  <PostRecommend {...props} />
-                </div>
+              {/* 延迟加载底部区域 */}
+              {showRecommended && (
+                  <div className="animate-fade-in">
+                      {/* 分享 */}
+                      <ShareBar post={post} />
+                      {post?.type === 'Post' && (
+                        <div className='px-5'>
+                          {/* 版权 */}
+                          <PostCopyright {...props} />
+                          {/* 文章推荐 */}
+                          <PostRecommend {...props} />
+                        </div>
+                      )}
+                  </div>
               )}
             </article>
 
             {/* 评论区 */}
             {fullWidth ? null : (
-              <div className={`${commentEnable && post ? '' : 'hidden'}`}>
+              <div className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
                 <hr className='my-4 border-dashed' />
                 {/* 评论区上方广告 */}
                 <div className='py-2'>
