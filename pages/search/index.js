@@ -57,8 +57,29 @@ export async function getStaticProps({ locale }) {
     page => page.type === 'Post' && page.status === 'Published'
   ) || []
 
-  // 优化：保留所有字段但修复 undefined 值，支持内容搜索
-  props.posts = await Promise.all(publishedPosts.map(async post => {
+  // 并发控制函数
+  const pMap = async (array, mapper, concurrency = 5) => {
+    const results = new Array(array.length)
+    const iterator = array.entries()
+
+    const worker = async () => {
+      for (const [i, item] of iterator) {
+        try {
+          results[i] = await mapper(item, i)
+        } catch (e) {
+          console.error('Task failed', e)
+          results[i] = item // Fallback
+        }
+      }
+    }
+
+    const workers = Array(concurrency).fill(null).map(worker)
+    await Promise.all(workers)
+    return results
+  }
+
+  // 优化：使用并发控制获取全文内容，减少构建资源占用
+  props.posts = await pMap(publishedPosts, async post => {
     const newPost = { ...post }
     newPost.summary = newPost.summary || null
     newPost.password = newPost.password || null
@@ -94,8 +115,13 @@ export async function getStaticProps({ locale }) {
       newPost.content = newPost.content || newPost.blockMap?.rawText || null
     }
 
+    // 清理 blockMap 以减小 JSON 大小
+    if (newPost.blockMap) {
+      delete newPost.blockMap
+    }
+
     return newPost
-  }))
+  }, 3) // 并发数限制为 3，降低 Vercel 资源压力
 
   delete props.allPages
 
