@@ -401,7 +401,7 @@ function TodayCard({ cRef, siteInfo }) {
           alt='Today Card Cover'
           className={`${
             isCoverUp ? '' : ' pointer-events-none'
-          } hover:scale-110 duration-1000 object-contain cursor-pointer today-card-cover absolute w-full h-full top-0`}
+          } duration-1000 object-contain cursor-pointer today-card-cover absolute w-full h-full top-0`}
         />
       </div>
     </div>

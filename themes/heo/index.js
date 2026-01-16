@@ -375,6 +375,7 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
                <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
                     onClick={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
                       window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location mr-1"></i>
@@ -449,6 +450,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
                <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
                     onClick={(e) => {
                       e.preventDefault()
+                      e.stopPropagation()
                       window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location mr-1"></i>
