@@ -27,7 +27,10 @@ export default function Live2D() {
           if (typeof window?.loadlive2d !== 'undefined') {
             // https://github.com/xiazeyu/live2d-widget-models
             try {
-              loadlive2d('live2d', petLink)
+              // 确保 DOM 元素存在，避免 addEventListener 报错
+              if (document.getElementById('live2d')) {
+                loadlive2d('live2d', petLink)
+              }
             } catch (error) {
               console.error('读取PET模型', error)
             }

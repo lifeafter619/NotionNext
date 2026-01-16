@@ -52,7 +52,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
                 ' w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
               }>
               <LazyImage
-                priority={index === 0}
+                priority={index === 0 && post?.pageCoverThumbnail}
                 src={post?.pageCoverThumbnail}
                 alt={post?.title}
                 className='h-full w-full object-cover group-hover:scale-105 group-hover:brightness-75 transition-all duration-500 ease-in-out' //宽高都调整为自适应,保证封面居中
