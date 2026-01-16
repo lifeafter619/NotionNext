@@ -218,12 +218,12 @@ const renderMermaid = mermaidCDN => {
             const svgs = document.querySelectorAll('.mermaid svg')
             svgs.forEach(svg => {
                 if (!svg.closest('.mermaid-container')) {
-                // 成功渲染后隐藏原始代码块
-                const codeBlock = svg.closest('.notion-code')
-                if (codeBlock) {
-                    const code = codeBlock.querySelector('code')
-                    if (code) code.style.display = 'none'
-                }
+                // 修改：不隐藏原始代码块，让图表显示在下方
+                // const codeBlock = svg.closest('.notion-code')
+                // if (codeBlock) {
+                //     const code = codeBlock.querySelector('code')
+                //     if (code) code.style.display = 'none'
+                // }
                 wrapMermaid(svg)
                 }
             })
@@ -275,6 +275,8 @@ const wrapMermaid = (svg) => {
   content.style.transformOrigin = 'center'
   content.style.transition = 'transform 0.1s ease-out'
 
+  // 将容器插入到 svg 的父元素中 (即 .mermaid div)
+  // svg 已经在 .mermaid 中，所以 insertBefore 是在 .mermaid 中操作
   svg.parentNode.insertBefore(container, svg)
   content.appendChild(svg)
   container.appendChild(content)
