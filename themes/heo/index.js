@@ -338,14 +338,14 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
   return (
     <SmartLink href={post?.href}>
       <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 p-4 flex gap-4 hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer'>
-        {/* 封面图 */}
+        {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
-          <div className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden'>
+          <div className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
               priority={index < 3}
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
-              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
             />
           </div>
         )}
@@ -391,14 +391,14 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
   return (
     <SmartLink href={post?.href}>
       <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer h-full flex flex-col'>
-        {/* 封面图 */}
+        {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
-          <div className='w-full h-40 overflow-hidden'>
+          <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
               priority={index < 6}
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
-              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
             />
           </div>
         )}
@@ -753,14 +753,14 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
   return (
     <SmartLink href={post?.href}>
       <article className='flex flex-col md:flex-row gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-300 group cursor-pointer'>
-        {/* 大封面图 */}
+        {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
-          <div className='w-full md:w-48 h-32 md:h-36 flex-shrink-0 rounded-xl overflow-hidden'>
+          <div className='w-full md:w-48 h-32 md:h-36 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
               priority={index === 0}
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
-              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
             />
           </div>
         )}
@@ -936,14 +936,14 @@ const TagPostCard = ({ post, index, siteInfo }) => {
   return (
     <SmartLink href={post?.href}>
       <article className='group cursor-pointer rounded-xl overflow-hidden border dark:border-gray-700 hover:shadow-lg hover:border-emerald-500 dark:hover:border-teal-500 transition-all duration-300'>
-        {/* 大封面图 */}
+        {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
-          <div className='w-full h-40 overflow-hidden'>
+          <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
               priority={index === 0}
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
-              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
             />
           </div>
         )}

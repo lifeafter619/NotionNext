@@ -393,10 +393,11 @@ function TodayCard({ cRef, siteInfo }) {
           </div>
         </div>
 
-        {/* 封面图 - 使用 LazyImage 优化加载性能 */}
-        <LazyImage
-          priority={true}
+        {/* 封面图 */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={siteInfo?.pageCover}
+          id='today-card-cover'
           alt='Today Card Cover'
           className={`${
             isCoverUp ? '' : ' pointer-events-none'

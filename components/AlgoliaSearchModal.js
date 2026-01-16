@@ -479,13 +479,13 @@ export default function AlgoliaSearchModal({ cRef }) {
                 ? 'bg-blue-600 dark:bg-yellow-600 shadow-md' 
                 : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}>
-              {/* 封面图 */}
+              {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
               {result.pageCoverThumbnail && (
-                <div className='w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden'>
+                <div className='w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center'>
                   <LazyImage
                     src={result.pageCoverThumbnail}
                     alt={result.title}
-                    className='w-full h-full object-cover'
+                    className='max-w-full max-h-full object-contain'
                   />
                 </div>
               )}
