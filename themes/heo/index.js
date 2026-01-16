@@ -18,7 +18,7 @@ import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
@@ -182,9 +182,25 @@ const LayoutPostList = props => {
  * @returns
  */
 const LayoutSearch = props => {
-  const { keyword } = props
+  const { keyword, posts, postCount } = props
   const router = useRouter()
   const currentSearch = keyword || router?.query?.s
+  const { locale } = useGlobal()
+  const [sortOrder, setSortOrder] = useState('relevance')
+  const [viewMode, setViewMode] = useState('list') // list or grid
+
+  // 对搜索结果进行排序 - 使用 useMemo 优化性能
+  const sortedPosts = useMemo(() => {
+    if (!posts) return []
+    return [...posts].sort((a, b) => {
+      if (sortOrder === 'newest') {
+        return new Date(b.createdTime || 0) - new Date(a.createdTime || 0)
+      } else if (sortOrder === 'oldest') {
+        return new Date(a.createdTime || 0) - new Date(b.createdTime || 0)
+      }
+      return 0 // relevance - 保持原始顺序
+    })
+  }, [posts, sortOrder])
 
   useEffect(() => {
     // 高亮搜索结果
@@ -200,23 +216,217 @@ const LayoutSearch = props => {
         })
       }, 100)
     }
-  }, [])
+  }, [currentSearch])
+
   return (
-    <div currentSearch={currentSearch}>
-      <div id='post-outer-wrapper' className='px-5  md:px-0'>
-        {!currentSearch ? (
-          <SearchNav {...props} />
-        ) : (
+    <div id='search-page-wrapper' className='px-5 md:px-0'>
+      {!currentSearch ? (
+        <SearchNav {...props} />
+      ) : (
+        <div className='mt-6'>
+          {/* 搜索结果头部 */}
+          <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-6'>
+            <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
+              <div>
+                <h1 className='text-2xl font-bold dark:text-white flex items-center gap-2'>
+                  <i className='fas fa-search text-blue-500'></i>
+                  搜索结果
+                </h1>
+                <p className='text-gray-600 dark:text-gray-400 mt-1'>
+                  找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{postCount || sortedPosts.length}</span> 篇关于 
+                  <span className='font-bold mx-1'>{'"'}{currentSearch}{'"'}</span> 的文章
+                </p>
+              </div>
+              
+              {/* 排序和视图控制 */}
+              <div className='flex items-center gap-3'>
+                {/* 排序选择 */}
+                <div className='flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1'>
+                  <button
+                    onClick={() => setSortOrder('relevance')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      sortOrder === 'relevance'
+                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                    }`}>
+                    <i className='fas fa-star mr-1'></i>相关
+                  </button>
+                  <button
+                    onClick={() => setSortOrder('newest')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      sortOrder === 'newest'
+                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                    }`}>
+                    <i className='fas fa-clock mr-1'></i>最新
+                  </button>
+                  <button
+                    onClick={() => setSortOrder('oldest')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                      sortOrder === 'oldest'
+                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                    }`}>
+                    <i className='fas fa-history mr-1'></i>最早
+                  </button>
+                </div>
+                
+                {/* 视图切换 */}
+                <div className='flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1'>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-md transition-all ${
+                      viewMode === 'list'
+                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                    <i className='fas fa-list'></i>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-md transition-all ${
+                      viewMode === 'grid'
+                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                    <i className='fas fa-th-large'></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 搜索结果列表 */}
           <div id='posts-wrapper'>
-            {siteConfig('POST_LIST_STYLE') === 'page' ? (
-              <BlogPostListPage {...props} />
+            {sortedPosts.length > 0 ? (
+              viewMode === 'list' ? (
+                <div className='space-y-4'>
+                  {sortedPosts.map((post, index) => (
+                    <SearchResultCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} />
+                  ))}
+                </div>
+              ) : (
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                  {sortedPosts.map((post, index) => (
+                    <SearchResultGridCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} />
+                  ))}
+                </div>
+              )
             ) : (
-              <BlogPostListScroll {...props} />
+              <div className='text-center py-16 bg-white dark:bg-[#1e1e1e] rounded-2xl'>
+                <i className='fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4'></i>
+                <p className='text-xl text-gray-600 dark:text-gray-400'>未找到相关文章</p>
+                <p className='text-gray-500 dark:text-gray-500 mt-2'>尝试使用不同的关键词搜索</p>
+                <SmartLink href='/search' className='inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'>
+                  返回搜索
+                </SmartLink>
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
+  )
+}
+
+/**
+ * 搜索结果卡片 - 列表视图
+ */
+const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
+  const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+
+  return (
+    <SmartLink href={post?.href}>
+      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 p-4 flex gap-4 hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer'>
+        {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+        {showCover && (
+          <div className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+            <LazyImage
+              priority={index < 3}
+              src={post?.pageCoverThumbnail || siteInfo?.pageCover}
+              alt={post?.title}
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+            />
+          </div>
+        )}
+        {/* 文章信息 */}
+        <div className='flex-1 flex flex-col justify-between min-w-0'>
+          <div>
+            <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
+              {post.title}
+            </h3>
+            {post.summary && (
+              <p className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-2'>
+                {post.summary}
+              </p>
+            )}
+          </div>
+          <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
+            {post.category && (
+              <span className='px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded'>
+                <i className='fas fa-folder mr-1'></i>{post.category}
+              </span>
+            )}
+            {post.tags && post.tags.slice(0, 2).map(tag => (
+              <span key={tag} className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded'>
+                #{tag}
+              </span>
+            ))}
+            {post.createdTime && (
+              <span><i className='fas fa-calendar mr-1'></i>{new Date(post.createdTime).toLocaleDateString()}</span>
+            )}
+          </div>
+        </div>
+      </article>
+    </SmartLink>
+  )
+}
+
+/**
+ * 搜索结果卡片 - 网格视图
+ */
+const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
+  const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+
+  return (
+    <SmartLink href={post?.href}>
+      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer h-full flex flex-col'>
+        {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+        {showCover && (
+          <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+            <LazyImage
+              priority={index < 6}
+              src={post?.pageCoverThumbnail || siteInfo?.pageCover}
+              alt={post?.title}
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+            />
+          </div>
+        )}
+        {/* 文章信息 */}
+        <div className='p-4 flex-1 flex flex-col justify-between'>
+          <div>
+            <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors'>
+              {post.title}
+            </h3>
+            {post.summary && (
+              <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2'>
+                {post.summary}
+              </p>
+            )}
+          </div>
+          <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
+            {post.category && (
+              <span className='px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded'>
+                {post.category}
+              </span>
+            )}
+            {post.createdTime && (
+              <span>{new Date(post.createdTime).toLocaleDateString()}</span>
+            )}
+          </div>
+        </div>
+      </article>
+    </SmartLink>
   )
 }
 
@@ -462,31 +672,68 @@ const LayoutCategoryIndex = props => {
 
   return (
     <div id='category-outer-wrapper' className='mt-8 px-5 md:px-0'>
-      <div className='text-4xl font-extrabold dark:text-gray-200 mb-5'>
-        {locale.COMMON.CATEGORY}
+      {/* 分类页面头部 - 使用蓝色/紫色主题 */}
+      <div className='mb-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl text-white'>
+        <div className='flex items-center gap-3'>
+          <i className='fas fa-folder-open text-3xl'></i>
+          <div>
+            <h1 className='text-3xl font-bold'>{locale.COMMON.CATEGORY}</h1>
+            <p className='text-blue-100 mt-1'>共 {categoryOptions?.length || 0} 个分类</p>
+          </div>
+        </div>
       </div>
-      <div id='category-list' className='duration-200'>
+
+      {/* 分类统计卡片 */}
+      <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8'>
+        {categoryOptions?.map(category => (
+          <SmartLink 
+            key={category.name}
+            href={`/category/${category.name}`}
+            className='p-4 bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-purple-500 hover:shadow-lg transition-all duration-300 group'>
+            <div className='flex flex-col items-center text-center'>
+              <div className='w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform'>
+                <i className='fas fa-folder text-blue-500 dark:text-blue-400'></i>
+              </div>
+              <span className='font-medium text-gray-800 dark:text-gray-200 text-sm truncate w-full'>{category.name}</span>
+              <span className='text-xs text-gray-500 dark:text-gray-400 mt-1'>{category.count} 篇文章</span>
+            </div>
+          </SmartLink>
+        ))}
+      </div>
+
+      {/* 分类文章列表 */}
+      <div id='category-list' className='space-y-10'>
         {categoryOptions?.map(category => {
           const posts = allPages?.filter(
             p => p.category === category.name && p.status === 'Published'
-          ).slice(0, 6) // 每个分类只显示前6篇文章
+          ).slice(0, 4) // 每个分类显示4篇文章
+
+          if (!posts || posts.length === 0) return null
 
           return (
-            <div key={category.name} className='mb-12'>
+            <div key={category.name} className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
+              {/* 分类标题 */}
               <div className='flex items-center justify-between mb-6'>
                 <div className='flex items-center gap-3'>
-                  <HashTag className={'w-6 h-6 stroke-gray-500'} />
-                  <h2 className='text-2xl font-bold dark:text-white'>{category.name}</h2>
-                  <span className='px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500'>{category.count}</span>
+                  <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center'>
+                    <i className='fas fa-folder text-white'></i>
+                  </div>
+                  <div>
+                    <h2 className='text-xl font-bold dark:text-white'>{category.name}</h2>
+                    <span className='text-sm text-gray-500 dark:text-gray-400'>{category.count} 篇文章</span>
+                  </div>
                 </div>
-                <SmartLink href={`/category/${category.name}`} className='text-indigo-500 hover:text-indigo-600 font-medium flex items-center gap-1'>
-                  {locale.COMMON.MORE} <i className='fas fa-arrow-right text-sm'/>
+                <SmartLink 
+                  href={`/category/${category.name}`} 
+                  className='px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
+                  查看全部 <i className='fas fa-arrow-right text-xs'/>
                 </SmartLink>
               </div>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-                {posts?.map(post => (
-                  <BlogPostCard key={post.id} post={post} showSummary={false} siteInfo={props.siteInfo} className="h-40 text-sm" />
+              {/* 文章卡片 - 横向大图布局 */}
+              <div className='space-y-4'>
+                {posts?.map((post, index) => (
+                  <CategoryPostCard key={post.id} post={post} index={index} siteInfo={props.siteInfo} />
                 ))}
               </div>
             </div>
@@ -498,43 +745,178 @@ const LayoutCategoryIndex = props => {
 }
 
 /**
- * 标签列表
+ * 分类页文章卡片 - 横向大图布局，标题完整显示
+ */
+const CategoryPostCard = ({ post, index, siteInfo }) => {
+  const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+
+  return (
+    <SmartLink href={post?.href}>
+      <article className='flex flex-col md:flex-row gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-300 group cursor-pointer'>
+        {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
+        {showCover && (
+          <div className='w-full md:w-48 h-32 md:h-36 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+            <LazyImage
+              priority={index === 0}
+              src={post?.pageCoverThumbnail || siteInfo?.pageCover}
+              alt={post?.title}
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+            />
+          </div>
+        )}
+        {/* 文章信息 */}
+        <div className='flex-1 flex flex-col justify-between py-1'>
+          <div>
+            {/* 标题 - 完整显示，不截断 */}
+            <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-purple-400 transition-colors leading-relaxed'>
+              {post.title}
+            </h3>
+            {/* 摘要 */}
+            {post.summary && (
+              <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2 leading-relaxed'>
+                {post.summary}
+              </p>
+            )}
+          </div>
+          {/* 元信息 */}
+          <div className='flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-500'>
+            {post.createdTime && (
+              <span className='flex items-center gap-1'>
+                <i className='fas fa-calendar-alt'></i>
+                {new Date(post.createdTime).toLocaleDateString()}
+              </span>
+            )}
+            {post.tags && post.tags.length > 0 && (
+              <span className='flex items-center gap-1'>
+                <i className='fas fa-tags'></i>
+                {post.tags.slice(0, 3).join(' / ')}
+              </span>
+            )}
+          </div>
+        </div>
+      </article>
+    </SmartLink>
+  )
+}
+
+/**
+ * 标签列表 - 使用绿色/青色主题，与分类页面形成视觉区分
  * @param {*} props
  * @returns
  */
 const LayoutTagIndex = props => {
   const { tagOptions, allPages } = props
   const { locale } = useGlobal()
+  const [selectedTag, setSelectedTag] = useState(null)
+
+  // 获取选中标签的文章
+  const selectedPosts = selectedTag 
+    ? allPages?.filter(p => p.tags && p.tags.includes(selectedTag) && p.status === 'Published').slice(0, 8)
+    : []
 
   return (
     <div id='tag-outer-wrapper' className='px-5 mt-8 md:px-0'>
-      <div className='text-4xl font-extrabold dark:text-gray-200 mb-5'>
-        {locale.COMMON.TAGS}
+      {/* 标签页面头部 - 使用绿色/青色主题 */}
+      <div className='mb-8 p-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-white'>
+        <div className='flex items-center gap-3'>
+          <i className='fas fa-tags text-3xl'></i>
+          <div>
+            <h1 className='text-3xl font-bold'>{locale.COMMON.TAGS}</h1>
+            <p className='text-emerald-100 mt-1'>共 {tagOptions?.length || 0} 个标签</p>
+          </div>
+        </div>
       </div>
-      <div id='tag-list' className='duration-200'>
-        {tagOptions?.map(tag => {
+
+      {/* 标签云 - 交互式设计 */}
+      <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-8'>
+        <h2 className='text-lg font-bold dark:text-white mb-4 flex items-center gap-2'>
+          <i className='fas fa-cloud text-emerald-500'></i>
+          标签云
+        </h2>
+        <div className='flex flex-wrap gap-2'>
+          {tagOptions?.map(tag => {
+            // 根据文章数量计算标签大小
+            const maxCount = Math.max(...(tagOptions?.map(t => t.count) || [1]))
+            const minSize = 0.8
+            const maxSize = 1.4
+            const size = minSize + ((tag.count / maxCount) * (maxSize - minSize))
+            const isSelected = selectedTag === tag.name
+            
+            return (
+              <button
+                key={tag.name}
+                onClick={() => setSelectedTag(isSelected ? null : tag.name)}
+                style={{ fontSize: `${size}rem` }}
+                className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg scale-105'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400'
+                }`}>
+                #{tag.name}
+                <sup className='ml-1 text-xs opacity-70'>{tag.count}</sup>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* 选中标签的文章预览 */}
+      {selectedTag && selectedPosts.length > 0 && (
+        <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-8 animate-fade-in'>
+          <div className='flex items-center justify-between mb-6'>
+            <h2 className='text-xl font-bold dark:text-white flex items-center gap-2'>
+              <span className='px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full text-sm'>
+                #{selectedTag}
+              </span>
+              的相关文章
+            </h2>
+            <SmartLink 
+              href={`/tag/${selectedTag}`}
+              className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
+              查看全部 <i className='fas fa-arrow-right text-xs'/>
+            </SmartLink>
+          </div>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {selectedPosts.map((post, index) => (
+              <TagPostCard key={post.id} post={post} index={index} siteInfo={props.siteInfo} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 按标签分组的文章列表 */}
+      <div id='tag-list' className='space-y-8'>
+        {tagOptions?.slice(0, 10).map(tag => {
           const posts = allPages?.filter(
             p => p.tags && p.tags.includes(tag.name) && p.status === 'Published'
-          ).slice(0, 6)
+          ).slice(0, 3)
 
           if (!posts || posts.length === 0) return null
 
           return (
-            <div key={tag.name} className='mb-12'>
-              <div className='flex items-center justify-between mb-6'>
+            <div key={tag.name} className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
+              {/* 标签标题 */}
+              <div className='flex items-center justify-between mb-5'>
                 <div className='flex items-center gap-3'>
-                  <HashTag className={'w-6 h-6 stroke-gray-500'} />
-                  <h2 className='text-2xl font-bold dark:text-white'>{tag.name}</h2>
-                  <span className='px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500'>{tag.count}</span>
+                  <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center'>
+                    <i className='fas fa-hashtag text-white'></i>
+                  </div>
+                  <div>
+                    <h2 className='text-xl font-bold dark:text-white'>#{tag.name}</h2>
+                    <span className='text-sm text-gray-500 dark:text-gray-400'>{tag.count} 篇文章</span>
+                  </div>
                 </div>
-                <SmartLink href={`/tag/${tag.name}`} className='text-indigo-500 hover:text-indigo-600 font-medium flex items-center gap-1'>
-                  {locale.COMMON.MORE} <i className='fas fa-arrow-right text-sm'/>
+                <SmartLink 
+                  href={`/tag/${tag.name}`} 
+                  className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
+                  查看全部 <i className='fas fa-arrow-right text-xs'/>
                 </SmartLink>
               </div>
 
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-                {posts?.map(post => (
-                  <BlogPostCard key={post.id} post={post} showSummary={false} siteInfo={props.siteInfo} className="h-40 text-sm" />
+              {/* 文章卡片 - 网格大图布局 */}
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                {posts?.map((post, index) => (
+                  <TagPostCard key={post.id} post={post} index={index} siteInfo={props.siteInfo} />
                 ))}
               </div>
             </div>
@@ -542,6 +924,59 @@ const LayoutTagIndex = props => {
         })}
       </div>
     </div>
+  )
+}
+
+/**
+ * 标签页文章卡片 - 垂直大图布局，标题完整显示
+ */
+const TagPostCard = ({ post, index, siteInfo }) => {
+  const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+
+  return (
+    <SmartLink href={post?.href}>
+      <article className='group cursor-pointer rounded-xl overflow-hidden border dark:border-gray-700 hover:shadow-lg hover:border-emerald-500 dark:hover:border-teal-500 transition-all duration-300'>
+        {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
+        {showCover && (
+          <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+            <LazyImage
+              priority={index === 0}
+              src={post?.pageCoverThumbnail || siteInfo?.pageCover}
+              alt={post?.title}
+              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+            />
+          </div>
+        )}
+        {/* 文章信息 */}
+        <div className='p-4'>
+          {/* 标题 - 完整显示 */}
+          <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-teal-400 transition-colors leading-relaxed'>
+            {post.title}
+          </h3>
+          {/* 摘要 */}
+          {post.summary && (
+            <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2'>
+              {post.summary}
+            </p>
+          )}
+          {/* 元信息 */}
+          <div className='flex items-center gap-3 mt-3 text-xs text-gray-500 dark:text-gray-500'>
+            {post.createdTime && (
+              <span className='flex items-center gap-1'>
+                <i className='fas fa-calendar-alt'></i>
+                {new Date(post.createdTime).toLocaleDateString()}
+              </span>
+            )}
+            {post.category && (
+              <span className='flex items-center gap-1'>
+                <i className='fas fa-folder'></i>
+                {post.category}
+              </span>
+            )}
+          </div>
+        </div>
+      </article>
+    </SmartLink>
   )
 }
 

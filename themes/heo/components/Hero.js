@@ -398,6 +398,7 @@ function TodayCard({ cRef, siteInfo }) {
         <img
           src={siteInfo?.pageCover}
           id='today-card-cover'
+          alt='Today Card Cover'
           className={`${
             isCoverUp ? '' : ' pointer-events-none'
           } hover:scale-110 duration-1000 object-cover cursor-pointer today-card-cover absolute w-full h-full top-0`}
