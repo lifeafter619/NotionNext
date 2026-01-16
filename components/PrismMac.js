@@ -60,22 +60,22 @@ const PrismMac = () => {
     )
 
     const runLogic = () => {
-        if (window?.Prism?.plugins?.autoloader) {
-            window.Prism.plugins.autoloader.languages_path = prismjsPath
-        }
+      if (window?.Prism?.plugins?.autoloader) {
+        window.Prism.plugins.autoloader.languages_path = prismjsPath
+      }
 
-        renderPrismMac(codeLineNumbers)
-        if (mermaidBlocks.length > 0) {
-            renderMermaid(mermaidCDN)
-        }
-        renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
+      renderPrismMac(codeLineNumbers)
+      if (mermaidBlocks.length > 0) {
+        renderMermaid(mermaidCDN)
+      }
+      renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
     }
 
     // 延迟执行以避免阻塞主线程
     setTimeout(() => {
-        loadExternalResource(prismjsAutoLoader, 'js').then((url) => {
-           runLogic()
-        })
+      loadExternalResource(prismjsAutoLoader, 'js').then(() => {
+        runLogic()
+      })
     }, 100)
 
   }, [router, isDarkMode])
