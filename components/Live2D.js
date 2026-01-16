@@ -27,17 +27,13 @@ export default function Live2D() {
           if (typeof window?.loadlive2d !== 'undefined') {
             // https://github.com/xiazeyu/live2d-widget-models
             try {
-              // 确保canvas元素存在后再加载
-              const canvas = document.getElementById('live2d')
-              if (canvas) {
-                loadlive2d('live2d', petLink)
-              }
+              loadlive2d('live2d', petLink)
             } catch (error) {
               console.error('读取PET模型', error)
             }
           }
         })
-      }, 2000)
+      }, 100) // 缩短延时到100ms，确保用户能看到，同时不阻塞主线程
       return () => clearTimeout(timer)
     }
   }, [theme])
