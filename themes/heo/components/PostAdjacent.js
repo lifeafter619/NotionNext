@@ -213,7 +213,7 @@ export default function PostAdjacent({ prev, next }) {
                 )}
 
                 {/* 内容部分 */}
-                <div className={`p-4 flex flex-col justify-center ${next.pageCoverThumbnail ? '-mt-8 z-10' : 'h-full'}`}>
+                <div className={`p-4 flex flex-col justify-center ${next.pageCoverThumbnail ? '' : 'h-full'}`}>
                    {/* 标签 */}
                    <div className={`text-xs font-bold mb-1 text-gray-500 dark:text-gray-400`}>
                       {locale.COMMON.NEXT_POST}
