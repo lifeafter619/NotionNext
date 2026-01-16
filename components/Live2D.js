@@ -16,21 +16,29 @@ export default function Live2D() {
 
   useEffect(() => {
     if (showPet && !isMobile()) {
-      Promise.all([
-        loadExternalResource(
-          'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js',
-          'js'
-        )
-      ]).then(e => {
-        if (typeof window?.loadlive2d !== 'undefined') {
-          // https://github.com/xiazeyu/live2d-widget-models
-          try {
-            loadlive2d('live2d', petLink)
-          } catch (error) {
-            console.error('读取PET模型', error)
+      // 延时加载以避免阻塞首屏
+      const timer = setTimeout(() => {
+        Promise.all([
+          loadExternalResource(
+            'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js',
+            'js'
+          )
+        ]).then(e => {
+          if (typeof window?.loadlive2d !== 'undefined') {
+            // https://github.com/xiazeyu/live2d-widget-models
+            try {
+              // 确保canvas元素存在后再加载
+              const canvas = document.getElementById('live2d')
+              if (canvas) {
+                loadlive2d('live2d', petLink)
+              }
+            } catch (error) {
+              console.error('读取PET模型', error)
+            }
           }
-        }
-      })
+        })
+      }, 2000)
+      return () => clearTimeout(timer)
     }
   }, [theme])
 
