@@ -18,7 +18,7 @@ import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
@@ -189,15 +189,18 @@ const LayoutSearch = props => {
   const [sortOrder, setSortOrder] = useState('relevance')
   const [viewMode, setViewMode] = useState('list') // list or grid
 
-  // 对搜索结果进行排序
-  const sortedPosts = posts ? [...posts].sort((a, b) => {
-    if (sortOrder === 'newest') {
-      return new Date(b.createdTime || 0) - new Date(a.createdTime || 0)
-    } else if (sortOrder === 'oldest') {
-      return new Date(a.createdTime || 0) - new Date(b.createdTime || 0)
-    }
-    return 0 // relevance - 保持原始顺序
-  }) : []
+  // 对搜索结果进行排序 - 使用 useMemo 优化性能
+  const sortedPosts = useMemo(() => {
+    if (!posts) return []
+    return [...posts].sort((a, b) => {
+      if (sortOrder === 'newest') {
+        return new Date(b.createdTime || 0) - new Date(a.createdTime || 0)
+      } else if (sortOrder === 'oldest') {
+        return new Date(a.createdTime || 0) - new Date(b.createdTime || 0)
+      }
+      return 0 // relevance - 保持原始顺序
+    })
+  }, [posts, sortOrder])
 
   useEffect(() => {
     // 高亮搜索结果
@@ -231,7 +234,7 @@ const LayoutSearch = props => {
                 </h1>
                 <p className='text-gray-600 dark:text-gray-400 mt-1'>
                   找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{postCount || sortedPosts.length}</span> 篇关于 
-                  <span className='font-bold mx-1'>&quot;{currentSearch}&quot;</span> 的文章
+                  <span className='font-bold mx-1'>{'"'}{currentSearch}{'"'}</span> 的文章
                 </p>
               </div>
               

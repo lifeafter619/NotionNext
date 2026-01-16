@@ -25,7 +25,9 @@ const BlogPostListScroll = ({
   const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', null, NOTION_CONFIG)
   const postsToShow = getListByPage(posts, page, POSTS_PER_PAGE)
   const targetRef = useRef(null)
-  const isLoadingRef = useRef(false) // 防止重复加载
+  // 使用 useRef 而非 useState 以避免加载状态变化时触发不必要的重渲染
+  // 此状态仅用于防止滚动事件触发重复加载
+  const isLoadingRef = useRef(false)
   const rafRef = useRef(null) // 用于存储 requestAnimationFrame ID
 
   let hasMore = false

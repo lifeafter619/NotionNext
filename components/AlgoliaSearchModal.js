@@ -289,13 +289,25 @@ export default function AlgoliaSearchModal({ cRef }) {
     }
   }
 
+  // 使用 ref 追踪上一次的筛选条件，只在条件变化时触发搜索
+  const prevFiltersRef = useRef({ searchType: 'all', sortOrder: 'relevance' })
+
   // 当搜索类型或排序改变时重新搜索
+  // handleSearch 被有意排除在依赖数组外，因为我们只想在筛选条件变化时触发
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (keyword && isModalOpen) {
+    // 检查筛选条件是否真正发生变化
+    const filtersChanged = 
+      prevFiltersRef.current.searchType !== searchType || 
+      prevFiltersRef.current.sortOrder !== sortOrder
+    
+    if (filtersChanged && keyword && isModalOpen) {
       handleSearch(keyword, 0, searchType, sortOrder)
     }
-  }, [searchType, sortOrder])
+    
+    // 更新 ref
+    prevFiltersRef.current = { searchType, sortOrder }
+  }, [searchType, sortOrder, keyword, isModalOpen])
 
   // 定义节流函数，确保在用户停止输入一段时间后才会调用处理搜索的方法
   const throttledHandleInputChange = useRef(
