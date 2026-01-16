@@ -39,6 +39,14 @@ const PrismMac = () => {
   const codeCollapseExpandDefault = siteConfig('CODE_COLLAPSE_EXPAND_DEFAULT')
 
   useEffect(() => {
+    // 性能优化：如果没有代码块或Mermaid，则不加载资源
+    const codeBlocks = document.querySelectorAll('pre, code, .code-toolbar')
+    const mermaidBlocks = document.querySelectorAll('.language-mermaid')
+
+    if (codeBlocks.length === 0 && mermaidBlocks.length === 0) {
+      return
+    }
+
     if (codeMacBar) {
       loadExternalResource('/css/prism-mac-style.css', 'css')
     }
@@ -50,16 +58,26 @@ const PrismMac = () => {
       prismThemeLightPath,
       prismThemePrefixPath
     )
-    // 折叠代码
-    loadExternalResource(prismjsAutoLoader, 'js').then(url => {
+
+    const runLogic = () => {
       if (window?.Prism?.plugins?.autoloader) {
         window.Prism.plugins.autoloader.languages_path = prismjsPath
       }
 
       renderPrismMac(codeLineNumbers)
-      renderMermaid(mermaidCDN)
+      if (mermaidBlocks.length > 0) {
+        renderMermaid(mermaidCDN)
+      }
       renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
-    })
+    }
+
+    // 延迟执行以避免阻塞主线程
+    setTimeout(() => {
+      loadExternalResource(prismjsAutoLoader, 'js').then(() => {
+        runLogic()
+      })
+    }, 100)
+
   }, [router, isDarkMode])
 
   return <></>
@@ -161,61 +179,84 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
  * 将mermaid语言 渲染成图片
  */
 const renderMermaid = mermaidCDN => {
-  const observer = new MutationObserver(mutationsList => {
-    for (const m of mutationsList) {
-      // 检查节点是否是 mermaid 代码块
-      if (m.target.classList.contains('language-mermaid')) {
-        const chart = m.target.querySelector('code').textContent
-        if (chart && !m.target.querySelector('.mermaid')) {
+  // 优化：仅在有mermaid块时加载，避免不必要的观察
+  const existingMermaid = document.querySelectorAll('.language-mermaid')
+  if (existingMermaid.length === 0) return
+
+  const processMermaid = () => {
+    const mermaidsSvg = document.querySelectorAll('.mermaid')
+    if (mermaidsSvg) {
+        let needLoad = false
+        for (const e of mermaidsSvg) {
+        if (e?.firstChild?.nodeName !== 'svg') {
+            needLoad = true
+        }
+        }
+        // 如果已经渲染过，跳过
+        if (!needLoad && mermaidsSvg.length > 0) return
+    }
+
+    // 查找未处理的 mermaid 块
+    document.querySelectorAll('.language-mermaid').forEach(el => {
+        const chart = el.querySelector('code').textContent
+        if (chart && !el.querySelector('.mermaid')) {
           const mermaidChart = document.createElement('div')
           mermaidChart.className = 'mermaid'
           mermaidChart.innerHTML = chart
-          m.target.appendChild(mermaidChart)
+          el.appendChild(mermaidChart)
         }
+    })
 
-        const mermaidsSvg = document.querySelectorAll('.mermaid')
-        if (mermaidsSvg) {
-          let needLoad = false
-          for (const e of mermaidsSvg) {
-            if (e?.firstChild?.nodeName !== 'svg') {
-              needLoad = true
-            }
-          }
-          if (needLoad) {
-            loadExternalResource(mermaidCDN, 'js').then(url => {
-              setTimeout(() => {
-                const mermaid = window.mermaid
-                if (mermaid) {
-                  mermaid.contentLoaded()
-                  // 渲染完成后添加容器和控制
-                  setTimeout(() => {
-                    const svgs = document.querySelectorAll('.mermaid svg')
-                    svgs.forEach(svg => {
-                      if (!svg.closest('.mermaid-container')) {
-                        // 成功渲染后隐藏原始代码块
-                        const codeBlock = svg.closest('.notion-code')
-                        if (codeBlock) {
-                          const code = codeBlock.querySelector('code')
-                          if (code) code.style.display = 'none'
-                        }
-                        wrapMermaid(svg)
-                      }
-                    })
-                  }, 300)
+    // 加载脚本并渲染
+    loadExternalResource(mermaidCDN, 'js').then(url => {
+        setTimeout(() => {
+        const mermaid = window.mermaid
+        if (mermaid) {
+            mermaid.contentLoaded()
+            // 渲染完成后添加容器和控制
+            setTimeout(() => {
+            const svgs = document.querySelectorAll('.mermaid svg')
+            svgs.forEach(svg => {
+                if (!svg.closest('.mermaid-container')) {
+                // 修改：不隐藏原始代码块，让图表显示在下方
+                // const codeBlock = svg.closest('.notion-code')
+                // if (codeBlock) {
+                //     const code = codeBlock.querySelector('code')
+                //     if (code) code.style.display = 'none'
+                // }
+                wrapMermaid(svg)
                 }
-              }, 100)
             })
-          }
+            }, 300)
+        }
+        }, 100)
+    })
+  }
+
+  processMermaid()
+
+  // 观察后续变化（例如动态加载），但进行去抖动或限制范围
+  const observer = new MutationObserver(mutationsList => {
+    let shouldProcess = false
+    for (const m of mutationsList) {
+      if (m.type === 'childList' && m.addedNodes.length > 0) {
+        if (m.target.classList?.contains('language-mermaid') ||
+            (m.target.querySelector && m.target.querySelector('.language-mermaid'))) {
+            shouldProcess = true
+            break
         }
       }
+    }
+    if (shouldProcess) {
+       processMermaid()
     }
   })
 
   const article = document.querySelector('#notion-article')
   if (article) {
     observer.observe(article, {
-      attributes: true,
-      subtree: true
+      childList: true, // 仅观察子节点变化，不深度观察 subtree 除非必要
+      subtree: true    // 仍然需要 subtree 因为 mermaid 块可能嵌套深
     })
   }
 }
@@ -234,6 +275,8 @@ const wrapMermaid = (svg) => {
   content.style.transformOrigin = 'center'
   content.style.transition = 'transform 0.1s ease-out'
 
+  // 将容器插入到 svg 的父元素中 (即 .mermaid div)
+  // svg 已经在 .mermaid 中，所以 insertBefore 是在 .mermaid 中操作
   svg.parentNode.insertBefore(container, svg)
   content.appendChild(svg)
   container.appendChild(content)
@@ -355,10 +398,14 @@ function renderPrismMac(codeLineNumbers) {
       })
     }
   }
-  // 重新渲染之前检查所有的多余text
 
+  // 仅在必要时高亮，尽量避免 highlightAll
+  // 如果 react-notion-x 已经处理了，这里可能只需要处理 line-numbers
+  // 但是 Prism.highlightAll 会强制重新高亮。
+  // 我们只对未处理的块调用 highlightElement ?
+  // 简单起见，仍然使用 highlightAll 但在 setTimeout 中，且有条件
   try {
-    Prism.highlightAll()
+     Prism.highlightAll()
   } catch (err) {
     console.log('代码渲染', err)
   }

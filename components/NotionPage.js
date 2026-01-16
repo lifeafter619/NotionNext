@@ -4,7 +4,7 @@ import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { NotionRenderer } from 'react-notion-x'
 
 // 阅读进度保存组件
@@ -29,6 +29,14 @@ const NotionPage = ({ post, className }) => {
 
   // 使用全局图片查看器
   const { openViewer } = useImageViewerContext()
+
+  // 检查是否包含代码块，优化PrismMac加载
+  const hasCode = useMemo(() => {
+      // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象
+      const blockMap = post?.blockMap?.block || post?.block
+      if (!blockMap) return false
+      return Object.values(blockMap).some(block => block.value?.type === 'code')
+  }, [post])
 
   // 处理图片点击事件
   const handleImageClick = useCallback(
@@ -186,7 +194,7 @@ const NotionPage = ({ post, className }) => {
         />
 
         <AdEmbed />
-        <PrismMac />
+        {hasCode && <PrismMac />}
       </div>
 
       {/* 阅读进度保存和恢复 */}

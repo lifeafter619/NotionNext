@@ -10,7 +10,8 @@ import { useEffect } from 'react'
  */
 export default function Live2D() {
   const { theme, switchTheme } = useGlobal()
-  const showPet = JSON.parse(siteConfig('WIDGET_PET'))
+  // siteConfig already returns parsed value for boolean/json string
+  const showPet = siteConfig('WIDGET_PET')
   const petLink = siteConfig('WIDGET_PET_LINK')
   const petSwitchTheme = siteConfig('WIDGET_PET_SWITCH_THEME')
 
@@ -18,28 +19,32 @@ export default function Live2D() {
     if (showPet && !isMobile()) {
       // 延时加载以避免阻塞首屏
       const timer = setTimeout(() => {
-        Promise.all([
-          loadExternalResource(
-            'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js',
-            'js'
-          )
-        ]).then(e => {
-          if (typeof window?.loadlive2d !== 'undefined') {
-            // https://github.com/xiazeyu/live2d-widget-models
-            try {
-              // 确保 DOM 元素存在，避免 addEventListener 报错
-              if (document.getElementById('live2d')) {
-                loadlive2d('live2d', petLink)
+        loadExternalResource(
+          'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js',
+          'js'
+        )
+          .then(() => {
+            if (typeof window?.loadlive2d !== 'undefined') {
+              // https://github.com/xiazeyu/live2d-widget-models
+              try {
+                // 确保 DOM 元素存在，避免 addEventListener 报错
+                if (document.getElementById('live2d')) {
+                  loadlive2d('live2d', petLink)
+                }
+              } catch (error) {
+                console.error('读取PET模型', error)
               }
-            } catch (error) {
-              console.error('读取PET模型', error)
+            } else {
+               console.error('loadlive2d function undefined')
             }
-          }
-        })
-      }, 100) // 缩短延时到100ms，确保用户能看到，同时不阻塞主线程
+          })
+          .catch(err => {
+            console.error('Live2D script load failed:', err)
+          })
+      }, 2000) // 增加延时到2s，避免与核心资源竞争，且确保页面加载完成
       return () => clearTimeout(timer)
     }
-  }, [theme])
+  }, [theme, showPet, petLink])
 
   function handleClick() {
     if (petSwitchTheme) {
