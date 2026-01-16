@@ -1,0 +1,102 @@
+
+> notion-next@4.9.2 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+ ⚠ Port 3001 is in use, trying 3002 instead.
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3002
+  - Experiments (use with caution):
+    · scrollRestoration
+
+ ✓ Starting...
+[默认主题] /app/themes/heo
+ ✓ Ready in 1967ms
+ ✓ Compiled /middleware in 428ms (215 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 25.6s (2898 modules)
+ ✓ Compiled in 3.1s (2898 modules)
+[API-->>请求] from:index id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:778ms - from:index
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:608ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:283ms - from:data-notice
+Warning: Invalid DOM property `imagesrcset`. Did you mean `imageSrcSet`?
+    at link
+    at head
+    at Head (webpack-internal:///./node_modules/next/dist/pages/_document.js:308:1)
+    at html
+    at Html (webpack-internal:///./node_modules/next/dist/pages/_document.js:782:132)
+    at MyDocument (webpack-internal:///./pages/_document.js:47:1)
+Warning: Invalid DOM property `imagesizes`. Did you mean `imageSizes`?
+    at link
+    at head
+    at Head (webpack-internal:///./node_modules/next/dist/pages/_document.js:308:1)
+    at html
+    at Html (webpack-internal:///./node_modules/next/dist/pages/_document.js:782:132)
+    at MyDocument (webpack-internal:///./pages/_document.js:47:1)
+ GET / 200 in 31651ms
+ ○ Compiling /search ...
+ ✓ Compiled /search in 1914ms (2902 modules)
+[API-->>请求] from:search-props id:24f4d291ba2c806c8850ddcb3fe8c012
+[API<<--响应] 耗时:1129ms - from:search-props
+[API-->>请求] from:config-table id:24f4d291-ba2c-8167-a29d-cbf5dd73aeae
+[API<<--响应] 耗时:285ms - from:config-table
+[API-->>请求] from:data-notice id:24f4d291-ba2c-8183-bdbc-d914b1a8816c
+[API<<--响应] 耗时:369ms - from:data-notice
+[API-->>请求] from:search-index id:24f4d291-ba2c-81c5-957d-f370442b4af9
+[API-->>请求] from:search-index id:24f4d291-ba2c-8159-bb94-c96dd4c95394
+[API-->>请求] from:search-index id:2ad4d291-ba2c-805b-b5a5-c1ae376ceb52
+[API-->>请求] from:search-index id:24f4d291-ba2c-803b-9745-ebea632fbe7e
+[API-->>请求] from:search-index id:2574d291-ba2c-8055-a5e1-e80570aad090
+[API-->>请求] from:search-index id:24f4d291-ba2c-8136-9ed5-d7df281fc144
+[API-->>请求] from:search-index id:24f4d291-ba2c-8186-988d-f3afd41c5cf0
+[API-->>请求] from:search-index id:24f4d291-ba2c-811d-aaf6-c624fe67da1f
+[API-->>请求] from:search-index id:24f4d291-ba2c-81bc-99e5-febeedfe45c6
+[API-->>请求] from:search-index id:24f4d291-ba2c-81fc-be6b-d70c413b0b5f
+[API-->>请求] from:search-index id:24f4d291-ba2c-8172-8cee-e1d55b41bfbc
+[API-->>请求] from:search-index id:24f4d291-ba2c-81d9-abb6-c9029fe344c9
+[API-->>请求] from:search-index id:24f4d291-ba2c-81e1-bce7-cbcdafd0d84e
+[API-->>请求] from:search-index id:24f4d291-ba2c-813f-b97a-fcdde90cfc83
+[API-->>请求] from:search-index id:24f4d291-ba2c-814e-b9a1-c0c1d14aa05b
+[API-->>请求] from:search-index id:24f4d291-ba2c-812b-b43f-ca8855508f21
+[API-->>请求] from:search-index id:24f4d291-ba2c-8164-ba8c-dfb0c6a3e868
+[API-->>请求] from:search-index id:24f4d291-ba2c-8111-a8cc-f3b4b479e55f
+[API-->>请求] from:search-index id:24f4d291-ba2c-8113-a701-c67b33280a49
+[API-->>请求] from:search-index id:24f4d291-ba2c-81db-bec0-d177bcd0bc0f
+[API-->>请求] from:search-index id:24f4d291-ba2c-8103-b33a-f09933c2d629
+[API-->>请求] from:search-index id:24f4d291-ba2c-8198-98fe-ebedc85f86a1
+[API-->>请求] from:search-index id:24f4d291-ba2c-81ec-b96d-e288108e4e3d
+[API-->>请求] from:search-index id:24f4d291-ba2c-8121-8379-ccdd1a9b652d
+[API-->>请求] from:search-index id:24f4d291-ba2c-81ab-aca6-cc150c58fea4
+[API-->>请求] from:search-index id:24f4d291-ba2c-81ff-9e39-d713f8142910
+[API<<--响应] 耗时:328ms - from:search-index
+[API<<--响应] 耗时:333ms - from:search-index
+[API<<--响应] 耗时:376ms - from:search-index
+[API<<--响应] 耗时:456ms - from:search-index
+[API<<--响应] 耗时:463ms - from:search-index
+[API<<--响应] 耗时:458ms - from:search-index
+[API<<--响应] 耗时:475ms - from:search-index
+[API<<--响应] 耗时:478ms - from:search-index
+[API<<--响应] 耗时:496ms - from:search-index
+[API<<--响应] 耗时:508ms - from:search-index
+[API<<--响应] 耗时:542ms - from:search-index
+[API<<--响应] 耗时:561ms - from:search-index
+[API<<--响应] 耗时:560ms - from:search-index
+[API<<--响应] 耗时:573ms - from:search-index
+[API<<--响应] 耗时:663ms - from:search-index
+[API<<--响应] 耗时:698ms - from:search-index
+[API<<--响应] 耗时:748ms - from:search-index
+[API<<--响应] 耗时:766ms - from:search-index
+[API<<--响应] 耗时:783ms - from:search-index
+[API<<--响应] 耗时:810ms - from:search-index
+[API<<--响应] 耗时:822ms - from:search-index
+[API<<--响应] 耗时:824ms - from:search-index
+[API<<--响应] 耗时:857ms - from:search-index
+[API<<--响应] 耗时:907ms - from:search-index
+[API<<--响应] 耗时:983ms - from:search-index
+[API<<--响应] 耗时:1246ms - from:search-index
+Warning: data for page "/search" (path "/search?s=Notion") is 315 kB which exceeds the threshold of 128 kB, this amount of data can reduce performance.
+See more info here: https://nextjs.org/docs/messages/large-page-data
+ GET /search?s=Notion 200 in 5437ms

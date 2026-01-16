@@ -334,6 +334,17 @@ const LayoutSearch = props => {
  */
 const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+  // 搜索关键词高亮逻辑
+  const keyword = currentSearch?.toLowerCase() || ''
+  const text = post.content || ''
+  const indexInText = text.toLowerCase().indexOf(keyword)
+
+  let displayContent = post.summary
+  if (indexInText > -1 && keyword) {
+    const start = Math.max(0, indexInText - 50)
+    const end = Math.min(text.length, indexInText + 150)
+    displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+  }
 
   return (
     <SmartLink href={post?.href}>
@@ -355,10 +366,20 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
             <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
               {post.title}
             </h3>
-            {post.summary && (
-              <p className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-2'>
-                {post.summary}
-              </p>
+            {displayContent && (
+              <div className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
+                {displayContent}
+              </div>
+            )}
+            {indexInText > -1 && keyword && (
+               <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
+                    }}>
+                    <i className="fas fa-search-location mr-1"></i>
+                    跳转到搜索位置
+               </div>
             )}
           </div>
           <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
@@ -387,6 +408,17 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
  */
 const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+  // 搜索关键词高亮逻辑
+  const keyword = currentSearch?.toLowerCase() || ''
+  const text = post.content || ''
+  const indexInText = text.toLowerCase().indexOf(keyword)
+
+  let displayContent = post.summary
+  if (indexInText > -1 && keyword) {
+    const start = Math.max(0, indexInText - 50)
+    const end = Math.min(text.length, indexInText + 150)
+    displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+  }
 
   return (
     <SmartLink href={post?.href}>
@@ -408,10 +440,20 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
             <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors'>
               {post.title}
             </h3>
-            {post.summary && (
-              <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2'>
-                {post.summary}
-              </p>
+            {displayContent && (
+              <div className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
+                {displayContent}
+              </div>
+            )}
+            {indexInText > -1 && keyword && (
+               <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
+                    }}>
+                    <i className="fas fa-search-location mr-1"></i>
+                    跳转到搜索位置
+               </div>
             )}
           </div>
           <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
