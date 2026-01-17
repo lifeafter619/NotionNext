@@ -205,7 +205,16 @@ const LayoutSearch = props => {
         highlightPreTag: '<span class="text-red-500 font-bold">',
         highlightPostTag: '</span>'
       }).then(({ hits }) => {
-        const mappedHits = hits.map(hit => ({
+        // 去重逻辑：使用 slug 作为唯一标识
+        const uniqueHitsMap = new Map()
+        hits.forEach(hit => {
+            if (!uniqueHitsMap.has(hit.slug)) {
+                uniqueHitsMap.set(hit.slug, hit)
+            }
+        })
+        const uniqueHits = Array.from(uniqueHitsMap.values())
+
+        const mappedHits = uniqueHits.map(hit => ({
           ...hit,
           id: hit.objectID,
           title: hit._highlightResult?.title?.value || hit.title,
@@ -430,6 +439,8 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
+                      // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
+                      // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
                       window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location mr-1"></i>
@@ -484,8 +495,11 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
     }
   }
 
+  // 将搜索词附加到主链接，实现点击卡片任意位置跳转
+  const hrefWithFragment = showJumpButton ? `${post.href}#:~:text=${encodeURIComponent(currentSearch)}` : post.href
+
   return (
-    <SmartLink href={post?.href}>
+    <SmartLink href={hrefWithFragment}>
       <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer h-full flex flex-col'>
         {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
@@ -593,6 +607,30 @@ const LayoutSlug = props => {
 
   const router = useRouter()
   const waiting404 = siteConfig('POST_WAITING_TIME_FOR_404') * 1000
+
+  // 检查 URL 是否包含搜索跳转
+  useEffect(() => {
+    if (isBrowser) {
+        const hash = window.location.hash
+        if (hash && hash.includes('text=')) {
+            // 解析 text= 后的内容 (简单处理，浏览器会自动高亮)
+            // const text = decodeURIComponent(hash.split('text=')[1])
+            // 这里我们只需要提示用户跳转成功
+            const toastElement = document.getElementById('toast-wrapper')
+            if (!toastElement) {
+                // 如果没有 Toast 容器，这里可以手动触发一个 (theme-heo 通常有全局 Toast，这里复用 logic 或创建临时提示)
+                // 由于 Toast 组件通常是命令式调用的，这里我们尝试一个简单的 dom 操作或依赖全局状态
+                // 暂时使用 alert 替代验证，或者更好的方式是使用 context
+                // 但 themes/heo/index.js 似乎没有直接暴露 toast context
+                // 我们直接渲染一个临时的 Toast
+                setShowJumpToast(true)
+                setTimeout(() => setShowJumpToast(false), 3000)
+            }
+        }
+    }
+  }, [])
+
+  const [showJumpToast, setShowJumpToast] = useState(false)
 
   // 监听滚动，延迟加载底部推荐和评论
   useEffect(() => {
@@ -705,6 +743,16 @@ const LayoutSlug = props => {
       </div>
 
       <FloatTocButton {...props} />
+
+      {/* 搜索跳转提示 */}
+      {showJumpToast && (
+        <div className="fixed top-20 left-0 right-0 mx-auto z-50 w-fit">
+            <div className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-fade-in-down">
+                <i className="fas fa-search-location"></i>
+                <span>已跳转到搜索内容位置</span>
+            </div>
+        </div>
+      )}
     </>
   )
 }
