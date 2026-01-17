@@ -15,6 +15,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
+import algoliasearch from 'algoliasearch'
 import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
@@ -188,11 +189,47 @@ const LayoutSearch = props => {
   const { locale } = useGlobal()
   const [sortOrder, setSortOrder] = useState('relevance')
   const [viewMode, setViewMode] = useState('list') // list or grid
+  const [algoliaResults, setAlgoliaResults] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  // 检查是否开启 Algolia
+  const enableAlgolia = siteConfig('ALGOLIA_APP_ID')
+
+  useEffect(() => {
+    if (enableAlgolia && currentSearch) {
+      setLoading(true)
+      const client = algoliasearch(siteConfig('ALGOLIA_APP_ID'), siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY'))
+      const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
+      index.search(currentSearch, {
+        attributesToSnippet: ['content:150', 'summary:100'],
+        highlightPreTag: '<span class="text-red-500 font-bold">',
+        highlightPostTag: '</span>'
+      }).then(({ hits }) => {
+        const mappedHits = hits.map(hit => ({
+          ...hit,
+          id: hit.objectID,
+          title: hit._highlightResult?.title?.value || hit.title,
+          summary: hit._snippetResult?.content?.value || hit.summary,
+          // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
+          // 为了兼容 SearchResultCard 的 href 构建
+          slug: hit.slug,
+          createdTime: hit.createdTime || hit.createdTimestamp
+        }))
+        setAlgoliaResults(mappedHits)
+        setLoading(false)
+      })
+    } else {
+      setAlgoliaResults(null)
+    }
+  }, [currentSearch, enableAlgolia])
+
+  // 优先使用 Algolia 结果，否则使用本地结果
+  const displayPosts = algoliaResults || posts
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
-    if (!posts) return []
-    return [...posts].sort((a, b) => {
+    if (!displayPosts) return []
+    return [...displayPosts].sort((a, b) => {
       if (sortOrder === 'newest') {
         return new Date(b.createdTime || 0) - new Date(a.createdTime || 0)
       } else if (sortOrder === 'oldest') {
@@ -200,11 +237,11 @@ const LayoutSearch = props => {
       }
       return 0 // relevance - 保持原始顺序
     })
-  }, [posts, sortOrder])
+  }, [displayPosts, sortOrder])
 
+  // 本地搜索高亮 (Algolia 自带高亮，不需要这个)
   useEffect(() => {
-    // 高亮搜索结果
-    if (currentSearch) {
+    if (currentSearch && !enableAlgolia) {
       setTimeout(() => {
         replaceSearchResult({
           doms: document.getElementsByClassName('replace'),
@@ -216,7 +253,7 @@ const LayoutSearch = props => {
         })
       }, 100)
     }
-  }, [currentSearch])
+  }, [currentSearch, enableAlgolia])
 
   return (
     <div id='search-page-wrapper' className='px-5 md:px-0'>
@@ -233,7 +270,7 @@ const LayoutSearch = props => {
                   搜索结果
                 </h1>
                 <p className='text-gray-600 dark:text-gray-400 mt-1'>
-                  找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{postCount || sortedPosts.length}</span> 篇关于 
+                  找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{sortedPosts.length}</span> 篇关于
                   <span className='font-bold mx-1'>{'"'}{currentSearch}{'"'}</span> 的文章
                 </p>
               </div>
@@ -298,17 +335,21 @@ const LayoutSearch = props => {
 
           {/* 搜索结果列表 */}
           <div id='posts-wrapper'>
-            {sortedPosts.length > 0 ? (
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <i className="fas fa-spinner animate-spin text-4xl text-blue-500"></i>
+                </div>
+            ) : sortedPosts.length > 0 ? (
               viewMode === 'list' ? (
                 <div className='space-y-4'>
                   {sortedPosts.map((post, index) => (
-                    <SearchResultCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} />
+                    <SearchResultCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} isAlgolia={!!enableAlgolia} />
                   ))}
                 </div>
               ) : (
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                   {sortedPosts.map((post, index) => (
-                    <SearchResultGridCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} />
+                    <SearchResultGridCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} isAlgolia={!!enableAlgolia} />
                   ))}
                 </div>
               )
@@ -332,18 +373,30 @@ const LayoutSearch = props => {
 /**
  * 搜索结果卡片 - 列表视图
  */
-const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
+const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = false }) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
-  // 搜索关键词高亮逻辑
-  const keyword = currentSearch?.toLowerCase() || ''
-  const text = post.content || ''
-  const indexInText = text.toLowerCase().indexOf(keyword)
 
   let displayContent = post.summary
-  if (indexInText > -1 && keyword) {
-    const start = Math.max(0, indexInText - 50)
-    const end = Math.min(text.length, indexInText + 150)
-    displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+  let displayTitle = post.title
+  let showJumpButton = false
+
+  if (isAlgolia) {
+    // Algolia 模式下，content 和 title 已经是带 HTML 的 snippets
+    // 使用 dangerouslySetInnerHTML 渲染
+    displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
+    displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
+    showJumpButton = true
+  } else {
+    // 本地搜索逻辑
+    const keyword = currentSearch?.toLowerCase() || ''
+    const text = post.content || ''
+    const indexInText = text.toLowerCase().indexOf(keyword)
+    if (indexInText > -1 && keyword) {
+        const start = Math.max(0, indexInText - 50)
+        const end = Math.min(text.length, indexInText + 150)
+        displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+        showJumpButton = true
+    }
   }
 
   return (
@@ -364,14 +417,14 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
         <div className='flex-1 flex flex-col justify-between min-w-0'>
           <div>
             <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
-              {post.title}
+              {displayTitle}
             </h3>
             {displayContent && (
               <div className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
                 {displayContent}
               </div>
             )}
-            {indexInText > -1 && keyword && (
+            {showJumpButton && (
                <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
                     onClick={(e) => {
                       e.preventDefault()
@@ -407,18 +460,27 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
 /**
  * 搜索结果卡片 - 网格视图
  */
-const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
+const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia = false }) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
-  // 搜索关键词高亮逻辑
-  const keyword = currentSearch?.toLowerCase() || ''
-  const text = post.content || ''
-  const indexInText = text.toLowerCase().indexOf(keyword)
 
   let displayContent = post.summary
-  if (indexInText > -1 && keyword) {
-    const start = Math.max(0, indexInText - 50)
-    const end = Math.min(text.length, indexInText + 150)
-    displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+  let displayTitle = post.title
+  let showJumpButton = false
+
+  if (isAlgolia) {
+    displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
+    displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
+    showJumpButton = true
+  } else {
+    const keyword = currentSearch?.toLowerCase() || ''
+    const text = post.content || ''
+    const indexInText = text.toLowerCase().indexOf(keyword)
+    if (indexInText > -1 && keyword) {
+        const start = Math.max(0, indexInText - 50)
+        const end = Math.min(text.length, indexInText + 150)
+        displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+        showJumpButton = true
+    }
   }
 
   return (
@@ -439,14 +501,14 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
         <div className='p-4 flex-1 flex flex-col justify-between'>
           <div>
             <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors'>
-              {post.title}
+              {displayTitle}
             </h3>
             {displayContent && (
               <div className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
                 {displayContent}
               </div>
             )}
-            {indexInText > -1 && keyword && (
+            {showJumpButton && (
                <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
                     onClick={(e) => {
                       e.preventDefault()

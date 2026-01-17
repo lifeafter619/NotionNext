@@ -5,6 +5,7 @@ import { getPage } from '@/lib/notion/getPostBlocks'
 import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { getTextContent } from 'notion-utils'
+import { uploadDataToAlgolia } from '@/lib/plugins/algolia'
 
 /**
  * 搜索路由
@@ -115,6 +116,11 @@ export async function getStaticProps({ locale }) {
       newPost.content = newPost.content || newPost.blockMap?.rawText || null
     }
 
+    // 上传数据到 Algolia
+    if (process.env.npm_lifecycle_event === 'build') {
+        await uploadDataToAlgolia(newPost)
+    }
+
     // 清理 blockMap 以减小 JSON 大小
     if (newPost.blockMap) {
       delete newPost.blockMap
@@ -122,6 +128,14 @@ export async function getStaticProps({ locale }) {
 
     return newPost
   }, 3) // 并发数限制为 3，降低 Vercel 资源压力
+
+  // 如果开启了Algolia，则本地数据不需要包含全文内容，以减少JSON体积提升性能
+  if (siteConfig('ALGOLIA_APP_ID')) {
+    props.posts.forEach(p => {
+        delete p.content
+        delete p.blockMap
+    })
+  }
 
   delete props.allPages
 
