@@ -1,0 +1,99 @@
+
+> notion-next@4.9.2 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+ ⚠ Port 3001 is in use, trying 3002 instead.
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3002
+  - Experiments (use with caution):
+    · scrollRestoration
+
+ ✓ Starting...
+[默认主题] /app/themes/heo
+ ✓ Ready in 4s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1781ms (215 modules)
+ ○ Compiling / ...
+ ⨯ ./themes/heo/index.js
+Error:
+  [31mx[0m Expected ',', got '{'
+     ,-[[36;1;4m/app/themes/heo/index.js[0m:342:1]
+ [2m342[0m |             </div>
+ [2m343[0m |           </div>
+ [2m344[0m |
+ [2m345[0m |           {/* 搜索结果列表 */}
+     : [31;1m          ^[0m
+ [2m346[0m |           <div id='posts-wrapper'>
+ [2m347[0m |             {loading ? (
+ [2m348[0m |                 <div className="flex justify-center py-20">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./themes/heo/index.js
+./themes/theme.js
+ ⨯ ./themes/heo/index.js
+Error:
+  [31mx[0m Expected ',', got '{'
+     ,-[[36;1;4m/app/themes/heo/index.js[0m:342:1]
+ [2m342[0m |             </div>
+ [2m343[0m |           </div>
+ [2m344[0m |
+ [2m345[0m |           {/* 搜索结果列表 */}
+     : [31;1m          ^[0m
+ [2m346[0m |           <div id='posts-wrapper'>
+ [2m347[0m |             {loading ? (
+ [2m348[0m |                 <div className="flex justify-center py-20">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./themes/heo/index.js
+./themes/theme.js
+[默认主题] /app/themes/heo
+ ⨯ ./themes/heo/index.js
+Error:
+  [31mx[0m Expected ',', got '{'
+     ,-[[36;1;4m/app/themes/heo/index.js[0m:342:1]
+ [2m342[0m |             </div>
+ [2m343[0m |           </div>
+ [2m344[0m |
+ [2m345[0m |           {/* 搜索结果列表 */}
+     : [31;1m          ^[0m
+ [2m346[0m |           <div id='posts-wrapper'>
+ [2m347[0m |             {loading ? (
+ [2m348[0m |                 <div className="flex justify-center py-20">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./themes/heo/index.js
+./themes/theme.js
+ HEAD / 500 in 69089ms
+ ⨯ ./themes/heo/index.js
+Error:
+  [31mx[0m Expected ',', got '{'
+     ,-[[36;1;4m/app/themes/heo/index.js[0m:342:1]
+ [2m342[0m |             </div>
+ [2m343[0m |           </div>
+ [2m344[0m |
+ [2m345[0m |           {/* 搜索结果列表 */}
+     : [31;1m          ^[0m
+ [2m346[0m |           <div id='posts-wrapper'>
+ [2m347[0m |             {loading ? (
+ [2m348[0m |                 <div className="flex justify-center py-20">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./themes/heo/index.js
+./themes/theme.js

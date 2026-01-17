@@ -133,7 +133,7 @@ const Header = props => {
       {/* 顶部导航菜单栏 */}
       <nav
         id='nav'
-        className={`z-20 h-16 top-0 w-full duration-300 transition-all prevent-scroll-jump
+        className={`z-50 h-16 top-0 w-full duration-300 transition-all prevent-scroll-jump
             ${fixedNav ? 'fixed' : 'relative bg-transparent'} 
             ${textWhite ? 'text-white ' : 'text-black dark:text-white'}  
             ${navBgWhite ? 'bg-white dark:bg-[#18171d] shadow' : 'bg-transparent'}`}>

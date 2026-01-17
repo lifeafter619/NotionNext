@@ -179,6 +179,24 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
               <i className='fa-solid fa-font' />
             </div>
 
+            {/* 搜索按钮 */}
+            <div
+              className='cursor-pointer pl-1 mr-2 hover:scale-110 transition-transform'
+              onClick={() => {
+                // 触发全局搜索框
+                const searchButton = document.querySelector('.search-button-icon')
+                if (searchButton) {
+                    searchButton.click()
+                } else {
+                    // Fallback using hotkey simulation if button not found or other method
+                    const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })
+                    document.dispatchEvent(event)
+                }
+              }}
+            >
+              <i className='fa-solid fa-magnifying-glass'></i>
+            </div>
+
           </section>
         </div>
 

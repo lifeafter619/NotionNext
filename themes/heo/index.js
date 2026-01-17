@@ -235,7 +235,7 @@ const LayoutSearch = props => {
   }, [currentSearch, enableAlgolia])
 
   // 优先使用 Algolia 结果，否则使用本地结果
-  const displayPosts = algoliaResults || posts
+  const displayPosts = (algoliaResults || posts).filter(post => post.slug || post.objectID)
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -268,11 +268,9 @@ const LayoutSearch = props => {
 
   return (
     <div id='search-page-wrapper' className='px-5 md:px-0'>
-      {!currentSearch ? (
-        <SearchNav {...props} />
-      ) : (
-        <div className='mt-6'>
-          {/* 搜索结果头部 */}
+      <SearchNav {...props} />
+      <div className='mt-6'>
+        {currentSearch && (
           <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-6'>
             <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
               <div>
@@ -369,14 +367,11 @@ const LayoutSearch = props => {
                 <i className='fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4'></i>
                 <p className='text-xl text-gray-600 dark:text-gray-400'>未找到相关文章</p>
                 <p className='text-gray-500 dark:text-gray-500 mt-2'>尝试使用不同的关键词搜索</p>
-                <SmartLink href='/search' className='inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'>
-                  返回搜索
-                </SmartLink>
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
