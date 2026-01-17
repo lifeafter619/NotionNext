@@ -394,8 +394,8 @@ function TodayCard({ cRef, siteInfo }) {
         </div>
 
         {/* 封面图 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <LazyImage
+          priority={true}
           src={siteInfo?.pageCover}
           id='today-card-cover'
           alt='Today Card Cover'
