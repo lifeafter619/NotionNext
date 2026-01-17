@@ -86,6 +86,14 @@ export default function SearchHighlightNav() {
     scrollToMatch(prevIndex)
   }
 
+  // 监听输入框变化，直接跳转
+  const handleInputChange = (e) => {
+    const val = parseInt(e.target.value)
+    if (!isNaN(val) && val >= 1 && val <= matchCount) {
+        scrollToMatch(val - 1)
+    }
+  }
+
   const handleClose = () => {
     setIsVisible(false)
     // 移除 URL 中的 query 参数，但保留路径
@@ -182,8 +190,16 @@ export default function SearchHighlightNav() {
         </button>
       </div>
 
-      <div className="text-center text-xs text-gray-400 mt-1">
-        {currentMatchIndex + 1} / {matchCount}
+      <div className="text-center text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
+        <input
+            type="number"
+            min="1"
+            max={matchCount}
+            value={currentMatchIndex + 1}
+            onChange={handleInputChange}
+            className="w-10 text-center bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 outline-none transition-colors"
+        />
+        <span>/ {matchCount}</span>
       </div>
     </div>
   )
