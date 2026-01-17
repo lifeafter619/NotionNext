@@ -2189,7 +2189,7 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 
 /* 高亮/突出块 - Callout 现代化 */
 .notion-callout {
-  padding: 10px 12px;
+  padding: 10px 2px;
   display: flex;
   width: 100%;
   border-radius: var(--notion-rounded-radius);
