@@ -111,26 +111,47 @@ export default function SearchHighlightNav() {
   }
 
   // 拖拽逻辑
-  const [position, setPosition] = useState({ x: 20, y: 100 })
+  const [position, setPosition] = useState({ x: 20, y: 100 }) // x: right, y: top
   const isDragging = useRef(false)
-  const dragStart = useRef({ x: 0, y: 0 })
+  const dragStartMouseRef = useRef({ x: 0, y: 0 })
+  const initialDragPosRef = useRef({ x: 0, y: 0 })
 
   const handleMouseDown = (e) => {
     isDragging.current = true
-    dragStart.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    }
+    dragStartMouseRef.current = { x: e.clientX, y: e.clientY }
+    initialDragPosRef.current = { x: position.x, y: position.y }
+
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
   }
 
   const handleMouseMove = (e) => {
     if (!isDragging.current) return
-    setPosition({
-      x: e.clientX - dragStart.current.x,
-      y: e.clientY - dragStart.current.y
-    })
+    e.preventDefault()
+
+    // Right: 鼠标右移 (clientX 增加) -> right 值应减小
+    const deltaX = dragStartMouseRef.current.x - e.clientX
+
+    // Top: 鼠标下移 (clientY 增加) -> top 值应增加
+    const deltaY = e.clientY - dragStartMouseRef.current.y
+
+    let newX = initialDragPosRef.current.x + deltaX
+    let newY = initialDragPosRef.current.y + deltaY
+
+    // 边界检查
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    const navWidth = containerRef.current ? containerRef.current.offsetWidth : 192 // w-48 is 12rem = 192px
+    const navHeight = containerRef.current ? containerRef.current.offsetHeight : 200
+
+    // 限制在屏幕内
+    // Right range: [0, windowWidth - navWidth]
+    newX = Math.max(0, Math.min(newX, windowWidth - navWidth))
+
+    // Top range: [0, windowHeight - navHeight]
+    newY = Math.max(0, Math.min(newY, windowHeight - navHeight))
+
+    setPosition({ x: newX, y: newY })
   }
 
   const handleMouseUp = () => {
@@ -155,14 +176,15 @@ export default function SearchHighlightNav() {
       {/* 拖拽手柄 */}
       <div
         onMouseDown={handleMouseDown}
-        className="flex justify-between items-center cursor-move border-b dark:border-gray-700 pb-2 mb-1"
+        className="flex justify-between items-center cursor-move border-b dark:border-gray-700 pb-2 mb-1 select-none"
       >
-        <span className="text-sm font-bold text-blue-600 dark:text-yellow-500">
+        <span className="text-sm font-bold text-blue-600 dark:text-yellow-500 pointer-events-none">
           <i className="fas fa-search mr-1"></i>
           搜索定位
         </span>
         <button
           onClick={handleClose}
+          onMouseDown={(e) => e.stopPropagation()} // 防止点击关闭时触发拖拽
           className="text-gray-400 hover:text-red-500 transition-colors"
         >
           <i className="fas fa-times"></i>
