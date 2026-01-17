@@ -213,6 +213,7 @@ const LayoutSearch = props => {
           // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
           // 为了兼容 SearchResultCard 的 href 构建
           slug: hit.slug,
+          href: hit.slug?.startsWith('http') ? hit.slug : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
           createdTime: hit.createdTime || hit.createdTimestamp
         }))
         setAlgoliaResults(mappedHits)
