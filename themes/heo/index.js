@@ -235,7 +235,7 @@ const LayoutSearch = props => {
   }, [currentSearch, enableAlgolia])
 
   // 优先使用 Algolia 结果，否则使用本地结果
-  const displayPosts = (algoliaResults || posts).filter(post => post.slug || post.objectID)
+  const displayPosts = (algoliaResults || posts || []).filter(post => post.slug || post.objectID)
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -341,8 +341,10 @@ const LayoutSearch = props => {
               </div>
             </div>
           </div>
+        )}
 
-          {/* 搜索结果列表 */}
+        {/* 搜索结果列表 - 只有当 loading 为真或有搜索结果，或无结果时才显示内容 */}
+        {(loading || (sortedPosts.length > 0) || (currentSearch && sortedPosts.length === 0)) && (
           <div id='posts-wrapper'>
             {loading ? (
                 <div className="flex justify-center py-20">
