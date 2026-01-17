@@ -35,6 +35,7 @@ import { NoticeBar } from './components/NoticeBar'
 import PostHeader from './components/PostHeader'
 import { PostLock } from './components/PostLock'
 import SearchNav from './components/SearchNav'
+import SearchHighlightNav from './components/SearchHighlightNav'
 import SideRight from './components/SideRight'
 import CONFIG from './config'
 import { Style } from './style'
@@ -441,7 +442,7 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
                       e.stopPropagation()
                       // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
                       // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
-                      window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
+                      window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location mr-1"></i>
                     跳转到搜索位置
@@ -496,7 +497,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
   }
 
   // 将搜索词附加到主链接，实现点击卡片任意位置跳转
-  const hrefWithFragment = showJumpButton ? `${post.href}#:~:text=${encodeURIComponent(currentSearch)}` : post.href
+  const hrefWithFragment = showJumpButton ? `${post.href}?keyword=${encodeURIComponent(currentSearch)}` : post.href
 
   return (
     <SmartLink href={hrefWithFragment}>
@@ -528,7 +529,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      window.location.href = `${post.href}#:~:text=${encodeURIComponent(currentSearch)}`
+                      window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location mr-1"></i>
                     跳转到搜索位置
@@ -743,6 +744,7 @@ const LayoutSlug = props => {
       </div>
 
       <FloatTocButton {...props} />
+      <SearchHighlightNav />
 
       {/* 搜索跳转提示 */}
       {showJumpToast && (
