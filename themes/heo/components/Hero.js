@@ -5,7 +5,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useImperativeHandle, useRef, useState } from 'react'
+import { memo, useImperativeHandle, useRef, useState } from 'react'
 import CONFIG from '../config'
 
 /**
@@ -119,7 +119,7 @@ function Banner(props) {
  * 图标滚动标签组
  * 英雄区左上角banner条中斜向滚动的图标
  */
-function TagsGroupBar() {
+const TagsGroupBar = memo(() => {
   let groupIcons = siteConfig('HEO_GROUP_ICONS', null, CONFIG)
   if (groupIcons) {
     groupIcons = groupIcons.concat(groupIcons)
@@ -136,7 +136,7 @@ function TagsGroupBar() {
                   'tags-group-icon w-28 h-28 rounded-3xl flex items-center justify-center text-white text-lg font-bold shadow-md'
                 }>
                 <LazyImage
-                  priority={false}
+                  priority={true}
                   src={g.img_1}
                   title={g.title_1}
                   className='w-2/3 hidden xl:block'
@@ -148,7 +148,7 @@ function TagsGroupBar() {
                   'tags-group-icon  mt-5 w-28 h-28 rounded-3xl flex items-center justify-center text-white text-lg font-bold shadow-md'
                 }>
                 <LazyImage
-                  priority={false}
+                  priority={true}
                   src={g.img_2}
                   title={g.title_2}
                   className='w-2/3 hidden xl:block'
@@ -160,7 +160,7 @@ function TagsGroupBar() {
       </div>
     </div>
   )
-}
+})
 
 /**
  * 英雄区左下角3个指定分类按钮
@@ -368,7 +368,7 @@ function TodayCard({ cRef, siteInfo }) {
         {/* 卡片文字信息 */}
         <div
           id='today-card-info'
-          className='flex justify-between w-full relative text-white p-10 items-end'>
+          className='z-10 flex justify-between w-full relative text-white p-10 items-end'>
           <div className='flex flex-col'>
             <div className='text-xs font-light'>
               {siteConfig('HEO_HERO_TITLE_4', null, CONFIG)}
