@@ -80,7 +80,11 @@ export async function getStaticProps({ locale }) {
   }
 
   // 优化：使用并发控制获取全文内容，减少构建资源占用
-  props.posts = await pMap(publishedPosts, async post => {
+  let validPosts = await pMap(publishedPosts, async post => {
+    // 再次过滤：确保有 id 和 slug
+    if (!post.id || !post.slug) {
+        return null
+    }
     const newPost = { ...post }
     newPost.summary = newPost.summary || null
     newPost.password = newPost.password || null
@@ -123,6 +127,9 @@ export async function getStaticProps({ locale }) {
 
     return newPost
   }, 3) // 并发数限制为 3，降低 Vercel 资源压力
+
+  // 过滤掉处理过程中返回 null 的无效文章
+  props.posts = validPosts.filter(p => p !== null)
 
   // 上传数据到 Algolia
   if (siteConfig('ALGOLIA_APP_ID') && process.env.npm_lifecycle_event === 'build') {
