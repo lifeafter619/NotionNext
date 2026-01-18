@@ -194,7 +194,7 @@ const LayoutSearch = props => {
   const [loading, setLoading] = useState(false)
 
   // 检查是否开启 Algolia
-  const enableAlgolia = siteConfig('ALGOLIA_APP_ID')
+  const enableAlgolia = siteConfig('ALGOLIA_APP_ID') && siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY') && siteConfig('ALGOLIA_INDEX')
 
   useEffect(() => {
     if (enableAlgolia && currentSearch) {
@@ -227,6 +227,10 @@ const LayoutSearch = props => {
           createdTime: hit.createdTime || hit.createdTimestamp
         }))
         setAlgoliaResults(mappedHits)
+        setLoading(false)
+      }).catch(err => {
+        console.error('Algolia search failed:', err)
+        setAlgoliaResults(null)
         setLoading(false)
       })
     } else {
@@ -399,7 +403,10 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
     const keyword = currentSearch?.toLowerCase() || ''
     const text = post.content || ''
     const indexInText = text.toLowerCase().indexOf(keyword)
-    if (indexInText > -1 && keyword) {
+    if (post.results && post.results.length > 0) {
+        displayContent = post.results.map(r => r).join('...')
+        showJumpButton = true
+    } else if (indexInText > -1 && keyword) {
         const start = Math.max(0, indexInText - 50)
         const end = Math.min(text.length, indexInText + 150)
         displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
@@ -485,7 +492,10 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
     const keyword = currentSearch?.toLowerCase() || ''
     const text = post.content || ''
     const indexInText = text.toLowerCase().indexOf(keyword)
-    if (indexInText > -1 && keyword) {
+    if (post.results && post.results.length > 0) {
+        displayContent = post.results.map(r => r).join('...')
+        showJumpButton = true
+    } else if (indexInText > -1 && keyword) {
         const start = Math.max(0, indexInText - 50)
         const end = Math.min(text.length, indexInText + 150)
         displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
