@@ -6,6 +6,7 @@ import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
 import { getPageContentText } from '@/lib/notion/getPageContentText'
+import { idToUuid } from 'notion-utils'
 
 /**
  * 搜索路由
@@ -99,8 +100,15 @@ export async function getStaticProps({ locale }) {
       try {
         const blockMap = await getPage(post.id, 'search-index')
         // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
-        if (blockMap?.block?.[post.id]?.value?.content) {
-            newPost.content = blockMap.block[post.id].value.content
+        const pId = idToUuid(post.id)
+        if (blockMap?.block?.[pId]?.value?.content) {
+            newPost.content = blockMap.block[pId].value.content
+        } else {
+           // 兼容id不一致的情况
+           const blockId = Object.keys(blockMap.block).find(id => blockMap.block[id].value.type === 'page')
+           if (blockId) {
+             newPost.content = blockMap.block[blockId].value.content
+           }
         }
         newPost.content = getPageContentText(newPost, blockMap)
       } catch (e) {

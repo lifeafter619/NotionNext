@@ -4,6 +4,7 @@ import { siteConfig } from '@/lib/config'
 import { getGlobalData } from '@/lib/db/getSiteData'
 import { DynamicLayout } from '@/themes/theme'
 import { getPageContentText } from '@/lib/notion/getPageContentText'
+import { idToUuid } from 'notion-utils'
 
 const Index = props => {
   const theme = siteConfig('THEME', BLOG.THEME, props.NOTION_CONFIG)
@@ -81,8 +82,15 @@ async function filterByMemCache(allPosts, keyword) {
         : ''
     const articleInfo = post.title + post.summary + tagContent + categoryContent
     let hit = articleInfo.toLowerCase().indexOf(keyword) > -1
-    if (page?.block?.[post.id]?.value?.content) {
-      post.content = page.block[post.id].value.content
+    const pId = idToUuid(post.id)
+    if (page?.block?.[pId]?.value?.content) {
+      post.content = page.block[pId].value.content
+    } else {
+       // 兼容id不一致的情况
+       const blockId = Object.keys(page.block).find(id => page.block[id].value.type === 'page')
+       if (blockId) {
+         post.content = page.block[blockId].value.content
+       }
     }
     const contentText = getPageContentText(post, page)
     post.results = []
