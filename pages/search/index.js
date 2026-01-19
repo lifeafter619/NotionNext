@@ -98,6 +98,10 @@ export async function getStaticProps({ locale }) {
     if (!newPost.content && !newPost.blockMap?.rawText) {
       try {
         const blockMap = await getPage(post.id, 'search-index')
+        // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
+        if (blockMap?.block?.[post.id]?.value?.content) {
+            newPost.content = blockMap.block[post.id].value.content
+        }
         newPost.content = getPageContentText(newPost, blockMap)
       } catch (e) {
         console.error('Search index fetch failed for', post.id, e)

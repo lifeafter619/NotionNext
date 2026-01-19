@@ -81,26 +81,20 @@ async function filterByMemCache(allPosts, keyword) {
         : ''
     const articleInfo = post.title + post.summary + tagContent + categoryContent
     let hit = articleInfo.toLowerCase().indexOf(keyword) > -1
-    const contentTextList = getPageContentText(post, page)
-    // console.log('全文搜索缓存', cacheKey, page != null)
-    post.results = []
-    let hitCount = 0
-    for (const i of contentTextList) {
-      const c = contentTextList[i]
-      if (!c) {
-        continue
-      }
-      const index = c.toLowerCase().indexOf(keyword)
-      if (index > -1) {
-        hit = true
-        hitCount += 1
-        post.results.push(c)
-      } else {
-        if ((post.results.length - 1) / hitCount < 3 || i === 0) {
-          post.results.push(c)
-        }
-      }
+    if (page?.block?.[post.id]?.value?.content) {
+      post.content = page.block[post.id].value.content
     }
+    const contentText = getPageContentText(post, page)
+    post.results = []
+    const index = contentText.toLowerCase().indexOf(keyword)
+    if (index > -1) {
+      hit = true
+      // 截取搜索结果摘要
+      const start = Math.max(0, index - 30)
+      const end = Math.min(contentText.length, index + 50)
+      post.results.push(contentText.slice(start, end))
+    }
+
     if (hit) {
       filterPosts.push(post)
     }
