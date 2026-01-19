@@ -4,8 +4,8 @@ import { getGlobalData } from '@/lib/db/getSiteData'
 import { getPage } from '@/lib/notion/getPostBlocks'
 import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
-import { getTextContent } from 'notion-utils'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
+import { getPageContentText } from '@/lib/notion/getPageContentText'
 
 /**
  * 搜索路由
@@ -98,21 +98,7 @@ export async function getStaticProps({ locale }) {
     if (!newPost.content && !newPost.blockMap?.rawText) {
       try {
         const blockMap = await getPage(post.id, 'search-index')
-        let fullText = ''
-        if (blockMap?.block) {
-          Object.values(blockMap.block).forEach(block => {
-            if (block?.value?.properties) {
-              Object.values(block.value.properties).forEach(prop => {
-                try {
-                  fullText += getTextContent(prop) + ' '
-                } catch (e) {
-                  // ignore
-                }
-              })
-            }
-          })
-        }
-        newPost.content = fullText
+        newPost.content = getPageContentText(newPost, blockMap)
       } catch (e) {
         console.error('Search index fetch failed for', post.id, e)
       }
