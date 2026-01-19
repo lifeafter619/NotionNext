@@ -136,14 +136,6 @@ export async function getStaticProps({ locale }) {
       await overwriteAlgoliaSearch(props.posts)
   }
 
-  // 如果开启了Algolia，则本地数据不需要包含全文内容，以减少JSON体积提升性能
-  if (siteConfig('ALGOLIA_APP_ID')) {
-    props.posts.forEach(p => {
-        delete p.content
-        delete p.blockMap
-    })
-  }
-
   delete props.allPages
 
   return {
