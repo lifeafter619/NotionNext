@@ -128,7 +128,10 @@ export default function AlgoliaSearchModal({ cRef }) {
   const onJumpSearchResult = () => {
     if (searchResults.length > 0) {
       const searchResult = searchResults[activeIndex]
-      window.location.href = `${siteConfig('SUB_PATH', '')}/${searchResult.slug || searchResult.objectID}`
+      if (!searchResult.slug && !searchResult.objectID) {
+        return
+      }
+      window.location.href = `${siteConfig('SUB_PATH', '')}/${searchResult.slug || searchResult.objectID}?keyword=${encodeURIComponent(keyword)}`
     }
   }
 

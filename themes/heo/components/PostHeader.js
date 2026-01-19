@@ -179,6 +179,36 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
               <i className='fa-solid fa-font' />
             </div>
 
+            {/* 文章内搜索框 */}
+            <div className='flex items-center pl-1 mr-2'>
+              <div className='relative group'>
+                <input
+                  type='text'
+                  placeholder='在文中搜索...'
+                  className='w-24 focus:w-40 transition-all duration-300 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const val = e.target.value
+                      if (val) {
+                        // 跳转到当前页面的 keyword 参数，触发 SearchHighlightNav
+                        window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
+                      }
+                    }
+                  }}
+                />
+                <i
+                    className='fa-solid fa-magnifying-glass absolute right-2 top-1.5 text-gray-400 text-xs cursor-pointer'
+                    onClick={(e) => {
+                        const input = e.target.previousElementSibling
+                        const val = input.value
+                        if (val) {
+                            window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
+                        }
+                    }}
+                ></i>
+              </div>
+            </div>
+
           </section>
         </div>
 

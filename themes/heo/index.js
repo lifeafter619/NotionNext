@@ -15,6 +15,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
+import algoliasearch from 'algoliasearch'
 import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
@@ -34,6 +35,7 @@ import { NoticeBar } from './components/NoticeBar'
 import PostHeader from './components/PostHeader'
 import { PostLock } from './components/PostLock'
 import SearchNav from './components/SearchNav'
+import SearchHighlightNav from './components/SearchHighlightNav'
 import SideRight from './components/SideRight'
 import CONFIG from './config'
 import { Style } from './style'
@@ -188,11 +190,61 @@ const LayoutSearch = props => {
   const { locale } = useGlobal()
   const [sortOrder, setSortOrder] = useState('relevance')
   const [viewMode, setViewMode] = useState('list') // list or grid
+  const [algoliaResults, setAlgoliaResults] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  // 检查是否开启 Algolia
+  const enableAlgolia = siteConfig('ALGOLIA_APP_ID') && siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY') && siteConfig('ALGOLIA_INDEX')
+
+  useEffect(() => {
+    if (enableAlgolia && currentSearch) {
+      setLoading(true)
+      const client = algoliasearch(siteConfig('ALGOLIA_APP_ID'), siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY'))
+      const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
+      index.search(currentSearch, {
+        attributesToSnippet: ['content:150', 'summary:100'],
+        highlightPreTag: '<span class="text-red-500 font-bold">',
+        highlightPostTag: '</span>'
+      }).then(({ hits }) => {
+        // 去重逻辑：使用 slug 作为唯一标识
+        const uniqueHitsMap = new Map()
+        hits.forEach(hit => {
+            if (!uniqueHitsMap.has(hit.slug)) {
+                uniqueHitsMap.set(hit.slug, hit)
+            }
+        })
+        const uniqueHits = Array.from(uniqueHitsMap.values())
+
+        const mappedHits = uniqueHits.map(hit => ({
+          ...hit,
+          id: hit.objectID,
+          title: hit._highlightResult?.title?.value || hit.title,
+          summary: hit._snippetResult?.content?.value || hit.summary,
+          // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
+          // 为了兼容 SearchResultCard 的 href 构建
+          slug: hit.slug,
+          href: hit.slug?.startsWith('http') ? hit.slug : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
+          createdTime: hit.createdTime || hit.createdTimestamp
+        }))
+        setAlgoliaResults(mappedHits)
+        setLoading(false)
+      }).catch(err => {
+        console.error('Algolia search failed:', err)
+        setAlgoliaResults(null)
+        setLoading(false)
+      })
+    } else {
+      setAlgoliaResults(null)
+    }
+  }, [currentSearch, enableAlgolia])
+
+  // 优先使用 Algolia 结果，否则使用本地结果
+  const displayPosts = (algoliaResults || posts || []).filter(post => post.slug || post.objectID)
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
-    if (!posts) return []
-    return [...posts].sort((a, b) => {
+    if (!displayPosts) return []
+    return [...displayPosts].sort((a, b) => {
       if (sortOrder === 'newest') {
         return new Date(b.createdTime || 0) - new Date(a.createdTime || 0)
       } else if (sortOrder === 'oldest') {
@@ -200,11 +252,11 @@ const LayoutSearch = props => {
       }
       return 0 // relevance - 保持原始顺序
     })
-  }, [posts, sortOrder])
+  }, [displayPosts, sortOrder])
 
+  // 本地搜索高亮 (Algolia 自带高亮，不需要这个)
   useEffect(() => {
-    // 高亮搜索结果
-    if (currentSearch) {
+    if (currentSearch && !enableAlgolia) {
       setTimeout(() => {
         replaceSearchResult({
           doms: document.getElementsByClassName('replace'),
@@ -216,15 +268,13 @@ const LayoutSearch = props => {
         })
       }, 100)
     }
-  }, [currentSearch])
+  }, [currentSearch, enableAlgolia])
 
   return (
     <div id='search-page-wrapper' className='px-5 md:px-0'>
-      {!currentSearch ? (
-        <SearchNav {...props} />
-      ) : (
-        <div className='mt-6'>
-          {/* 搜索结果头部 */}
+      <SearchNav {...props} />
+      <div className='mt-6'>
+        {currentSearch && (
           <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-6'>
             <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
               <div>
@@ -233,7 +283,7 @@ const LayoutSearch = props => {
                   搜索结果
                 </h1>
                 <p className='text-gray-600 dark:text-gray-400 mt-1'>
-                  找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{postCount || sortedPosts.length}</span> 篇关于 
+                  找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{sortedPosts.length}</span> 篇关于
                   <span className='font-bold mx-1'>{'"'}{currentSearch}{'"'}</span> 的文章
                 </p>
               </div>
@@ -295,20 +345,26 @@ const LayoutSearch = props => {
               </div>
             </div>
           </div>
+        )}
 
-          {/* 搜索结果列表 */}
+        {/* 搜索结果列表 - 只有当 loading 为真或有搜索结果，或无结果时才显示内容 */}
+        {(loading || (sortedPosts.length > 0) || (currentSearch && sortedPosts.length === 0)) && (
           <div id='posts-wrapper'>
-            {sortedPosts.length > 0 ? (
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <i className="fas fa-spinner animate-spin text-4xl text-blue-500"></i>
+                </div>
+            ) : sortedPosts.length > 0 ? (
               viewMode === 'list' ? (
                 <div className='space-y-4'>
                   {sortedPosts.map((post, index) => (
-                    <SearchResultCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} />
+                    <SearchResultCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} isAlgolia={!!enableAlgolia} />
                   ))}
                 </div>
               ) : (
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                   {sortedPosts.map((post, index) => (
-                    <SearchResultGridCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} />
+                    <SearchResultGridCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} isAlgolia={!!enableAlgolia} />
                   ))}
                 </div>
               )
@@ -317,14 +373,11 @@ const LayoutSearch = props => {
                 <i className='fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4'></i>
                 <p className='text-xl text-gray-600 dark:text-gray-400'>未找到相关文章</p>
                 <p className='text-gray-500 dark:text-gray-500 mt-2'>尝试使用不同的关键词搜索</p>
-                <SmartLink href='/search' className='inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'>
-                  返回搜索
-                </SmartLink>
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
@@ -332,8 +385,34 @@ const LayoutSearch = props => {
 /**
  * 搜索结果卡片 - 列表视图
  */
-const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
+const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = false }) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+
+  let displayContent = post.summary
+  let displayTitle = post.title
+  let showJumpButton = false
+
+  if (isAlgolia) {
+    // Algolia 模式下，content 和 title 已经是带 HTML 的 snippets
+    // 使用 dangerouslySetInnerHTML 渲染
+    displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
+    displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
+    showJumpButton = true
+  } else {
+    // 本地搜索逻辑
+    const keyword = currentSearch?.toLowerCase() || ''
+    const text = post.content || ''
+    const indexInText = text.toLowerCase().indexOf(keyword)
+    if (post.results && post.results.length > 0) {
+        displayContent = post.results.map(r => r).join('...')
+        showJumpButton = true
+    } else if (indexInText > -1 && keyword) {
+        const start = Math.max(0, indexInText - 50)
+        const end = Math.min(text.length, indexInText + 150)
+        displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+        showJumpButton = true
+    }
+  }
 
   return (
     <SmartLink href={post?.href}>
@@ -353,12 +432,25 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
         <div className='flex-1 flex flex-col justify-between min-w-0'>
           <div>
             <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
-              {post.title}
+              {displayTitle}
             </h3>
-            {post.summary && (
-              <p className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-2'>
-                {post.summary}
-              </p>
+            {displayContent && (
+              <div className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
+                {displayContent}
+              </div>
+            )}
+            {showJumpButton && (
+               <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
+                      // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
+                      window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+                    }}>
+                    <i className="fas fa-search-location mr-1"></i>
+                    跳转到搜索位置
+               </div>
             )}
           </div>
           <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
@@ -385,11 +477,37 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo }) => {
 /**
  * 搜索结果卡片 - 网格视图
  */
-const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
+const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia = false }) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
 
+  let displayContent = post.summary
+  let displayTitle = post.title
+  let showJumpButton = false
+
+  if (isAlgolia) {
+    displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
+    displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
+    showJumpButton = true
+  } else {
+    const keyword = currentSearch?.toLowerCase() || ''
+    const text = post.content || ''
+    const indexInText = text.toLowerCase().indexOf(keyword)
+    if (post.results && post.results.length > 0) {
+        displayContent = post.results.map(r => r).join('...')
+        showJumpButton = true
+    } else if (indexInText > -1 && keyword) {
+        const start = Math.max(0, indexInText - 50)
+        const end = Math.min(text.length, indexInText + 150)
+        displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+        showJumpButton = true
+    }
+  }
+
+  // 将搜索词附加到主链接，实现点击卡片任意位置跳转
+  const hrefWithFragment = showJumpButton ? `${post.href}?keyword=${encodeURIComponent(currentSearch)}` : post.href
+
   return (
-    <SmartLink href={post?.href}>
+    <SmartLink href={hrefWithFragment}>
       <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer h-full flex flex-col'>
         {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
@@ -406,12 +524,23 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo }) => {
         <div className='p-4 flex-1 flex flex-col justify-between'>
           <div>
             <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors'>
-              {post.title}
+              {displayTitle}
             </h3>
-            {post.summary && (
-              <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2'>
-                {post.summary}
-              </p>
+            {displayContent && (
+              <div className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
+                {displayContent}
+              </div>
+            )}
+            {showJumpButton && (
+               <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+                    }}>
+                    <i className="fas fa-search-location mr-1"></i>
+                    跳转到搜索位置
+               </div>
             )}
           </div>
           <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
@@ -486,6 +615,30 @@ const LayoutSlug = props => {
 
   const router = useRouter()
   const waiting404 = siteConfig('POST_WAITING_TIME_FOR_404') * 1000
+
+  // 检查 URL 是否包含搜索跳转
+  useEffect(() => {
+    if (isBrowser) {
+        const hash = window.location.hash
+        if (hash && hash.includes('text=')) {
+            // 解析 text= 后的内容 (简单处理，浏览器会自动高亮)
+            // const text = decodeURIComponent(hash.split('text=')[1])
+            // 这里我们只需要提示用户跳转成功
+            const toastElement = document.getElementById('toast-wrapper')
+            if (!toastElement) {
+                // 如果没有 Toast 容器，这里可以手动触发一个 (theme-heo 通常有全局 Toast，这里复用 logic 或创建临时提示)
+                // 由于 Toast 组件通常是命令式调用的，这里我们尝试一个简单的 dom 操作或依赖全局状态
+                // 暂时使用 alert 替代验证，或者更好的方式是使用 context
+                // 但 themes/heo/index.js 似乎没有直接暴露 toast context
+                // 我们直接渲染一个临时的 Toast
+                setShowJumpToast(true)
+                setTimeout(() => setShowJumpToast(false), 3000)
+            }
+        }
+    }
+  }, [])
+
+  const [showJumpToast, setShowJumpToast] = useState(false)
 
   // 监听滚动，延迟加载底部推荐和评论
   useEffect(() => {
@@ -598,6 +751,17 @@ const LayoutSlug = props => {
       </div>
 
       <FloatTocButton {...props} />
+      <SearchHighlightNav />
+
+      {/* 搜索跳转提示 */}
+      {showJumpToast && (
+        <div className="fixed top-20 left-0 right-0 mx-auto z-50 w-fit">
+            <div className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-fade-in-down">
+                <i className="fas fa-search-location"></i>
+                <span>已跳转到搜索内容位置</span>
+            </div>
+        </div>
+      )}
     </>
   )
 }
