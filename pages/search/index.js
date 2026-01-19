@@ -103,7 +103,7 @@ export async function getStaticProps({ locale }) {
         const pId = idToUuid(post.id)
         if (blockMap?.block?.[pId]?.value?.content) {
             newPost.content = blockMap.block[pId].value.content
-        } else {
+        } else if (blockMap?.block) {
            // 兼容id不一致的情况
            const blockId = Object.keys(blockMap.block).find(id => blockMap.block[id].value.type === 'page')
            if (blockId) {

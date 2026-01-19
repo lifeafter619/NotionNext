@@ -85,7 +85,7 @@ async function filterByMemCache(allPosts, keyword) {
     const pId = idToUuid(post.id)
     if (page?.block?.[pId]?.value?.content) {
       post.content = page.block[pId].value.content
-    } else {
+    } else if (page?.block) {
        // 兼容id不一致的情况
        const blockId = Object.keys(page.block).find(id => page.block[id].value.type === 'page')
        if (blockId) {
