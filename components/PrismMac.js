@@ -198,12 +198,15 @@ const renderMermaid = mermaidCDN => {
 
     // 查找未处理的 mermaid 块
     document.querySelectorAll('.language-mermaid').forEach(el => {
-        const chart = el.querySelector('code').textContent
-        if (chart && !el.querySelector('.mermaid')) {
-          const mermaidChart = document.createElement('div')
-          mermaidChart.className = 'mermaid'
-          mermaidChart.innerHTML = chart
-          el.appendChild(mermaidChart)
+        const codeEl = el.querySelector('code')
+        if (codeEl && !el.querySelector('.mermaid')) {
+          const chart = codeEl.textContent
+          if (chart) {
+            const mermaidChart = document.createElement('div')
+            mermaidChart.className = 'mermaid'
+            mermaidChart.textContent = chart // 使用 textContent 而不是 innerHTML 避免 XSS
+            el.appendChild(mermaidChart)
+          }
         }
     })
 
@@ -212,18 +215,55 @@ const renderMermaid = mermaidCDN => {
         setTimeout(() => {
         const mermaid = window.mermaid
         if (mermaid) {
-            mermaid.contentLoaded()
-            // 渲染完成后添加容器和控制
-            setTimeout(() => {
-            const svgs = document.querySelectorAll('.mermaid svg')
-            svgs.forEach(svg => {
-                if (!svg.closest('.mermaid-container')) {
-                wrapMermaid(svg)
-                }
-            })
-            }, 300)
+            try {
+              // Mermaid v10+ 需要先初始化
+              mermaid.initialize({
+                startOnLoad: false,
+                theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+                securityLevel: 'loose', // 允许链接点击
+                flowchart: { useMaxWidth: true, htmlLabels: true },
+                sequence: { useMaxWidth: true },
+                gantt: { useMaxWidth: true }
+              })
+              
+              // 使用 mermaid.run() 渲染所有 .mermaid 元素
+              const mermaidElements = document.querySelectorAll('.mermaid')
+              if (mermaidElements.length > 0) {
+                mermaid.run({ nodes: mermaidElements }).then(() => {
+                  // 渲染完成后添加容器和控制
+                  setTimeout(() => {
+                    const svgs = document.querySelectorAll('.mermaid svg')
+                    svgs.forEach(svg => {
+                      if (!svg.closest('.mermaid-container')) {
+                        wrapMermaid(svg)
+                      }
+                    })
+                  }, 300)
+                }).catch(err => {
+                  console.error('Mermaid render error:', err)
+                })
+              }
+            } catch (err) {
+              console.error('Mermaid initialization error:', err)
+              // 降级：尝试旧版 API
+              try {
+                mermaid.contentLoaded()
+                setTimeout(() => {
+                  const svgs = document.querySelectorAll('.mermaid svg')
+                  svgs.forEach(svg => {
+                    if (!svg.closest('.mermaid-container')) {
+                      wrapMermaid(svg)
+                    }
+                  })
+                }, 300)
+              } catch (e) {
+                console.error('Mermaid fallback error:', e)
+              }
+            }
         }
         }, 100)
+    }).catch(err => {
+      console.error('Failed to load Mermaid CDN:', err)
     })
   }
 

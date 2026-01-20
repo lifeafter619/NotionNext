@@ -391,6 +391,7 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
   let displayContent = post.summary
   let displayTitle = post.title
   let showJumpButton = false
+  let matchLocation = '' // 显示匹配位置的提示
 
   if (isAlgolia) {
     // Algolia 模式下，content 和 title 已经是带 HTML 的 snippets
@@ -398,19 +399,38 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
     displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
     displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
     showJumpButton = true
+    matchLocation = '文章内容'
   } else {
-    // 本地搜索逻辑
+    // 本地搜索逻辑 - 检查关键词在哪里匹配
     const keyword = currentSearch?.toLowerCase() || ''
-    const text = post.content || ''
-    const indexInText = text.toLowerCase().indexOf(keyword)
-    if (post.results && post.results.length > 0) {
-        displayContent = post.results.map(r => r).join('...')
-        showJumpButton = true
-    } else if (indexInText > -1 && keyword) {
+    if (keyword) {
+      const titleMatch = (post.title || '').toLowerCase().includes(keyword)
+      const summaryMatch = (post.summary || '').toLowerCase().includes(keyword)
+      const contentMatch = (post.content || '').toLowerCase().includes(keyword)
+      
+      if (contentMatch) {
+        // 如果在内容中匹配，显示内容片段
+        const text = post.content || ''
+        const indexInText = text.toLowerCase().indexOf(keyword)
         const start = Math.max(0, indexInText - 50)
         const end = Math.min(text.length, indexInText + 150)
         displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
         showJumpButton = true
+        matchLocation = '文章内容'
+      } else if (summaryMatch) {
+        matchLocation = '摘要'
+        showJumpButton = true
+      } else if (titleMatch) {
+        matchLocation = '标题'
+        showJumpButton = true
+      }
+      
+      // 检查 results 字段（某些主题可能使用）
+      if (post.results && post.results.length > 0) {
+        displayContent = post.results.map(r => r).join('...')
+        showJumpButton = true
+        matchLocation = '文章内容'
+      }
     }
   }
 
@@ -440,7 +460,7 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
               </div>
             )}
             {showJumpButton && (
-               <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
+               <div className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -448,8 +468,9 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
                       // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
                       window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
                     }}>
-                    <i className="fas fa-search-location mr-1"></i>
-                    跳转到搜索位置
+                    <i className="fas fa-search-location"></i>
+                    <span>跳转到搜索位置</span>
+                    {matchLocation && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
                </div>
             )}
           </div>
@@ -483,23 +504,41 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
   let displayContent = post.summary
   let displayTitle = post.title
   let showJumpButton = false
+  let matchLocation = ''
 
   if (isAlgolia) {
     displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
     displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
     showJumpButton = true
+    matchLocation = '文章内容'
   } else {
     const keyword = currentSearch?.toLowerCase() || ''
-    const text = post.content || ''
-    const indexInText = text.toLowerCase().indexOf(keyword)
-    if (post.results && post.results.length > 0) {
-        displayContent = post.results.map(r => r).join('...')
-        showJumpButton = true
-    } else if (indexInText > -1 && keyword) {
+    if (keyword) {
+      const titleMatch = (post.title || '').toLowerCase().includes(keyword)
+      const summaryMatch = (post.summary || '').toLowerCase().includes(keyword)
+      const contentMatch = (post.content || '').toLowerCase().includes(keyword)
+      
+      if (contentMatch) {
+        const text = post.content || ''
+        const indexInText = text.toLowerCase().indexOf(keyword)
         const start = Math.max(0, indexInText - 50)
         const end = Math.min(text.length, indexInText + 150)
         displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
         showJumpButton = true
+        matchLocation = '文章内容'
+      } else if (summaryMatch) {
+        matchLocation = '摘要'
+        showJumpButton = true
+      } else if (titleMatch) {
+        matchLocation = '标题'
+        showJumpButton = true
+      }
+      
+      if (post.results && post.results.length > 0) {
+        displayContent = post.results.map(r => r).join('...')
+        showJumpButton = true
+        matchLocation = '文章内容'
+      }
     }
   }
 
@@ -532,14 +571,14 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
               </div>
             )}
             {showJumpButton && (
-               <div className="mt-2 text-blue-500 text-xs font-bold hover:underline"
+               <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
                     }}>
-                    <i className="fas fa-search-location mr-1"></i>
-                    跳转到搜索位置
+                    <i className="fas fa-search-location"></i>
+                    <span>跳转到搜索位置</span>
                </div>
             )}
           </div>
