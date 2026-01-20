@@ -368,8 +368,8 @@ function TodayCard({ cRef, siteInfo }) {
         {/* 卡片文字信息 */}
         <div
           id='today-card-info'
-          className='z-10 flex justify-between w-full relative text-white p-10 items-end'>
-          <div className='flex flex-col'>
+          className='z-10 flex justify-between w-full relative text-white p-10 items-end bg-gradient-to-t from-black/70 to-transparent pb-12 pt-24'>
+          <div className='flex flex-col drop-shadow-md'>
             <div className='text-xs font-light'>
               {siteConfig('HEO_HERO_TITLE_4', null, CONFIG)}
             </div>
