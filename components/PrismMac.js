@@ -177,6 +177,7 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
 
 /**
  * 将mermaid语言 渲染成图片
+ * 添加切换按钮允许用户选择显示代码或图表
  */
 const renderMermaid = mermaidCDN => {
   // 优化：仅在有mermaid块时加载，避免不必要的观察
@@ -184,28 +185,82 @@ const renderMermaid = mermaidCDN => {
   if (existingMermaid.length === 0) return
 
   const processMermaid = () => {
-    const mermaidsSvg = document.querySelectorAll('.mermaid')
-    if (mermaidsSvg) {
-        let needLoad = false
-        for (const e of mermaidsSvg) {
-        if (e?.firstChild?.nodeName !== 'svg') {
-            needLoad = true
-        }
-        }
-        // 如果已经渲染过，跳过
-        if (!needLoad && mermaidsSvg.length > 0) return
-    }
-
-    // 查找未处理的 mermaid 块
+    // 查找未处理的 mermaid 块，添加切换按钮和图表容器
     document.querySelectorAll('.language-mermaid').forEach(el => {
+        // 跳过已处理的元素
+        if (el.querySelector('.mermaid-toggle-wrapper')) return
+        
         const codeEl = el.querySelector('code')
-        if (codeEl && !el.querySelector('.mermaid')) {
+        const preEl = el.closest('pre') || el.querySelector('pre')
+        
+        if (codeEl) {
           const chart = codeEl.textContent
           if (chart) {
+            // 创建切换按钮容器
+            const toggleWrapper = document.createElement('div')
+            toggleWrapper.className = 'mermaid-toggle-wrapper flex gap-2 mb-2'
+            toggleWrapper.innerHTML = `
+              <button class="mermaid-toggle-btn mermaid-show-code px-3 py-1.5 text-xs rounded-lg border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" data-active="false">
+                <i class="fas fa-code mr-1"></i>显示代码
+              </button>
+              <button class="mermaid-toggle-btn mermaid-show-diagram px-3 py-1.5 text-xs rounded-lg border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white" data-active="true">
+                <i class="fas fa-project-diagram mr-1"></i>显示图表
+              </button>
+            `
+            
+            // 创建 mermaid 图表容器
             const mermaidChart = document.createElement('div')
             mermaidChart.className = 'mermaid'
-            mermaidChart.textContent = chart // 使用 textContent 而不是 innerHTML 避免 XSS
+            mermaidChart.textContent = chart
+            
+            // 插入切换按钮到代码块前面
+            if (preEl && preEl.parentNode) {
+              preEl.parentNode.insertBefore(toggleWrapper, preEl)
+            } else {
+              el.insertBefore(toggleWrapper, el.firstChild)
+            }
+            
+            // 插入 mermaid 图表到代码块后面
             el.appendChild(mermaidChart)
+            
+            // 默认隐藏代码，显示图表
+            if (preEl) {
+              preEl.style.display = 'none'
+            }
+            
+            // 绑定切换事件
+            const showCodeBtn = toggleWrapper.querySelector('.mermaid-show-code')
+            const showDiagramBtn = toggleWrapper.querySelector('.mermaid-show-diagram')
+            
+            showCodeBtn.onclick = () => {
+              // 显示代码，隐藏图表
+              if (preEl) preEl.style.display = 'block'
+              const container = el.querySelector('.mermaid-container')
+              if (container) container.style.display = 'none'
+              const mermaidEl = el.querySelector('.mermaid')
+              if (mermaidEl && !container) mermaidEl.style.display = 'none'
+              
+              // 更新按钮样式
+              showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-3 py-1.5 text-xs rounded-lg border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white'
+              showCodeBtn.dataset.active = 'true'
+              showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-3 py-1.5 text-xs rounded-lg border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              showDiagramBtn.dataset.active = 'false'
+            }
+            
+            showDiagramBtn.onclick = () => {
+              // 显示图表，隐藏代码
+              if (preEl) preEl.style.display = 'none'
+              const container = el.querySelector('.mermaid-container')
+              if (container) container.style.display = 'block'
+              const mermaidEl = el.querySelector('.mermaid')
+              if (mermaidEl && !container) mermaidEl.style.display = 'block'
+              
+              // 更新按钮样式
+              showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-3 py-1.5 text-xs rounded-lg border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white'
+              showDiagramBtn.dataset.active = 'true'
+              showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-3 py-1.5 text-xs rounded-lg border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              showCodeBtn.dataset.active = 'false'
+            }
           }
         }
     })
