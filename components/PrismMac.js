@@ -299,6 +299,16 @@ const wrapMermaid = (svg) => {
     content.style.transform = `translate(${contentX}px, ${contentY}px) scale(${scale})`
   }
 
+  // 缩放比例显示（需要在按钮处理器之前创建）
+  const zoomIndicator = document.createElement('div')
+  zoomIndicator.className = 'mermaid-zoom-indicator absolute top-3 left-3 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded text-xs text-gray-600 dark:text-gray-400 font-mono shadow border border-gray-200 dark:border-gray-700'
+  zoomIndicator.textContent = '100%'
+  container.appendChild(zoomIndicator)
+
+  const updateZoomIndicator = () => {
+    zoomIndicator.textContent = `${Math.round(scale * 100)}%`
+  }
+
   // 启用 mermaid 图中的链接点击功能（类似 GitHub）
   enableMermaidLinks(svg, container)
 
@@ -320,12 +330,14 @@ const wrapMermaid = (svg) => {
     e.stopPropagation()
     scale = Math.min(scale + 0.25, 5)
     updateTransform()
+    updateZoomIndicator()
   }
 
   btnOut.onclick = (e) => {
     e.stopPropagation()
     scale = Math.max(scale - 0.25, 0.3)
     updateTransform()
+    updateZoomIndicator()
   }
 
   btnReset.onclick = (e) => {
@@ -334,6 +346,7 @@ const wrapMermaid = (svg) => {
     contentX = 0
     contentY = 0
     updateTransform()
+    updateZoomIndicator()
   }
 
   // 全屏功能
@@ -341,6 +354,9 @@ const wrapMermaid = (svg) => {
     e.stopPropagation()
     toggleFullscreen()
   }
+
+  // ESC 键处理器引用（用于清理）
+  let escHandler = null
 
   const toggleFullscreen = () => {
     isFullscreen = !isFullscreen
@@ -371,10 +387,9 @@ const wrapMermaid = (svg) => {
       container.appendChild(closeBtn)
       
       // ESC 键退出
-      const escHandler = (ev) => {
-        if (ev.key === 'Escape' && isFullscreen) {
+      escHandler = (ev) => {
+        if (ev.key === 'Escape') {
           toggleFullscreen()
-          document.removeEventListener('keydown', escHandler)
         }
       }
       document.addEventListener('keydown', escHandler)
@@ -396,25 +411,22 @@ const wrapMermaid = (svg) => {
       // 移除关闭按钮
       const closeBtn = container.querySelector('.mermaid-fullscreen-close')
       if (closeBtn) closeBtn.remove()
+      
+      // 移除 ESC 键监听器
+      if (escHandler) {
+        document.removeEventListener('keydown', escHandler)
+        escHandler = null
+      }
     }
     // 重置缩放和位置
     scale = 1
     contentX = 0
     contentY = 0
     updateTransform()
+    updateZoomIndicator()
   }
 
   container.appendChild(controls)
-
-  // 缩放比例显示
-  const zoomIndicator = document.createElement('div')
-  zoomIndicator.className = 'mermaid-zoom-indicator absolute top-3 left-3 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded text-xs text-gray-600 dark:text-gray-400 font-mono shadow border border-gray-200 dark:border-gray-700'
-  zoomIndicator.textContent = '100%'
-  container.appendChild(zoomIndicator)
-
-  const updateZoomIndicator = () => {
-    zoomIndicator.textContent = `${Math.round(scale * 100)}%`
-  }
 
   // 鼠标拖拽逻辑
   container.onmousedown = (e) => {

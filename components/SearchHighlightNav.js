@@ -100,11 +100,11 @@ export default function SearchHighlightNav() {
 
   const handleClose = () => {
     setIsVisible(false)
-    // 移除 URL 中的 query 参数，但保留路径
+    // 移除 URL 中的 keyword 参数，但保留其他参数
     const { pathname, query } = router
-    const params = new URLSearchParams(query)
-    params.delete('keyword')
-    router.replace({ pathname, query: params.toString() }, undefined, { shallow: true })
+    // eslint-disable-next-line no-unused-vars
+    const { keyword: _, ...otherQuery } = query
+    router.replace({ pathname, query: otherQuery }, undefined, { shallow: true })
 
     // 移除高亮样式
     const highlights = document.querySelectorAll('.search-highlight')
