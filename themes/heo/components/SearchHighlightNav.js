@@ -171,57 +171,60 @@ export default function SearchHighlightNav() {
         top: `${position.y}px`,
         zIndex: 90
       }}
-      className="bg-white dark:bg-gray-800 shadow-xl rounded-xl border dark:border-gray-700 p-2 flex flex-col gap-2 w-48 transition-opacity duration-300 animate-fade-in"
+      className="backdrop-blur-md bg-white/80 dark:bg-gray-800/80 shadow-2xl rounded-xl border border-white/20 dark:border-gray-700 p-3 flex flex-col gap-3 w-56 transition-all duration-300 animate-fade-in hover:shadow-3xl"
     >
       {/* 拖拽手柄 */}
       <div
         onMouseDown={handleMouseDown}
-        className="flex justify-between items-center cursor-move border-b dark:border-gray-700 pb-2 mb-1 select-none"
+        className="flex justify-between items-center cursor-move border-b border-black/5 dark:border-white/10 pb-2 mb-1 select-none"
       >
-        <span className="text-sm font-bold text-blue-600 dark:text-yellow-500 pointer-events-none">
-          <i className="fas fa-search mr-1"></i>
-          搜索定位
+        <span className="text-sm font-bold text-blue-600 dark:text-yellow-500 pointer-events-none flex items-center gap-1">
+          <i className="fas fa-search-location"></i>
+          内容定位
         </span>
         <button
           onClick={handleClose}
           onMouseDown={(e) => e.stopPropagation()} // 防止点击关闭时触发拖拽
-          className="text-gray-400 hover:text-red-500 transition-colors"
+          className="text-gray-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
         >
           <i className="fas fa-times"></i>
         </button>
       </div>
 
-      <div className="text-xs text-gray-500 dark:text-gray-400 text-center mb-1">
-        已找到 {matchCount} 处 "{keyword}"
+      <div className="text-xs text-gray-600 dark:text-gray-300 text-center">
+        关键词 <span className="font-bold text-blue-600 dark:text-yellow-500">"{keyword}"</span>
+        <span className="mx-1">|</span>
+        共 {matchCount} 处
       </div>
 
       <div className="flex justify-between gap-2">
         <button
           onClick={handlePrev}
-          className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-yellow-900 text-gray-700 dark:text-gray-200 py-1 px-2 rounded text-sm transition-colors"
+          className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-yellow-500 text-gray-700 dark:text-gray-200 py-1.5 px-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1 group"
         >
-          <i className="fas fa-chevron-up mr-1"></i>
+          <i className="fas fa-chevron-up text-xs text-gray-400 group-hover:text-blue-500 dark:group-hover:text-yellow-500"></i>
           上一个
         </button>
         <button
           onClick={handleNext}
-          className="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-yellow-900 text-gray-700 dark:text-gray-200 py-1 px-2 rounded text-sm transition-colors"
+          className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-yellow-500 text-gray-700 dark:text-gray-200 py-1.5 px-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1 group"
         >
           下一个
-          <i className="fas fa-chevron-down ml-1"></i>
+          <i className="fas fa-chevron-down text-xs text-gray-400 group-hover:text-blue-500 dark:group-hover:text-yellow-500"></i>
         </button>
       </div>
 
-      <div className="text-center text-xs text-gray-400 mt-1 flex items-center justify-center gap-1">
+      <div className="flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg py-1 px-2 border border-gray-100 dark:border-gray-800">
+        <span className="text-xs text-gray-500">第</span>
         <input
             type="number"
             min="1"
             max={matchCount}
             value={currentMatchIndex + 1}
             onChange={handleInputChange}
-            className="w-10 text-center bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 outline-none transition-colors"
+            className="w-12 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-sm font-medium text-blue-600 dark:text-yellow-500 focus:outline-none focus:border-blue-500 dark:focus:border-yellow-500 transition-colors py-0.5"
         />
-        <span>/ {matchCount}</span>
+        <span className="text-xs text-gray-500">处</span>
       </div>
     </div>
   )

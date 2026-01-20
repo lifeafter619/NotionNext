@@ -4,8 +4,9 @@ import { getGlobalData } from '@/lib/db/getSiteData'
 import { getPage } from '@/lib/notion/getPostBlocks'
 import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
-import { getTextContent } from 'notion-utils'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
+import { getPageContentText } from '@/lib/notion/getPageContentText'
+import { idToUuid } from 'notion-utils'
 
 /**
  * 搜索路由
@@ -98,21 +99,18 @@ export async function getStaticProps({ locale }) {
     if (!newPost.content && !newPost.blockMap?.rawText) {
       try {
         const blockMap = await getPage(post.id, 'search-index')
-        let fullText = ''
-        if (blockMap?.block) {
-          Object.values(blockMap.block).forEach(block => {
-            if (block?.value?.properties) {
-              Object.values(block.value.properties).forEach(prop => {
-                try {
-                  fullText += getTextContent(prop) + ' '
-                } catch (e) {
-                  // ignore
-                }
-              })
-            }
-          })
+        // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
+        const pId = idToUuid(post.id)
+        if (blockMap?.block?.[pId]?.value?.content) {
+            newPost.content = blockMap.block[pId].value.content
+        } else if (blockMap?.block) {
+           // 兼容id不一致的情况
+           const blockId = Object.keys(blockMap.block).find(id => blockMap.block[id].value.type === 'page')
+           if (blockId) {
+             newPost.content = blockMap.block[blockId].value.content
+           }
         }
-        newPost.content = fullText
+        newPost.content = getPageContentText(newPost, blockMap)
       } catch (e) {
         console.error('Search index fetch failed for', post.id, e)
       }
@@ -134,14 +132,6 @@ export async function getStaticProps({ locale }) {
   // 上传数据到 Algolia
   if (siteConfig('ALGOLIA_APP_ID') && process.env.npm_lifecycle_event === 'build') {
       await overwriteAlgoliaSearch(props.posts)
-  }
-
-  // 如果开启了Algolia，则本地数据不需要包含全文内容，以减少JSON体积提升性能
-  if (siteConfig('ALGOLIA_APP_ID')) {
-    props.posts.forEach(p => {
-        delete p.content
-        delete p.blockMap
-    })
   }
 
   delete props.allPages
