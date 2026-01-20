@@ -571,7 +571,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
               </div>
             )}
             {showJumpButton && (
-               <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full"
+               <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -579,6 +579,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
                     }}>
                     <i className="fas fa-search-location"></i>
                     <span>跳转到搜索位置</span>
+                    {matchLocation && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
                </div>
             )}
           </div>

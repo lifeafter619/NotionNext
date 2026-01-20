@@ -229,7 +229,8 @@ const renderMermaid = mermaidCDN => {
               // 使用 mermaid.run() 渲染所有 .mermaid 元素
               const mermaidElements = document.querySelectorAll('.mermaid')
               if (mermaidElements.length > 0) {
-                mermaid.run({ nodes: mermaidElements }).then(() => {
+                // Mermaid v10+ API: pass the nodes directly or use querySelector
+                mermaid.run({ querySelector: '.mermaid' }).then(() => {
                   // 渲染完成后添加容器和控制
                   setTimeout(() => {
                     const svgs = document.querySelectorAll('.mermaid svg')
