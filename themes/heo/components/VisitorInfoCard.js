@@ -104,10 +104,8 @@ export default function VisitorInfoCard() {
         if (data.code === 200 && data.ipdata) {
           // 从返回数据中提取城市和ISP信息
           const city = data.ipdata.info2 || data.ipdata.info1 || '未知地区'
-          const isp = data.ipdata.isp || ''
-          // 格式化为 "广州市-电信" 的形式
-          const locationStr = isp ? `${city}-${isp}` : city
-          setLocation(locationStr)
+          // 仅显示城市，不显示运营商
+          setLocation(city)
         } else {
           setLocation('未知地区')
         }
@@ -170,7 +168,7 @@ export default function VisitorInfoCard() {
   }, [])
 
   return (
-    <Card className='bg-white dark:bg-[#1e1e1e] hover:border-indigo-600 dark:hover:border-yellow-600 duration-200 dark:border-gray-700 wow fadeInUp'>
+    <Card className='bg-white dark:bg-[#1e1e1e] hover:border-indigo-600 dark:hover:border-yellow-600 duration-200 dark:border-gray-700'>
       <div className='flex flex-col space-y-3 p-2'>
         {/* 标题 */}
         <div className='flex items-center space-x-2 text-indigo-600 dark:text-yellow-500'>

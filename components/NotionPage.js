@@ -4,7 +4,7 @@ import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { NotionRenderer } from 'react-notion-x'
 
 // 阅读进度保存组件
@@ -30,6 +30,14 @@ const NotionPage = ({ post, className }) => {
   // 使用全局图片查看器
   const { openViewer } = useImageViewerContext()
 
+  // 检查是否包含代码块，优化PrismMac加载
+  const hasCode = useMemo(() => {
+      // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象
+      const blockMap = post?.blockMap?.block || post?.block
+      if (!blockMap) return false
+      return Object.values(blockMap).some(block => block.value?.type === 'code')
+  }, [post])
+
   // 处理图片点击事件
   const handleImageClick = useCallback(
     e => {
@@ -37,14 +45,81 @@ const NotionPage = ({ post, className }) => {
       if (target.tagName === 'IMG' && target.closest('.notion-asset-wrapper')) {
         e.preventDefault()
         e.stopPropagation()
-        // 获取高清图片URL
-        const src = getImageSrc(target)
-        const highResSrc = compressImage(src, IMAGE_ZOOM_IN_WIDTH)
-        const alt = target.getAttribute('alt') || ''
-        openViewer(highResSrc, alt)
+
+        // 收集所有文章内图片 (排除侧栏和其他非文章主体内容)
+        // 使用更精确的选择器，或者过滤掉包含 wow fadeInUp 类（如果是侧栏元素特征）的元素
+        // 但 wow fadeInUp 通常是动画类，文章内图片也可能有。
+        // 根据用户反馈 "wow fadeInUp 这个里面，也就是侧栏中出现的图片"
+        // 我们可以检查元素的祖先是否包含侧栏特定的类名，例如 #side-bar (如果存在)
+        // 或者只选择 #notion-article .notion-page-content img (如果结构如此)
+        // 目前 #notion-article 包含 NotionRenderer，通常包含文章主体。
+        // 如果侧栏图片混入，可能是因为 selector 选到了不该选的。
+        // 我们这里加一个简单的过滤：排除 sidebar 内的图片。
+        // 假设侧栏 id 是 sideRight 或 side-bar。
+
+        let allImages = Array.from(document.querySelectorAll('#notion-article .notion-asset-wrapper img'))
+
+        // 过滤掉位于侧栏中的图片 (如果侧栏不幸被包含在 #notion-article 中，或者有重叠)
+        // 通常 #notion-article 是纯文章内容。如果用户说 "wow fadeInUp 里面... 侧栏中出现的图片"
+        // 可能侧栏的部分组件被错误地渲染到了 article 区域，或者选择器范围太大。
+        // 无论如何，我们可以过滤掉那些 offsetParent 为 null (不可见) 或者在特定容器内的图片。
+
+        allImages = allImages.filter(img => {
+            const sideRight = document.getElementById('sideRight')
+            const sideBar = document.getElementById('sideBar') // 假设 ID
+            // 如果图片在侧栏内，则排除
+            if (sideRight && sideRight.contains(img)) return false
+            if (sideBar && sideBar.contains(img)) return false
+            return true
+        })
+
+        const imageList = allImages.map(img => {
+            const src = getImageSrc(img)
+            let highResSrc = src
+            try {
+               const urlObj = new URL(src)
+               // Remove resize parameters to get high quality image
+               urlObj.searchParams.delete('width')
+               urlObj.searchParams.delete('height')
+               urlObj.searchParams.delete('quality')
+               urlObj.searchParams.delete('fmt')
+               urlObj.searchParams.delete('fm') // Unsplash
+               urlObj.searchParams.delete('crop')
+               urlObj.searchParams.delete('fit')
+
+               // Special handling for Unsplash to ensure high res
+               if (src.includes('unsplash.com')) {
+                  urlObj.searchParams.set('q', '100') // Set max quality
+               }
+
+               highResSrc = urlObj.toString()
+            } catch (e) {
+               // ignore
+            }
+            return {
+                src,
+                alt: img.getAttribute('alt') || '',
+                highResSrc
+            }
+        })
+
+        const currentSrc = getImageSrc(target)
+        // 修正：确保找到正确的索引
+        // 有时候 src 可能经过了处理，这里尝试更宽松的匹配，或者回退到 0
+        let currentIndex = imageList.findIndex(item => item.src === currentSrc)
+        if (currentIndex === -1) {
+            // 尝试通过 highResSrc 匹配 (假设 target 也是原始链接)
+            currentIndex = imageList.findIndex(item => item.highResSrc === currentSrc)
+        }
+        if (currentIndex === -1) {
+            currentIndex = 0 // Fallback
+        }
+
+        // 传递图片列表和当前索引
+        openViewer(imageList, currentIndex)
       }
     },
-    [openViewer, IMAGE_ZOOM_IN_WIDTH]
+    [openViewer]
   )
 
   // 页面首次打开时执行的勾子
@@ -119,7 +194,7 @@ const NotionPage = ({ post, className }) => {
         />
 
         <AdEmbed />
-        <PrismMac />
+        {hasCode && <PrismMac />}
       </div>
 
       {/* 阅读进度保存和恢复 */}

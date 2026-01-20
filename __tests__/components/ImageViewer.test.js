@@ -4,8 +4,8 @@ import ImageViewer from '@/components/ImageViewer'
 describe('ImageViewer Component', () => {
   const defaultProps = {
     isOpen: true,
-    src: '/test-image.jpg',
-    alt: 'Test image',
+    images: [{ src: '/test-image.jpg', alt: 'Test image' }],
+    currentIndex: 0,
     onClose: jest.fn()
   }
 
@@ -79,7 +79,8 @@ describe('ImageViewer Component', () => {
   it('shows 100% zoom by default', () => {
     render(<ImageViewer {...defaultProps} />)
     
-    expect(screen.getByText('100%')).toBeInTheDocument()
+    // The input displays the percentage value
+    expect(screen.getByDisplayValue('100')).toBeInTheDocument()
   })
 
   it('calls onClose when Escape key is pressed', () => {
@@ -96,7 +97,7 @@ describe('ImageViewer Component', () => {
     
     fireEvent.keyDown(document, { key: '+' })
     
-    expect(screen.getByText('125%')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('125')).toBeInTheDocument()
   })
 
   it('zooms out when - key is pressed', () => {
@@ -104,7 +105,7 @@ describe('ImageViewer Component', () => {
     
     fireEvent.keyDown(document, { key: '-' })
     
-    expect(screen.getByText('75%')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('75')).toBeInTheDocument()
   })
 
   it('resets state when 0 key is pressed after zoom', () => {
@@ -112,11 +113,11 @@ describe('ImageViewer Component', () => {
     
     // Zoom in first
     fireEvent.keyDown(document, { key: '+' })
-    expect(screen.getByText('125%')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('125')).toBeInTheDocument()
     
     // Reset
     fireEvent.keyDown(document, { key: '0' })
-    expect(screen.getByText('100%')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('100')).toBeInTheDocument()
   })
 
   it('has proper accessibility attributes', () => {
@@ -128,7 +129,11 @@ describe('ImageViewer Component', () => {
   })
 
   it('handles missing alt text gracefully', () => {
-    render(<ImageViewer {...defaultProps} alt="" />)
+    const props = {
+        ...defaultProps,
+        images: [{ src: '/test-image.jpg', alt: '' }]
+    }
+    render(<ImageViewer {...props} />)
     
     const image = screen.getByAltText('Image')
     expect(image).toBeInTheDocument()

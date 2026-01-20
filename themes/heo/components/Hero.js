@@ -5,7 +5,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useImperativeHandle, useRef, useState } from 'react'
+import { memo, useImperativeHandle, useRef, useState } from 'react'
 import CONFIG from '../config'
 
 /**
@@ -119,7 +119,7 @@ function Banner(props) {
  * 图标滚动标签组
  * 英雄区左上角banner条中斜向滚动的图标
  */
-function TagsGroupBar() {
+const TagsGroupBar = memo(() => {
   let groupIcons = siteConfig('HEO_GROUP_ICONS', null, CONFIG)
   if (groupIcons) {
     groupIcons = groupIcons.concat(groupIcons)
@@ -160,7 +160,7 @@ function TagsGroupBar() {
       </div>
     </div>
   )
-}
+})
 
 /**
  * 英雄区左下角3个指定分类按钮
@@ -242,7 +242,7 @@ function TopGroup(props) {
             <SmartLink href={`${siteConfig('SUB_PATH', '')}/${p?.slug}`} key={index}>
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-52 xl:w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 <LazyImage
-                  priority={index === 0}
+                  priority={index === 0 && p?.pageCoverThumbnail}
                   className='h-24 object-cover'
                   alt={p?.title}
                   src={p?.pageCoverThumbnail || siteInfo?.pageCover}
@@ -368,8 +368,8 @@ function TodayCard({ cRef, siteInfo }) {
         {/* 卡片文字信息 */}
         <div
           id='today-card-info'
-          className='flex justify-between w-full relative text-white p-10 items-end'>
-          <div className='flex flex-col'>
+          className='z-10 flex justify-between w-full relative text-white p-10 items-end bg-gradient-to-t from-black/70 to-transparent pb-12 pt-24'>
+          <div className='flex flex-col drop-shadow-md'>
             <div className='text-xs font-light'>
               {siteConfig('HEO_HERO_TITLE_4', null, CONFIG)}
             </div>
@@ -394,13 +394,14 @@ function TodayCard({ cRef, siteInfo }) {
         </div>
 
         {/* 封面图 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <LazyImage
+          priority={true}
           src={siteInfo?.pageCover}
           id='today-card-cover'
+          alt='Today Card Cover'
           className={`${
             isCoverUp ? '' : ' pointer-events-none'
-          } hover:scale-110 duration-1000 object-cover cursor-pointer today-card-cover absolute w-full h-full top-0`}
+          } duration-1000 object-cover cursor-pointer today-card-cover absolute w-full h-full top-0`}
         />
       </div>
     </div>

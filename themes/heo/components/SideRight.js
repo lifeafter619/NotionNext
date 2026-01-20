@@ -35,8 +35,10 @@ export default function SideRight(props) {
   const sortedTags = tagOptions?.slice(0, 60) || []
 
   return (
-    <div id='sideRight' className='hidden xl:block w-72 space-y-4 h-full'>
-      <InfoCard {...props} className='w-72 wow fadeInUp' />
+    <div id='sideRight' className='hidden xl:block w-72 space-y-4 h-full overflow-visible'>
+      <div className="pointer-events-auto">
+        <InfoCard {...props} className='w-72' />
+      </div>
 
       <div className='sticky top-20 space-y-4'>
         {/* 访客信息卡片 */}
@@ -44,20 +46,20 @@ export default function SideRight(props) {
 
         {/* 文章页显示目录 */}
         {post && post.toc && post.toc.length > 0 && (
-          <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
+          <Card className='bg-white dark:bg-[#1e1e1e]'>
             <Catalog toc={post.toc} />
           </Card>
         )}
 
         {/* 联系交流群 */}
-        <div className='wow fadeInUp'>
+        <div>
           <TouchMeCard />
         </div>
 
         {/* 最新文章列表 */}
         <div
           className={
-            'border wow fadeInUp  hover:border-indigo-600  dark:hover:border-yellow-600 duration-200 dark:border-gray-700 dark:bg-[#1e1e1e] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-white'
+            'border hover:border-indigo-600  dark:hover:border-yellow-600 duration-200 dark:border-gray-700 dark:bg-[#1e1e1e] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-white'
           }>
           <LatestPostsGroupMini {...props} />
         </div>

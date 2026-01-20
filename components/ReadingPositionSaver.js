@@ -142,11 +142,11 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
   if (!showNotification || !savedPosition) return null
 
   return (
-    <div className='fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-fade-in'>
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3'>
-        <div className='flex items-center gap-2'>
+    <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-50 animate-fade-in'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
+        <div className='flex items-center gap-2 flex-1 min-w-0'>
           <svg
-            className='w-5 h-5 text-blue-500'
+            className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
             fill='none'
             stroke='currentColor'
             viewBox='0 0 24 24'>
@@ -157,30 +157,33 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
               d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z'
             />
           </svg>
-          <span className='text-sm text-gray-700 dark:text-gray-300'>
-            已自动跳转到上次阅读位置 ({savedPosition.percentage}%)
-          </span>
+          <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
+             <span className='font-bold'>已跳转至：</span>
+             <span className='truncate'>上次阅读位置 ({savedPosition.percentage}%)</span>
+          </div>
         </div>
-        <button
-          onClick={() => {
-             window.scrollTo({ top: 0, behavior: 'smooth' })
-             setShowNotification(false)
-          }}
-          className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors'>
-          返回开头
-        </button>
-        <button
-          onClick={dismissNotification}
-          className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
-          <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M6 18L18 6M6 6l12 12'
-            />
-          </svg>
-        </button>
+        <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
+            <button
+            onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+                setShowNotification(false)
+            }}
+            className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
+            返回开头
+            </button>
+            <button
+            onClick={dismissNotification}
+            className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
+            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M6 18L18 6M6 6l12 12'
+                />
+            </svg>
+            </button>
+        </div>
       </div>
     </div>
   )

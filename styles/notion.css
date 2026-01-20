@@ -1975,6 +1975,29 @@ svg + .notion-page-title-text {
   @apply whitespace-nowrap overflow-x-auto block w-full border-0 !important;
 }
 
+/* Notion Button Block (approximate style if not supported by library) */
+.notion-button,
+a.notion-link[href*="notion.site"],
+.notion-callout.notion-button-style {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--fg-color-1);
+  color: var(--fg-color);
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.notion-button:hover {
+  background-color: var(--fg-color-2);
+  transform: translateY(-1px);
+}
+
 .notion-asset-wrapper-pdf > div {
   display: block !important;
 }
@@ -2166,7 +2189,7 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 
 /* 高亮/突出块 - Callout 现代化 */
 .notion-callout {
-  padding: 10px 12px;
+  padding: 10px 2px;
   display: flex;
   width: 100%;
   border-radius: var(--notion-rounded-radius);
