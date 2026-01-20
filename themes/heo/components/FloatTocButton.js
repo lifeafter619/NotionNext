@@ -386,10 +386,14 @@ const JumpToCommentButtonDesktop = () => {
   const [savedScrollY, setSavedScrollY] = useState(0)
 
   const findCommentElement = () => {
+    // 优先寻找 wl-comment 类（Waline 评论区）
+    let el = document.querySelector('.wl-comment')
+    if (el) return el
+    
     // 尝试多个可能的评论区元素 ID
     const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
     for (const id of commentIds) {
-      const el = document.getElementById(id)
+      el = document.getElementById(id)
       if (el) return el
     }
     // 如果找不到特定 ID，尝试寻找评论区相关的类名
@@ -488,10 +492,14 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
   const [savedScrollY, setSavedScrollY] = useState(0)
 
   const findCommentElement = () => {
+    // 优先寻找 wl-comment 类（Waline 评论区）
+    let el = document.querySelector('.wl-comment')
+    if (el) return el
+    
     // 尝试多个可能的评论区元素 ID
     const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
     for (const id of commentIds) {
-      const el = document.getElementById(id)
+      el = document.getElementById(id)
       if (el) return el
     }
     // 如果找不到特定 ID，尝试寻找评论区相关的类名

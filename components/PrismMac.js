@@ -297,7 +297,7 @@ const renderMermaid = mermaidCDN => {
 }
 
 /**
- * 包装 Mermaid SVG 以支持拖拽、缩放、全屏和链接点击（类似 GitHub）
+ * 包装 Mermaid SVG 以支持拖拽、缩放和链接点击（类似 GitHub）
  */
 const wrapMermaid = (svg) => {
   const container = document.createElement('div')
@@ -334,13 +334,12 @@ const wrapMermaid = (svg) => {
   let isDragging = false
   let startX = 0
   let startY = 0
-  let isFullscreen = false
 
   const updateTransform = () => {
     content.style.transform = `translate(${contentX}px, ${contentY}px) scale(${scale})`
   }
 
-  // 缩放比例显示（需要在按钮处理器之前创建）
+  // 缩放比例显示
   const zoomIndicator = document.createElement('div')
   zoomIndicator.className = 'mermaid-zoom-indicator absolute top-3 left-3 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded text-xs text-gray-600 dark:text-gray-400 font-mono shadow border border-gray-200 dark:border-gray-700'
   zoomIndicator.textContent = '100%'
@@ -353,19 +352,17 @@ const wrapMermaid = (svg) => {
   // 启用 mermaid 图中的链接点击功能（类似 GitHub）
   enableMermaidLinks(svg, container)
 
-  // 添加控制按钮面板
+  // 添加控制按钮面板（不含全屏按钮）
   const controls = document.createElement('div')
   controls.className = 'mermaid-controls absolute bottom-3 right-3 flex gap-1.5 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-1.5 shadow-lg border border-gray-200 dark:border-gray-700'
   controls.innerHTML = `
     <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="放大 (Zoom In)"><i class="fas fa-search-plus"></i></button>
     <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="缩小 (Zoom Out)"><i class="fas fa-search-minus"></i></button>
     <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="重置 (Reset)"><i class="fas fa-compress-arrows-alt"></i></button>
-    <div class="w-px bg-gray-300 dark:bg-gray-600"></div>
-    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-green-100 dark:hover:bg-green-900 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors" title="全屏 (Fullscreen)"><i class="fas fa-expand"></i></button>
   `
 
   const btns = controls.querySelectorAll('.mermaid-btn')
-  const [btnIn, btnOut, btnReset, btnFullscreen] = [btns[0], btns[1], btns[2], btns[3]]
+  const [btnIn, btnOut, btnReset] = [btns[0], btns[1], btns[2]]
 
   btnIn.onclick = (e) => {
     e.stopPropagation()
@@ -383,83 +380,6 @@ const wrapMermaid = (svg) => {
 
   btnReset.onclick = (e) => {
     e.stopPropagation()
-    scale = 1
-    contentX = 0
-    contentY = 0
-    updateTransform()
-    updateZoomIndicator()
-  }
-
-  // 全屏功能
-  btnFullscreen.onclick = (e) => {
-    e.stopPropagation()
-    toggleFullscreen()
-  }
-
-  // ESC 键处理器引用（用于清理）
-  let escHandler = null
-
-  const toggleFullscreen = () => {
-    isFullscreen = !isFullscreen
-    if (isFullscreen) {
-      // 进入全屏模式
-      container.style.position = 'fixed'
-      container.style.top = '0'
-      container.style.left = '0'
-      container.style.width = '100vw'
-      container.style.height = '100vh'
-      container.style.zIndex = '9999'
-      container.style.borderRadius = '0'
-      container.style.margin = '0'
-      container.classList.add('mermaid-fullscreen')
-      btnFullscreen.innerHTML = '<i class="fas fa-compress"></i>'
-      btnFullscreen.title = '退出全屏 (Exit Fullscreen)'
-      document.body.style.overflow = 'hidden'
-      
-      // 添加关闭按钮
-      const closeBtn = document.createElement('button')
-      closeBtn.className = 'mermaid-fullscreen-close absolute top-4 right-4 p-3 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors z-50'
-      closeBtn.innerHTML = '<i class="fas fa-times"></i>'
-      closeBtn.title = '退出全屏 (ESC)'
-      closeBtn.onclick = (ev) => {
-        ev.stopPropagation()
-        toggleFullscreen()
-      }
-      container.appendChild(closeBtn)
-      
-      // ESC 键退出
-      escHandler = (ev) => {
-        if (ev.key === 'Escape') {
-          toggleFullscreen()
-        }
-      }
-      document.addEventListener('keydown', escHandler)
-    } else {
-      // 退出全屏模式
-      container.style.position = ''
-      container.style.top = ''
-      container.style.left = ''
-      container.style.width = ''
-      container.style.height = '400px'
-      container.style.zIndex = ''
-      container.style.borderRadius = ''
-      container.style.margin = ''
-      container.classList.remove('mermaid-fullscreen')
-      btnFullscreen.innerHTML = '<i class="fas fa-expand"></i>'
-      btnFullscreen.title = '全屏 (Fullscreen)'
-      document.body.style.overflow = ''
-      
-      // 移除关闭按钮
-      const closeBtn = container.querySelector('.mermaid-fullscreen-close')
-      if (closeBtn) closeBtn.remove()
-      
-      // 移除 ESC 键监听器
-      if (escHandler) {
-        document.removeEventListener('keydown', escHandler)
-        escHandler = null
-      }
-    }
-    // 重置缩放和位置
     scale = 1
     contentX = 0
     contentY = 0

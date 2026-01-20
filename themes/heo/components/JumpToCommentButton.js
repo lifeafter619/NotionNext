@@ -12,16 +12,19 @@ const JumpToCommentButton = () => {
   }
 
   function navToComment() {
-    // 尝试多个可能的评论区元素 ID
-    const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
-    let commentElement = null
+    // 优先寻找 wl-comment 类（Waline 评论区）
+    let commentElement = document.querySelector('.wl-comment')
     
-    for (const id of commentIds) {
-      commentElement = document.getElementById(id)
-      if (commentElement) break
+    // 如果找不到 wl-comment，尝试多个可能的评论区元素 ID
+    if (!commentElement) {
+      const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
+      for (const id of commentIds) {
+        commentElement = document.getElementById(id)
+        if (commentElement) break
+      }
     }
     
-    // 如果找不到特定 ID，尝试寻找评论区相关的类名
+    // 如果还找不到，尝试寻找评论区相关的类名
     if (!commentElement) {
       commentElement = document.querySelector('.comment, .comments, [class*="comment"]')
     }
