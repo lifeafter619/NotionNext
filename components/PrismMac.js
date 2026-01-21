@@ -208,15 +208,20 @@ const renderMermaid = mermaidCDN => {
               // 标记为已处理
               el.dataset.mermaidProcessed = 'true'
               
-              // 创建切换按钮容器
+              // 创建包装容器（包含按钮和图表）
+              const wrapperContainer = document.createElement('div')
+              wrapperContainer.className = 'mermaid-wrapper'
+              
+              // 创建切换按钮容器 - 更小的按钮，居中放置，放在mermaid标签旁边
               const toggleWrapper = document.createElement('div')
-              toggleWrapper.className = 'mermaid-toggle-wrapper flex gap-2 mb-2'
+              toggleWrapper.className = 'mermaid-toggle-wrapper flex items-center justify-center gap-1.5 mb-2'
               toggleWrapper.innerHTML = `
-                <button class="mermaid-toggle-btn mermaid-show-code px-3 py-1.5 text-xs rounded-lg border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" data-active="false">
-                  <i class="fas fa-code mr-1"></i>显示代码
+                <span class="text-xs text-gray-500 dark:text-gray-400 font-mono mr-2">mermaid</span>
+                <button class="mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center" data-active="false">
+                  <i class="fas fa-code text-xs"></i><span class="ml-1">代码</span>
                 </button>
-                <button class="mermaid-toggle-btn mermaid-show-diagram px-3 py-1.5 text-xs rounded-lg border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white" data-active="true">
-                  <i class="fas fa-project-diagram mr-1"></i>显示图表
+                <button class="mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center" data-active="true">
+                  <i class="fas fa-project-diagram text-xs"></i><span class="ml-1">图表</span>
                 </button>
               `
               
@@ -225,15 +230,17 @@ const renderMermaid = mermaidCDN => {
               mermaidChart.className = 'mermaid'
               mermaidChart.textContent = chart
               
-              // 插入切换按钮到代码块前面
+              // 将 pre 元素和 mermaid 图表都放入包装容器
               if (preEl && preEl.parentNode) {
-                preEl.parentNode.insertBefore(toggleWrapper, preEl)
-              } else {
-                el.insertBefore(toggleWrapper, el.firstChild)
+                // 在 pre 元素前插入包装容器
+                preEl.parentNode.insertBefore(wrapperContainer, preEl)
+                // 将 toggleWrapper 放入包装容器
+                wrapperContainer.appendChild(toggleWrapper)
+                // 将 pre 元素移入包装容器
+                wrapperContainer.appendChild(preEl)
+                // 将 mermaid 图表放入包装容器（在 pre 之后）
+                wrapperContainer.appendChild(mermaidChart)
               }
-              
-              // 插入 mermaid 图表到代码块后面
-              el.appendChild(mermaidChart)
               
               // 默认隐藏代码，显示图表
               if (preEl) {
@@ -247,30 +254,30 @@ const renderMermaid = mermaidCDN => {
               showCodeBtn.onclick = () => {
                 // 显示代码，隐藏图表
                 if (preEl) preEl.style.display = 'block'
-                const container = el.querySelector('.mermaid-container')
+                const container = wrapperContainer.querySelector('.mermaid-container')
                 if (container) container.style.display = 'none'
-                const mermaidEl = el.querySelector('.mermaid')
+                const mermaidEl = wrapperContainer.querySelector('.mermaid')
                 if (mermaidEl && !container) mermaidEl.style.display = 'none'
                 
                 // 更新按钮样式
-                showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-3 py-1.5 text-xs rounded-lg border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white'
+                showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center'
                 showCodeBtn.dataset.active = 'true'
-                showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-3 py-1.5 text-xs rounded-lg border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center'
                 showDiagramBtn.dataset.active = 'false'
               }
               
               showDiagramBtn.onclick = () => {
                 // 显示图表，隐藏代码
                 if (preEl) preEl.style.display = 'none'
-                const container = el.querySelector('.mermaid-container')
+                const container = wrapperContainer.querySelector('.mermaid-container')
                 if (container) container.style.display = 'block'
-                const mermaidEl = el.querySelector('.mermaid')
+                const mermaidEl = wrapperContainer.querySelector('.mermaid')
                 if (mermaidEl && !container) mermaidEl.style.display = 'block'
                 
                 // 更新按钮样式
-                showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-3 py-1.5 text-xs rounded-lg border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white'
+                showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center'
                 showDiagramBtn.dataset.active = 'true'
-                showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-3 py-1.5 text-xs rounded-lg border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center'
                 showCodeBtn.dataset.active = 'false'
               }
             }
@@ -410,15 +417,7 @@ const wrapMermaid = (svg) => {
   content.appendChild(svg)
   container.appendChild(content)
 
-  // 移动容器到代码块下方
-  const codeEl = container.closest('.language-mermaid')
-  if (codeEl && codeEl.parentNode) {
-      // 确保代码块显示
-      const pre = codeEl.closest('pre')
-      if (pre) pre.style.display = 'block'
-      // 将图表容器移动到代码块后面
-      codeEl.parentNode.insertBefore(container, codeEl.nextSibling)
-  }
+  // 不再移动容器，因为新结构已经正确放置了 mermaid 图表
 
   // 初始化状态
   let scale = 1
