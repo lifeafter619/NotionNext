@@ -203,7 +203,6 @@ const LayoutSearch = props => {
       const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
       index.search(currentSearch, {
         attributesToSnippet: ['content:150', 'summary:100'],
-        attributesToRetrieve: ['title', 'slug', 'summary', 'content', 'category', 'tags', 'pageCover', 'pageCoverThumbnail', 'createdTime', 'createdTimestamp'],
         highlightPreTag: '<span class="text-red-500 font-bold">',
         highlightPostTag: '</span>'
       }).then(({ hits }) => {
@@ -216,26 +215,17 @@ const LayoutSearch = props => {
         })
         const uniqueHits = Array.from(uniqueHitsMap.values())
 
-        const mappedHits = uniqueHits.map(hit => {
-          // 确定匹配是否来自文章内容
-          const hasContentSnippet = hit._snippetResult?.content?.value && hit._snippetResult?.content?.matchLevel !== 'none'
-          const hasSummarySnippet = hit._snippetResult?.summary?.value && hit._snippetResult?.summary?.matchLevel !== 'none'
-          
-          return {
-            ...hit,
-            id: hit.objectID,
-            title: hit._highlightResult?.title?.value || hit.title,
-            // 优先显示内容匹配的 snippet
-            summary: hasContentSnippet 
-              ? hit._snippetResult.content.value 
-              : (hasSummarySnippet ? hit._snippetResult.summary.value : hit.summary),
-            // 标记是否是内容匹配
-            isContentMatch: hasContentSnippet,
-            slug: hit.slug,
-            href: hit.slug?.startsWith('http') ? hit.slug : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
-            createdTime: hit.createdTime || hit.createdTimestamp
-          }
-        })
+        const mappedHits = uniqueHits.map(hit => ({
+          ...hit,
+          id: hit.objectID,
+          title: hit._highlightResult?.title?.value || hit.title,
+          summary: hit._snippetResult?.content?.value || hit.summary,
+          // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
+          // 为了兼容 SearchResultCard 的 href 构建
+          slug: hit.slug,
+          href: hit.slug?.startsWith('http') ? hit.slug : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
+          createdTime: hit.createdTime || hit.createdTimestamp
+        }))
         setAlgoliaResults(mappedHits)
         setLoading(false)
       }).catch(err => {
@@ -409,8 +399,7 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
     displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
     displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
     showJumpButton = true
-    // 根据 isContentMatch 标记设置匹配位置
-    matchLocation = post.isContentMatch ? '文章内容' : '摘要/标题'
+    matchLocation = '文章内容'
   } else {
     // 本地搜索逻辑 - 检查关键词在哪里匹配
     const keyword = currentSearch?.toLowerCase() || ''
@@ -480,8 +469,8 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
                       window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location"></i>
-                    <span>{matchLocation === '文章内容' ? '跳转到搜索位置（文章内）' : '跳转到搜索位置'}</span>
-                    {matchLocation && matchLocation !== '文章内容' && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
+                    <span>跳转到搜索位置</span>
+                    {matchLocation && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
                </div>
             )}
           </div>
@@ -521,8 +510,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
     displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
     displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
     showJumpButton = true
-    // 根据 isContentMatch 标记设置匹配位置
-    matchLocation = post.isContentMatch ? '文章内容' : '摘要/标题'
+    matchLocation = '文章内容'
   } else {
     const keyword = currentSearch?.toLowerCase() || ''
     if (keyword) {
@@ -590,7 +578,8 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
                       window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
                     }}>
                     <i className="fas fa-search-location"></i>
-                    <span>{matchLocation === '文章内容' ? '跳转到搜索位置（文章内）' : '跳转到搜索位置'}</span>
+                    <span>跳转到搜索位置</span>
+                    {matchLocation && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
                </div>
             )}
           </div>
