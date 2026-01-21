@@ -188,157 +188,182 @@ const renderMermaid = mermaidCDN => {
   let isProcessing = false
   let processingTimeout = null
 
+  // 添加切换按钮 - 在渲染完成后调用
+  const addToggleButtons = (preEl, mermaidContainer) => {
+    // 检查是否已有切换按钮
+    if (preEl.previousElementSibling?.classList?.contains('mermaid-toggle-wrapper')) return
+    
+    // 创建切换按钮容器
+    const toggleWrapper = document.createElement('div')
+    toggleWrapper.className = 'mermaid-toggle-wrapper flex items-center justify-center gap-1.5 my-2'
+    toggleWrapper.innerHTML = `
+      <span class="text-xs text-gray-500 dark:text-gray-400 font-mono mr-2">mermaid</span>
+      <button class="mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center" data-active="false">
+        <i class="fas fa-code text-xs"></i><span class="ml-1">代码</span>
+      </button>
+      <button class="mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center" data-active="true">
+        <i class="fas fa-project-diagram text-xs"></i><span class="ml-1">图表</span>
+      </button>
+    `
+    
+    // 插入切换按钮到 pre 元素前面
+    preEl.parentNode.insertBefore(toggleWrapper, preEl)
+    
+    // 默认隐藏代码，显示图表
+    preEl.style.display = 'none'
+    mermaidContainer.style.display = 'block'
+    
+    // 绑定切换事件
+    const showCodeBtn = toggleWrapper.querySelector('.mermaid-show-code')
+    const showDiagramBtn = toggleWrapper.querySelector('.mermaid-show-diagram')
+    
+    showCodeBtn.onclick = () => {
+      // 显示代码，隐藏图表
+      preEl.style.display = 'block'
+      mermaidContainer.style.display = 'none'
+      
+      // 更新按钮样式
+      showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center'
+      showCodeBtn.dataset.active = 'true'
+      showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center'
+      showDiagramBtn.dataset.active = 'false'
+    }
+    
+    showDiagramBtn.onclick = () => {
+      // 显示图表，隐藏代码
+      preEl.style.display = 'none'
+      mermaidContainer.style.display = 'block'
+      
+      // 更新按钮样式
+      showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center'
+      showDiagramBtn.dataset.active = 'true'
+      showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center'
+      showCodeBtn.dataset.active = 'false'
+    }
+  }
+
   const processMermaid = () => {
     // 防止重入和无限循环
     if (isProcessing) return
     isProcessing = true
 
     try {
-      // 查找未处理的 mermaid 块，添加切换按钮和图表容器
-      document.querySelectorAll('.language-mermaid').forEach(el => {
-          // 跳过已处理的元素
-          if (el.dataset.mermaidProcessed === 'true') return
-          
-          const codeEl = el.querySelector('code')
-          const preEl = el.closest('pre')
-          
-          if (codeEl && preEl) {
-            const chart = codeEl.textContent
-            if (chart) {
-              // 标记为已处理
-              el.dataset.mermaidProcessed = 'true'
-              
-              // 创建切换按钮容器 - 更小的按钮，居中放置
-              const toggleWrapper = document.createElement('div')
-              toggleWrapper.className = 'mermaid-toggle-wrapper flex items-center justify-center gap-1.5 my-2'
-              toggleWrapper.innerHTML = `
-                <span class="text-xs text-gray-500 dark:text-gray-400 font-mono mr-2">mermaid</span>
-                <button class="mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center" data-active="false">
-                  <i class="fas fa-code text-xs"></i><span class="ml-1">代码</span>
-                </button>
-                <button class="mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center" data-active="true">
-                  <i class="fas fa-project-diagram text-xs"></i><span class="ml-1">图表</span>
-                </button>
-              `
-              
-              // 创建 mermaid 图表容器
-              const mermaidChart = document.createElement('div')
-              mermaidChart.className = 'mermaid'
-              mermaidChart.textContent = chart
-              
-              // 插入切换按钮到 pre 元素前面（不移动 pre）
-              preEl.parentNode.insertBefore(toggleWrapper, preEl)
-              // 插入 mermaid 图表到 pre 元素后面（不移动 pre）
-              preEl.parentNode.insertBefore(mermaidChart, preEl.nextSibling)
-              
-              // 默认隐藏代码，显示图表
-              preEl.style.display = 'none'
-              mermaidChart.style.display = 'block'
-              
-              // 绑定切换事件
-              const showCodeBtn = toggleWrapper.querySelector('.mermaid-show-code')
-              const showDiagramBtn = toggleWrapper.querySelector('.mermaid-show-diagram')
-              
-              showCodeBtn.onclick = () => {
-                // 显示代码，隐藏图表
-                preEl.style.display = 'block'
-                // 查找渲染后的 mermaid 容器或原始 mermaid div
-                const container = mermaidChart.querySelector('.mermaid-container')
-                if (container) {
-                  container.style.display = 'none'
-                } else {
-                  mermaidChart.style.display = 'none'
-                }
-                
-                // 更新按钮样式
-                showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center'
-                showCodeBtn.dataset.active = 'true'
-                showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center'
-                showDiagramBtn.dataset.active = 'false'
-              }
-              
-              showDiagramBtn.onclick = () => {
-                // 显示图表，隐藏代码
-                preEl.style.display = 'none'
-                // 查找渲染后的 mermaid 容器或原始 mermaid div
-                const container = mermaidChart.querySelector('.mermaid-container')
-                if (container) {
-                  container.style.display = 'block'
-                } else {
-                  mermaidChart.style.display = 'block'
-                }
-                
-                // 更新按钮样式
-                showDiagramBtn.className = 'mermaid-toggle-btn mermaid-show-diagram px-2 py-0.5 text-xs rounded border transition-colors bg-blue-500 dark:bg-yellow-500 border-blue-500 dark:border-yellow-500 text-white flex items-center justify-center'
-                showDiagramBtn.dataset.active = 'true'
-                showCodeBtn.className = 'mermaid-toggle-btn mermaid-show-code px-2 py-0.5 text-xs rounded border transition-colors bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center'
-                showCodeBtn.dataset.active = 'false'
-              }
-            }
+      // 检查是否已有渲染过的 mermaid
+      const mermaidsSvg = document.querySelectorAll('.mermaid')
+      if (mermaidsSvg) {
+        let needLoad = false
+        for (const e of mermaidsSvg) {
+          if (e?.firstChild?.nodeName !== 'svg') {
+            needLoad = true
           }
+        }
+        // 如果已经渲染过，跳过
+        if (!needLoad && mermaidsSvg.length > 0) {
+          isProcessing = false
+          return
+        }
+      }
+
+      // 查找未处理的 mermaid 块，添加 mermaid 容器
+      document.querySelectorAll('.language-mermaid').forEach(el => {
+        const chart = el.querySelector('code').textContent
+        if (chart && !el.querySelector('.mermaid')) {
+          const mermaidChart = document.createElement('div')
+          mermaidChart.className = 'mermaid'
+          mermaidChart.innerHTML = chart
+          el.appendChild(mermaidChart)
+        }
       })
 
       // 加载脚本并渲染
       loadExternalResource(mermaidCDN, 'js').then(url => {
-          setTimeout(() => {
+        setTimeout(() => {
           const mermaid = window.mermaid
           if (mermaid) {
-              try {
-                // Mermaid v10+ 需要先初始化
-                mermaid.initialize({
-                  startOnLoad: false,
-                  theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
-                  securityLevel: 'loose', // 允许链接点击
-                  flowchart: { useMaxWidth: true, htmlLabels: true },
-                  sequence: { useMaxWidth: true },
-                  gantt: { useMaxWidth: true }
-                })
-                
-                // 使用 mermaid.run() 渲染所有 .mermaid 元素
-                const mermaidElements = document.querySelectorAll('.mermaid:not([data-processed])')
-                if (mermaidElements.length > 0) {
-                  // 标记所有元素为处理中
-                  mermaidElements.forEach(el => { el.dataset.processed = 'true' })
-                  
-                  // Mermaid v10+ API: pass the nodes directly or use querySelector
-                  mermaid.run({ querySelector: '.mermaid' }).then(() => {
-                    // 渲染完成后添加容器和控制
-                    setTimeout(() => {
-                      const svgs = document.querySelectorAll('.mermaid svg')
-                      svgs.forEach(svg => {
-                        if (!svg.closest('.mermaid-container')) {
-                          wrapMermaid(svg)
-                        }
-                      })
-                    }, 300)
-                  }).catch(err => {
-                    console.error('Mermaid render error:', err)
+            try {
+              // Mermaid v10+ 需要先初始化
+              mermaid.initialize({
+                startOnLoad: false,
+                theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+                securityLevel: 'loose',
+                flowchart: { useMaxWidth: true, htmlLabels: true },
+                sequence: { useMaxWidth: true },
+                gantt: { useMaxWidth: true }
+              })
+              
+              // 使用 mermaid.run() 渲染
+              mermaid.run({ querySelector: '.mermaid' }).then(() => {
+                // 渲染完成后添加容器和控制，然后添加切换按钮
+                setTimeout(() => {
+                  const svgs = document.querySelectorAll('.mermaid svg')
+                  svgs.forEach(svg => {
+                    if (!svg.closest('.mermaid-container')) {
+                      wrapMermaid(svg)
+                    }
                   })
-                }
-              } catch (err) {
-                console.error('Mermaid initialization error:', err)
-                // 降级：尝试旧版 API
-                try {
-                  mermaid.contentLoaded()
+                  // 添加切换按钮
                   setTimeout(() => {
-                    const svgs = document.querySelectorAll('.mermaid svg')
-                    svgs.forEach(svg => {
-                      if (!svg.closest('.mermaid-container')) {
-                        wrapMermaid(svg)
-                      }
-                    })
-                  }, 300)
-                } catch (e) {
-                  console.error('Mermaid fallback error:', e)
-                }
-              }
+                    addToggleButtonsToAll()
+                  }, 100)
+                }, 300)
+              }).catch(err => {
+                console.error('Mermaid render error:', err)
+                // 降级尝试
+                fallbackRender(mermaid)
+              })
+            } catch (err) {
+              console.error('Mermaid initialization error:', err)
+              fallbackRender(mermaid)
+            }
           }
-          }, 100)
+        }, 100)
       }).catch(err => {
         console.error('Failed to load Mermaid CDN:', err)
       })
+      
+      function fallbackRender(mermaid) {
+        try {
+          mermaid.contentLoaded()
+          setTimeout(() => {
+            const svgs = document.querySelectorAll('.mermaid svg')
+            svgs.forEach(svg => {
+              if (!svg.closest('.mermaid-container')) {
+                wrapMermaid(svg)
+              }
+            })
+            // 添加切换按钮
+            setTimeout(() => {
+              addToggleButtonsToAll()
+            }, 100)
+          }, 300)
+        } catch (e) {
+          console.error('Mermaid fallback error:', e)
+        }
+      }
+      
+      function addToggleButtonsToAll() {
+        // 查找所有已渲染的 mermaid 容器，为每个添加切换按钮
+        document.querySelectorAll('.mermaid-container').forEach(container => {
+          // 找到对应的 pre 元素
+          // 结构是: <pre><div class="language-mermaid"><div class="mermaid"><div class="mermaid-container">
+          const mermaidDiv = container.closest('.mermaid')
+          if (!mermaidDiv) return
+          const langDiv = mermaidDiv.closest('.language-mermaid')
+          if (!langDiv) return
+          const preEl = langDiv.closest('pre')
+          if (!preEl) return
+          
+          // 将容器移到 pre 后面（与原始代码一致）
+          if (container.parentNode !== preEl.parentNode) {
+            preEl.parentNode.insertBefore(container, preEl.nextSibling)
+          }
+          
+          // 添加切换按钮
+          addToggleButtons(preEl, container)
+        })
+      }
     } finally {
-      // 延迟重置标记，确保 DOM 变更已完成
+      // 延迟重置标记
       setTimeout(() => {
         isProcessing = false
       }, 500)
@@ -347,22 +372,17 @@ const renderMermaid = mermaidCDN => {
 
   processMermaid()
 
-  // 观察后续变化（例如动态加载），使用防抖避免无限循环
+  // 观察后续变化
   const observer = new MutationObserver(mutationsList => {
-    // 如果正在处理中，跳过
     if (isProcessing) return
     
     let shouldProcess = false
     for (const m of mutationsList) {
       if (m.type === 'childList' && m.addedNodes.length > 0) {
-        // 检查是否有新的未处理的 mermaid 块
         for (const node of m.addedNodes) {
-          if (node.nodeType === 1) { // 元素节点
-            if (node.classList?.contains('language-mermaid') && node.dataset?.mermaidProcessed !== 'true') {
-              shouldProcess = true
-              break
-            }
-            if (node.querySelector && node.querySelector('.language-mermaid:not([data-mermaid-processed="true"])')) {
+          if (node.nodeType === 1) {
+            if (node.classList?.contains('language-mermaid') ||
+                (node.querySelector && node.querySelector('.language-mermaid'))) {
               shouldProcess = true
               break
             }
@@ -373,7 +393,6 @@ const renderMermaid = mermaidCDN => {
     }
     
     if (shouldProcess) {
-      // 使用防抖，避免频繁触发
       if (processingTimeout) clearTimeout(processingTimeout)
       processingTimeout = setTimeout(() => {
         processMermaid()
