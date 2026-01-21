@@ -385,16 +385,39 @@ const JumpToCommentButtonDesktop = () => {
   const [showToast, setShowToast] = useState(false)
   const [savedScrollY, setSavedScrollY] = useState(0)
 
+  const findCommentElement = () => {
+    // 优先寻找 wl-comment 类（Waline 评论区）
+    let el = document.querySelector('.wl-comment')
+    if (el) return el
+    
+    // 尝试多个可能的评论区元素 ID
+    const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
+    for (const id of commentIds) {
+      el = document.getElementById(id)
+      if (el) return el
+    }
+    // 如果找不到特定 ID，尝试寻找评论区相关的类名
+    return document.querySelector('.comment, .comments, [class*="comment"]')
+  }
+
   const handleJump = (e) => {
     e.stopPropagation()
     setSavedScrollY(window.scrollY)
-    const commentNode = document.getElementById('comment')
+    const commentNode = findCommentElement()
     if (commentNode) {
       const headerHeight = 80
       const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
       const offsetPosition = elementPosition - headerHeight
       window.scrollTo({
         top: offsetPosition,
+        behavior: 'smooth'
+      })
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    } else {
+      // 如果找不到评论区，滚动到页面底部
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
         behavior: 'smooth'
       })
       setShowToast(true)
@@ -468,9 +491,24 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
   const [showToast, setShowToast] = useState(false)
   const [savedScrollY, setSavedScrollY] = useState(0)
 
+  const findCommentElement = () => {
+    // 优先寻找 wl-comment 类（Waline 评论区）
+    let el = document.querySelector('.wl-comment')
+    if (el) return el
+    
+    // 尝试多个可能的评论区元素 ID
+    const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
+    for (const id of commentIds) {
+      el = document.getElementById(id)
+      if (el) return el
+    }
+    // 如果找不到特定 ID，尝试寻找评论区相关的类名
+    return document.querySelector('.comment, .comments, [class*="comment"]')
+  }
+
   const handleJump = () => {
     setSavedScrollY(window.scrollY)
-    const commentNode = document.getElementById('comment')
+    const commentNode = findCommentElement()
     if (commentNode) {
       const headerHeight = 80 // approximate header height
       const elementPosition = commentNode.getBoundingClientRect().top + window.scrollY
@@ -478,6 +516,14 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
 
       window.scrollTo({
         top: offsetPosition,
+        behavior: 'smooth'
+      })
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 3000)
+    } else {
+      // 如果找不到评论区，滚动到页面底部
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
         behavior: 'smooth'
       })
       setShowToast(true)
