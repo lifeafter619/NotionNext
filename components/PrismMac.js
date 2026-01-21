@@ -198,12 +198,15 @@ const renderMermaid = mermaidCDN => {
 
     // 查找未处理的 mermaid 块
     document.querySelectorAll('.language-mermaid').forEach(el => {
-        const chart = el.querySelector('code').textContent
-        if (chart && !el.querySelector('.mermaid')) {
-          const mermaidChart = document.createElement('div')
-          mermaidChart.className = 'mermaid'
-          mermaidChart.innerHTML = chart
-          el.appendChild(mermaidChart)
+        const codeEl = el.querySelector('code')
+        if (codeEl && !el.querySelector('.mermaid')) {
+          const chart = codeEl.textContent
+          if (chart) {
+            const mermaidChart = document.createElement('div')
+            mermaidChart.className = 'mermaid'
+            mermaidChart.textContent = chart // 使用 textContent 而不是 innerHTML 避免 XSS
+            el.appendChild(mermaidChart)
+          }
         }
     })
 
@@ -212,18 +215,56 @@ const renderMermaid = mermaidCDN => {
         setTimeout(() => {
         const mermaid = window.mermaid
         if (mermaid) {
-            mermaid.contentLoaded()
-            // 渲染完成后添加容器和控制
-            setTimeout(() => {
-            const svgs = document.querySelectorAll('.mermaid svg')
-            svgs.forEach(svg => {
-                if (!svg.closest('.mermaid-container')) {
-                wrapMermaid(svg)
-                }
-            })
-            }, 300)
+            try {
+              // Mermaid v10+ 需要先初始化
+              mermaid.initialize({
+                startOnLoad: false,
+                theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+                securityLevel: 'loose', // 允许链接点击
+                flowchart: { useMaxWidth: true, htmlLabels: true },
+                sequence: { useMaxWidth: true },
+                gantt: { useMaxWidth: true }
+              })
+              
+              // 使用 mermaid.run() 渲染所有 .mermaid 元素
+              const mermaidElements = document.querySelectorAll('.mermaid')
+              if (mermaidElements.length > 0) {
+                // Mermaid v10+ API: pass the nodes directly or use querySelector
+                mermaid.run({ querySelector: '.mermaid' }).then(() => {
+                  // 渲染完成后添加容器和控制
+                  setTimeout(() => {
+                    const svgs = document.querySelectorAll('.mermaid svg')
+                    svgs.forEach(svg => {
+                      if (!svg.closest('.mermaid-container')) {
+                        wrapMermaid(svg)
+                      }
+                    })
+                  }, 300)
+                }).catch(err => {
+                  console.error('Mermaid render error:', err)
+                })
+              }
+            } catch (err) {
+              console.error('Mermaid initialization error:', err)
+              // 降级：尝试旧版 API
+              try {
+                mermaid.contentLoaded()
+                setTimeout(() => {
+                  const svgs = document.querySelectorAll('.mermaid svg')
+                  svgs.forEach(svg => {
+                    if (!svg.closest('.mermaid-container')) {
+                      wrapMermaid(svg)
+                    }
+                  })
+                }, 300)
+              } catch (e) {
+                console.error('Mermaid fallback error:', e)
+              }
+            }
         }
         }, 100)
+    }).catch(err => {
+      console.error('Failed to load Mermaid CDN:', err)
     })
   }
 
@@ -256,13 +297,14 @@ const renderMermaid = mermaidCDN => {
 }
 
 /**
- * 包装 Mermaid SVG 以支持拖拽和缩放
+ * 包装 Mermaid SVG 以支持拖拽、缩放和链接点击（类似 GitHub）
  */
 const wrapMermaid = (svg) => {
   const container = document.createElement('div')
-  container.className = 'mermaid-container relative overflow-hidden bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 my-4'
+  container.className = 'mermaid-container relative overflow-hidden bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 my-4 shadow-sm'
   container.style.height = '400px' // 默认高度
   container.style.cursor = 'grab'
+  container.style.minHeight = '200px'
 
   const content = document.createElement('div')
   content.className = 'mermaid-content w-full h-full flex items-center justify-center'
@@ -297,27 +339,43 @@ const wrapMermaid = (svg) => {
     content.style.transform = `translate(${contentX}px, ${contentY}px) scale(${scale})`
   }
 
-  // 添加控制按钮
+  // 缩放比例显示
+  const zoomIndicator = document.createElement('div')
+  zoomIndicator.className = 'mermaid-zoom-indicator absolute top-3 left-3 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded text-xs text-gray-600 dark:text-gray-400 font-mono shadow border border-gray-200 dark:border-gray-700'
+  zoomIndicator.textContent = '100%'
+  container.appendChild(zoomIndicator)
+
+  const updateZoomIndicator = () => {
+    zoomIndicator.textContent = `${Math.round(scale * 100)}%`
+  }
+
+  // 启用 mermaid 图中的链接点击功能（类似 GitHub）
+  enableMermaidLinks(svg, container)
+
+  // 添加控制按钮面板（不含全屏按钮）
   const controls = document.createElement('div')
-  controls.className = 'absolute bottom-2 right-2 flex gap-2 z-10'
+  controls.className = 'mermaid-controls absolute bottom-3 right-3 flex gap-1.5 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-1.5 shadow-lg border border-gray-200 dark:border-gray-700'
   controls.innerHTML = `
-    <button class="p-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Zoom In"><i class="fas fa-plus"></i></button>
-    <button class="p-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Zoom Out"><i class="fas fa-minus"></i></button>
-    <button class="p-1 bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300" title="Reset"><i class="fas fa-compress"></i></button>
+    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="放大 (Zoom In)"><i class="fas fa-search-plus"></i></button>
+    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="缩小 (Zoom Out)"><i class="fas fa-search-minus"></i></button>
+    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="重置 (Reset)"><i class="fas fa-compress-arrows-alt"></i></button>
   `
 
-  const [btnIn, btnOut, btnReset] = controls.querySelectorAll('button')
+  const btns = controls.querySelectorAll('.mermaid-btn')
+  const [btnIn, btnOut, btnReset] = [btns[0], btns[1], btns[2]]
 
   btnIn.onclick = (e) => {
     e.stopPropagation()
-    scale = Math.min(scale + 0.2, 5)
+    scale = Math.min(scale + 0.25, 5)
     updateTransform()
+    updateZoomIndicator()
   }
 
   btnOut.onclick = (e) => {
     e.stopPropagation()
-    scale = Math.max(scale - 0.2, 0.5)
+    scale = Math.max(scale - 0.25, 0.3)
     updateTransform()
+    updateZoomIndicator()
   }
 
   btnReset.onclick = (e) => {
@@ -326,65 +384,149 @@ const wrapMermaid = (svg) => {
     contentX = 0
     contentY = 0
     updateTransform()
+    updateZoomIndicator()
   }
 
   container.appendChild(controls)
 
   // 鼠标拖拽逻辑
   container.onmousedown = (e) => {
-    if (e.target.closest('button')) return
+    if (e.target.closest('button') || e.target.closest('.mermaid-controls') || e.target.closest('a')) return
     isDragging = true
     container.style.cursor = 'grabbing'
     startX = e.clientX - contentX
     startY = e.clientY - contentY
   }
 
-  window.addEventListener('mousemove', (e) => {
+  const mouseMoveHandler = (e) => {
     if (!isDragging) return
     e.preventDefault()
     contentX = e.clientX - startX
     contentY = e.clientY - startY
     updateTransform()
-  })
+  }
 
-  window.addEventListener('mouseup', () => {
+  const mouseUpHandler = () => {
     isDragging = false
     container.style.cursor = 'grab'
-  })
+  }
+
+  window.addEventListener('mousemove', mouseMoveHandler)
+  window.addEventListener('mouseup', mouseUpHandler)
 
   // 触摸拖拽逻辑
+  let lastTouchDistance = 0 // 用于双指缩放
+
   container.ontouchstart = (e) => {
-    if (e.target.closest('button')) return
+    if (e.target.closest('button') || e.target.closest('.mermaid-controls') || e.target.closest('a')) return
     if (e.touches.length === 1) {
       isDragging = true
       startX = e.touches[0].clientX - contentX
       startY = e.touches[0].clientY - contentY
+    } else if (e.touches.length === 2) {
+      // 双指缩放开始
+      lastTouchDistance = getTouchDistance(e.touches)
     }
   }
 
   container.ontouchmove = (e) => {
-    if (!isDragging) return
+    if (e.target.closest('button') || e.target.closest('.mermaid-controls') || e.target.closest('a')) return
     e.preventDefault() // 防止滚动
-    if (e.touches.length === 1) {
+    
+    if (e.touches.length === 1 && isDragging) {
       contentX = e.touches[0].clientX - startX
       contentY = e.touches[0].clientY - startY
       updateTransform()
-    }
-  }
-
-  container.ontouchend = () => {
-    isDragging = false
-  }
-
-  // 滚轮缩放
-  container.onwheel = (e) => {
-    if (e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? -0.1 : 0.1
-        scale = Math.min(Math.max(scale + delta, 0.5), 5)
+    } else if (e.touches.length === 2) {
+      // 双指缩放
+      const newDistance = getTouchDistance(e.touches)
+      if (lastTouchDistance > 0) {
+        const delta = (newDistance - lastTouchDistance) / 200
+        scale = Math.min(Math.max(scale + delta, 0.3), 5)
         updateTransform()
+        updateZoomIndicator()
+      }
+      lastTouchDistance = newDistance
     }
   }
+
+  container.ontouchend = (e) => {
+    isDragging = false
+    if (e.touches.length < 2) {
+      lastTouchDistance = 0
+    }
+  }
+
+  // 滚轮缩放（不需要 Ctrl 键也可以缩放）
+  container.onwheel = (e) => {
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -0.1 : 0.1
+    scale = Math.min(Math.max(scale + delta, 0.3), 5)
+    updateTransform()
+    updateZoomIndicator()
+  }
+
+  // 双击重置
+  container.ondblclick = (e) => {
+    if (e.target.closest('button') || e.target.closest('.mermaid-controls') || e.target.closest('a')) return
+    scale = 1
+    contentX = 0
+    contentY = 0
+    updateTransform()
+    updateZoomIndicator()
+  }
+}
+
+/**
+ * 获取两个触摸点之间的距离（用于双指缩放）
+ */
+const getTouchDistance = (touches) => {
+  const dx = touches[0].clientX - touches[1].clientX
+  const dy = touches[0].clientY - touches[1].clientY
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
+/**
+ * 启用 Mermaid 图中的链接点击功能（类似 GitHub）
+ * 处理 mermaid 图表中的 click 事件和超链接
+ */
+const enableMermaidLinks = (svg, container) => {
+  // 处理 mermaid 中定义的 click 回调链接
+  // Mermaid 使用 <a> 标签或 onclick 属性来处理链接
+  const links = svg.querySelectorAll('a, [onclick], .clickable')
+  
+  links.forEach(link => {
+    // 确保链接可点击，不被拖拽干扰
+    link.style.cursor = 'pointer'
+    link.style.pointerEvents = 'auto'
+    
+    // 如果是 <a> 标签，确保在新窗口打开外部链接
+    if (link.tagName.toLowerCase() === 'a') {
+      const href = link.getAttribute('xlink:href') || link.getAttribute('href')
+      if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+        link.setAttribute('target', '_blank')
+        link.setAttribute('rel', 'noopener noreferrer')
+      }
+      // 添加视觉提示
+      link.addEventListener('mouseenter', () => {
+        container.style.cursor = 'pointer'
+      })
+      link.addEventListener('mouseleave', () => {
+        container.style.cursor = 'grab'
+      })
+    }
+  })
+
+  // 为所有可交互节点添加悬停效果
+  const nodes = svg.querySelectorAll('.node, .cluster, .edgeLabel')
+  nodes.forEach(node => {
+    node.addEventListener('mouseenter', () => {
+      node.style.opacity = '0.8'
+    })
+    node.addEventListener('mouseleave', () => {
+      node.style.opacity = '1'
+    })
+  })
 }
 
 function renderPrismMac(codeLineNumbers) {
