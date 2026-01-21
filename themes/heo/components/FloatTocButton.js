@@ -391,7 +391,7 @@ const JumpToCommentButtonDesktop = () => {
     if (el) return el
     
     // 尝试多个可能的评论区元素 ID
-    const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
+    const commentIds = ['post-comments', 'comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
     for (const id of commentIds) {
       el = document.getElementById(id)
       if (el) return el
@@ -497,7 +497,7 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
     if (el) return el
     
     // 尝试多个可能的评论区元素 ID
-    const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
+    const commentIds = ['post-comments', 'comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
     for (const id of commentIds) {
       el = document.getElementById(id)
       if (el) return el

@@ -770,7 +770,7 @@ const LayoutSlug = props => {
 
             {/* 评论区 */}
             {fullWidth ? null : (
-              <div className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
+              <div id='post-comments' className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
                 <hr className='my-4 border-dashed' />
                 {/* 评论区上方广告 */}
                 <div className='py-2'>

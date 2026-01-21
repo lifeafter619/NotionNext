@@ -17,7 +17,7 @@ const JumpToCommentButton = () => {
     
     // 如果找不到 wl-comment，尝试多个可能的评论区元素 ID
     if (!commentElement) {
-      const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
+      const commentIds = ['post-comments', 'comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
       for (const id of commentIds) {
         commentElement = document.getElementById(id)
         if (commentElement) break

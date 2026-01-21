@@ -102,13 +102,16 @@ export async function getStaticProps({ locale }) {
         // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
         const pId = idToUuid(post.id)
         if (blockMap?.block?.[pId]?.value?.content) {
-            newPost.content = blockMap.block[pId].value.content
+          newPost.content = blockMap.block[pId].value.content
         } else if (blockMap?.block) {
-           // 兼容id不一致的情况
-           const blockId = Object.keys(blockMap.block).find(id => blockMap.block[id].value.type === 'page')
-           if (blockId) {
-             newPost.content = blockMap.block[blockId].value.content
-           }
+          // 兼容id不一致的情况
+          const blockId = Object.keys(blockMap.block).find(id => {
+            const block = blockMap.block[id]?.value
+            return block?.type === 'page' && block?.content
+          })
+          if (blockId) {
+            newPost.content = blockMap.block[blockId].value.content
+          }
         }
         newPost.content = getPageContentText(newPost, blockMap)
       } catch (e) {
