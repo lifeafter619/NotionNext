@@ -33,6 +33,17 @@ const Search = props => {
       const bodyContent = post.content || ''
       const searchContent = metaContent + ' ' + bodyContent
       return searchContent.toLowerCase().includes(searchKeyword)
+    }).map(post => {
+      const newPost = { ...post, results: [] }
+      const bodyContent = post.content || ''
+      const index = bodyContent.toLowerCase().indexOf(searchKeyword)
+      if (index > -1) {
+        // 截取搜索结果摘要
+        const start = Math.max(0, index - 50)
+        const end = Math.min(bodyContent.length, index + 150)
+        newPost.results.push(bodyContent.slice(start, end))
+      }
+      return newPost
     })
   } else {
     filteredPosts = []

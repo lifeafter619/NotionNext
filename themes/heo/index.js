@@ -770,19 +770,21 @@ const LayoutSlug = props => {
 
             {/* 评论区 */}
             {fullWidth ? null : (
-              <div id='post-comments' className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
-                <hr className='my-4 border-dashed' />
-                {/* 评论区上方广告 */}
-                <div className='py-2'>
-                  <AdSlot />
-                </div>
-                {/* 评论互动 */}
-                <div className='duration-200 overflow-x-auto px-5'>
-                  <div className='text-2xl dark:text-white'>
-                    <i className='fas fa-comment mr-1' />
-                    {locale.COMMON.COMMENTS}
+              <div id='post-comments' className='px-5'>
+                <div className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
+                  <hr className='my-4 border-dashed' />
+                  {/* 评论区上方广告 */}
+                  <div className='py-2'>
+                    <AdSlot />
                   </div>
-                  <Comment frontMatter={post} className='' />
+                  {/* 评论互动 */}
+                  <div className='duration-200 overflow-x-auto'>
+                    <div className='text-2xl dark:text-white'>
+                      <i className='fas fa-comment mr-1' />
+                      {locale.COMMON.COMMENTS}
+                    </div>
+                    <Comment frontMatter={post} className='' />
+                  </div>
                 </div>
               </div>
             )}
