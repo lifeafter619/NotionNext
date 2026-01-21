@@ -397,6 +397,14 @@ const JumpToCommentButtonDesktop = () => {
         top: offsetPosition,
         behavior: 'smooth'
       })
+      setTimeout(() => {
+        const elementPosition2 = commentNode.getBoundingClientRect().top + window.scrollY
+        const offsetPosition2 = elementPosition2 - headerHeight
+        window.scrollTo({
+          top: offsetPosition2,
+          behavior: 'smooth'
+        })
+      }, 500)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     }
@@ -480,6 +488,14 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
         top: offsetPosition,
         behavior: 'smooth'
       })
+      setTimeout(() => {
+        const elementPosition2 = commentNode.getBoundingClientRect().top + window.scrollY
+        const offsetPosition2 = elementPosition2 - headerHeight
+        window.scrollTo({
+          top: offsetPosition2,
+          behavior: 'smooth'
+        })
+      }, 500)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     }

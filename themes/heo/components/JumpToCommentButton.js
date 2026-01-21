@@ -17,6 +17,11 @@ const JumpToCommentButton = () => {
       // 这里的 80 是顶部导航栏的高度，可以根据实际情况调整
       const top = commentElement.getBoundingClientRect().top + window.scrollY - 80
       window.scrollTo({ top, behavior: 'smooth' })
+      setTimeout(() => {
+        // 延时再滚一次，防止懒加载导致的定位偏差
+        const top2 = commentElement.getBoundingClientRect().top + window.scrollY - 80
+        window.scrollTo({ top: top2, behavior: 'smooth' })
+      }, 500)
     }
   }
 
