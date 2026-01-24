@@ -97,6 +97,7 @@ async function filterByMemCache(allPosts, keyword) {
       }
     }
     const contentText = getPageContentText(post, page)
+    post.content = contentText
     post.results = []
     let index = contentText.toLowerCase().indexOf(keyword)
     let count = 0

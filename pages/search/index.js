@@ -30,12 +30,12 @@ const Search = props => {
       // 搜索标题、摘要、标签、分类
       const metaContent = (post.title || '') + (post.summary || '') + tagContent + categoryContent
       // 搜索文章内容（如果有的话）
-      const bodyContent = post.content || ''
+      const bodyContent = String(post.content || '')
       const searchContent = metaContent + ' ' + bodyContent
       return searchContent.toLowerCase().includes(searchKeyword)
     }).map(post => {
       const newPost = { ...post, results: [] }
-      const bodyContent = post.content || ''
+      const bodyContent = String(post.content || '')
       const _searchKeyword = searchKeyword.toLowerCase()
       let index = bodyContent.toLowerCase().indexOf(_searchKeyword)
       let count = 0
@@ -116,15 +116,17 @@ export async function getStaticProps({ locale }) {
         const blockMap = await getPage(post.id, 'search-index')
         // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
         const pId = idToUuid(post.id)
+        let contentIds = []
         if (blockMap?.block?.[pId]?.value?.content) {
-            newPost.content = blockMap.block[pId].value.content
+          contentIds = blockMap.block[pId].value.content
         } else if (blockMap?.block) {
-           // 兼容id不一致的情况
-           const blockId = Object.keys(blockMap.block).find(id => blockMap.block[id].value.type === 'page')
-           if (blockId) {
-             newPost.content = blockMap.block[blockId].value.content
-           }
+          // 兼容id不一致的情况
+          const blockId = Object.keys(blockMap.block).find(id => blockMap.block[id].value.type === 'page')
+          if (blockId) {
+            contentIds = blockMap.block[blockId].value.content
+          }
         }
+        newPost.content = contentIds
         newPost.content = getPageContentText(newPost, blockMap)
         if (!newPost.content) {
           console.warn('Search index: content is empty for', post.id)
