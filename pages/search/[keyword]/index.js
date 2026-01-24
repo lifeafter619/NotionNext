@@ -94,13 +94,17 @@ async function filterByMemCache(allPosts, keyword) {
     }
     const contentText = getPageContentText(post, page)
     post.results = []
-    const index = contentText.toLowerCase().indexOf(keyword)
-    if (index > -1) {
+    let index = contentText.toLowerCase().indexOf(keyword)
+    let count = 0
+    const MAX_RESULT = 3
+    while (index > -1 && count < MAX_RESULT) {
       hit = true
       // 截取搜索结果摘要
-      const start = Math.max(0, index - 30)
-      const end = Math.min(contentText.length, index + 50)
+      const start = Math.max(0, index - 50)
+      const end = Math.min(contentText.length, index + 150)
       post.results.push(contentText.slice(start, end))
+      index = contentText.toLowerCase().indexOf(keyword, index + keyword.length)
+      count++
     }
 
     if (hit) {

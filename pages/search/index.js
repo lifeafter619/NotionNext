@@ -36,12 +36,16 @@ const Search = props => {
     }).map(post => {
       const newPost = { ...post, results: [] }
       const bodyContent = post.content || ''
-      const index = bodyContent.toLowerCase().indexOf(searchKeyword)
-      if (index > -1) {
-        // 截取搜索结果摘要
+      const _searchKeyword = searchKeyword.toLowerCase()
+      let index = bodyContent.toLowerCase().indexOf(_searchKeyword)
+      let count = 0
+      const MAX_RESULT = 3
+      while (index > -1 && count < MAX_RESULT) {
         const start = Math.max(0, index - 50)
         const end = Math.min(bodyContent.length, index + 150)
         newPost.results.push(bodyContent.slice(start, end))
+        index = bodyContent.toLowerCase().indexOf(_searchKeyword, index + _searchKeyword.length)
+        count++
       }
       return newPost
     })
