@@ -145,7 +145,24 @@ export async function getStaticProps({ locale }) {
   }, 3) // 并发数限制为 3，降低 Vercel 资源压力
 
   // 过滤掉处理过程中返回 null 的无效文章
-  props.posts = validPosts.filter(p => p !== null)
+  props.posts = validPosts.filter(p => p !== null).map(p => {
+    return {
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      summary: p.summary,
+      tags: p.tags,
+      category: p.category,
+      type: p.type,
+      status: p.status,
+      publishDate: p.publishDate,
+      lastEditedDate: p.lastEditedDate,
+      pageCover: p.pageCover,
+      pageCoverThumbnail: p.pageCoverThumbnail,
+      content: p.content,
+      ext: p.ext
+    }
+  })
 
   // 上传数据到 Algolia
   if (siteConfig('ALGOLIA_APP_ID') && process.env.npm_lifecycle_event === 'build') {
