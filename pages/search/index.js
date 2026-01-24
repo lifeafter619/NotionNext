@@ -126,6 +126,9 @@ export async function getStaticProps({ locale }) {
            }
         }
         newPost.content = getPageContentText(newPost, blockMap)
+        if (!newPost.content) {
+          console.warn('Search index: content is empty for', post.id)
+        }
       } catch (e) {
         console.error('Search index fetch failed for', post.id, e)
       }

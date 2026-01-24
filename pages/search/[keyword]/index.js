@@ -4,6 +4,7 @@ import { siteConfig } from '@/lib/config'
 import { getGlobalData } from '@/lib/db/getSiteData'
 import { DynamicLayout } from '@/themes/theme'
 import { getPageContentText } from '@/lib/notion/getPageContentText'
+import { getPage } from '@/lib/notion/getPostBlocks'
 import { idToUuid } from 'notion-utils'
 
 const Index = props => {
@@ -73,7 +74,10 @@ async function filterByMemCache(allPosts, keyword) {
   }
   for (const post of allPosts) {
     const cacheKey = 'page_block_' + post.id
-    const page = await getDataFromCache(cacheKey, true)
+    let page = await getDataFromCache(cacheKey, true)
+    if (!page) {
+      page = await getPage(post.id, 'search-index')
+    }
     const tagContent =
       post?.tags && Array.isArray(post?.tags) ? post?.tags.join(' ') : ''
     const categoryContent =
@@ -86,11 +90,11 @@ async function filterByMemCache(allPosts, keyword) {
     if (page?.block?.[pId]?.value?.content) {
       post.content = page.block[pId].value.content
     } else if (page?.block) {
-       // 兼容id不一致的情况
-       const blockId = Object.keys(page.block).find(id => page.block[id].value.type === 'page')
-       if (blockId) {
-         post.content = page.block[blockId].value.content
-       }
+      // 兼容id不一致的情况
+      const blockId = Object.keys(page.block).find(id => page.block[id].value.type === 'page')
+      if (blockId) {
+        post.content = page.block[blockId].value.content
+      }
     }
     const contentText = getPageContentText(post, page)
     post.results = []
