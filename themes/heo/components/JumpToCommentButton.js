@@ -12,39 +12,16 @@ const JumpToCommentButton = () => {
   }
 
   function navToComment() {
-    // 优先寻找 wl-comment 类（Waline 评论区）
-    let commentElement = document.querySelector('.wl-comment')
-    
-    // 如果找不到 wl-comment，尝试多个可能的评论区元素 ID
-    if (!commentElement) {
-      const commentIds = ['comment', 'comments', 'comment-area', 'gitalk-container', 'twikoo', 'waline', 'cusdis_thread']
-      for (const id of commentIds) {
-        commentElement = document.getElementById(id)
-        if (commentElement) break
-      }
-    }
-    
-    // 如果还找不到，尝试寻找评论区相关的类名
-    if (!commentElement) {
-      commentElement = document.querySelector('.comment, .comments, [class*="comment"]')
-    }
-    
+    const commentElement = document.getElementById('post-comments')
     if (commentElement) {
-      // 计算顶部导航栏的高度，避免被遮挡
-      const headerHeight = 80
-      const elementPosition = commentElement.getBoundingClientRect().top + window.scrollY
-      const offsetPosition = elementPosition - headerHeight
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
-    } else {
-      // 如果找不到评论区，滚动到页面底部
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth'
-      })
+      // 这里的 80 是顶部导航栏的高度，可以根据实际情况调整
+      const top = commentElement.getBoundingClientRect().top + window.scrollY - 80
+      window.scrollTo({ top, behavior: 'smooth' })
+      setTimeout(() => {
+        // 延时再滚一次，防止懒加载导致的定位偏差
+        const top2 = commentElement.getBoundingClientRect().top + window.scrollY - 80
+        window.scrollTo({ top: top2, behavior: 'smooth' })
+      }, 500)
     }
   }
 

@@ -136,6 +136,8 @@ export default function SearchHighlightNav() {
     const deltaX = dragStartMouseRef.current.x - e.clientX
 
     // Top: 鼠标下移 (clientY 增加) -> top 值应增加
+    // 注意：CSS top 属性增加意味着向下移动，鼠标 y 增加也意味着向下移动。
+    // 所以 deltaY = e.clientY - dragStartMouseRef.current.y 是移动的距离，应该直接加到 initialTop 上
     const deltaY = e.clientY - dragStartMouseRef.current.y
 
     let newX = initialDragPosRef.current.x + deltaX
@@ -144,15 +146,15 @@ export default function SearchHighlightNav() {
     // 边界检查
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
-    const navWidth = containerRef.current ? containerRef.current.offsetWidth : 224 // w-56 = 14rem = 224px
+    const navWidth = containerRef.current ? containerRef.current.offsetWidth : 224
     const navHeight = containerRef.current ? containerRef.current.offsetHeight : 200
 
     // 限制在屏幕内
-    // Right range: [0, windowWidth - navWidth]
-    newX = Math.max(0, Math.min(newX, windowWidth - navWidth))
+    const maxRight = windowWidth - navWidth
+    const maxTop = windowHeight - navHeight
 
-    // Top range: [0, windowHeight - navHeight]
-    newY = Math.max(0, Math.min(newY, windowHeight - navHeight))
+    newX = Math.max(0, Math.min(newX, maxRight))
+    newY = Math.max(0, Math.min(newY, maxTop))
 
     setPosition({ x: newX, y: newY })
   }
@@ -194,21 +196,21 @@ export default function SearchHighlightNav() {
         top: `${position.y}px`,
         zIndex: 90
       }}
-      className="backdrop-blur-md bg-white/90 dark:bg-gray-800/90 shadow-2xl rounded-xl border border-gray-200/50 dark:border-gray-700 p-3 flex flex-col gap-3 w-56 transition-all duration-300 hover:shadow-3xl"
+      className="bg-white dark:bg-[#1e1e1e] shadow-lg border border-gray-200 dark:border-gray-700 rounded-xl p-3 flex flex-col gap-3 w-56 transition-shadow duration-300 hover:shadow-xl"
     >
       {/* 拖拽手柄 */}
       <div
         onMouseDown={handleMouseDown}
-        className="flex justify-between items-center cursor-move border-b border-gray-200/50 dark:border-white/10 pb-2 mb-1 select-none"
+        className="flex justify-between items-center cursor-move border-b border-gray-100 dark:border-gray-700/50 pb-2 mb-1 select-none"
       >
-        <span className="text-sm font-bold text-blue-600 dark:text-yellow-500 pointer-events-none flex items-center gap-1.5">
+        <span className="text-sm font-bold text-indigo-600 dark:text-yellow-500 pointer-events-none flex items-center gap-1.5">
           <i className="fas fa-search-location"></i>
           内容定位
         </span>
         <button
           onClick={handleClose}
           onMouseDown={(e) => e.stopPropagation()} // 防止点击关闭时触发拖拽
-          className="text-gray-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors w-6 h-6 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
           title="关闭 (ESC)"
         >
           <i className="fas fa-times"></i>

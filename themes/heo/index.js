@@ -351,9 +351,32 @@ const LayoutSearch = props => {
         {(loading || (sortedPosts.length > 0) || (currentSearch && sortedPosts.length === 0)) && (
           <div id='posts-wrapper'>
             {loading ? (
-                <div className="flex justify-center py-20">
-                    <i className="fas fa-spinner animate-spin text-4xl text-blue-500"></i>
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="flex flex-col items-center gap-4 mb-8">
+                  <i className="fas fa-spinner animate-spin text-4xl text-blue-500"></i>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">
+                    搜索较慢，请耐心等待亿下下~
+                  </p>
                 </div>
+
+                {/* 搜索加载时的推荐文章 */}
+                <div className="w-full max-w-4xl">
+                  <div className="text-center mb-4 text-gray-400 dark:text-gray-500 text-xs uppercase tracking-wider">
+                    推荐阅读
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {posts.slice(0, 2).map((post, index) => (
+                      <SearchResultCard
+                        key={post.id}
+                        post={post}
+                        index={index}
+                        currentSearch={null}
+                        siteInfo={props.siteInfo}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : sortedPosts.length > 0 ? (
               viewMode === 'list' ? (
                 <div className='space-y-4'>
@@ -770,19 +793,21 @@ const LayoutSlug = props => {
 
             {/* 评论区 */}
             {fullWidth ? null : (
-              <div className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
-                <hr className='my-4 border-dashed' />
-                {/* 评论区上方广告 */}
-                <div className='py-2'>
-                  <AdSlot />
-                </div>
-                {/* 评论互动 */}
-                <div className='duration-200 overflow-x-auto px-5'>
-                  <div className='text-2xl dark:text-white'>
-                    <i className='fas fa-comment mr-1' />
-                    {locale.COMMON.COMMENTS}
+              <div id='post-comments' className='px-5'>
+                <div className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
+                  <hr className='my-4 border-dashed' />
+                  {/* 评论区上方广告 */}
+                  <div className='py-2'>
+                    <AdSlot />
                   </div>
-                  <Comment frontMatter={post} className='' />
+                  {/* 评论互动 */}
+                  <div className='duration-200 overflow-x-auto'>
+                    <div className='text-2xl dark:text-white'>
+                      <i className='fas fa-comment mr-1' />
+                      {locale.COMMON.COMMENTS}
+                    </div>
+                    <Comment frontMatter={post} className='' />
+                  </div>
                 </div>
               </div>
             )}
