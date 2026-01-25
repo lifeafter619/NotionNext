@@ -136,6 +136,8 @@ export default function SearchHighlightNav() {
     const deltaX = dragStartMouseRef.current.x - e.clientX
 
     // Top: 鼠标下移 (clientY 增加) -> top 值应增加
+    // 注意：CSS top 属性增加意味着向下移动，鼠标 y 增加也意味着向下移动。
+    // 所以 deltaY = e.clientY - dragStartMouseRef.current.y 是移动的距离，应该直接加到 initialTop 上
     const deltaY = e.clientY - dragStartMouseRef.current.y
 
     let newX = initialDragPosRef.current.x + deltaX
@@ -144,15 +146,15 @@ export default function SearchHighlightNav() {
     // 边界检查
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
-    const navWidth = containerRef.current ? containerRef.current.offsetWidth : 224 // w-56 = 14rem = 224px
+    const navWidth = containerRef.current ? containerRef.current.offsetWidth : 224
     const navHeight = containerRef.current ? containerRef.current.offsetHeight : 200
 
     // 限制在屏幕内
-    // Right range: [0, windowWidth - navWidth]
-    newX = Math.max(0, Math.min(newX, windowWidth - navWidth))
+    const maxRight = windowWidth - navWidth
+    const maxTop = windowHeight - navHeight
 
-    // Top range: [0, windowHeight - navHeight]
-    newY = Math.max(0, Math.min(newY, windowHeight - navHeight))
+    newX = Math.max(0, Math.min(newX, maxRight))
+    newY = Math.max(0, Math.min(newY, maxTop))
 
     setPosition({ x: newX, y: newY })
   }

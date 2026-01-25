@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
 import { getPageContentText } from '@/lib/notion/getPageContentText'
 import { idToUuid } from 'notion-utils'
+import { useMemo } from 'react'
 
 /**
  * 搜索路由
@@ -20,11 +21,12 @@ const Search = props => {
   const router = useRouter()
   const keyword = router?.query?.s
 
-  let filteredPosts
-  // 静态过滤 - 支持内容搜索
-  if (keyword) {
+  // 使用 useMemo 优化过滤性能，避免每次渲染都重新计算
+  const filteredPosts = useMemo(() => {
+    if (!keyword) return []
+
     const searchKeyword = keyword.toLowerCase()
-    filteredPosts = posts.filter(post => {
+    return posts.filter(post => {
       const tagContent = Array.isArray(post?.tags) ? post?.tags.join(' ') : (post?.tags || '')
       const categoryContent = Array.isArray(post.category) ? post.category.join(' ') : (post.category || '')
       // 搜索标题、摘要、标签、分类
@@ -49,14 +51,12 @@ const Search = props => {
       }
       return newPost
     })
-  } else {
-    filteredPosts = []
-  }
+  }, [keyword, posts])
 
-  props = { ...props, posts: filteredPosts }
+  const newProps = { ...props, posts: filteredPosts }
 
   const theme = siteConfig('THEME', BLOG.THEME, props.NOTION_CONFIG)
-  return <DynamicLayout theme={theme} layoutName='LayoutSearch' {...props} />
+  return <DynamicLayout theme={theme} layoutName='LayoutSearch' {...newProps} />
 }
 
 /**
