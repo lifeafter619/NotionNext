@@ -93,6 +93,9 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
       if (typeof targetScrollY === 'number') {
           window.scrollTo({ top: targetScrollY, behavior: 'smooth' })
       }
+      if (onItemClick) {
+        onItemClick()
+      }
   }
 
   const handleBack = () => {
