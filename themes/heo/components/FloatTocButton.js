@@ -323,7 +323,7 @@ export default function FloatTocButton(props) {
             </button>
         </div>
 
-        <div className='flex-1 px-5 overflow-y-auto overscroll-contain'>
+        <div className='flex-1 px-5 overflow-hidden'>
             <Catalog className='!max-h-none h-full' toc={post.toc} onActiveSectionChange={setActiveSectionId} onItemClick={() => changeTocVisible(false)} />
         </div>
       </div>

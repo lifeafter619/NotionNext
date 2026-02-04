@@ -106,13 +106,13 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
   }
 
   return (
-    <div className='px-3 py-1 dark:text-white text-black'>
-      <div className='w-full'>
+    <div className='px-3 py-1 dark:text-white text-black flex flex-col h-full'>
+      <div className='w-full flex-shrink-0'>
         <i className='mr-1 fas fa-stream' />
         {locale.COMMON.TABLE_OF_CONTENTS}
       </div>
       <div
-        className={`${className || ''} overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden`}
+        className={`${className || ''} overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden flex-1`}
         ref={tRef}>
         <nav className='h-full'>
           {toc?.map(tocItem => {
@@ -155,7 +155,9 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
         </nav>
       </div>
 
-      <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
+      <div className='flex-shrink-0'>
+        <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
+      </div>
 
       {/* 统一的 Toast 提示框 */}
       {toastState.show && createPortal(
