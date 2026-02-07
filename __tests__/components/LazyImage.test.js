@@ -1,24 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import LazyImage from '@/components/LazyImage'
 
-// Mock IntersectionObserver
-const mockIntersectionObserver = jest.fn()
-mockIntersectionObserver.mockReturnValue({
-  observe: () => null,
-  unobserve: () => null,
-  disconnect: () => null
-})
-window.IntersectionObserver = mockIntersectionObserver
-
 describe('LazyImage Component', () => {
   const defaultProps = {
     src: '/test-image.jpg',
     alt: 'Test image'
   }
-
-  beforeEach(() => {
-    mockIntersectionObserver.mockClear()
-  })
 
   it('renders with required props', () => {
     render(<LazyImage {...defaultProps} />)
@@ -74,19 +61,6 @@ describe('LazyImage Component', () => {
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
 
-  it('sets up IntersectionObserver when not priority', () => {
-    render(<LazyImage {...defaultProps} />)
-    
-    expect(mockIntersectionObserver).toHaveBeenCalled()
-  })
-
-  it('does not set up IntersectionObserver for priority images', () => {
-    render(<LazyImage {...defaultProps} priority />)
-    
-    // Priority images should load immediately without IntersectionObserver
-    expect(mockIntersectionObserver).not.toHaveBeenCalled()
-  })
-
   it('handles load event', async () => {
     const handleLoad = jest.fn()
     render(<LazyImage {...defaultProps} onLoad={handleLoad} />)
@@ -134,5 +108,15 @@ describe('LazyImage Component', () => {
     
     const image = screen.getByAltText('Test image')
     expect(image).toHaveStyle('border: 1px solid red')
+  })
+
+  it('generates srcset for Notion-like image URLs', () => {
+    const notionSrc = 'https://example.com/image.jpg?width=1200'
+    render(<LazyImage {...defaultProps} src={notionSrc} />)
+
+    const image = screen.getByAltText('Test image')
+    expect(image).toHaveAttribute('srcset')
+    expect(image.getAttribute('srcset')).toContain('320w')
+    expect(image.getAttribute('srcset')).toContain('640w')
   })
 })

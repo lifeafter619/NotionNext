@@ -7,6 +7,7 @@
 
 # testing
 /coverage
+/test-results
 
 # next.js
 /.next/
@@ -52,3 +53,11 @@ package-lock.json
 # yarn.lock
 
 .notion-api-lock
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+
+# Verification and temp files
+validation-report.json
+*.pyc
+__pycache__/
