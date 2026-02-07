@@ -12,10 +12,9 @@ import { useEffect } from 'react'
  */
 const SEO = props => {
   const { children, siteInfo, post, NOTION_CONFIG } = props
-  const PATH = siteConfig('PATH')
   const LINK = siteConfig('LINK')
   const SUB_PATH = siteConfig('SUB_PATH', '')
-  let url = PATH?.length ? `${LINK}/${SUB_PATH}` : LINK
+  let url = SUB_PATH ? `${LINK}/${SUB_PATH}` : LINK
   let image
   const router = useRouter()
   const meta = getSEOMeta(props, router, useGlobal()?.locale)
@@ -102,6 +101,8 @@ const SEO = props => {
     <Head>
       <link rel='icon' href={favicon} />
       <title>{title}</title>
+      <link rel='canonical' href={url} />
+      <link rel='alternate' type='application/rss+xml' title={title} href={`${LINK}/rss/feed.xml`} />
       <meta name='theme-color' content={BACKGROUND_DARK} />
       <meta
         name='viewport'

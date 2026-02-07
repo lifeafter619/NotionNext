@@ -30,7 +30,11 @@ export async function getServerSideProps({ res, locale }) {
   const { NOTION_CONFIG, siteInfo, latestPosts } = props
   const TITLE = siteInfo?.title
   const DESCRIPTION = siteInfo?.description
-  const LINK = siteInfo?.link
+  let LINK = siteInfo?.link
+  // 确保链接不以斜杠结尾
+  if (LINK && LINK.endsWith('/')) {
+    LINK = LINK.slice(0, -1)
+  }
   const AUTHOR = NOTION_CONFIG?.AUTHOR || BLOG.AUTHOR
   const LANG = NOTION_CONFIG?.LANG || BLOG.LANG
   const SUB_PATH = NOTION_CONFIG?.SUB_PATH || BLOG.SUB_PATH
@@ -38,11 +42,14 @@ export async function getServerSideProps({ res, locale }) {
     NOTION_CONFIG?.CONTACT_EMAIL || BLOG.CONTACT_EMAIL
   )
 
+  // 构建站点链接，避免SUB_PATH为空时产生尾部斜杠
+  const siteLink = SUB_PATH ? `${LINK}/${SUB_PATH}` : LINK
+
   const year = new Date().getFullYear()
   const feed = new Feed({
     title: TITLE,
     description: DESCRIPTION,
-    link: `${LINK}/${SUB_PATH}`,
+    link: siteLink,
     language: LANG,
     favicon: `${LINK}/favicon.png`,
     copyright: `All rights reserved ${year}, ${AUTHOR}`,
@@ -55,12 +62,16 @@ export async function getServerSideProps({ res, locale }) {
 
   if (latestPosts) {
     for (const post of latestPosts) {
+      const slugWithoutLeadingSlash = post?.slug?.startsWith('/')
+        ? post.slug.slice(1)
+        : post.slug
+      const postDate = new Date(post?.publishDay)
       feed.addItem({
         title: post.title,
-        link: `${LINK}/${post.slug}`,
+        link: `${LINK}/${slugWithoutLeadingSlash}`,
         description: post.summary,
         content: await createFeedContent(post),
-        date: new Date(post?.publishDay)
+        date: isNaN(postDate.getTime()) ? new Date() : postDate
       })
     }
   }
