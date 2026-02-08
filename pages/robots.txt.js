@@ -1,9 +1,9 @@
 import BLOG from '@/blog.config'
-import { getGlobalData } from '@/lib/db/getSiteData'
+import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 
 export async function getServerSideProps({ req, res, locale }) {
   const from = 'robots.txt'
-  const props = await getGlobalData({ from, locale })
+  const props = await fetchGlobalAllData({ from, locale })
 
   const { siteInfo } = props
   const LINK = siteInfo?.link
