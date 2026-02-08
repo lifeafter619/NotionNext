@@ -173,8 +173,7 @@ const NotionPage = ({ post, className }) => {
     return () => clearTimeout(timer)
   }, [post])
 
-  // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
-  // console.log('NotionPage render with post:', post);
+  const cleanBlockMap = post?.blockMap ? cleanBlocksWithWarn(post.blockMap) : post?.blockMap;
 
   return (
     <>
@@ -183,7 +182,7 @@ const NotionPage = ({ post, className }) => {
         className={`mx-auto overflow-hidden ${className || ''}`}
         onClick={handleImageClick}>
         <NotionRenderer
-          recordMap={post?.blockMap}
+          recordMap={cleanBlockMap}
           mapPageUrl={mapPageUrl}
           mapImageUrl={mapImgUrl}
           components={{
