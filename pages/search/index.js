@@ -1,11 +1,11 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
-import { getPage } from '@/lib/notion/getPostBlocks'
+import { fetchNotionPageBlocks as getPage } from '@/lib/db/notion/getPostBlocks'
 import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
-import { getPageContentText } from '@/lib/notion/getPageContentText'
+import { getPageContentText } from '@/lib/db/notion/getPageContentText'
 import { idToUuid } from 'notion-utils'
 import { useMemo } from 'react'
 

@@ -4,7 +4,7 @@ import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 import { getPageContentText } from '@/lib/db/notion/getPageContentText'
-import { getPage } from '@/lib/notion/getPostBlocks'
+import { fetchNotionPageBlocks as getPage } from '@/lib/db/notion/getPostBlocks'
 import { idToUuid } from 'notion-utils'
 
 const Index = props => {
