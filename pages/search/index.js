@@ -1,11 +1,11 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import { getGlobalData } from '@/lib/db/getSiteData'
-import { getPage } from '@/lib/notion/getPostBlocks'
+import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
+import { fetchNotionPageBlocks as getPage } from '@/lib/db/notion/getPostBlocks'
 import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
-import { getPageContentText } from '@/lib/notion/getPageContentText'
+import { getPageContentText } from '@/lib/db/notion/getPageContentText'
 import { idToUuid } from 'notion-utils'
 import { useMemo } from 'react'
 
@@ -64,7 +64,7 @@ const Search = props => {
  * 优化：保留更多字段用于内容搜索
  */
 export async function getStaticProps({ locale }) {
-  const props = await getGlobalData({
+  const props = await fetchGlobalAllData({
     from: 'search-props',
     locale
   })

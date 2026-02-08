@@ -1,5 +1,5 @@
 import { siteConfig } from '@/lib/config'
-import { compressImage, mapImgUrl } from '@/lib/notion/mapImage'
+import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
@@ -173,8 +173,8 @@ const NotionPage = ({ post, className }) => {
     return () => clearTimeout(timer)
   }, [post])
 
-  const cleanBlockMap = cleanBlocksWithWarn(post.blockMap);
-
+  // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
+  // console.log('NotionPage render with post:', post);
 
   return (
     <>
@@ -196,14 +196,9 @@ const NotionPage = ({ post, className }) => {
           }}
         />
 
-        <AdEmbed />
-        {hasCode && <PrismMac />}
-      </div>
-
-      {/* 阅读进度保存和恢复 */}
-      {READING_PROGRESS_SAVE && post?.id && (
-        <ReadingPositionSaver postId={post.id} enabled={READING_PROGRESS_SAVE} />
-      )}
+      <AdEmbed />
+      <PrismMac />
+    </div>
     </>
   )
 }

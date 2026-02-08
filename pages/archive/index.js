@@ -1,6 +1,6 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import { getGlobalData } from '@/lib/db/getSiteData'
+import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { isBrowser } from '@/lib/utils'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import { DynamicLayout } from '@/themes/theme'
@@ -31,7 +31,7 @@ const ArchiveIndex = props => {
 }
 
 export async function getStaticProps({ locale }) {
-  const props = await getGlobalData({ from: 'archive-index', locale })
+  const props = await fetchGlobalAllData({ from: 'archive-index', locale })
 
   // 过滤并清理数据，保留所有字段但修复 undefined 值以避免序列化错误
   const posts = props.allPages?.filter(

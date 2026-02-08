@@ -316,7 +316,9 @@ const nextConfig = {
 
     // Enable source maps in development mode
     if (dev || process.env.NODE_ENV_API === 'development') {
+      // config.devtool = 'source-map'
       config.devtool = 'eval-source-map'
+      // console.log('启动调试 nextjs.config.devtool ', config.devtool)
     }
 
     // 优化模块解析
@@ -324,6 +326,17 @@ const nextConfig = {
       path.resolve(__dirname, 'node_modules'),
       'node_modules'
     ]
+
+    // 客户端构建时，忽略 Node.js 内置模块（如 ioredis 依赖的 dns/net/tls）
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        dns: false,
+        net: false,
+        tls: false,
+        fs: false
+      }
+    }
 
     return config
   },

@@ -1,10 +1,10 @@
 import BLOG from '@/blog.config'
 import { getDataFromCache } from '@/lib/cache/cache_manager'
 import { siteConfig } from '@/lib/config'
-import { getGlobalData } from '@/lib/db/getSiteData'
+import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
-import { getPageContentText } from '@/lib/notion/getPageContentText'
-import { getPage } from '@/lib/notion/getPostBlocks'
+import { getPageContentText } from '@/lib/db/notion/getPageContentText'
+import { fetchNotionPageBlocks as getPage } from '@/lib/db/notion/getPostBlocks'
 import { idToUuid } from 'notion-utils'
 
 const Index = props => {
@@ -18,7 +18,7 @@ const Index = props => {
  * @returns
  */
 export async function getStaticProps({ params: { keyword }, locale }) {
-  const props = await getGlobalData({
+  const props = await fetchGlobalAllData({
     from: 'search-props',
     locale
   })

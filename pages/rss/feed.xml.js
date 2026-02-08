@@ -1,7 +1,6 @@
 import BLOG from '@/blog.config'
 import NotionPage from '@/components/NotionPage'
-import { getPostBlocks } from '@/lib/db/getSiteData'
-import { getGlobalData } from '@/lib/db/getSiteData'
+import { getPostBlocks, fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { Feed } from 'feed'
 import ReactDOMServer from 'react-dom/server'
 import { decryptEmail } from '@/lib/plugins/mailEncrypt'
@@ -26,7 +25,7 @@ const createFeedContent = async post => {
 
 export async function getServerSideProps({ res, locale }) {
   const from = 'rss'
-  const props = await getGlobalData({ from, locale })
+  const props = await fetchGlobalAllData({ from, locale })
   const { NOTION_CONFIG, siteInfo, latestPosts } = props
   const TITLE = siteInfo?.title
   const DESCRIPTION = siteInfo?.description
