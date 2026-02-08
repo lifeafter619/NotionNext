@@ -4,6 +4,8 @@ import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 import { getPageContentText } from '@/lib/db/notion/getPageContentText'
+import { getPage } from '@/lib/notion/getPostBlocks'
+import { idToUuid } from 'notion-utils'
 
 const Index = props => {
   const theme = siteConfig('THEME', BLOG.THEME, props.NOTION_CONFIG)
@@ -22,7 +24,7 @@ export async function getStaticProps({ params: { keyword }, locale }) {
   })
   const { allPages } = props
   const allPosts = allPages?.filter(
-    page => page.type === 'Post' && page.status === 'Published'
+    page => (page.type === 'Post' || page.type === 'Page') && page.status === 'Published'
   )
   props.posts = await filterByMemCache(allPosts, keyword)
   props.postCount = props.posts.length
@@ -72,7 +74,10 @@ async function filterByMemCache(allPosts, keyword) {
   }
   for (const post of allPosts) {
     const cacheKey = 'page_block_' + post.id
-    const page = await getDataFromCache(cacheKey, true)
+    let page = await getDataFromCache(cacheKey, true)
+    if (!page) {
+      page = await getPage(post.id, 'search-index')
+    }
     const tagContent =
       post?.tags && Array.isArray(post?.tags) ? post?.tags.join(' ') : ''
     const categoryContent =
@@ -81,26 +86,32 @@ async function filterByMemCache(allPosts, keyword) {
         : ''
     const articleInfo = post.title + post.summary + tagContent + categoryContent
     let hit = articleInfo.toLowerCase().indexOf(keyword) > -1
-    const contentTextList = getPageContentText(post, page)
-    // console.log('全文搜索缓存', cacheKey, page != null)
-    post.results = []
-    let hitCount = 0
-    for (const i of contentTextList) {
-      const c = contentTextList[i]
-      if (!c) {
-        continue
-      }
-      const index = c.toLowerCase().indexOf(keyword)
-      if (index > -1) {
-        hit = true
-        hitCount += 1
-        post.results.push(c)
-      } else {
-        if ((post.results.length - 1) / hitCount < 3 || i === 0) {
-          post.results.push(c)
-        }
+    const pId = idToUuid(post.id)
+    if (page?.block?.[pId]?.value?.content) {
+      post.content = page.block[pId].value.content
+    } else if (page?.block) {
+      // 兼容id不一致的情况
+      const blockId = Object.keys(page.block).find(id => page.block[id].value.type === 'page')
+      if (blockId) {
+        post.content = page.block[blockId].value.content
       }
     }
+    const contentText = getPageContentText(post, page)
+    post.content = contentText
+    post.results = []
+    let index = contentText.toLowerCase().indexOf(keyword)
+    let count = 0
+    const MAX_RESULT = 3
+    while (index > -1 && count < MAX_RESULT) {
+      hit = true
+      // 截取搜索结果摘要
+      const start = Math.max(0, index - 50)
+      const end = Math.min(contentText.length, index + 150)
+      post.results.push(contentText.slice(start, end))
+      index = contentText.toLowerCase().indexOf(keyword, index + keyword.length)
+      count++
+    }
+
     if (hit) {
       filterPosts.push(post)
     }

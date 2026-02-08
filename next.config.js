@@ -207,6 +207,15 @@ const nextConfig = {
           {
             source: '/:path*{/}?',
             headers: [
+              // --------------------------------------------------------------------
+              // 修改部分开始：允许 iframe 嵌入
+              // --------------------------------------------------------------------
+              { key: 'X-Frame-Options', value: 'ALLOWALL' },
+              { key: 'Content-Security-Policy', value: 'frame-ancestors *' },
+              // --------------------------------------------------------------------
+              // 修改部分结束
+              // --------------------------------------------------------------------
+
               // 为了博客兼容性，不做过多安全限制
               { key: 'Access-Control-Allow-Credentials', value: 'true' },
               { key: 'Access-Control-Allow-Origin', value: '*' },
@@ -219,7 +228,7 @@ const nextConfig = {
                 value:
                   'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
               }
-              // 安全头部 相关配置，谨慎开启
+              // 下面是原有的被注释掉的安全配置，保持不动
             //   { key: 'X-Frame-Options', value: 'DENY' },
             //   { key: 'X-Content-Type-Options', value: 'nosniff' },
             //   { key: 'X-XSS-Protection', value: '1; mode=block' },
@@ -286,22 +295,19 @@ const nextConfig = {
 
     // 性能优化配置
     if (!dev) {
-      // 生产环境优化
+      // 生产环境优化：保留Next.js默认splitChunks配置，仅添加额外的分割策略
       config.optimization = {
         ...config.optimization,
         splitChunks: {
-          chunks: 'all',
+          ...config.optimization.splitChunks,
           cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
+            ...config.optimization.splitChunks?.cacheGroups,
+            // 将大型第三方库单独分割
+            notionRenderer: {
+              test: /[\\/]node_modules[\\/](react-notion-x)[\\/]/,
+              name: 'notion-renderer',
               chunks: 'all',
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              enforce: true,
+              priority: 30,
             },
           },
         },
