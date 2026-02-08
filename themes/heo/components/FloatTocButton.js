@@ -359,7 +359,7 @@ export default function FloatTocButton(props) {
 
               {!tocVisible && (
                 <div className="h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500">
-                  {activeSectionId && post.toc?.find(t => uuidToId(t.id) === activeSectionId)?.text || '目录'}
+                  {activeSectionId && post.toc?.find(t => uuidToId(t.id || '') === activeSectionId)?.text || '目录'}
                 </div>
               )}
             </div>

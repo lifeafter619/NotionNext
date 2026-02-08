@@ -119,7 +119,7 @@ const Catalog = ({ toc, onActiveSectionChange, onItemClick, className, forceSpy 
         ref={tRef}>
         <nav className='h-full'>
           {toc?.map(tocItem => {
-            const id = uuidToId(tocItem.id)
+            const id = uuidToId(tocItem.id || '')
             tocIds.push(id)
             return (
               <a
