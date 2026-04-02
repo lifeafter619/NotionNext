@@ -48,7 +48,7 @@ const Catalog = ({ post }) => {
         break
       }
       setActiveSection(currentSectionId)
-      const tocIds = post?.toc?.map(t => uuidToId(t.id)) || []
+      const tocIds = post?.toc?.map(t => uuidToId(t.id || '')) || []
       const index = tocIds.indexOf(currentSectionId) || 0
       if (isBrowser && tocIds?.length > 0) {
         for (const tocWrapper of document?.getElementsByClassName(
@@ -76,7 +76,7 @@ const Catalog = ({ post }) => {
         className='toc-wrapper overflow-y-auto my-2 max-h-80 overscroll-none scroll-hidden'>
         <nav className='h-full text-black'>
           {toc?.map(tocItem => {
-            const id = uuidToId(tocItem.id)
+            const id = uuidToId(tocItem.id || '')
             return (
               <a
                 key={id}

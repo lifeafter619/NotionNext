@@ -8,16 +8,24 @@ import React, { useState } from 'react'
 export default function FlipCard(props) {
   const [isFlipped, setIsFlipped] = useState(false)
 
-  function handleCardFlip() {
-    setIsFlipped(!isFlipped)
+  function handleMouseEnter() {
+    setIsFlipped(true)
+  }
+
+  function handleMouseLeave() {
+    setIsFlipped(false)
   }
 
   return (
-        <div className={`flip-card ${isFlipped ? 'flipped' : ''}`} >
-            <div className={`flip-card-front ${props.className || ''}`} onMouseEnter={handleCardFlip}>
+        <div 
+          className={`flip-card ${isFlipped ? 'flipped' : ''}`} 
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+            <div className={`flip-card-front ${props.className || ''}`}>
                 {props.frontContent}
             </div>
-            <div className={`flip-card-back ${props.className || ''}`} onMouseLeave={handleCardFlip}>
+            <div className={`flip-card-back ${props.className || ''}`}>
                 {props.backContent}
             </div>
             <style jsx>{`

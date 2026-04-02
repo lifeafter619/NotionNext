@@ -52,7 +52,7 @@ const Header = props => {
         setTextWhite(false)
         setBgWhite(true)
       }
-    }, 100)
+    }, 200)
   )
   useEffect(() => {
     scrollTrigger()
@@ -69,23 +69,16 @@ const Header = props => {
   // 导航栏根据滚动轮播菜单内容
   useEffect(() => {
     let prevScrollY = 0
-    let ticking = false
 
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          if (currentScrollY > prevScrollY) {
-            setActiveIndex(1) // 向下滚动时设置activeIndex为1
-          } else {
-            setActiveIndex(0) // 向上滚动时设置activeIndex为0
-          }
-          prevScrollY = currentScrollY
-          ticking = false
-        })
-        ticking = true
+    const handleScroll = throttle(() => {
+      const currentScrollY = window.scrollY
+      if (currentScrollY > prevScrollY) {
+        setActiveIndex(1) // 向下滚动时设置activeIndex为1
+      } else {
+        setActiveIndex(0) // 向上滚动时设置activeIndex为0
       }
-    }
+      prevScrollY = currentScrollY
+    }, 200)
 
     if (isBrowser) {
       window.addEventListener('scroll', handleScroll)
@@ -140,7 +133,7 @@ const Header = props => {
       {/* 顶部导航菜单栏 */}
       <nav
         id='nav'
-        className={`z-20 h-16 top-0 w-full duration-300 transition-all
+        className={`z-50 h-16 top-0 w-full duration-300 transition-all prevent-scroll-jump
             ${fixedNav ? 'fixed' : 'relative bg-transparent'} 
             ${textWhite ? 'text-white ' : 'text-black dark:text-white'}  
             ${navBgWhite ? 'bg-white dark:bg-[#18171d] shadow' : 'bg-transparent'}`}>
@@ -174,7 +167,7 @@ const Header = props => {
                 <DarkModeButton {...props} />
               </div>
             )}
-            <ReadingProgress />
+            <ReadingProgress title={props.post?.title || siteConfig('TITLE')} />
 
             {/* 移动端菜单按钮 */}
             <div

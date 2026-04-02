@@ -20,7 +20,6 @@ export async function getStaticProps(req) {
 
   const from = 'tag-index-props'
   const props = await fetchGlobalAllData({ from, locale })
-  delete props.allPages
   return {
     props,
     revalidate: process.env.EXPORT

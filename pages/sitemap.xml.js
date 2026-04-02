@@ -43,8 +43,13 @@ function generateLocalesSitemap(link, allPages, locale) {
     link = link.slice(0, -1)
   }
 
-  if (locale && locale.length > 0 && locale.indexOf('/') !== 0) {
-    locale = '/' + locale
+  // 只在locale有实际值时添加前缀斜杠
+  if (locale && locale.length > 0) {
+    if (locale.indexOf('/') !== 0) {
+      locale = '/' + locale
+    }
+  } else {
+    locale = ''
   }
   const dateNow = new Date().toISOString().split('T')[0]
   const defaultFields = [
@@ -89,12 +94,16 @@ function generateLocalesSitemap(link, allPages, locale) {
     allPages
       ?.filter(p => p.status === BLOG.NOTION_PROPERTY_NAME.status_publish)
       ?.map(post => {
-        const slugWithoutLeadingSlash = post?.slug.startsWith('/')
+        const slugWithoutLeadingSlash = post?.slug?.startsWith('/')
           ? post?.slug?.slice(1)
           : post.slug
+        const postDate = new Date(post?.publishDay)
+        const lastmod = isNaN(postDate.getTime())
+          ? dateNow
+          : postDate.toISOString().split('T')[0]
         return {
           loc: `${link}${locale}/${slugWithoutLeadingSlash}`,
-          lastmod: new Date(post?.publishDay).toISOString().split('T')[0],
+          lastmod,
           changefreq: 'daily',
           priority: '0.7'
         }
