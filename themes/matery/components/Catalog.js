@@ -76,7 +76,7 @@ const Catalog = ({ toc }) => {
         ref={tRef}>
         <nav className='h-full  text-black'>
           {toc.map(tocItem => {
-            const id = uuidToId(tocItem.id)
+            const id = uuidToId(tocItem.id || '')
             tocIds.push(id)
             return (
               <a

@@ -20,5 +20,12 @@ module.exports = {
     'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', // 懒加载占位图片地址，支持base64或url
   IMG_URL_TYPE: process.env.NEXT_PUBLIC_IMG_TYPE || 'Notion', // 此配置已失效，请勿使用；AMAZON方案不再支持，仅支持Notion方案。 ['Notion','AMAZON'] 站点图片前缀 默认 Notion:(https://notion.so/images/xx) ， AMAZON(https://s3.us-west-2.amazonaws.com/xxx)
   IMG_SHADOW: process.env.NEXT_PUBLIC_IMG_SHADOW || false, // 文章图片是否自动添加阴影
-  IMG_COMPRESS_WIDTH: process.env.NEXT_PUBLIC_IMG_COMPRESS_WIDTH || 800 // Notion图片压缩宽度
+  IMG_COMPRESS_WIDTH: process.env.NEXT_PUBLIC_IMG_COMPRESS_WIDTH || 800, // Notion图片压缩宽度
+
+  // 图片圆角配置
+  IMG_ROUNDED: process.env.NEXT_PUBLIC_IMG_ROUNDED || true, // 是否启用图片圆角
+  IMG_ROUNDED_RADIUS: process.env.NEXT_PUBLIC_IMG_ROUNDED_RADIUS || '12px', // 图片圆角大小
+
+  // 阅读进度保存
+  READING_PROGRESS_SAVE: process.env.NEXT_PUBLIC_READING_PROGRESS_SAVE || true // 是否保存阅读进度，再次打开时可恢复
 }

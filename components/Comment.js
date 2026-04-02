@@ -42,7 +42,13 @@ const Comment = ({ frontMatter, className }) => {
       observer.observe(commentRef.current)
     }
 
+    // 预加载：2秒后自动加载评论
+    const timer = setTimeout(() => {
+      setShouldLoad(true)
+    }, 2000)
+
     return () => {
+      clearTimeout(timer)
       if (commentRef.current) {
         observer.unobserve(commentRef.current)
       }
