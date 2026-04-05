@@ -23,6 +23,7 @@ const customJestConfig = {
     '^@/types/(.*)$': '<rootDir>/types/$1',
     '^@/conf/(.*)$': '<rootDir>/conf/$1',
     '^@/themes/(.*)$': '<rootDir>/themes/$1',
+    '^@theme-components$': '<rootDir>/themes/__mocks__/theme-components.js',
   },
   
   // Test environment

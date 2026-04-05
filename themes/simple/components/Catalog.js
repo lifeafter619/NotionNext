@@ -41,7 +41,7 @@ const Catalog = ({ post }) => {
       }
       setActiveSection(currentSectionId)
       const index = post?.toc?.findIndex(
-        obj => uuidToId(obj.id) === currentSectionId
+        obj => uuidToId(obj.id || '') === currentSectionId
       )
       tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
     }, throttleMs)
@@ -70,7 +70,7 @@ const Catalog = ({ post }) => {
         ref={tRef}>
         <nav className='h-full  text-black'>
           {post?.toc?.map(tocItem => {
-            const id = uuidToId(tocItem.id)
+            const id = uuidToId(tocItem.id || '')
             return (
               <a
                 key={id}

@@ -288,22 +288,19 @@ const nextConfig = {
 
     // 性能优化配置
     if (!dev) {
-      // 生产环境优化
+      // 生产环境优化：保留Next.js默认splitChunks配置，仅添加额外的分割策略
       config.optimization = {
         ...config.optimization,
         splitChunks: {
-          chunks: 'all',
+          ...config.optimization.splitChunks,
           cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
+            ...config.optimization.splitChunks?.cacheGroups,
+            // 将大型第三方库单独分割
+            notionRenderer: {
+              test: /[\\/]node_modules[\\/](react-notion-x)[\\/]/,
+              name: 'notion-renderer',
               chunks: 'all',
-            },
-            common: {
-              name: 'common',
-              minChunks: 2,
-              chunks: 'all',
-              enforce: true,
+              priority: 30,
             },
           },
         },
@@ -322,6 +319,17 @@ const nextConfig = {
       path.resolve(__dirname, 'node_modules'),
       'node_modules'
     ]
+
+    // 客户端构建时，忽略 Node.js 内置模块（如 ioredis 依赖的 dns/net/tls）
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        dns: false,
+        net: false,
+        tls: false,
+        fs: false
+      }
+    }
 
     return config
   }

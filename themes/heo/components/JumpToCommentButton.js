@@ -12,16 +12,20 @@ const JumpToCommentButton = () => {
   }
 
   function navToComment() {
-    if (document.getElementById('comment')) {
-      window.scrollTo({ top: document.getElementById('comment').offsetTop, behavior: 'smooth' })
+    const commentElement = document.getElementById('post-comments')
+    if (commentElement) {
+      // 这里的 80 是顶部导航栏的高度，可以根据实际情况调整
+      const top = commentElement.getBoundingClientRect().top + window.scrollY - 80
+      window.scrollTo({ top, behavior: 'smooth' })
+      setTimeout(() => {
+        // 延时再滚一次，防止懒加载导致的定位偏差
+        const top2 = commentElement.getBoundingClientRect().top + window.scrollY - 80
+        window.scrollTo({ top: top2, behavior: 'smooth' })
+      }, 500)
     }
-    // 兼容性不好
-    // const commentElement = document.getElementById('comment')
-    // if (commentElement) {
-    // commentElement?.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
   }
 
-  return (<div className='flex space-x-1 items-center justify-center transform hover:scale-105 duration-200 w-7 h-7 text-center' onClick={navToComment} >
+  return (<div className='flex space-x-1 items-center justify-center transform hover:scale-105 duration-200 w-7 h-7 text-center cursor-pointer' onClick={navToComment} >
     <i className='fas fa-comment text-xs' />
   </div>)
 }
