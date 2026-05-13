@@ -31,10 +31,10 @@ const CONFIG = {
   NEXT_MENU_ARCHIVE: true, // 显示归档
   NEXT_MENU_SEARCH: true, // 显示搜索
 
-  NEXT_WIDGET_TO_TOP: true, // 是否显示回顶
-  NEXT_WIDGET_TO_BOTTOM: false, // 显示回底
-  NEXT_WIDGET_DARK_MODE: false, // 显示日间/夜间模式切换
-  NEXT_WIDGET_TOC: true, // 移动端显示悬浮目录
+  WIDGET_TO_TOP: true, // 是否显示回顶
+  WIDGET_TO_BOTTOM: false, // 显示回底
+  WIDGET_DARK_MODE: false, // 显示日间/夜间模式切换
+  WIDGET_TOC: true, // 移动端显示悬浮目录
 
   NEXT_ARTICLE_RELATE_POSTS: true, // 相关文章推荐
   NEXT_ARTICLE_COPYRIGHT: true, // 文章版权声明

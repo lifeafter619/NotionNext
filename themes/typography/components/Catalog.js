@@ -61,7 +61,7 @@ const Catalog = ({ post }) => {
         
         // 查找目录中对应的索引并滚动
         const index = post?.toc?.findIndex(
-          obj => uuidToId(obj.id) === currentSectionId
+          obj => uuidToId(obj.id || '') === currentSectionId
         )
         
         if (index !== -1 && tRef?.current) {
@@ -103,7 +103,7 @@ const Catalog = ({ post }) => {
         ref={tRef}>
         <nav className='h-full text-black group'>
           {post?.toc?.map(tocItem => {
-            const id = uuidToId(tocItem.id)
+            const id = uuidToId(tocItem.id || '')
             return (
               <a
                 key={id}

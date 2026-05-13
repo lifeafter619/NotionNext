@@ -32,8 +32,6 @@ const Style = () => {
       }
 
       .today-card-cover {
-        -webkit-mask-image: linear-gradient(to top, transparent 5%, black 70%);
-        mask-image: linear-gradient(to top, transparent 5%, black 70%);
       }
 
       .recent-top-post-group::-webkit-scrollbar {
@@ -51,6 +49,7 @@ const Style = () => {
       // 标签滚动动画
       .tags-group-wrapper {
         animation: rowup 60s linear infinite;
+        will-change: transform;
       }
 
       @keyframes rowup {

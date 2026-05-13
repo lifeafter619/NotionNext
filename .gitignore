@@ -57,3 +57,11 @@ package-lock.json
 .perf/
 tsconfig.tsbuildinfo
 webpack-internal:/
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+
+# Verification and temp files
+validation-report.json
+*.pyc
+__pycache__/

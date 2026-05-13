@@ -3,6 +3,7 @@ import LazyImage from '@/components/LazyImage'
 import NotionIcon from '@/components/NotionIcon'
 import WordCount from '@/components/WordCount'
 import { siteConfig } from '@/lib/config'
+import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import SmartLink from '@/components/SmartLink'
 import WavesArea from './WavesArea'
@@ -13,12 +14,24 @@ import WavesArea from './WavesArea'
  * @returns
  */
 export default function PostHeader({ post, siteInfo, isDarkMode }) {
+  const { setOnLoading } = useGlobal()
+
   if (!post) {
     return <></>
   }
   // 文章头图
   const headerImage = post?.pageCover ? post.pageCover : siteInfo?.pageCover
   const ANALYTICS_BUSUANZI_ENABLE = siteConfig('ANALYTICS_BUSUANZI_ENABLE')
+
+  // 封面图加载完成或出错后隐藏加载指示器
+  const handleCoverLoad = () => {
+    setOnLoading(false)
+  }
+
+  const handleCoverError = () => {
+    setOnLoading(false)
+  }
+
   return (
     <div
       id='post-bg'
@@ -49,6 +62,8 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             id='post-cover'
             className='w-full h-full object-cover max-h-[50rem] min-w-[50vw] min-h-[20rem]'
             src={headerImage}
+            onLoad={handleCoverLoad}
+            onError={handleCoverError}
           />
         </div>
 
@@ -134,6 +149,66 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                 <span className='mr-2 busuanzi_value_page_pv' />
               </div>
             )}
+
+            {/* 字体大小调节 */}
+            <div className='flex items-center gap-2 pl-1 mr-2'>
+              <i className='fa-solid fa-font text-xs' />
+              <input
+                type='range'
+                min='14'
+                max='24'
+                defaultValue='18'
+                step='1'
+                className='w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
+                onChange={(e) => {
+                  const val = e.target.value
+                  const article = document.getElementById('notion-article')
+                  if (article) {
+                    article.style.fontSize = `${val}px`
+                  }
+                  const notionElements = document.querySelectorAll(
+                    '#notion-article .notion'
+                  )
+                  if (notionElements) {
+                    notionElements.forEach(e => {
+                      e.style.fontSize = `${val}px`
+                    })
+                  }
+                }}
+              />
+              <i className='fa-solid fa-font' />
+            </div>
+
+            {/* 文章内搜索框 */}
+            <div className='flex items-center pl-1 mr-2'>
+              <div className='relative group'>
+                <input
+                  type='text'
+                  placeholder='在文中搜索...'
+                  className='w-24 focus:w-40 transition-all duration-300 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const val = e.target.value
+                      if (val) {
+                        // 跳转到当前页面的 keyword 参数，触发 SearchHighlightNav
+                        window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
+                      }
+                    }
+                  }}
+                />
+                <i
+                    className='fa-solid fa-magnifying-glass absolute right-2 top-1.5 text-gray-400 text-xs cursor-pointer'
+                    onClick={(e) => {
+                        const input = e.target.previousElementSibling
+                        const val = input.value
+                        if (val) {
+                            window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
+                        }
+                    }}
+                ></i>
+              </div>
+            </div>
+
           </section>
         </div>
 

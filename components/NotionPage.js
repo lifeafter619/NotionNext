@@ -1,12 +1,19 @@
 import { siteConfig } from '@/lib/config'
 import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import NotionLink from '@/components/NotionLink'
-import { isBrowser, loadExternalResource } from '@/lib/utils'
 import mediumZoom from '@fisch0920/medium-zoom'
+import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
+import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
-import { useEffect, useRef } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import { NotionRenderer } from 'react-notion-x'
+
+// 阅读进度保存组件
+const ReadingPositionSaver = dynamic(
+  () => import('@/components/ReadingPositionSaver'),
+  { ssr: false }
+)
 
 /**
  * 整个站点的核心组件
@@ -19,9 +26,104 @@ const NotionPage = ({ post, className }) => {
   const POST_DISABLE_GALLERY_CLICK = siteConfig('POST_DISABLE_GALLERY_CLICK')
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
   const SPOILER_TEXT_TAG = siteConfig('SPOILER_TEXT_TAG')
-
-  const zoomRef = useRef(null)
   const IMAGE_ZOOM_IN_WIDTH = siteConfig('IMAGE_ZOOM_IN_WIDTH', 1200)
+  const READING_PROGRESS_SAVE = siteConfig('READING_PROGRESS_SAVE', true)
+
+  // 使用全局图片查看器
+  const { openViewer } = useImageViewerContext()
+
+  // 检查是否包含代码块，优化PrismMac加载
+  const hasCode = useMemo(() => {
+      // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象
+      const blockMap = post?.blockMap?.block || post?.block
+      if (!blockMap) return false
+      return Object.values(blockMap).some(block => block.value?.type === 'code')
+  }, [post])
+
+  // 处理图片点击事件
+  const handleImageClick = useCallback(
+    e => {
+      const target = e.target
+      if (target.tagName === 'IMG' && target.closest('.notion-asset-wrapper')) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        // 收集所有文章内图片 (排除侧栏和其他非文章主体内容)
+        // 使用更精确的选择器，或者过滤掉包含 wow fadeInUp 类（如果是侧栏元素特征）的元素
+        // 但 wow fadeInUp 通常是动画类，文章内图片也可能有。
+        // 根据用户反馈 "wow fadeInUp 这个里面，也就是侧栏中出现的图片"
+        // 我们可以检查元素的祖先是否包含侧栏特定的类名，例如 #side-bar (如果存在)
+        // 或者只选择 #notion-article .notion-page-content img (如果结构如此)
+        // 目前 #notion-article 包含 NotionRenderer，通常包含文章主体。
+        // 如果侧栏图片混入，可能是因为 selector 选到了不该选的。
+        // 我们这里加一个简单的过滤：排除 sidebar 内的图片。
+        // 假设侧栏 id 是 sideRight 或 side-bar。
+
+        let allImages = Array.from(document.querySelectorAll('#notion-article .notion-asset-wrapper img'))
+
+        // 过滤掉位于侧栏中的图片 (如果侧栏不幸被包含在 #notion-article 中，或者有重叠)
+        // 通常 #notion-article 是纯文章内容。如果用户说 "wow fadeInUp 里面... 侧栏中出现的图片"
+        // 可能侧栏的部分组件被错误地渲染到了 article 区域，或者选择器范围太大。
+        // 无论如何，我们可以过滤掉那些 offsetParent 为 null (不可见) 或者在特定容器内的图片。
+
+        allImages = allImages.filter(img => {
+            const sideRight = document.getElementById('sideRight')
+            const sideBar = document.getElementById('sideBar') // 假设 ID
+            // 如果图片在侧栏内，则排除
+            if (sideRight && sideRight.contains(img)) return false
+            if (sideBar && sideBar.contains(img)) return false
+            return true
+        })
+
+        const imageList = allImages.map(img => {
+            const src = getImageSrc(img)
+            let highResSrc = src
+            try {
+               const urlObj = new URL(src)
+               // Remove resize parameters to get high quality image
+               urlObj.searchParams.delete('width')
+               urlObj.searchParams.delete('height')
+               urlObj.searchParams.delete('quality')
+               urlObj.searchParams.delete('fmt')
+               urlObj.searchParams.delete('fm') // Unsplash
+               urlObj.searchParams.delete('crop')
+               urlObj.searchParams.delete('fit')
+
+               // Special handling for Unsplash to ensure high res
+               if (src.includes('unsplash.com')) {
+                  urlObj.searchParams.set('q', '100') // Set max quality
+               }
+
+               highResSrc = urlObj.toString()
+            } catch (e) {
+               // ignore
+            }
+            return {
+                src,
+                alt: img.getAttribute('alt') || '',
+                highResSrc
+            }
+        })
+
+        const currentSrc = getImageSrc(target)
+        // 修正：确保找到正确的索引
+        // 有时候 src 可能经过了处理，这里尝试更宽松的匹配，或者回退到 0
+        let currentIndex = imageList.findIndex(item => item.src === currentSrc)
+        if (currentIndex === -1) {
+            // 尝试通过 highResSrc 匹配 (假设 target 也是原始链接)
+            currentIndex = imageList.findIndex(item => item.highResSrc === currentSrc)
+        }
+        if (currentIndex === -1) {
+            currentIndex = 0 // Fallback
+        }
+
+        // 传递图片列表和当前索引
+        openViewer(imageList, currentIndex)
+      }
+    },
+    [openViewer]
+  )
+
   // 页面首次打开时执行的勾子
   useEffect(() => {
     // 检测当前的url并自动滚动到对应目标
@@ -106,8 +208,7 @@ const NotionPage = ({ post, className }) => {
     }
   }, [post])
 
-  // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
-  // console.log('NotionPage render with post:', post);
+  const cleanBlockMap = post?.blockMap ? cleanBlocksWithWarn(post.blockMap) : post?.blockMap;
 
   return (
     <div
@@ -131,6 +232,7 @@ const NotionPage = ({ post, className }) => {
       <AdEmbed />
       {hasCodeBlock(post?.blockMap) && <PrismMac />}
     </div>
+    </>
   )
 }
 
@@ -156,17 +258,26 @@ const processDisableDatabaseUrl = () => {
 }
 
 /**
- * gallery视图，点击后是放大图片还是跳转到gallery的内部页面
+ * gallery视图，点击后是放大图片
  */
-const processGalleryImg = zoom => {
+const processGalleryImg = (openViewer, imageZoomWidth) => {
   setTimeout(() => {
     if (isBrowser) {
       const imgList = document?.querySelectorAll(
         '.notion-collection-card-cover img'
       )
-      if (imgList && zoom) {
+      if (imgList) {
         for (let i = 0; i < imgList.length; i++) {
-          zoom.attach(imgList[i])
+          const img = imgList[i]
+          img.style.cursor = 'zoom-in'
+          img.addEventListener('click', e => {
+            e.preventDefault()
+            e.stopPropagation()
+            const src = getImageSrc(img)
+            const highResSrc = compressImage(src, imageZoomWidth)
+            const alt = img.getAttribute('alt') || ''
+            openViewer(highResSrc, alt)
+          })
         }
       }
 
@@ -204,28 +315,6 @@ const autoScrollToHash = () => {
 const mapPageUrl = id => {
   // return 'https://www.notion.so/' + id.replace(/-/g, '')
   return '/' + id.replace(/-/g, '')
-}
-
-/**
- * 缩放
- * @returns
- */
-function getMediumZoomMargin() {
-  const width = window.innerWidth
-
-  if (width < 500) {
-    return 8
-  } else if (width < 800) {
-    return 20
-  } else if (width < 1280) {
-    return 30
-  } else if (width < 1600) {
-    return 40
-  } else if (width < 1920) {
-    return 48
-  } else {
-    return 72
-  }
 }
 
 // 代码
