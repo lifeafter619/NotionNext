@@ -1,6 +1,7 @@
 import Tabs from '@/components/Tabs'
 import { siteConfig } from '@/lib/config'
 import { isBrowser, isSearchEngineBot } from '@/lib/utils'
+import { stripTransientQueryParamsFromAsPath } from '@/lib/utils/stripTransientUrlParams'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
@@ -55,19 +56,29 @@ const Comment = ({ frontMatter, className }) => {
     }
   }, [frontMatter])
 
-  // 当连接中有特殊参数时跳转到评论区
-  if (
-    isBrowser &&
-    ('giscus' in router.query || router.query.target === 'comment')
-  ) {
-    setTimeout(() => {
-      const url = router.asPath.replace('?target=comment', '')
-      history.replaceState({}, '', url)
-      document
-        ?.getElementById('comment')
-        ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    }, 1000)
-  }
+  useEffect(() => {
+    if (!isBrowser || !router.isReady) {
+      return
+    }
+    const hasGiscus = 'giscus' in router.query
+    const scrollComment = router.query.target === 'comment'
+    if (!hasGiscus && !scrollComment) {
+      return
+    }
+    const cleanPath = stripTransientQueryParamsFromAsPath(router.asPath)
+    window.history.replaceState(window.history.state, '', cleanPath)
+    router
+      .replace(cleanPath, undefined, { scroll: false, shallow: true })
+      .catch(() => {})
+    if (scrollComment || hasGiscus) {
+      const t = window.setTimeout(() => {
+        document
+          ?.getElementById('comment')
+          ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      }, 400)
+      return () => window.clearTimeout(t)
+    }
+  }, [router.isReady, router.asPath, router.query])
 
   if (!frontMatter) {
     return null

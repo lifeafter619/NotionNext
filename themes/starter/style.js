@@ -204,6 +204,18 @@ const Style = () => {
   height: auto;
   width: auto;
 }
+
+  /* 正文（Notion 文章 / 仪表盘页）：限制最大宽度，兼顾表格/图片与阅读行宽 */
+  #theme-starter #article-wrapper {
+    max-width: 64rem;
+  }
+
+  /* 全站 container：xl 及以上略窄于满屏，接近主题默认版心（1140px） */
+  @media (min-width: 1140px) {
+    #theme-starter .container {
+      max-width: 72rem;
+    }
+  }
   `}</style>
 }
 

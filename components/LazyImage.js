@@ -1,6 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import Head from 'next/head'
-import { useRef, useState, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * 图片懒加载
@@ -13,6 +13,7 @@ export default function LazyImage({
   id,
   src,
   alt,
+  fallbackSrc,
   placeholderSrc,
   className,
   width,
@@ -29,16 +30,51 @@ export default function LazyImage({
   const [isLoaded, setIsLoaded] = useState(false)
   const imageRef = useRef(null)
 
-  const handleImageLoaded = (e) => {
-    setIsLoaded(true)
+  /**
+   * 占位图加载成功
+   */
+  const handleThumbnailLoaded = () => {
     if (typeof onLoad === 'function') {
-      onLoad(e)
+      // onLoad() // 触发传递的onLoad回调函数
     }
   }
 
+  const handleImageError = useCallback(() => {
+    if (imageRef.current) {
+      // 优先回退 fallbackSrc，再尝试 placeholderSrc，最后 defaultPlaceholderSrc
+      if (imageRef.current.src !== fallbackSrc && fallbackSrc) {
+        imageRef.current.src = fallbackSrc
+      } else if (imageRef.current.src !== placeholderSrc && placeholderSrc) {
+        imageRef.current.src = placeholderSrc
+      } else {
+        imageRef.current.src = defaultPlaceholderSrc
+      }
+      imageRef.current.classList.remove('lazy-image-placeholder')
+    }
+  }, [defaultPlaceholderSrc, fallbackSrc, placeholderSrc])
+
   useEffect(() => {
-    if (imageRef.current && imageRef.current.complete) {
-      handleImageLoaded()
+    const adjustedImageSrc = adjustImgSize(src, maxWidth) || defaultPlaceholderSrc
+    const imageElement = imageRef.current
+    const handleImageLoaded = () => {
+      if (typeof onLoad === 'function') {
+        onLoad()
+      }
+      if (imageRef.current) {
+        imageRef.current.classList.remove('lazy-image-placeholder')
+      }
+    }
+
+    // 如果是优先级图片，直接加载
+    if (priority) {
+      const img = new Image()
+      img.src = adjustedImageSrc
+      img.onload = () => {
+        setCurrentSrc(adjustedImageSrc)
+        handleImageLoaded(adjustedImageSrc)
+      }
+      img.onerror = handleImageError
+      return
     }
   }, [])
 
@@ -48,16 +84,54 @@ export default function LazyImage({
     } else {
       e.target.src = defaultPlaceholderSrc
     }
-    if (typeof onError === 'function') {
-      onError(e)
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            // 预加载图片
+            const img = new Image()
+            // 设置图片解码优先级
+            if ('decoding' in img) {
+              img.decoding = 'async'
+            }
+            img.src = adjustedImageSrc
+            img.onload = () => {
+              setCurrentSrc(adjustedImageSrc)
+              handleImageLoaded(adjustedImageSrc)
+            }
+            img.onerror = handleImageError
+
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      {
+        rootMargin: siteConfig('LAZY_LOAD_THRESHOLD', '200px'),
+        threshold: 0.1
+      }
+    )
+
+    if (imageElement) {
+      observer.observe(imageElement)
     }
   }
 
-  // 构造 srcset 以支持响应式图片加载
-  const generateSrcSet = (imageSrc) => {
-    if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
-      return undefined
+    return () => {
+      if (imageElement) {
+        observer.unobserve(imageElement)
+      }
     }
+  }, [
+    src,
+    maxWidth,
+    priority,
+    defaultPlaceholderSrc,
+    fallbackSrc,
+    handleImageError,
+    onLoad,
+    placeholderSrc
+  ])
 
     // 定义常用的图片宽度断点
     const breakpoints = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840]
@@ -106,9 +180,9 @@ export default function LazyImage({
   return (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img {...imgProps} />
-      {/* 预加载优先级高的图片 */}
-      {priority && baseSrc && (
+      <img alt={imgProps.alt} {...imgProps} />
+      {/* 预加载 */}
+      {priority && (
         <Head>
           <link rel='preload' as='image' href={baseSrc} imagesrcset={srcSet} imagesizes={imgProps.sizes} />
         </Head>

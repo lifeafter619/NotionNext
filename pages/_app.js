@@ -11,7 +11,7 @@ import { GlobalContextProvider } from '@/lib/global'
 import { ImageViewerProvider } from '@/lib/ImageViewerContext'
 import { getBaseLayoutByTheme } from '@/themes/theme'
 import { useRouter } from 'next/router'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { getQueryParam } from '../lib/utils'
 
 // 各种扩展插件 这个要阻塞引入
@@ -35,13 +35,35 @@ const MyApp = ({ Component, pageProps }) => {
   useAdjustStyle()
 
   const route = useRouter()
+  const queryTheme = getQueryParam(route.asPath, 'theme')
+  const notionTheme = pageProps?.NOTION_CONFIG?.THEME
+  const configTheme = BLOG.THEME
   const theme = useMemo(() => {
-    return (
-      getQueryParam(route.asPath, 'theme') ||
-      pageProps?.NOTION_CONFIG?.THEME ||
-      BLOG.THEME
+    return queryTheme || notionTheme || configTheme
+  }, [queryTheme, notionTheme, configTheme])
+
+  useEffect(() => {
+    const source = queryTheme
+      ? 'url:theme'
+      : notionTheme
+        ? 'notion:config'
+        : 'blog/env:config'
+    console.log(
+      '[ThemeResolver][runtime-final]',
+      JSON.stringify(
+        {
+          note: 'This is the final theme used for rendering.',
+          configTheme,
+          notionTheme: notionTheme || null,
+          queryTheme: queryTheme || null,
+          finalTheme: theme,
+          source
+        },
+        null,
+        2
+      )
     )
-  }, [route])
+  }, [configTheme, notionTheme, queryTheme, theme])
 
   // 整体布局
   const GLayout = useCallback(

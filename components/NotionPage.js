@@ -1,5 +1,7 @@
 import { siteConfig } from '@/lib/config'
 import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
+import NotionLink from '@/components/NotionLink'
+import mediumZoom from '@fisch0920/medium-zoom'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
@@ -132,15 +134,64 @@ const NotionPage = ({ post, className }) => {
   useEffect(() => {
     // 相册视图点击禁止跳转，只能放大查看图片
     if (POST_DISABLE_GALLERY_CLICK) {
-      // 针对页面中的gallery视图，点击后是放大图片
-      processGalleryImg(openViewer, IMAGE_ZOOM_IN_WIDTH)
+      if (!zoomRef.current && isBrowser) {
+        zoomRef.current = mediumZoom({
+          background: 'rgba(0, 0, 0, 0.2)',
+          margin: getMediumZoomMargin()
+        })
+      }
+      // 针对页面中的gallery视图，点击后是放大图片还是跳转到gallery的内部页面
+      processGalleryImg(zoomRef?.current)
     }
 
     // 页内数据库点击禁止跳转，只能查看
     if (POST_DISABLE_DATABASE_CLICK) {
       processDisableDatabaseUrl()
     }
-  }, [post, POST_DISABLE_GALLERY_CLICK, POST_DISABLE_DATABASE_CLICK, openViewer, IMAGE_ZOOM_IN_WIDTH])
+
+    /**
+     * 放大查看图片时替换成高清图像
+     */
+    const articleRoot =
+      document.getElementById('notion-article') || document.body
+    const hasAnyImage = Boolean(articleRoot.querySelector('img'))
+    if (!hasAnyImage) {
+      return
+    }
+
+    const observer = new MutationObserver((mutationsList, observer) => {
+      mutationsList.forEach(mutation => {
+        if (
+          mutation.type === 'attributes' &&
+          mutation.attributeName === 'class'
+        ) {
+          if (mutation.target.classList.contains('medium-zoom-image--opened')) {
+            // 等待动画完成后替换为更高清的图像
+            setTimeout(() => {
+              // 获取该元素的 src 属性
+              const src = mutation?.target?.getAttribute('src')
+              //   替换为更高清的图像
+              mutation?.target?.setAttribute(
+                'src',
+                compressImage(src, IMAGE_ZOOM_IN_WIDTH)
+              )
+            }, 800)
+          }
+        }
+      })
+    })
+
+    // 监视正文容器，避免对整个 document.body 做高开销监听
+    observer.observe(articleRoot, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ['class']
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [post])
 
   useEffect(() => {
     // Spoiler文本功能
@@ -155,89 +206,43 @@ const NotionPage = ({ post, className }) => {
         })
       })
     }
-
-    // 查找所有具有 'notion-collection-page-properties' 类的元素,删除notion自带的页面properties
-    const timer = setTimeout(() => {
-      // 查找所有具有 'notion-collection-page-properties' 类的元素
-      const elements = document.querySelectorAll(
-        '.notion-collection-page-properties'
-      )
-
-      // 遍历这些元素并将其从 DOM 中移除
-      elements?.forEach(element => {
-        element?.remove()
-      })
-    }, 1000) // 1000 毫秒 = 1 秒
-
-    // 清理定时器，防止组件卸载时执行
-    return () => clearTimeout(timer)
   }, [post])
 
   const cleanBlockMap = post?.blockMap ? cleanBlocksWithWarn(post.blockMap) : post?.blockMap;
 
   return (
-    <>
-      <div
-        id='notion-article'
-        className={`mx-auto overflow-hidden ${className || ''}`}
-        onClick={handleImageClick}>
-        <NotionRenderer
-          recordMap={cleanBlockMap}
-          mapPageUrl={mapPageUrl}
-          mapImageUrl={mapImgUrl}
-          components={{
-            Code,
-            Collection,
-            Equation,
-            Modal,
-            Pdf,
-            Tweet
-          }}
-        />
+    <div
+      id='notion-article'
+      className={`mx-auto overflow-hidden ${className || ''}`}>
+      <NotionRenderer
+        recordMap={post?.blockMap}
+        mapPageUrl={mapPageUrl}
+        mapImageUrl={mapImgUrl}
+        components={{
+          Code,
+          Collection,
+          Equation,
+          Link: NotionLink,
+          Modal,
+          Pdf,
+          Tweet
+        }}
+      />
 
       <AdEmbed />
-      <PrismMac />
+      {hasCodeBlock(post?.blockMap) && <PrismMac />}
     </div>
     </>
   )
 }
 
-function cleanBlocksWithWarn(blockMap) {
-  const cleanedBlocks = {};
-  const removedBlockIds = [];
-
-  for (const [id, block] of Object.entries(blockMap.block || {})) {
-    if (!block?.value?.id) {
-      removedBlockIds.push(id);
-      continue;
-    }
-
-    const newBlock = { ...block };
-
-    if (Array.isArray(newBlock.value.content)) {
-      // 递归清理 content 中无效的 blockId
-      newBlock.value.content = newBlock.value.content.filter((cid) => {
-        if (!blockMap.block[cid]?.value?.id) {
-          removedBlockIds.push(cid);
-          return false;
-        }
-        return true;
-      });
-    }
-
-    cleanedBlocks[id] = newBlock;
-  }
-
-  if (removedBlockIds.length) {
-    console.warn('Removed invalid blocks:', removedBlockIds);
-  }
-
-  return {
-    ...blockMap,
-    block: cleanedBlocks,
-  };
+const hasCodeBlock = blockMap => {
+  const blocks = blockMap?.block
+  if (!blocks) return false
+  return Object.values(blocks).some(
+    item => item?.value?.type === 'code'
+  )
 }
-
 
 
 /**
@@ -329,7 +334,7 @@ const Equation = dynamic(
       await import('@/lib/plugins/mhchem')
       return m.Equation
     }),
-  { ssr: false }
+  { ssr: true }
 )
 
 // 原版文档

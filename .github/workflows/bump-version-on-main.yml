@@ -1,0 +1,48 @@
+# 每次向 main 推送（含合并 PR）后，自动将 package.json 最后一位小版本 +1。
+# 自动提交信息含 [skip-version]，避免无限循环。发正式版或大版本时请人工改版本号后再合并。
+
+name: Bump package version on main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-package-version-main
+  cancel-in-progress: false
+
+jobs:
+  bump-patch:
+    runs-on: ubuntu-latest
+    # 跳过自动发版机器人自己的提交，防止循环触发
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.head_commit != null &&
+       !contains(github.event.head_commit.message, '[skip-version]'))
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump package.json patch (last segment)
+        run: node scripts/bump-package-patch-version.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet package.json; then
+            echo "No version change (unexpected)."
+            exit 0
+          fi
+          NEW_VER=$(node -p "require('./package.json').version")
+          git add package.json
+          git commit -m "chore(release): bump package.json to ${NEW_VER} [skip-version]"
+          git push
