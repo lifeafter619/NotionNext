@@ -725,7 +725,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
+      const timer = setTimeout(
         () => {
           if (isBrowser) {
             const article = document.querySelector(
@@ -740,8 +740,9 @@ const LayoutSlug = props => {
         },
         waiting404
       )
+      return () => clearTimeout(timer)
     }
-  }, [post])
+  }, [post, router, waiting404])
 
   return (
     <>

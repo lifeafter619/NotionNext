@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
+import NotionLink from '@/components/NotionLink'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import 'katex/dist/katex.min.css'
@@ -189,6 +190,7 @@ const NotionPage = ({ post, className }) => {
             Code,
             Collection,
             Equation,
+            Link: NotionLink,
             Modal,
             Pdf,
             Tweet
@@ -196,8 +198,9 @@ const NotionPage = ({ post, className }) => {
         />
 
       <AdEmbed />
-      <PrismMac />
+      {hasCode && <PrismMac />}
     </div>
+    <ReadingPositionSaver postId={post?.id} enabled={READING_PROGRESS_SAVE} />
     </>
   )
 }
@@ -271,7 +274,7 @@ const processGalleryImg = (openViewer, imageZoomWidth) => {
             const src = getImageSrc(img)
             const highResSrc = compressImage(src, imageZoomWidth)
             const alt = img.getAttribute('alt') || ''
-            openViewer(highResSrc, alt)
+            openViewer([{ src, alt, highResSrc }], 0)
           })
         }
       }

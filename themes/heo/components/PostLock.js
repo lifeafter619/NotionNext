@@ -1,5 +1,5 @@
 import { useGlobal } from '@/lib/global'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * 加密文章校验组件
@@ -11,20 +11,24 @@ import { useEffect, useRef } from 'react'
 export const PostLock = props => {
   const { validPassword } = props
   const { locale } = useGlobal()
+  const [showError, setShowError] = useState(false)
+  const passwordInputRef = useRef(null)
+
   const submitPassword = () => {
-    const p = document.getElementById('password')
-    if (!validPassword(p?.value)) {
-      const tips = document.getElementById('tips')
-      if (tips) {
-        tips.innerHTML = ''
-        tips.innerHTML = `<div class='text-red-500 animate__shakeX animate__animated'>${locale.COMMON.PASSWORD_ERROR}</div>`
-      }
+    const value = passwordInputRef.current?.value
+    if (!validPassword(value)) {
+      // 触发抖动动画：先取消再加上，让 CSS 动画重新跑
+      setShowError(false)
+      // 下一帧再设 true，确保动画重启
+      requestAnimationFrame(() => setShowError(true))
+    } else {
+      setShowError(false)
     }
   }
-  const passwordInputRef = useRef(null)
+
   useEffect(() => {
-    // 选中密码输入框并将其聚焦
-    passwordInputRef.current.focus()
+    // 选中密码输入框并将其聚焦（带空保护，组件未挂载时不会崩）
+    passwordInputRef.current?.focus?.()
   }, [])
 
   return (
@@ -54,7 +58,13 @@ export const PostLock = props => {
             </i>
           </div>
         </div>
-        <div id='tips'></div>
+        <div id='tips'>
+          {showError && (
+            <div className='text-red-500 animate__shakeX animate__animated'>
+              {locale.COMMON.PASSWORD_ERROR}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * 侧边栏抽屉面板，可以从侧面拉出
@@ -15,6 +15,22 @@ const SideBarDrawer = ({
   showOnPC = false
 }) => {
   const router = useRouter()
+
+  /**
+   * 移动端：打开抽屉后同一手势会触发「幽灵点击」落在全屏遮罩上导致立刻关闭。
+   * 打开后短时间内遮罩 pointer-events: none，超时后再响应关闭。
+   */
+  const [backdropInteractive, setBackdropInteractive] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) {
+      setBackdropInteractive(false)
+      return
+    }
+    setBackdropInteractive(false)
+    const id = window.setTimeout(() => setBackdropInteractive(true), 450)
+    return () => window.clearTimeout(id)
+  }, [isOpen])
 
   useEffect(() => {
     const sideBarDrawerRouteListener = () => {
@@ -60,8 +76,14 @@ const SideBarDrawer = ({
       {/* 背景蒙版 */}
       <div
         id='sidebar-drawer-background'
-        onClick={() => switchSideDrawerVisible(false)}
-        className={`${isOpen ? 'block' : 'hidden'} fixed top-0 left-0 z-20 w-full h-full bg-black/70 transition-opacity duration-300`}
+        role='presentation'
+        onClick={() => {
+          if (!backdropInteractive) return
+          switchSideDrawerVisible(false)
+        }}
+        className={`${isOpen ? 'block' : 'hidden'} fixed top-0 left-0 z-20 w-full h-full bg-black/70 transition-opacity duration-300 ${
+          isOpen && !backdropInteractive ? 'pointer-events-none' : ''
+        }`}
       />
     </div>
   )

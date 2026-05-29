@@ -36,7 +36,7 @@ export default function FloatTocButton(props) {
   const initialDragPosRef = useRef({ x: 0, y: 0 })
   const isMouseDownRef = useRef(false)
 
-  const { post } = props
+  const { post, lock } = props
 
   const toggleToc = () => {
     // 如果正在拖拽，不触发点击
@@ -259,7 +259,7 @@ export default function FloatTocButton(props) {
     }
   }, [showOnDesktop, tocVisible])
 
-  if (!post || !post.toc || post.toc.length < 1) {
+  if (!post || lock || !post.toc || post.toc.length < 1) {
     return <></>
   }
 

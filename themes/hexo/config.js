@@ -42,6 +42,9 @@ const CONFIG = {
   HEXO_WIDGET_DARK_MODE: true, // 夜间模式
   HEXO_WIDGET_TOC: true, // 移动端悬浮目录
 
-  HEXO_THEME_COLOR: '#928CEE' // 主题色配置（默认为 #928CEE）
+  HEXO_THEME_COLOR: '#928CEE', // 主题色配置（默认为 #928CEE）
+
+  /** 文章详情页客户端切换时，主栏显示卡片+转圈占位（无全屏遮罩；已有独立 LoadingCover 的主题无需此项） */
+  HEXO_ARTICLE_ROUTE_LOADING: true
 }
 export default CONFIG
