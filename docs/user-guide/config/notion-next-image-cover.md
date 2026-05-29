@@ -1,4 +1,5 @@
 # 图片/封面管理
+
 > 迁移自：[图片/封面管理](https://docs.tangly1024.com/article/notion-next-image-cover)
 > 发布日期：2023-11-9
 > 最后编辑：2024-9-20
@@ -8,8 +9,7 @@
 ## 网站图片如何修改
 
 > **⚠️** 注意！网站图片的大小直接影响整点的性能。
-建议在保证图片清晰可见的前提下，尽可能压缩文件大小。建议调整图片尺寸并进行压缩，有条件的推荐转换成webp格式后上传。
-
+> 建议在保证图片清晰可见的前提下，尽可能压缩文件大小。建议调整图片尺寸并进行压缩，有条件的推荐转换成webp格式后上传。
 
 ### 上传网站头像
 
@@ -20,7 +20,6 @@ Notion模板中左上角的图标对应就是用户头像，可以点击 选择 
 上传成功后会影响到各个主题的头像位置，例如Hexo的头像：
 
 ![Untitled](/legacy/00cde5291e0e6480.png)
-
 
 ### 修改站点封面图
 
@@ -37,7 +36,6 @@ Notion笔记中上方封面图的右侧，点击`Change cover`
 您可以选择notion自带的Gallery画册、或者上传自己的图片，或者使用Link外部链接，以及Notion推荐的Unsplash图库
 
 ![Untitled](/legacy/d07205dfc7630da1.png)
-
 
 ### 文章的封面图
 
@@ -56,13 +54,11 @@ Notion笔记中上方封面图的右侧，点击`Change cover`
 
 ![image.png](/legacy/b060b667b3c5b3c5.png)
 
-
 ### 使用外部链接的技巧
 
 您可以在Notion中将封面设置为一个link类型，只想随机图片的api地址时，网站打开后会动态获取随机封面；若不同文章用的同一个随机api作为封面地址，每篇文章的封面也是不同的。
 
 示例：
-
 
 #### unsplash 随机api
 
@@ -78,7 +74,6 @@ Notion笔记中上方封面图的右侧，点击`Change cover`
 ![image](/legacy/7ae027b6040b432c.png)
 
 除了unsplash的api，也支持任意随机图片的api，例如这个国人开发的[图片api](https://tuapi.eees.cc/)
-
 
 ### eees国产随机图片API
 

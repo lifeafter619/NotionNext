@@ -40,9 +40,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
   return (
     <article
       className={`${COVER_HOVER_ENLARGE ? 'hover:transition-all duration-150' : ''}`}>
-      <div
-        data-wow-delay='.2s'
-        className={containerClass}>
+      <div data-wow-delay='.2s' className={containerClass}>
         {/* 图片封面 */}
         {showPageCover && (
           <SmartLink href={post?.href} passHref legacyBehavior>
@@ -64,7 +62,9 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
         {/* 文字区块 */}
         <div
           className={
-            (isDefaultStyle && POST_TWO_COLS ? '2xl:p-4 2xl:h-48 2xl:w-full' : '') +
+            (isDefaultStyle && POST_TWO_COLS
+              ? '2xl:p-4 2xl:h-48 2xl:w-full'
+              : '') +
             ` flex ${isDefaultStyle ? 'p-6' : 'p-3'} flex-col justify-between h-48 md:h-full w-full md:w-7/12`
           }>
           <header>
@@ -90,9 +90,9 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
               }>
               {siteConfig('POST_TITLE_ICON') && (
                 <NotionIcon
-                icon={post.pageIcon}
-                className="heo-icon w-6 h-6 mr-1 align-middle transform translate-y-[-8%]" // 专门为 Heo 主题的图标设置样式
-              />
+                  icon={post.pageIcon}
+                  className='heo-icon w-6 h-6 mr-1 align-middle transform translate-y-[-8%]' // 专门为 Heo 主题的图标设置样式
+                />
               )}
               <span className='menu-link '>{post.title}</span>
             </SmartLink>

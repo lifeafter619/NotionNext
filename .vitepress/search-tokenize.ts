@@ -17,7 +17,7 @@ export function cjkTokenize(text: string): string[] {
           ...s
             .split(/[\s\p{P}\p{Z}]+/u)
             .filter(Boolean)
-            .flatMap((w) => [w, w.toLowerCase()])
+            .flatMap(w => [w, w.toLowerCase()])
         )
       } else {
         tokens.push(s)

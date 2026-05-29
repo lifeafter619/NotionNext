@@ -7,13 +7,13 @@ import { siteConfig } from '@/lib/config'
 export function isCommentServiceConfigured() {
   return Boolean(
     siteConfig('COMMENT_ARTALK_SERVER') ||
-      siteConfig('COMMENT_TWIKOO_ENV_ID') ||
-      siteConfig('COMMENT_WALINE_SERVER_URL') ||
-      siteConfig('COMMENT_VALINE_APP_ID') ||
-      siteConfig('COMMENT_GISCUS_REPO') ||
-      siteConfig('COMMENT_CUSDIS_APP_ID') ||
-      siteConfig('COMMENT_UTTERRANCES_REPO') ||
-      siteConfig('COMMENT_GITALK_CLIENT_ID') ||
-      siteConfig('COMMENT_WEBMENTION_ENABLE')
+    siteConfig('COMMENT_TWIKOO_ENV_ID') ||
+    siteConfig('COMMENT_WALINE_SERVER_URL') ||
+    siteConfig('COMMENT_VALINE_APP_ID') ||
+    siteConfig('COMMENT_GISCUS_REPO') ||
+    siteConfig('COMMENT_CUSDIS_APP_ID') ||
+    siteConfig('COMMENT_UTTERRANCES_REPO') ||
+    siteConfig('COMMENT_GITALK_CLIENT_ID') ||
+    siteConfig('COMMENT_WEBMENTION_ENABLE')
   )
 }

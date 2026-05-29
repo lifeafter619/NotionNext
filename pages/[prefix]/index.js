@@ -134,7 +134,7 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params: { prefix }, locale }) {
   const props = await resolvePostProps({
     prefix,
-    locale,
+    locale
   })
 
   return {
@@ -142,10 +142,10 @@ export async function getStaticProps({ params: { prefix }, locale }) {
     revalidate: isStaticExport
       ? undefined
       : siteConfig(
-        'NEXT_REVALIDATE_SECOND',
-        BLOG.NEXT_REVALIDATE_SECOND,
-        props.NOTION_CONFIG
-      ),
+          'NEXT_REVALIDATE_SECOND',
+          BLOG.NEXT_REVALIDATE_SECOND,
+          props.NOTION_CONFIG
+        ),
     notFound: !props.post
   }
 }

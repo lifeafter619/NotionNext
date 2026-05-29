@@ -58,7 +58,8 @@ export default function LazyImage({
   }, [defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
 
   useEffect(() => {
-    const adjustedImageSrc = adjustImgSize(src, maxWidth) || defaultPlaceholderSrc
+    const adjustedImageSrc =
+      adjustImgSize(src, maxWidth) || defaultPlaceholderSrc
     const imageElement = imageRef.current
     const handleImageLoaded = () => {
       if (typeof onLoad === 'function') {
@@ -143,7 +144,10 @@ export default function LazyImage({
 
   // 构造 srcset 以支持响应式图片加载
   const generateSrcSet = imageSrc => {
-    if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
+    if (
+      !imageSrc ||
+      (!imageSrc.includes('width=') && !imageSrc.includes('w='))
+    ) {
       return undefined
     }
 

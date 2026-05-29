@@ -185,7 +185,7 @@ const ExternalPlugin = props => {
     // 执行注入脚本
     // eslint-disable-next-line no-eval
     if (GLOBAL_JS && GLOBAL_JS.trim() !== '') {
-      console.log('Inject JS:', GLOBAL_JS);
+      console.log('Inject JS:', GLOBAL_JS)
       try {
         eval(GLOBAL_JS)
       } catch (error) {
@@ -232,7 +232,11 @@ const ExternalPlugin = props => {
       {COZE_BOT_ID && <Coze />}
 
       {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && (
-        <Script id='LA_COLLECT' src='//sdk.51.la/js-sdk-pro.min.js' strategy="lazyOnload" />
+        <Script
+          id='LA_COLLECT'
+          src='//sdk.51.la/js-sdk-pro.min.js'
+          strategy='lazyOnload'
+        />
       )}
 
       {CHATBASE_ID && (
@@ -240,11 +244,11 @@ const ExternalPlugin = props => {
           <Script
             id='chatbase-embed'
             src='https://www.chatbase.co/embed.min.js'
-            strategy="lazyOnload"
+            strategy='lazyOnload'
           />
           <Script
             id='chatbase-init'
-            strategy="lazyOnload"
+            strategy='lazyOnload'
             dangerouslySetInnerHTML={{
               __html: `
                     window.chatbaseConfig = {
@@ -259,7 +263,7 @@ const ExternalPlugin = props => {
       {CLARITY_ID && (
         <Script
           id='clarity-analytics'
-          strategy="lazyOnload"
+          strategy='lazyOnload'
           dangerouslySetInnerHTML={{
             __html: `
                 (function(c, l, a, r, i, t, y) {
@@ -284,8 +288,8 @@ const ExternalPlugin = props => {
       {COMMENT_DAO_VOICE_ID && (
         <>
           <Script
-             id='daovoice-init'
-             strategy="lazyOnload"
+            id='daovoice-init'
+            strategy='lazyOnload'
             dangerouslySetInnerHTML={{
               __html: `
                 (function(i, s, o, g, r, a, m) {
@@ -309,8 +313,8 @@ const ExternalPlugin = props => {
             }}
           />
           <Script
-             id='daovoice-config'
-             strategy="lazyOnload"
+            id='daovoice-config'
+            strategy='lazyOnload'
             dangerouslySetInnerHTML={{
               __html: `
              daovoice('init', {
@@ -339,17 +343,22 @@ const ExternalPlugin = props => {
           <Script
             id='wwads-js'
             src='https://cdn.wwads.cn/js/makemoney.js'
-            strategy="lazyOnload"
+            strategy='lazyOnload'
           />
         </>
       )}
 
       {/* {COMMENT_TWIKOO_ENV_ID && <script defer src={COMMENT_TWIKOO_CDN_URL} />} */}
 
-      {COMMENT_ARTALK_SERVER && <Script src={COMMENT_ARTALK_JS} strategy="lazyOnload" />}
+      {COMMENT_ARTALK_SERVER && (
+        <Script src={COMMENT_ARTALK_JS} strategy='lazyOnload' />
+      )}
 
       {COMMENT_TIDIO_ID && (
-        <Script src={`//code.tidio.co/${COMMENT_TIDIO_ID}.js`} strategy="lazyOnload" />
+        <Script
+          src={`//code.tidio.co/${COMMENT_TIDIO_ID}.js`}
+          strategy='lazyOnload'
+        />
       )}
 
       {/* gitter聊天室 */}
@@ -357,11 +366,11 @@ const ExternalPlugin = props => {
         <>
           <Script
             src='https://sidecar.gitter.im/dist/sidecar.v1.js'
-            strategy="lazyOnload"
+            strategy='lazyOnload'
           />
           <Script
             id='gitter-init'
-            strategy="lazyOnload"
+            strategy='lazyOnload'
             dangerouslySetInnerHTML={{
               __html: `
             ((window.gitter = {}).chat = {}).options = {
@@ -377,7 +386,7 @@ const ExternalPlugin = props => {
       {ANALYTICS_BAIDU_ID && (
         <Script
           id='baidu-analytics'
-          strategy="lazyOnload"
+          strategy='lazyOnload'
           dangerouslySetInnerHTML={{
             __html: `
           var _hmt = _hmt || [];
@@ -395,9 +404,9 @@ const ExternalPlugin = props => {
       {/* 站长统计 */}
       {ANALYTICS_CNZZ_ID && (
         <Script
-           id='cnzz-analytics'
-           strategy="lazyOnload"
-           dangerouslySetInnerHTML={{
+          id='cnzz-analytics'
+          strategy='lazyOnload'
+          dangerouslySetInnerHTML={{
             __html: `
           document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_${ANALYTICS_CNZZ_ID}'%3E%3C/span%3E%3Cscript src='https://s9.cnzz.com/z_stat.php%3Fid%3D${ANALYTICS_CNZZ_ID}' type='text/javascript'%3E%3C/script%3E"));
           `
@@ -407,19 +416,23 @@ const ExternalPlugin = props => {
 
       {/* UMAMI 统计 */}
       {UMAMI_ID && (
-        <Script src={UMAMI_HOST} data-website-id={UMAMI_ID} strategy="lazyOnload" />
+        <Script
+          src={UMAMI_HOST}
+          data-website-id={UMAMI_ID}
+          strategy='lazyOnload'
+        />
       )}
 
       {/* 谷歌统计 */}
       {ANALYTICS_GOOGLE_ID && (
         <>
           <Script
-             strategy="lazyOnload"
+            strategy='lazyOnload'
             src={`https://www.googletagmanager.com/gtag/js?id=${ANALYTICS_GOOGLE_ID}`}
           />
           <Script
             id='google-analytics'
-            strategy="lazyOnload"
+            strategy='lazyOnload'
             dangerouslySetInnerHTML={{
               __html: `
                 window.dataLayer = window.dataLayer || [];
@@ -438,7 +451,7 @@ const ExternalPlugin = props => {
       {MATOMO_HOST_URL && MATOMO_SITE_ID && (
         <Script
           id='matomo-analytics'
-          strategy="lazyOnload"
+          strategy='lazyOnload'
           dangerouslySetInnerHTML={{
             __html: `
               var _paq = window._paq = window._paq || [];

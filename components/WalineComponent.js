@@ -1,4 +1,4 @@
-import  { createRef, useEffect } from 'react'
+import { createRef, useEffect } from 'react'
 import { init } from '@waline/client'
 import { useRouter } from 'next/router'
 import '@waline/client/style'
@@ -11,7 +11,7 @@ let waline = null
  * @param {*} props
  * @returns
  */
-const WalineComponent = (props) => {
+const WalineComponent = props => {
   const containerRef = createRef()
   const router = useRouter()
 
@@ -27,7 +27,8 @@ const WalineComponent = (props) => {
     mailError: '请填写正确的邮件地址',
     link: '网址',
     optional: '可选',
-    placeholder: '来叭叭，信息都不留也行~\n如果留下邮箱的话，被回复时会有📧通知~',
+    placeholder:
+      '来叭叭，信息都不留也行~\n如果留下邮箱的话，被回复时会有📧通知~',
     sofa: '来发评论吧~',
     submit: '提交~',
     like: '喜欢✪ω✪',
@@ -95,7 +96,7 @@ const WalineComponent = (props) => {
       const targetNode = document.getElementsByClassName('wl-cards')[0]
 
       // 当观察到变动时执行的回调函数
-      const mutationCallback = (mutations) => {
+      const mutationCallback = mutations => {
         for (const mutation of mutations) {
           const type = mutation.type
           if (type === 'childList') {

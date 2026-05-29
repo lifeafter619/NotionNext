@@ -52,11 +52,17 @@ async function translateBlock(block, ctx) {
 
   // 特殊处理：mermaid / plantuml 代码块同时包含可翻译的标签和严格语法。
   // 整体送入翻译模型并附带语言提示，由模型仅替换文本而保留语法结构。
-  if (type === 'code' && data?.language && TRANSLATABLE_CODE_LANGUAGES.has(data.language)) {
+  if (
+    type === 'code' &&
+    data?.language &&
+    TRANSLATABLE_CODE_LANGUAGES.has(data.language)
+  ) {
     const newData = { ...data }
     if (data.rich_text && shouldTranslateRichText(data.rich_text)) {
       const sourceText = richTextToString(data.rich_text)
-      const result = await ctx.translateText(sourceText, { hint: data.language })
+      const result = await ctx.translateText(sourceText, {
+        hint: data.language
+      })
       newData.rich_text = rebuildRichText(result.text, data.rich_text)
     }
     return cloneBlockForCreate({ ...block, code: newData })
@@ -97,7 +103,8 @@ function cloneBlockForCreate(block) {
 }
 
 function stripReadOnly(obj) {
-  if (Array.isArray(obj)) return obj.map(stripReadOnly).filter(v => v !== undefined)
+  if (Array.isArray(obj))
+    return obj.map(stripReadOnly).filter(v => v !== undefined)
   if (obj && typeof obj === 'object') {
     const out = {}
     for (const [k, v] of Object.entries(obj)) {

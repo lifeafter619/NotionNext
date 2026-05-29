@@ -1,4 +1,5 @@
 # Cusdis
+
 > 迁移自：[Cusdis](https://docs.tangly1024.com/article/notion-next-cusdis)
 > 发布日期：2023-6-27
 > 最后编辑：2024-2-2
@@ -12,9 +13,7 @@
 
 ![Untitled](/legacy/8c376b8e68078fef.png)
 
-
 ## 开始
-
 
 ### 注册Cusdis
 
@@ -54,7 +53,6 @@ The JS SDK embedded to your website is only around 5kb (gzipped). It has built-i
 
 </details>
 
-
 ### 配置NotionNext
 
 <details>
@@ -70,7 +68,6 @@ The JS SDK embedded to your website is only around 5kb (gzipped). It has built-i
 ![Untitled](/legacy/dcad7abd7327cf77.png)
 
 </details>
-
 
 ## 说明
 

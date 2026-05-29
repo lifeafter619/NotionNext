@@ -28,7 +28,8 @@ export default async function handler(req, res) {
   if (!expectedToken) {
     return res.status(503).json({
       ok: false,
-      message: 'Contribution refresh is disabled: missing CLAUDE_CONTRIBUTION_TRIGGER_TOKEN'
+      message:
+        'Contribution refresh is disabled: missing CLAUDE_CONTRIBUTION_TRIGGER_TOKEN'
     })
   }
 
@@ -38,7 +39,9 @@ export default async function handler(req, res) {
   }
 
   const shouldRevalidate = String(req.query?.revalidate || '1') !== '0'
-  const requestedPath = (Array.isArray(req.query?.path) ? req.query.path[0] : req.query?.path) || '/'
+  const requestedPath =
+    (Array.isArray(req.query?.path) ? req.query.path[0] : req.query?.path) ||
+    '/'
   const path = normalizeRevalidatePath(requestedPath)
   if (!path) {
     return res.status(400).json({

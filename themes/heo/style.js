@@ -65,4 +65,3 @@ const Style = () => {
 }
 
 export { Style }
-

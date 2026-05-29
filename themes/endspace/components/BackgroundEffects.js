@@ -16,22 +16,22 @@ const BackgroundEffects = () => {
   if (!mounted) return null
 
   return (
-    <div className="background-effects pointer-events-none fixed inset-0 z-[1] overflow-hidden">
+    <div className='background-effects pointer-events-none fixed inset-0 z-[1] overflow-hidden'>
       {/* HUD Corner Markers */}
-      <div className="hud-corner-tl" />
-      <div className="hud-corner-tr" />
-      <div className="hud-corner-bl" />
-      <div className="hud-corner-br" />
+      <div className='hud-corner-tl' />
+      <div className='hud-corner-tr' />
+      <div className='hud-corner-bl' />
+      <div className='hud-corner-br' />
 
       {/* Slow Vertical Scan Line */}
-      <div className="scan-vertical" />
+      <div className='scan-vertical' />
 
       {/* Slow Horizontal Scan Line */}
-      <div className="scan-horizontal" />
+      <div className='scan-horizontal' />
 
       {/* Corner Crosshairs */}
-      <div className="crosshair top-4 left-4" />
-      <div className="crosshair bottom-4 right-4 rotate-180" />
+      <div className='crosshair top-4 left-4' />
+      <div className='crosshair bottom-4 right-4 rotate-180' />
 
       <style jsx>{`
         /* HUD Corners */

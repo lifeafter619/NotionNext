@@ -12,7 +12,9 @@ const AdCard = () => {
         Sponsors
       </h3>
       <div className='space-y-3'>
-        {siteConfig('FUWARI_WIDGET_WWADS', true, CONFIG) && <WWAds orientation='vertical' />}
+        {siteConfig('FUWARI_WIDGET_WWADS', true, CONFIG) && (
+          <WWAds orientation='vertical' />
+        )}
         {siteConfig('FUWARI_WIDGET_ADSENSE', false, CONFIG) && <AdSlot />}
       </div>
     </section>
@@ -20,4 +22,3 @@ const AdCard = () => {
 }
 
 export default AdCard
-

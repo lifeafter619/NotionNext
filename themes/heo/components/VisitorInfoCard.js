@@ -20,12 +20,12 @@ export default function VisitorInfoCard() {
       const now = new Date()
       const hours = now.getHours()
       const minutes = now.getMinutes()
-      
+
       // 格式化时间
       const formattedHours = hours.toString().padStart(2, '0')
       const formattedMinutes = minutes.toString().padStart(2, '0')
       setCurrentTime(`${formattedHours}时${formattedMinutes}分`)
-      
+
       // 根据时间设置问候语
       if (hours >= 5 && hours < 12) {
         setGreeting('早上好~')
@@ -100,7 +100,7 @@ export default function VisitorInfoCard() {
         // 使用 vore.top API获取IP和地理位置
         const response = await fetch('https://api.vore.top/api/IPdata')
         const data = await response.json()
-        
+
         if (data.code === 200 && data.ipdata) {
           // 从返回数据中提取城市和ISP信息
           const city = data.ipdata.info2 || data.ipdata.info1 || '未知地区'
@@ -115,7 +115,8 @@ export default function VisitorInfoCard() {
         try {
           const response = await fetch('https://ipapi.co/json/')
           const data = await response.json()
-          const city = data.city || data.region || data.country_name || '未知地区'
+          const city =
+            data.city || data.region || data.country_name || '未知地区'
           setLocation(city)
         } catch (err) {
           console.warn('获取IP位置失败 (ipapi.co):', err)
@@ -142,10 +143,10 @@ export default function VisitorInfoCard() {
 
     // 初始检查
     checkBusuanzi()
-    
+
     // 创建一个MutationObserver来监听busuanzi值的变化
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
         if (mutation.target.classList.contains('busuanzi_value_page_pv')) {
           setTodayVisitors(mutation.target.textContent || '-')
         }
@@ -156,7 +157,11 @@ export default function VisitorInfoCard() {
     const timer = setTimeout(() => {
       const targetNode = document.querySelector('.busuanzi_value_page_pv')
       if (targetNode) {
-        observer.observe(targetNode, { childList: true, characterData: true, subtree: true })
+        observer.observe(targetNode, {
+          childList: true,
+          characterData: true,
+          subtree: true
+        })
         checkBusuanzi()
       }
     }, BUSUANZI_CHECK_DELAY_MS)
@@ -172,8 +177,17 @@ export default function VisitorInfoCard() {
       <div className='flex flex-col space-y-3 p-2'>
         {/* 标题 */}
         <div className='flex items-center space-x-2 text-indigo-600 dark:text-yellow-500'>
-          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+          <svg
+            className='w-5 h-5'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'>
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+            />
           </svg>
           <span className='font-bold text-sm'>访客信息</span>
         </div>
@@ -182,7 +196,11 @@ export default function VisitorInfoCard() {
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>🕐</span>
           <span className='text-sm'>
-            现在是<span className='font-semibold text-indigo-600 dark:text-yellow-500'>{currentTime}</span>，{greeting}
+            现在是
+            <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
+              {currentTime}
+            </span>
+            ，{greeting}
           </span>
         </div>
 
@@ -190,7 +208,11 @@ export default function VisitorInfoCard() {
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>📍</span>
           <span className='text-sm'>
-            欢迎来自<span className='font-semibold text-indigo-600 dark:text-yellow-500'>{location}</span>的朋友来访~
+            欢迎来自
+            <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
+              {location}
+            </span>
+            的朋友来访~
           </span>
         </div>
 
@@ -198,7 +220,11 @@ export default function VisitorInfoCard() {
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>📖</span>
           <span className='text-sm'>
-            您已经阅读了<span className='font-semibold text-indigo-600 dark:text-yellow-500'>{readingTime}</span>分钟，谢谢~
+            您已经阅读了
+            <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
+              {readingTime}
+            </span>
+            分钟，谢谢~
           </span>
         </div>
 
@@ -206,7 +232,11 @@ export default function VisitorInfoCard() {
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>👥</span>
           <span className='text-sm'>
-            您是今天的第<span className='font-semibold text-indigo-600 dark:text-yellow-500'>{todayVisitors}</span>位读者
+            您是今天的第
+            <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
+              {todayVisitors}
+            </span>
+            位读者
           </span>
         </div>
       </div>

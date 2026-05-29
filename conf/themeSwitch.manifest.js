@@ -128,8 +128,7 @@ export function getThemeSwitchMeta(themeId) {
       ? row.name.trim()
       : formatThemeId(id)
 
-  const summary =
-    typeof row.summary === 'string' ? row.summary.trim() : ''
+  const summary = typeof row.summary === 'string' ? row.summary.trim() : ''
 
   const coverPng =
     typeof row.cover === 'string' && row.cover.trim()

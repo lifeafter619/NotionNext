@@ -263,7 +263,11 @@ for (const id of ids) {
     missing.push(id)
   }
 
-  fs.writeFileSync(outPath, buildFullDoc(id, title, summary, keys, notes), 'utf8')
+  fs.writeFileSync(
+    outPath,
+    buildFullDoc(id, title, summary, keys, notes),
+    'utf8'
+  )
   console.log('wrote', outPath, keys.length, 'keys')
 }
 
@@ -277,10 +281,15 @@ const extraMd = fs
   .readdirSync(outDir)
   .filter(f => f.endsWith('.md') && f !== 'index.md' && f !== 'README.md')
   .map(f => f.replace(/\.md$/, ''))
-  .filter(id => !ids.includes(id) && !['THEMES_CATALOG', 'overview'].includes(id))
+  .filter(
+    id => !ids.includes(id) && !['THEMES_CATALOG', 'overview'].includes(id)
+  )
 
 if (extraMd.length) {
-  console.warn('warn: orphan theme docs (no themes/ folder):', extraMd.join(', '))
+  console.warn(
+    'warn: orphan theme docs (no themes/ folder):',
+    extraMd.join(', ')
+  )
 }
 
 console.log(`ok: ${ids.length} builtin themes documented`)

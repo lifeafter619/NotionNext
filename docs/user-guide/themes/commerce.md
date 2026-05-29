@@ -1,9 +1,9 @@
 # Commerce主题
+
 > 迁移自：[Commerce主题](https://docs.tangly1024.com/article/notionnext-commerce)
 > 发布日期：2024-3-24
 > 最后编辑：2024-9-12
 > 原栏目：⭐ 主题参数
-
 
 ## 主题预览
 
@@ -13,23 +13,19 @@
 
 [shuida123.com](http://shuida123.com/)
 
-
 ### 开启方式
 
 更新代码至最新的4.4.2；并配置主题为commerce即可。
 
-
 ## Commerce 主题
 
 该主题暂时没有特异功能，后期预计会加入一个多张封面图轮播的功能。
-
 
 ### 产品中心
 
 特色组件，首页会根据category分类，用一个可点击切换的tab组件展示您的文章。左侧显示目前的分类，右侧显示该分类下的所有post。
 
 ![Untitled](/legacy/536b21ad45cf95ad.png)
-
 
 ### 配置参考
 

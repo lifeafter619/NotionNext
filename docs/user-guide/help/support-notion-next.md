@@ -1,4 +1,5 @@
 # 支持NotionNext
+
 > 迁移自：[支持NotionNext](https://docs.tangly1024.com/article/support-notion-next)
 > 发布日期：2023-7-27
 > 最后编辑：2024-11-20
@@ -6,7 +7,6 @@
 > 标签：支持NotionNext
 
 > **💡** NotionNext完全开源免费，欢迎您赞助或贡献代码，支持此项目。
-
 
 ## 1. 贡献代码（PR）
 
@@ -30,13 +30,11 @@
 
 使用 NextJS + Notion API 实现的，支持多种部署方案的静态博客，无需服务器、零门槛搭建网站，为Notion和所有创作者设计。 (A static blog built with NextJS and Notion API, supporting multiple deployment options. No server required, zero threshold t...
 
-
 ## 2. 赞助
 
 您可以选择付费赞助此项目，我们将把您的产品和服务信息展示在网站的显著位置。
 
 本网站的读者和 NotionNext 的用户来自各行各业的优秀人士，人群的职业涵盖广泛，如超级个体、在校学生、UP主、博主、自由职业者、产品经理、运营人员、技术人员、独立开发者、创业者、投资人和企业家等。
-
 
 ## 3. 捐赠
 

@@ -36,15 +36,15 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `EXAMPLE_MENU_CATEGORY` | 见 config.js |
-| `EXAMPLE_MENU_TAG` | 见 config.js |
-| `EXAMPLE_MENU_ARCHIVE` | 见 config.js |
-| `EXAMPLE_MENU_SEARCH` | 见 config.js |
-| `EXAMPLE_POST_LIST_COVER` | 见 config.js |
-| `EXAMPLE_TITLE_IMAGE` | 见 config.js |
-| `EXAMPLE_ARTICLE_LAYOUT_VERTICAL` | 见 config.js |
+| 配置键                                | 说明         |
+| ------------------------------------- | ------------ |
+| `EXAMPLE_MENU_CATEGORY`               | 见 config.js |
+| `EXAMPLE_MENU_TAG`                    | 见 config.js |
+| `EXAMPLE_MENU_ARCHIVE`                | 见 config.js |
+| `EXAMPLE_MENU_SEARCH`                 | 见 config.js |
+| `EXAMPLE_POST_LIST_COVER`             | 见 config.js |
+| `EXAMPLE_TITLE_IMAGE`                 | 见 config.js |
+| `EXAMPLE_ARTICLE_LAYOUT_VERTICAL`     | 见 config.js |
 | `EXAMPLE_ARTICLE_HIDDEN_NOTIFICATION` | 见 config.js |
 
 <!-- /theme-config-table -->

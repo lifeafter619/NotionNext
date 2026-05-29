@@ -74,13 +74,17 @@ export async function getStaticProps(req) {
     const previewLimit = pLimit(
       siteConfig('POST_PREVIEW_CONCURRENCY', 5, props?.NOTION_CONFIG)
     )
-    const previewTargets = props.posts.filter(
-      post => !post.password || post.password === ''
-    ).slice(0, POST_PREVIEW_MAX_COUNT)
+    const previewTargets = props.posts
+      .filter(post => !post.password || post.password === '')
+      .slice(0, POST_PREVIEW_MAX_COUNT)
     await Promise.all(
       previewTargets.map(post =>
         previewLimit(async () => {
-          const rawBlockMap = await getPostBlocks(post.id, 'slug', POST_PREVIEW_LINES)
+          const rawBlockMap = await getPostBlocks(
+            post.id,
+            'slug',
+            POST_PREVIEW_LINES
+          )
           post.blockMap = adapterNotionBlockMap(rawBlockMap)
           if (post.blockMap?.block) {
             post.blockMap.block = formatNotionBlock(post.blockMap.block)

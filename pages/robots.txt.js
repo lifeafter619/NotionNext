@@ -21,12 +21,15 @@ export async function getServerSideProps({ req, res, locale }) {
 
   res.setHeader('Content-Type', 'text/plain')
   // Cache for 1 day
-  res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=59')
+  res.setHeader(
+    'Cache-Control',
+    'public, max-age=86400, stale-while-revalidate=59'
+  )
   res.write(content)
   res.end()
 
   return {
-    props: {},
+    props: {}
   }
 }
 

@@ -35,7 +35,7 @@ export async function getStaticProps({ params: { prefix, slug }, locale }) {
   const props = await resolvePostProps({
     prefix,
     slug,
-    locale,
+    locale
   })
 
   return {
@@ -43,10 +43,10 @@ export async function getStaticProps({ params: { prefix, slug }, locale }) {
     revalidate: isStaticExport
       ? undefined
       : siteConfig(
-        'NEXT_REVALIDATE_SECOND',
-        BLOG.NEXT_REVALIDATE_SECOND,
-        props.NOTION_CONFIG
-      ),
+          'NEXT_REVALIDATE_SECOND',
+          BLOG.NEXT_REVALIDATE_SECOND,
+          props.NOTION_CONFIG
+        ),
     notFound: !props.post
   }
 }

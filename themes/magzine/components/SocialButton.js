@@ -34,7 +34,6 @@ const SocialButton = () => {
 
   const emailIcon = useRef(null)
 
-
   return (
     <div className='w-full justify-center flex-wrap flex'>
       <div className='space-x-3 text-xl flex items-center text-white dark:text-gray-300 '>

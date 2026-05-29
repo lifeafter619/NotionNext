@@ -27,7 +27,10 @@ const normalizeMenu = links =>
         subMenus
       }
     })
-    .filter(link => link && link.show !== false && (link.href || link.subMenus?.length))
+    .filter(
+      link =>
+        link && link.show !== false && (link.href || link.subMenus?.length)
+    )
 
 export function getFuwariMenuLinks({ locale, customNav, customMenu }) {
   let links = [
@@ -74,4 +77,3 @@ export function getFuwariMenuLinks({ locale, customNav, customMenu }) {
 
   return normalizeMenu(links)
 }
-

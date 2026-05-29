@@ -41,7 +41,9 @@ const Catalog = ({ toc }) => {
         break
       }
       setActiveSection(currentSectionId)
-      const index = toc?.findIndex(obj => uuidToId(obj.id || '') === currentSectionId)
+      const index = toc?.findIndex(
+        obj => uuidToId(obj.id || '') === currentSectionId
+      )
       tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
     }, throttleMs)
 

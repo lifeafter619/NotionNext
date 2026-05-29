@@ -16,9 +16,12 @@ const Style = () => {
         --tl-accent: #2563eb;
         --tl-accent-soft: rgba(37, 99, 235, 0.08);
         --tl-radius: 10px;
-        --tl-font-display: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-        --tl-font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-          'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        --tl-font-display:
+          ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+        --tl-font-body:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC',
+          'Microsoft YaHei', sans-serif;
         background-color: var(--tl-bg);
         color: var(--tl-text);
         font-family: var(--tl-font-body);
@@ -66,7 +69,10 @@ const Style = () => {
         border-radius: 9999px;
         color: var(--tl-muted);
         border: 1px solid transparent;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        transition:
+          background 0.15s ease,
+          color 0.15s ease,
+          border-color 0.15s ease;
       }
 
       #theme-thoughtlite .tl-icon-btn:hover {

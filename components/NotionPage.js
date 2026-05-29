@@ -33,10 +33,10 @@ const NotionPage = ({ post, className }) => {
 
   // 检查是否包含代码块，优化PrismMac加载
   const hasCode = useMemo(() => {
-      // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象
-      const blockMap = post?.blockMap?.block || post?.block
-      if (!blockMap) return false
-      return Object.values(blockMap).some(block => block.value?.type === 'code')
+    // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象
+    const blockMap = post?.blockMap?.block || post?.block
+    if (!blockMap) return false
+    return Object.values(blockMap).some(block => block.value?.type === 'code')
   }, [post])
 
   // 处理图片点击事件
@@ -58,7 +58,9 @@ const NotionPage = ({ post, className }) => {
         // 我们这里加一个简单的过滤：排除 sidebar 内的图片。
         // 假设侧栏 id 是 sideRight 或 side-bar。
 
-        let allImages = Array.from(document.querySelectorAll('#notion-article .notion-asset-wrapper img'))
+        let allImages = Array.from(
+          document.querySelectorAll('#notion-article .notion-asset-wrapper img')
+        )
 
         // 过滤掉位于侧栏中的图片 (如果侧栏不幸被包含在 #notion-article 中，或者有重叠)
         // 通常 #notion-article 是纯文章内容。如果用户说 "wow fadeInUp 里面... 侧栏中出现的图片"
@@ -66,42 +68,42 @@ const NotionPage = ({ post, className }) => {
         // 无论如何，我们可以过滤掉那些 offsetParent 为 null (不可见) 或者在特定容器内的图片。
 
         allImages = allImages.filter(img => {
-            const sideRight = document.getElementById('sideRight')
-            const sideBar = document.getElementById('sideBar') // 假设 ID
-            // 如果图片在侧栏内，则排除
-            if (sideRight && sideRight.contains(img)) return false
-            if (sideBar && sideBar.contains(img)) return false
-            return true
+          const sideRight = document.getElementById('sideRight')
+          const sideBar = document.getElementById('sideBar') // 假设 ID
+          // 如果图片在侧栏内，则排除
+          if (sideRight && sideRight.contains(img)) return false
+          if (sideBar && sideBar.contains(img)) return false
+          return true
         })
 
         const imageList = allImages.map(img => {
-            const src = getImageSrc(img)
-            let highResSrc = src
-            try {
-               const urlObj = new URL(src)
-               // Remove resize parameters to get high quality image
-               urlObj.searchParams.delete('width')
-               urlObj.searchParams.delete('height')
-               urlObj.searchParams.delete('quality')
-               urlObj.searchParams.delete('fmt')
-               urlObj.searchParams.delete('fm') // Unsplash
-               urlObj.searchParams.delete('crop')
-               urlObj.searchParams.delete('fit')
+          const src = getImageSrc(img)
+          let highResSrc = src
+          try {
+            const urlObj = new URL(src)
+            // Remove resize parameters to get high quality image
+            urlObj.searchParams.delete('width')
+            urlObj.searchParams.delete('height')
+            urlObj.searchParams.delete('quality')
+            urlObj.searchParams.delete('fmt')
+            urlObj.searchParams.delete('fm') // Unsplash
+            urlObj.searchParams.delete('crop')
+            urlObj.searchParams.delete('fit')
 
-               // Special handling for Unsplash to ensure high res
-               if (src.includes('unsplash.com')) {
-                  urlObj.searchParams.set('q', '100') // Set max quality
-               }
+            // Special handling for Unsplash to ensure high res
+            if (src.includes('unsplash.com')) {
+              urlObj.searchParams.set('q', '100') // Set max quality
+            }
 
-               highResSrc = urlObj.toString()
-            } catch (e) {
-               // ignore
-            }
-            return {
-                src,
-                alt: img.getAttribute('alt') || '',
-                highResSrc
-            }
+            highResSrc = urlObj.toString()
+          } catch (e) {
+            // ignore
+          }
+          return {
+            src,
+            alt: img.getAttribute('alt') || '',
+            highResSrc
+          }
         })
 
         const currentSrc = getImageSrc(target)
@@ -109,11 +111,13 @@ const NotionPage = ({ post, className }) => {
         // 有时候 src 可能经过了处理，这里尝试更宽松的匹配，或者回退到 0
         let currentIndex = imageList.findIndex(item => item.src === currentSrc)
         if (currentIndex === -1) {
-            // 尝试通过 highResSrc 匹配 (假设 target 也是原始链接)
-            currentIndex = imageList.findIndex(item => item.highResSrc === currentSrc)
+          // 尝试通过 highResSrc 匹配 (假设 target 也是原始链接)
+          currentIndex = imageList.findIndex(
+            item => item.highResSrc === currentSrc
+          )
         }
         if (currentIndex === -1) {
-            currentIndex = 0 // Fallback
+          currentIndex = 0 // Fallback
         }
 
         // 传递图片列表和当前索引
@@ -141,7 +145,13 @@ const NotionPage = ({ post, className }) => {
     if (POST_DISABLE_DATABASE_CLICK) {
       processDisableDatabaseUrl()
     }
-  }, [post, POST_DISABLE_GALLERY_CLICK, POST_DISABLE_DATABASE_CLICK, openViewer, IMAGE_ZOOM_IN_WIDTH])
+  }, [
+    post,
+    POST_DISABLE_GALLERY_CLICK,
+    POST_DISABLE_DATABASE_CLICK,
+    openViewer,
+    IMAGE_ZOOM_IN_WIDTH
+  ])
 
   useEffect(() => {
     // Spoiler文本功能
@@ -174,7 +184,9 @@ const NotionPage = ({ post, className }) => {
     return () => clearTimeout(timer)
   }, [post])
 
-  const cleanBlockMap = post?.blockMap ? cleanBlocksWithWarn(post.blockMap) : post?.blockMap;
+  const cleanBlockMap = post?.blockMap
+    ? cleanBlocksWithWarn(post.blockMap)
+    : post?.blockMap
 
   return (
     <>
@@ -197,51 +209,49 @@ const NotionPage = ({ post, className }) => {
           }}
         />
 
-      <AdEmbed />
-      {hasCode && <PrismMac />}
-    </div>
-    <ReadingPositionSaver postId={post?.id} enabled={READING_PROGRESS_SAVE} />
+        <AdEmbed />
+        {hasCode && <PrismMac />}
+      </div>
+      <ReadingPositionSaver postId={post?.id} enabled={READING_PROGRESS_SAVE} />
     </>
   )
 }
 
 function cleanBlocksWithWarn(blockMap) {
-  const cleanedBlocks = {};
-  const removedBlockIds = [];
+  const cleanedBlocks = {}
+  const removedBlockIds = []
 
   for (const [id, block] of Object.entries(blockMap.block || {})) {
     if (!block?.value?.id) {
-      removedBlockIds.push(id);
-      continue;
+      removedBlockIds.push(id)
+      continue
     }
 
-    const newBlock = { ...block };
+    const newBlock = { ...block }
 
     if (Array.isArray(newBlock.value.content)) {
       // 递归清理 content 中无效的 blockId
-      newBlock.value.content = newBlock.value.content.filter((cid) => {
+      newBlock.value.content = newBlock.value.content.filter(cid => {
         if (!blockMap.block[cid]?.value?.id) {
-          removedBlockIds.push(cid);
-          return false;
+          removedBlockIds.push(cid)
+          return false
         }
-        return true;
-      });
+        return true
+      })
     }
 
-    cleanedBlocks[id] = newBlock;
+    cleanedBlocks[id] = newBlock
   }
 
   if (removedBlockIds.length) {
-    console.warn('Removed invalid blocks:', removedBlockIds);
+    console.warn('Removed invalid blocks:', removedBlockIds)
   }
 
   return {
     ...blockMap,
-    block: cleanedBlocks,
-  };
+    block: cleanedBlocks
+  }
 }
-
-
 
 /**
  * 页面的数据库链接禁止跳转，只能查看

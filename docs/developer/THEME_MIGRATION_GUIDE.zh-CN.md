@@ -117,12 +117,12 @@
 
 环境变量 `NEXT_PUBLIC_CONTACT_EMAIL` 会在构建阶段写入 `conf/contact.config.js`，并以 Base64 形式保存在 `siteConfig('CONTACT_EMAIL')` 中，用于避免在静态页面里直接暴露明文邮箱。迁移或新增主题时请务必按用途选用下列方式，否则会出现「mailto 乱码」或 Gravatar 不匹配等问题。
 
-| 场景 | 正确做法 | 错误示例 |
-| --- | --- | --- |
-| 图标/链接点击打开系统邮件客户端 | 使用 `handleEmailClick`（见下） | `href={\`mailto:${siteConfig('CONTACT_EMAIL')}\`}` |
-| 页脚、文案中展示邮箱地址 | `resolveContactEmail(siteConfig('CONTACT_EMAIL'))` | 直接渲染 `siteConfig('CONTACT_EMAIL')` |
-| Gravatar 等需要邮箱 md5 | 对 `resolveContactEmail` 的结果取小写再哈希 | 对密文做 `md5` |
-| `security.txt` 等服务端生成的联系行 | `resolveContactEmail` 后再写入 | 把密文写进 `mailto:` |
+| 场景                                | 正确做法                                           | 错误示例                                           |
+| ----------------------------------- | -------------------------------------------------- | -------------------------------------------------- |
+| 图标/链接点击打开系统邮件客户端     | 使用 `handleEmailClick`（见下）                    | `href={\`mailto:${siteConfig('CONTACT_EMAIL')}\`}` |
+| 页脚、文案中展示邮箱地址            | `resolveContactEmail(siteConfig('CONTACT_EMAIL'))` | 直接渲染 `siteConfig('CONTACT_EMAIL')`             |
+| Gravatar 等需要邮箱 md5             | 对 `resolveContactEmail` 的结果取小写再哈希        | 对密文做 `md5`                                     |
+| `security.txt` 等服务端生成的联系行 | `resolveContactEmail` 后再写入                     | 把密文写进 `mailto:`                               |
 
 **点击发邮（推荐与 `themes/next/components/SocialButton.js` 保持一致）：**
 
@@ -135,15 +135,17 @@ const emailIcon = useRef(null)
 const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
 
 // ...
-{CONTACT_EMAIL && (
-  <a
-    onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
-    title='email'
-    className='cursor-pointer'
-    ref={emailIcon}>
-    {/* icon */}
-  </a>
-)}
+{
+  CONTACT_EMAIL && (
+    <a
+      onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
+      title='email'
+      className='cursor-pointer'
+      ref={emailIcon}>
+      {/* icon */}
+    </a>
+  )
+}
 ```
 
 实现位于 `lib/plugins/mailEncrypt.js`：`handleEmailClick`、`decryptEmail`、`resolveContactEmail`。
@@ -160,9 +162,9 @@ const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
 
 **`public/images/themes-preview/`**
 
-| 文件 | 说明 |
-| --- | --- |
-| `<主题目录名>.png` | 常规约定下需提供的基准图；与 `themes/` 下文件夹名一致、小写，例如 `endspace.png`。用作 `LazyImage` 的 **`fallbackSrc`**，保证兼容性。 |
+| 文件                | 说明                                                                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `<主题目录名>.png`  | 常规约定下需提供的基准图；与 `themes/` 下文件夹名一致、小写，例如 `endspace.png`。用作 `LazyImage` 的 **`fallbackSrc`**，保证兼容性。    |
 | `<主题目录名>.webp` | 强烈建议同时提供；由 PNG 导出或转换即可。用作优先 **`src`**，体积更小、加载更快。可用 `cwebp`、Squoosh、ImageMagick 等将 PNG 转为 WebP。 |
 
 组件默认按 **`/images/themes-preview/<id>.webp`** 与 **`.png`** 读取；若某一格式缺失，面板仍能工作，但请在 PR 中尽量两者齐备。
@@ -230,4 +232,3 @@ const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
   - 避免把 Markdown 文档直接放在 `themes/<theme>/` 下（部分构建链路会把主题目录当运行时模块处理）
   - 主题说明建议统一放在 `docs/developer/themes/`
 - **页面跳转体感**：补轻量过渡动效，接近源主题的交互节奏。
-

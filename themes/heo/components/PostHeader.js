@@ -47,8 +47,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           height: 100%;
           top: 0;
           left: 0;
-          box-shadow: 110px -130px 500px 100px
-            var(--heo-post-bg-accent) inset;
+          box-shadow: 110px -130px 500px 100px var(--heo-post-bg-accent) inset;
         }
       `}</style>
 
@@ -164,7 +163,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                 defaultValue='18'
                 step='1'
                 className='w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
-                onChange={(e) => {
+                onChange={e => {
                   const val = e.target.value
                   const article = document.getElementById('notion-article')
                   if (article) {
@@ -190,7 +189,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   type='text'
                   placeholder='在文中搜索...'
                   className='w-24 focus:w-40 transition-all duration-300 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none'
-                  onKeyDown={(e) => {
+                  onKeyDown={e => {
                     if (e.key === 'Enter') {
                       const val = e.target.value
                       if (val) {
@@ -201,18 +200,16 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   }}
                 />
                 <i
-                    className='fa-solid fa-magnifying-glass absolute right-2 top-1.5 text-gray-400 text-xs cursor-pointer'
-                    onClick={(e) => {
-                        const input = e.target.previousElementSibling
-                        const val = input.value
-                        if (val) {
-                            window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
-                        }
-                    }}
-                ></i>
+                  className='fa-solid fa-magnifying-glass absolute right-2 top-1.5 text-gray-400 text-xs cursor-pointer'
+                  onClick={e => {
+                    const input = e.target.previousElementSibling
+                    const val = input.value
+                    if (val) {
+                      window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
+                    }
+                  }}></i>
               </div>
             </div>
-
           </section>
         </div>
 

@@ -145,9 +145,7 @@ const Header = props => {
       `}</style>
 
       {/* fixed时留白高度 */}
-      {fixedNav && !hasPostBg && (
-        <div className='h-16'></div>
-      )}
+      {fixedNav && !hasPostBg && <div className='h-16'></div>}
 
       {/* 顶部导航菜单栏 */}
       <nav

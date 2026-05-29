@@ -34,20 +34,20 @@ export async function getStaticProps({ locale }) {
   const props = await fetchGlobalAllData({ from: 'archive-index', locale })
 
   // 过滤并清理数据，保留所有字段但修复 undefined 值以避免序列化错误
-  const posts = props.allPages?.filter(
-    page => page.type === 'Post' && page.status === 'Published'
-  ).map(post => {
-    const newPost = { ...post }
-    // 修复可能为 undefined 的字段
-    newPost.summary = newPost.summary || null
-    newPost.password = newPost.password || null
-    newPost.tags = newPost.tags || null
-    newPost.category = newPost.category || null
-    newPost.pageCover = newPost.pageCover || null
-    newPost.pageCoverThumbnail = newPost.pageCoverThumbnail || null
-    newPost.ext = newPost.ext || {}
-    return newPost
-  })
+  const posts = props.allPages
+    ?.filter(page => page.type === 'Post' && page.status === 'Published')
+    .map(post => {
+      const newPost = { ...post }
+      // 修复可能为 undefined 的字段
+      newPost.summary = newPost.summary || null
+      newPost.password = newPost.password || null
+      newPost.tags = newPost.tags || null
+      newPost.category = newPost.category || null
+      newPost.pageCover = newPost.pageCover || null
+      newPost.pageCoverThumbnail = newPost.pageCoverThumbnail || null
+      newPost.ext = newPost.ext || {}
+      return newPost
+    })
 
   delete props.allPages
 

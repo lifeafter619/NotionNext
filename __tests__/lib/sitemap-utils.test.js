@@ -83,16 +83,11 @@ describe('sitemap-utils', () => {
 
   describe('toSitemapDateString', () => {
     it('formats valid date to YYYY-MM-DD', () => {
-      expect(toSitemapDateString('2026-02-21T12:34:56.000Z')).toBe(
-        '2026-02-21'
-      )
+      expect(toSitemapDateString('2026-02-21T12:34:56.000Z')).toBe('2026-02-21')
     })
 
     it('falls back when date is invalid', () => {
-      expect(toSitemapDateString('not-a-date', '2026-01-01')).toBe(
-        '2026-01-01'
-      )
+      expect(toSitemapDateString('not-a-date', '2026-01-01')).toBe('2026-01-01')
     })
   })
 })
-

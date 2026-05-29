@@ -15,14 +15,14 @@ This document is for **developers who maintain the ThoughtLite port** in NotionN
 
 ## 2. Upstream, author, and repositories
 
-| Item | Link |
-|------|------|
-| **Upstream theme** | ThoughtLite (Astro) |
-| **Author** | [tuyuritio](https://github.com/tuyuritio) |
-| **Upstream source** | [tuyuritio/astro-theme-thought-lite](https://github.com/tuyuritio/astro-theme-thought-lite) |
-| **Live demo** | [thought-lite.ttio.workers.dev](https://thought-lite.ttio.workers.dev/) |
-| **Upstream stack** | Astro, Svelte, Tailwind CSS (see upstream README) |
-| **Upstream license** | **GPL-3.0** |
+| Item                 | Link                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| **Upstream theme**   | ThoughtLite (Astro)                                                                         |
+| **Author**           | [tuyuritio](https://github.com/tuyuritio)                                                   |
+| **Upstream source**  | [tuyuritio/astro-theme-thought-lite](https://github.com/tuyuritio/astro-theme-thought-lite) |
+| **Live demo**        | [thought-lite.ttio.workers.dev](https://thought-lite.ttio.workers.dev/)                     |
+| **Upstream stack**   | Astro, Svelte, Tailwind CSS (see upstream README)                                           |
+| **Upstream license** | **GPL-3.0**                                                                                 |
 
 NotionNext is primarily **MIT**. This theme is implemented as a **design-informed React rewrite**, **without copying** upstream `.astro` / `.svelte` source wholesale. If someone later wants to vendor GPL code paths, maintainers must assess **GPL/MIT compatibility** (see [migration plan §0](./THOUGHTLITE_MIGRATION_PLAN.zh-CN.md)).
 
@@ -30,13 +30,13 @@ NotionNext is primarily **MIT**. This theme is implemented as a **design-informe
 
 ## 3. Mapping in this repo
 
-| Item | Location |
-|------|----------|
-| **Theme folder** | `themes/thoughtlite/` |
-| **Root scope** | `#theme-thoughtlite` |
-| **Config keys** | `THOUGHTLITE_*` in `themes/thoughtlite/config.js` via `siteConfig(..., CONFIG)` |
-| **Baseline** | Started from `themes/example`, then restyled toward ThoughtLite |
-| **Shared features** | `@/components/*` (Notion body, comments, search, etc.) |
+| Item                | Location                                                                        |
+| ------------------- | ------------------------------------------------------------------------------- |
+| **Theme folder**    | `themes/thoughtlite/`                                                           |
+| **Root scope**      | `#theme-thoughtlite`                                                            |
+| **Config keys**     | `THOUGHTLITE_*` in `themes/thoughtlite/config.js` via `siteConfig(..., CONFIG)` |
+| **Baseline**        | Started from `themes/example`, then restyled toward ThoughtLite                 |
+| **Shared features** | `@/components/*` (Notion body, comments, search, etc.)                          |
 
 ---
 
@@ -53,17 +53,17 @@ NotionNext is primarily **MIT**. This theme is implemented as a **design-informe
 
 ## 5. Config keys (`themes/thoughtlite/config.js`)
 
-| Key | Purpose |
-|-----|---------|
-| `THOUGHTLITE_MENU_*` | Show/hide nav entries (category, tag, archive, search) |
-| `THOUGHTLITE_HOME_TIMELINE` | Timeline on bare home routes |
-| `THOUGHTLITE_HOME_LATEST_CARD` | Latest summary card on home |
-| `THOUGHTLITE_SIDEBAR_ONLY_ON_POST` | Sidebar only on post detail |
-| `THOUGHTLITE_POST_LIST_COVER` | Cover thumbnails in list mode |
-| `THOUGHTLITE_TITLE_IMAGE` | Hero background image on non-post title bar |
-| `THOUGHTLITE_HOME_MINIMAL_HEADER` | Minimal home title area |
-| `THOUGHTLITE_ARTICLE_LAYOUT_VERTICAL` | Stack main + sidebar on posts |
-| `THOUGHTLITE_ARTICLE_HIDDEN_NOTIFICATION` | Hide announcement on post |
+| Key                                       | Purpose                                                |
+| ----------------------------------------- | ------------------------------------------------------ |
+| `THOUGHTLITE_MENU_*`                      | Show/hide nav entries (category, tag, archive, search) |
+| `THOUGHTLITE_HOME_TIMELINE`               | Timeline on bare home routes                           |
+| `THOUGHTLITE_HOME_LATEST_CARD`            | Latest summary card on home                            |
+| `THOUGHTLITE_SIDEBAR_ONLY_ON_POST`        | Sidebar only on post detail                            |
+| `THOUGHTLITE_POST_LIST_COVER`             | Cover thumbnails in list mode                          |
+| `THOUGHTLITE_TITLE_IMAGE`                 | Hero background image on non-post title bar            |
+| `THOUGHTLITE_HOME_MINIMAL_HEADER`         | Minimal home title area                                |
+| `THOUGHTLITE_ARTICLE_LAYOUT_VERTICAL`     | Stack main + sidebar on posts                          |
+| `THOUGHTLITE_ARTICLE_HIDDEN_NOTIFICATION` | Hide announcement on post                              |
 
 Global **`LAYOUT_SIDEBAR_REVERSE`** still applies at site level.
 

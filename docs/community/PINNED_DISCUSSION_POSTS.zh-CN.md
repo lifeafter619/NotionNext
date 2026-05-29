@@ -18,13 +18,13 @@ NotionNext 已由个人仓库移交至组织 **[notionnext-org](https://github.c
 
 ### 你可以这样参与
 
-| 我想… | 去哪里 |
-| --- | --- |
-| 学部署、改配置 | [使用说明文档站](https://notionnext.tangly1024.com) |
-| 提问、交流经验 | 本区 **「使用问答」** 发 Discussion（比 Issue 更合适） |
-| 改教程、纠错 | 文档页底 **「在 GitHub 上维护此页」** → 提 PR |
-| 修 Bug、做功能 | [Contributing](https://github.com/notionnext-org/NotionNext/blob/main/CONTRIBUTING.zh-CN.md) → Fork → PR |
-| 长期维护、加入组织 | 先合并 1～2 个 PR，再发 **「组织成员申请」** 讨论（见模板） |
+| 我想…              | 去哪里                                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| 学部署、改配置     | [使用说明文档站](https://notionnext.tangly1024.com)                                                      |
+| 提问、交流经验     | 本区 **「使用问答」** 发 Discussion（比 Issue 更合适）                                                   |
+| 改教程、纠错       | 文档页底 **「在 GitHub 上维护此页」** → 提 PR                                                            |
+| 修 Bug、做功能     | [Contributing](https://github.com/notionnext-org/NotionNext/blob/main/CONTRIBUTING.zh-CN.md) → Fork → PR |
+| 长期维护、加入组织 | 先合并 1～2 个 PR，再发 **「组织成员申请」** 讨论（见模板）                                              |
 
 完整路径见：**[参与社区指南](https://notionnext.tangly1024.com/user-guide/community-participate)**
 
@@ -58,13 +58,13 @@ NotionNext 已由个人仓库移交至组织 **[notionnext-org](https://github.c
 
 ### 负责域（招募中，欢迎认领）
 
-| 域 | 范围 | 当前 |
-| --- | --- | --- |
-| 文档站 | `docs/user-guide/`、VitePress | 招募中 |
-| 内置主题 | `themes/<name>/` | 招募中（可在主题文档注明 `@维护者`） |
-| CI / 构建 | `.github/workflows/` | 招募中 |
-| 数据层 / Notion API | `lib/db/` 等 | [@tangly1024](https://github.com/tangly1024) 守门 |
-| 发版 / 组织 | tag、Secrets、成员邀请 | Org Admin |
+| 域                  | 范围                          | 当前                                              |
+| ------------------- | ----------------------------- | ------------------------------------------------- |
+| 文档站              | `docs/user-guide/`、VitePress | 招募中                                            |
+| 内置主题            | `themes/<name>/`              | 招募中（可在主题文档注明 `@维护者`）              |
+| CI / 构建           | `.github/workflows/`          | 招募中                                            |
+| 数据层 / Notion API | `lib/db/` 等                  | [@tangly1024](https://github.com/tangly1024) 守门 |
+| 发版 / 组织         | tag、Secrets、成员邀请        | Org Admin                                         |
 
 认领方式：合并若干 PR 后，用 **「组织成员申请」** 模板发帖，或在本帖回复负责域。
 
@@ -90,21 +90,21 @@ NotionNext 已由个人仓库移交至组织 **[notionnext-org](https://github.c
 
 ## 已发布（2026-05-17）
 
-| 帖 | 链接 |
-| --- | --- |
-| 欢迎参与社区 | https://github.com/notionnext-org/NotionNext/discussions/4069 |
+| 帖                   | 链接                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| 欢迎参与社区         | https://github.com/notionnext-org/NotionNext/discussions/4069 |
 | 维护者分工与合并约定 | https://github.com/notionnext-org/NotionNext/discussions/4070 |
 
 分类：**Announcements**。请在 Discussions 列表对以上两帖各点一次 **Pin discussion** 置顶（API 暂不支持自动 Pin）。
 
 ## 发帖步骤（若需重发）
 
-1. 打开 https://github.com/notionnext-org/NotionNext/discussions/new/choose  
-2. 选择分类 **Announcements**  
-3. 粘贴上面对应标题与正文  
-4. 发布后 **Pin discussion**  
+1. 打开 https://github.com/notionnext-org/NotionNext/discussions/new/choose
+2. 选择分类 **Announcements**
+3. 粘贴上面对应标题与正文
+4. 发布后 **Pin discussion**
 5. （可选）将帖一链接写入组织 Profile README
 
 ---
 
-*修改正文后请同步编辑上述 Discussion 页面。*
+_修改正文后请同步编辑上述 Discussion 页面。_

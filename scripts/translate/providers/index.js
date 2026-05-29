@@ -3,7 +3,11 @@ const deepseek = require('./deepseek')
 const glm = require('./glm')
 
 function getProvider(name) {
-  const which = (name || process.env.TRANSLATOR_PROVIDER || 'deepseek').toLowerCase()
+  const which = (
+    name ||
+    process.env.TRANSLATOR_PROVIDER ||
+    'deepseek'
+  ).toLowerCase()
   if (which === 'deepseek') return deepseek
   if (which === 'glm') return glm
   throw new Error(`未知的 TRANSLATOR_PROVIDER: ${which}`)

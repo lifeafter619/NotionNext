@@ -2,9 +2,7 @@ import { sortPinnedPostsByLatestUpdate } from '@/lib/utils/pinnedPosts'
 
 describe('sortPinnedPostsByLatestUpdate', () => {
   it('returns original array when topTag is falsy', () => {
-    const posts = [
-      { id: 'a', tags: ['top'], lastEditedDate: '2024-01-01' }
-    ]
+    const posts = [{ id: 'a', tags: ['top'], lastEditedDate: '2024-01-01' }]
     const res = sortPinnedPostsByLatestUpdate(posts, '')
     expect(res).toBe(posts)
   })
@@ -53,4 +51,3 @@ describe('sortPinnedPostsByLatestUpdate', () => {
     expect(res).toBe(posts)
   })
 })
-

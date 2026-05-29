@@ -10,7 +10,10 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
   const panelRef = useRef(null)
   if (!siteConfig('FUWARI_MOBILE_MENU', true, CONFIG)) return null
 
-  const links = getFuwariMenuLinks({ locale, customNav, customMenu }).slice(0, 5)
+  const links = getFuwariMenuLinks({ locale, customNav, customMenu }).slice(
+    0,
+    5
+  )
 
   useEffect(() => {
     const onClickOutside = e => {
@@ -48,7 +51,9 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
                   ) : (
                     <span
                       className={`flex-1 px-3 py-2 rounded-lg font-semibold hover:bg-[var(--fuwari-bg-soft)] select-none ${
-                        link.subMenus?.length ? 'cursor-pointer' : 'cursor-default'
+                        link.subMenus?.length
+                          ? 'cursor-pointer'
+                          : 'cursor-default'
                       }`}
                       role={link.subMenus?.length ? 'button' : undefined}
                       tabIndex={link.subMenus?.length ? 0 : undefined}
@@ -76,8 +81,12 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
                     <button
                       type='button'
                       className='px-2 py-2 text-xs'
-                      onClick={() => setOpenSub(prev => (prev === link.id ? '' : link.id))}>
-                      <i className={`fas ${openSub === link.id ? 'fa-angle-up' : 'fa-angle-down'}`} />
+                      onClick={() =>
+                        setOpenSub(prev => (prev === link.id ? '' : link.id))
+                      }>
+                      <i
+                        className={`fas ${openSub === link.id ? 'fa-angle-up' : 'fa-angle-down'}`}
+                      />
                     </button>
                   )}
                 </div>
@@ -105,4 +114,3 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
 }
 
 export default MobileNav
-

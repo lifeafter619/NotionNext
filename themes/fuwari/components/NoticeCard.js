@@ -8,4 +8,3 @@ const NoticeCard = ({ notice }) => {
 }
 
 export default NoticeCard
-

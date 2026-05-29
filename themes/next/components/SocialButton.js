@@ -8,7 +8,6 @@ import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
  * @constructor
  */
 const SocialButton = () => {
-
   const emailIcon = useRef(null)
   const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
 

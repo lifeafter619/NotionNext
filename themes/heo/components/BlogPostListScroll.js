@@ -52,14 +52,14 @@ const BlogPostListScroll = ({
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
     }
-    
+
     rafRef.current = requestAnimationFrame(() => {
       if (!targetRef.current) return
-      
+
       const scrollS = window.scrollY + window.innerHeight
       const clientHeight = targetRef.current.clientHeight
       const triggerPoint = clientHeight - 200 // 提前 200px 触发加载
-      
+
       if (scrollS > triggerPoint) {
         handleGetMore()
       }
@@ -78,7 +78,7 @@ const BlogPostListScroll = ({
   }, [scrollTrigger])
 
   const POST_TWO_COLS = siteConfig('HEO_HOME_POST_TWO_COLS', true, CONFIG)
-  
+
   if (!postsToShow || postsToShow.length === 0) {
     return <BlogPostListEmpty currentSearch={currentSearch} />
   } else {

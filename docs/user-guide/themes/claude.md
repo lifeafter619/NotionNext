@@ -40,25 +40,25 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `CLAUDE_BLOG_NAME` | 见 config.js |
-| `CLAUDE_BLOG_NAME_EN` | 见 config.js |
-| `CLAUDE_POST_AD_ENABLE` | 见 config.js |
-| `CLAUDE_POST_COVER_ENABLE` | 见 config.js |
-| `CLAUDE_ARTICLE_RECOMMEND_POSTS` | 见 config.js |
-| `CLAUDE_MENU_CATEGORY` | 见 config.js |
-| `CLAUDE_MENU_TAG` | 见 config.js |
-| `CLAUDE_MENU_ARCHIVE` | 见 config.js |
-| `CLAUDE_TOC_ENABLE` | 见 config.js |
-| `CLAUDE_TOC_SHOW_LEVEL3` | 见 config.js |
-| `CLAUDE_TOC_SCROLL_BEHAVIOR` | 见 config.js |
-| `CLAUDE_SUBTITLE_DARK_ONLY` | 见 config.js |
-| `CLAUDE_PROFILE_AVATAR` | 见 config.js |
-| `CLAUDE_FOOTER_COPYRIGHT` | 见 config.js |
-| `CLAUDE_README_CACHE_ENABLED` | 见 config.js |
+| 配置键                                | 说明         |
+| ------------------------------------- | ------------ |
+| `CLAUDE_BLOG_NAME`                    | 见 config.js |
+| `CLAUDE_BLOG_NAME_EN`                 | 见 config.js |
+| `CLAUDE_POST_AD_ENABLE`               | 见 config.js |
+| `CLAUDE_POST_COVER_ENABLE`            | 见 config.js |
+| `CLAUDE_ARTICLE_RECOMMEND_POSTS`      | 见 config.js |
+| `CLAUDE_MENU_CATEGORY`                | 见 config.js |
+| `CLAUDE_MENU_TAG`                     | 见 config.js |
+| `CLAUDE_MENU_ARCHIVE`                 | 见 config.js |
+| `CLAUDE_TOC_ENABLE`                   | 见 config.js |
+| `CLAUDE_TOC_SHOW_LEVEL3`              | 见 config.js |
+| `CLAUDE_TOC_SCROLL_BEHAVIOR`          | 见 config.js |
+| `CLAUDE_SUBTITLE_DARK_ONLY`           | 见 config.js |
+| `CLAUDE_PROFILE_AVATAR`               | 见 config.js |
+| `CLAUDE_FOOTER_COPYRIGHT`             | 见 config.js |
+| `CLAUDE_README_CACHE_ENABLED`         | 见 config.js |
 | `CLAUDE_CONTRIBUTION_PERSIST_ENABLED` | 见 config.js |
-| `CLAUDE_CONTRIBUTION_EVENT_LIMIT` | 见 config.js |
+| `CLAUDE_CONTRIBUTION_EVENT_LIMIT`     | 见 config.js |
 
 <!-- /theme-config-table -->
 

@@ -14,18 +14,18 @@
 
 ## 浏览文档目录
 
-| 链接 | 说明 |
-| --- | --- |
-| [docs/](https://github.com/notionnext-org/NotionNext/tree/main/docs) | 目录说明（本 README 在 GitHub 可见） |
-| [docs/user-guide/](https://github.com/notionnext-org/NotionNext/tree/main/docs/user-guide) | **在线站主体**，改教程只动这里 |
-| [docs/developer/](https://github.com/notionnext-org/NotionNext/tree/main/docs/developer) | 开发者文档（不进在线站） |
+| 链接                                                                                       | 说明                                 |
+| ------------------------------------------------------------------------------------------ | ------------------------------------ |
+| [docs/](https://github.com/notionnext-org/NotionNext/tree/main/docs)                       | 目录说明（本 README 在 GitHub 可见） |
+| [docs/user-guide/](https://github.com/notionnext-org/NotionNext/tree/main/docs/user-guide) | **在线站主体**，改教程只动这里       |
+| [docs/developer/](https://github.com/notionnext-org/NotionNext/tree/main/docs/developer)   | 开发者文档（不进在线站）             |
 
 ## 推荐流程（贡献者）
 
-1. Fork [notionnext-org/NotionNext](https://github.com/notionnext-org/NotionNext) 或具备组织仓库写权限。  
-2. 编辑 `docs/user-guide/**/*.md`（主题配置表可运行 `node scripts/generate-theme-user-docs.mjs`）。  
-3. 本地预览：`yarn docs:site:dev`。  
-4. 提交 PR，合并 **`main`** 后由 GitHub Actions 部署。  
+1. Fork [notionnext-org/NotionNext](https://github.com/notionnext-org/NotionNext) 或具备组织仓库写权限。
+2. 编辑 `docs/user-guide/**/*.md`（主题配置表可运行 `node scripts/generate-theme-user-docs.mjs`）。
+3. 本地预览：`yarn docs:site:dev`。
+4. 提交 PR，合并 **`main`** 后由 GitHub Actions 部署。
 
 详细检查清单：[MAINTENANCE_WORKFLOW.md](./MAINTENANCE_WORKFLOW.md) · 策略：[DOCUMENTATION_POLICY.md](../DOCUMENTATION_POLICY.md)
 
@@ -52,9 +52,9 @@ push main（docs/user-guide/ 等变更）
 
 当前复用仓库默认分类 **General**（可在 [Discussions](https://github.com/notionnext-org/NotionNext/discussions) 查看）：
 
-| 变量 | 值（公开 ID，非密钥） |
-| --- | --- |
-| `VITE_GISCUS_REPO_ID` | `R_kgDOGHdxTw` |
+| 变量                      | 值（公开 ID，非密钥）  |
+| ------------------------- | ---------------------- |
+| `VITE_GISCUS_REPO_ID`     | `R_kgDOGHdxTw`         |
 | `VITE_GISCUS_CATEGORY_ID` | `DIC_kwDOGHdxT84CBR2I` |
 
 **GitHub Actions**：已在组织仓库 Secrets 中配置上述两项（构建 workflow 会自动注入）。  

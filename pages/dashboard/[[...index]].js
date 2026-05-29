@@ -23,7 +23,7 @@ export async function getStaticProps({ locale }) {
   const prefix = 'dashboard'
   const props = await resolvePostProps({
     prefix,
-    locale,
+    locale
   })
 
   return {
@@ -31,10 +31,10 @@ export async function getStaticProps({ locale }) {
     revalidate: process.env.EXPORT
       ? undefined
       : siteConfig(
-        'NEXT_REVALIDATE_SECOND',
-        BLOG.NEXT_REVALIDATE_SECOND,
-        props.NOTION_CONFIG
-      )
+          'NEXT_REVALIDATE_SECOND',
+          BLOG.NEXT_REVALIDATE_SECOND,
+          props.NOTION_CONFIG
+        )
   }
 }
 

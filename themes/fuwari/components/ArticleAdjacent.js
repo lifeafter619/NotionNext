@@ -5,9 +5,16 @@ import CONFIG from '../config'
 const AdjacentCard = ({ label, post, align = 'left' }) => {
   if (!post) return <div className='fuwari-card p-4 opacity-50'>{label}</div>
   return (
-    <SmartLink href={post.href || `/${post.slug}`} className='fuwari-card p-4 block'>
-      <p className='text-xs uppercase tracking-wider text-[var(--fuwari-muted)] mb-1'>{label}</p>
-      <p className={`text-sm font-medium ${align === 'right' ? 'text-right' : ''}`}>{post.title}</p>
+    <SmartLink
+      href={post.href || `/${post.slug}`}
+      className='fuwari-card p-4 block'>
+      <p className='text-xs uppercase tracking-wider text-[var(--fuwari-muted)] mb-1'>
+        {label}
+      </p>
+      <p
+        className={`text-sm font-medium ${align === 'right' ? 'text-right' : ''}`}>
+        {post.title}
+      </p>
     </SmartLink>
   )
 }
@@ -25,4 +32,3 @@ const ArticleAdjacent = ({ prev, next }) => {
 }
 
 export default ArticleAdjacent
-

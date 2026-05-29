@@ -36,17 +36,17 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `NOBELIUM_NAV_NOTION_ICON` | 见 config.js |
-| `NOBELIUM_MENU_RANDOM_POST` | 见 config.js |
-| `NOBELIUM_MENU_SEARCH_BUTTON` | 见 config.js |
-| `NOBELIUM_MENU_DARKMODE_BUTTON` | 见 config.js |
-| `NOBELIUM_MENU_CATEGORY` | 见 config.js |
-| `NOBELIUM_MENU_TAG` | 见 config.js |
-| `NOBELIUM_MENU_ARCHIVE` | 见 config.js |
-| `NOBELIUM_MENU_SEARCH` | 见 config.js |
-| `NOBELIUM_MENU_RSS` | 见 config.js |
+| 配置键                           | 说明         |
+| -------------------------------- | ------------ |
+| `NOBELIUM_NAV_NOTION_ICON`       | 见 config.js |
+| `NOBELIUM_MENU_RANDOM_POST`      | 见 config.js |
+| `NOBELIUM_MENU_SEARCH_BUTTON`    | 见 config.js |
+| `NOBELIUM_MENU_DARKMODE_BUTTON`  | 见 config.js |
+| `NOBELIUM_MENU_CATEGORY`         | 见 config.js |
+| `NOBELIUM_MENU_TAG`              | 见 config.js |
+| `NOBELIUM_MENU_ARCHIVE`          | 见 config.js |
+| `NOBELIUM_MENU_SEARCH`           | 见 config.js |
+| `NOBELIUM_MENU_RSS`              | 见 config.js |
 | `NOBELIUM_AUTO_COLLAPSE_NAV_BAR` | 见 config.js |
 
 <!-- /theme-config-table -->

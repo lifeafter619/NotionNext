@@ -4,20 +4,20 @@
 
 适用场景（参见 [GOVERNANCE.zh-CN.md](../../GOVERNANCE.zh-CN.md)）：
 
-- 新公共 API、全局配置默认值变更  
-- 跨多个内置主题的共享层改动  
-- 破坏性变更、Next.js / 依赖大版本升级  
-- 安全或数据模型相关设计  
+- 新公共 API、全局配置默认值变更
+- 跨多个内置主题的共享层改动
+- 破坏性变更、Next.js / 依赖大版本升级
+- 安全或数据模型相关设计
 
 ## 如何提交
 
-1. 复制 [TEMPLATE.md](./TEMPLATE.md) 为 `docs/developer/rfc/NNNN-short-title.md`（`NNNN` 为四位序号或日期）。  
-2. 填写后提 PR，标题形如 `RFC: 简短标题`。  
-3. 在 PR 描述中 @ 相关维护者（见 [MAINTAINERS.md](../../MAINTAINERS.md)）。  
+1. 复制 [TEMPLATE.md](./TEMPLATE.md) 为 `docs/developer/rfc/NNNN-short-title.md`（`NNNN` 为四位序号或日期）。
+2. 填写后提 PR，标题形如 `RFC: 简短标题`。
+3. 在 PR 描述中 @ 相关维护者（见 [MAINTAINERS.md](../../MAINTAINERS.md)）。
 4. 共识达成后，再开实现 PR，并在 RFC 文末记录 **状态：已接受 / 已拒绝 / 已 superseded**。
 
 ## 已有 RFC
 
-| RFC | 状态 | 说明 |
-| --- | --- | --- |
-| *（暂无）* | — | 欢迎提交第一个 RFC |
+| RFC        | 状态 | 说明               |
+| ---------- | ---- | ------------------ |
+| _（暂无）_ | —    | 欢迎提交第一个 RFC |

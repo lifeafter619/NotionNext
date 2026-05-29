@@ -1,4 +1,5 @@
 # EdgeOne部署NotionNext
+
 > 迁移自：[EdgeOne部署NotionNext](https://docs.tangly1024.com/article/deploy-notion-next-with-edge-one)
 > 发布日期：2024-11-13
 > 最后编辑：2026-5-2
@@ -7,8 +8,7 @@
 
 > **⚠️**
 >
-腾讯云推出的EdgeOne支持部署Nextjs等主流前端框架项目，目前只支持静态导出，不支持动态站点，感兴趣的话可以体验一下。
-
+> 腾讯云推出的EdgeOne支持部署Nextjs等主流前端框架项目，目前只支持静态导出，不支持动态站点，感兴趣的话可以体验一下。
 
 ## 什么是EdgeOne？
 
@@ -20,7 +20,6 @@
 
 [腾讯推出免费部署网站服务，可搭建个人博客：EdgeOne Pages](https://mp.weixin.qq.com/s/LdE-bNPttF6d8sDEvsgKuw)
 
-
 ## 注册开通
 
 使用「EdgeOne Pages」你需要准备 Google 和 Github 的账号，然后访问 EdgeOne 网站进行注册账号。
@@ -28,7 +27,6 @@
 点击注册：[https://edgeone.ai/register](https://edgeone.ai/register) 。注册完成后跳转到腾讯云后台，点击“立即开通”从而开启OpenEdge功能。
 
 ![image.png](/legacy/e2fde02d3a3dc93d.png)
-
 
 ## 关联Github导入项目
 
@@ -44,13 +42,11 @@
 
 ![image.png](/legacy/e2593e58eff96648.png)
 
-
 ### 导入项目
 
 选择NotionNext项目
 
 ![image.png](/legacy/10ab179bdf2c532e.png)
-
 
 ### 配置编译选项
 
@@ -72,13 +68,11 @@
 
 确认配置后就可以点击“开始部署”按钮，进行部署了：
 
-
 ### 等待部署
 
 过程需要几分钟不等。
 
 ![image.png](/legacy/6a90f47eaed46482.png)
-
 
 ### 部署完成
 
@@ -92,7 +86,6 @@
 
 ![image.png](/legacy/03962c7a827f16d9.png)
 
-
 ## 修改配置与重新部署
 
 您可以随时返回到项目设置中，添加或修改环境变量，例如修改主题.
@@ -102,7 +95,6 @@
 然后在构建部署栏目中，点击更多，并重新部署项目
 
 ![image.png](/legacy/ebdc918388b619f6.png)
-
 
 ## 绑定自定义域名
 
@@ -143,7 +135,6 @@
 ![image.png](/legacy/632b1a552ba92b3c.png)
 
 这里其实可以不用等它，只要DNS记录验证成功，就可以直接访问站点了
-
 
 ### 访问站点
 

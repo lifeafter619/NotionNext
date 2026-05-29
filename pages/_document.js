@@ -51,32 +51,48 @@ class MyDocument extends Document {
           <link rel='dns-prefetch' href='//fonts.gstatic.com' />
           <link rel='dns-prefetch' href='//npm.elemecdn.com' />
           <link rel='dns-prefetch' href='//cdnjs.cloudflare.com' />
-          
+
           {/* 预连接 - 提前建立连接 */}
-          <link rel='preconnect' href='https://fonts.googleapis.com' crossOrigin='anonymous' />
-          <link rel='preconnect' href='https://fonts.gstatic.com' crossOrigin='anonymous' />
-          <link rel='preconnect' href='https://npm.elemecdn.com' crossOrigin='anonymous' />
+          <link
+            rel='preconnect'
+            href='https://fonts.googleapis.com'
+            crossOrigin='anonymous'
+          />
+          <link
+            rel='preconnect'
+            href='https://fonts.gstatic.com'
+            crossOrigin='anonymous'
+          />
+          <link
+            rel='preconnect'
+            href='https://npm.elemecdn.com'
+            crossOrigin='anonymous'
+          />
 
           {/* 预加载字体样式表 */}
-          {fontUrls.filter(url => url).map((url, index) => (
-            <link
-              key={`preload-font-${index}`}
-              rel='preload'
-              href={url}
-              as='style'
-              crossOrigin='anonymous'
-            />
-          ))}
+          {fontUrls
+            .filter(url => url)
+            .map((url, index) => (
+              <link
+                key={`preload-font-${index}`}
+                rel='preload'
+                href={url}
+                as='style'
+                crossOrigin='anonymous'
+              />
+            ))}
 
           {/* 加载字体样式表 */}
-          {fontUrls.filter(url => url).map((url, index) => (
-            <link
-              key={`font-${index}`}
-              rel='stylesheet'
-              href={url}
-              crossOrigin='anonymous'
-            />
-          ))}
+          {fontUrls
+            .filter(url => url)
+            .map((url, index) => (
+              <link
+                key={`font-${index}`}
+                rel='stylesheet'
+                href={url}
+                crossOrigin='anonymous'
+              />
+            ))}
 
           {/* 预加载 Font Awesome */}
           {BLOG.FONT_AWESOME && (

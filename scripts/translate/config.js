@@ -5,7 +5,9 @@ function envIds() {
   const en = process.env.NOTION_DB_EN_ID
   const zh = process.env.NOTION_DB_ZH_ID
   if (!en || !zh) {
-    throw new Error('NOTION_DB_EN_ID 与 NOTION_DB_ZH_ID 均需在项目根目录 .env.local 中配置')
+    throw new Error(
+      'NOTION_DB_EN_ID 与 NOTION_DB_ZH_ID 均需在项目根目录 .env.local 中配置'
+    )
   }
   return { en, zh }
 }

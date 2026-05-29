@@ -98,4 +98,3 @@ const MenuList = ({ locale, customNav, customMenu, mobile = false }) => {
 }
 
 export default MenuList
-

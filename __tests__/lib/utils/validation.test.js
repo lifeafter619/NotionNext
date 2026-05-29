@@ -107,13 +107,7 @@ describe('Validator', () => {
     })
 
     it('rejects invalid Notion IDs', () => {
-      const invalidIds = [
-        'not-a-uuid',
-        '123-456-789',
-        '',
-        null,
-        undefined
-      ]
+      const invalidIds = ['not-a-uuid', '123-456-789', '', null, undefined]
 
       invalidIds.forEach(id => {
         expect(Validator.isValidNotionId(id)).toBe(false)
@@ -153,7 +147,9 @@ describe('Validator', () => {
 describe('Sanitizer', () => {
   describe('stripHtml', () => {
     it('removes HTML tags', () => {
-      expect(Sanitizer.stripHtml('<p>Hello <b>world</b></p>')).toBe('Hello world')
+      expect(Sanitizer.stripHtml('<p>Hello <b>world</b></p>')).toBe(
+        'Hello world'
+      )
       expect(Sanitizer.stripHtml('<script>alert(1)</script>')).toBe('alert(1)')
       expect(Sanitizer.stripHtml('No HTML here')).toBe('No HTML here')
     })
@@ -174,7 +170,9 @@ describe('Sanitizer', () => {
 
     it('preserves safe content', () => {
       expect(Sanitizer.sanitizeXss('Hello world')).toBe('Hello world')
-      expect(Sanitizer.sanitizeXss('Safe text content')).toBe('Safe text content')
+      expect(Sanitizer.sanitizeXss('Safe text content')).toBe(
+        'Safe text content'
+      )
     })
   })
 
@@ -185,7 +183,9 @@ describe('Sanitizer', () => {
     })
 
     it('replaces spaces with underscores', () => {
-      expect(Sanitizer.sanitizeFilename('my file name.txt')).toBe('my_file_name.txt')
+      expect(Sanitizer.sanitizeFilename('my file name.txt')).toBe(
+        'my_file_name.txt'
+      )
     })
 
     it('removes leading and trailing dots', () => {
@@ -225,7 +225,7 @@ describe('RateLimiter', () => {
     for (let i = 0; i < 5; i++) {
       expect(rateLimiter.isRateLimited('user1', 5, 60000)).toBe(false)
     }
-    
+
     // 6th request should be blocked
     expect(rateLimiter.isRateLimited('user1', 5, 60000)).toBe(true)
   })
@@ -235,13 +235,13 @@ describe('RateLimiter', () => {
     for (let i = 0; i < 5; i++) {
       rateLimiter.isRateLimited('user1', 5, 60000)
     }
-    
+
     // Should be blocked
     expect(rateLimiter.isRateLimited('user1', 5, 60000)).toBe(true)
-    
+
     // Advance time past window
     jest.advanceTimersByTime(61000)
-    
+
     // Should be allowed again
     expect(rateLimiter.isRateLimited('user1', 5, 60000)).toBe(false)
   })
@@ -251,10 +251,10 @@ describe('RateLimiter', () => {
     for (let i = 0; i < 5; i++) {
       rateLimiter.isRateLimited('user1', 5, 60000)
     }
-    
+
     // User1 should be blocked
     expect(rateLimiter.isRateLimited('user1', 5, 60000)).toBe(true)
-    
+
     // User2 should still be allowed
     expect(rateLimiter.isRateLimited('user2', 5, 60000)).toBe(false)
   })

@@ -36,18 +36,18 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `NAV_INDEX_PAGE` | 见 config.js |
-| `NAV_AUTO_SORT` | 见 config.js |
-| `NAV_SHOW_TITLE_TEXT` | 见 config.js |
-| `NAV_USE_CUSTOM_MENU` | 见 config.js |
-| `NAV_MENU_CATEGORY` | 见 config.js |
-| `NAV_MENU_TAG` | 见 config.js |
-| `NAV_MENU_ARCHIVE` | 见 config.js |
-| `NAV_MENU_SEARCH` | 见 config.js |
+| 配置键                     | 说明         |
+| -------------------------- | ------------ |
+| `NAV_INDEX_PAGE`           | 见 config.js |
+| `NAV_AUTO_SORT`            | 见 config.js |
+| `NAV_SHOW_TITLE_TEXT`      | 见 config.js |
+| `NAV_USE_CUSTOM_MENU`      | 见 config.js |
+| `NAV_MENU_CATEGORY`        | 见 config.js |
+| `NAV_MENU_TAG`             | 见 config.js |
+| `NAV_MENU_ARCHIVE`         | 见 config.js |
+| `NAV_MENU_SEARCH`          | 见 config.js |
 | `NAV_WIDGET_REVOLVER_MAPS` | 见 config.js |
-| `NAV_WIDGET_TO_TOP` | 见 config.js |
+| `NAV_WIDGET_TO_TOP`        | 见 config.js |
 
 <!-- /theme-config-table -->
 

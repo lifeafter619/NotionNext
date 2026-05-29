@@ -57,7 +57,8 @@ export default async function handler(req, res) {
       }
       return res.status(200).json({
         ok: true,
-        message: 'Full site cache cleared. Homepage revalidated. Other pages will refresh on next visit.',
+        message:
+          'Full site cache cleared. Homepage revalidated. Other pages will refresh on next visit.',
         results
       })
     }
@@ -72,7 +73,11 @@ export default async function handler(req, res) {
         await res.revalidate(normalizedPath)
         results.push({ path: normalizedPath, revalidated: true })
       } catch (e) {
-        results.push({ path: normalizedPath, revalidated: false, error: e.message })
+        results.push({
+          path: normalizedPath,
+          revalidated: false,
+          error: e.message
+        })
       }
     }
 

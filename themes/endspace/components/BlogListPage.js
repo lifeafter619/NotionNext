@@ -12,17 +12,15 @@ export const BlogListPage = ({ posts = [], page = 1, postCount }) => {
   const totalPage = Math.ceil(postCount / POSTS_PER_PAGE)
 
   return (
-    <div className="w-full">
-      <div id="posts-wrapper">
-        {posts?.map((post) => (
+    <div className='w-full'>
+      <div id='posts-wrapper'>
+        {posts?.map(post => (
           <BlogPostCard key={post.id} post={post} showSummary={true} />
         ))}
       </div>
 
       {/* Pagination */}
-      {totalPage > 1 && (
-        <PaginationNumber page={page} totalPage={totalPage} />
-      )}
+      {totalPage > 1 && <PaginationNumber page={page} totalPage={totalPage} />}
     </div>
   )
 }

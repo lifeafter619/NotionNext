@@ -12,12 +12,7 @@ import HomeTimeline from './HomeTimeline'
  * @returns
  */
 export const BlogListPage = props => {
-  const {
-    page = 1,
-    posts,
-    postCount,
-    useTimeline: useTimelineProp
-  } = props
+  const { page = 1, posts, postCount, useTimeline: useTimelineProp } = props
   const { locale, NOTION_CONFIG } = useGlobal()
   const router = useRouter()
   const totalPage = Math.ceil(

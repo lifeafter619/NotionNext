@@ -1,4 +1,5 @@
 # Zeabur云部署
+
 > 迁移自：[Zeabur云部署](https://docs.tangly1024.com/article/deploy-notion-next-with-zeabur)
 > 发布日期：2023-6-29
 > 最后编辑：2026-5-2
@@ -19,7 +20,6 @@ Zeabur是一款优秀的、国人自研的托管平台，部署效果预览：
 
 一个NotionNext搭建的博客
 
-
 ## 开始
 
 创建一个项目
@@ -29,7 +29,6 @@ Zeabur是一款优秀的、国人自研的托管平台，部署效果预览：
 ![Untitled](/legacy/56648b6274aae7ee.png)
 
 ![Untitled](/legacy/9fb2369458bdd9a6.png)
-
 
 ## 导入代码
 
@@ -57,7 +56,6 @@ Zeabur是一款优秀的、国人自研的托管平台，部署效果预览：
 
 点击导入，然后等着就好了
 
-
 ## 配置
 
 项目下方的Variable中可以添加对应的环境变量
@@ -66,20 +64,17 @@ Zeabur是一款优秀的、国人自研的托管平台，部署效果预览：
 
 ![Untitled](/legacy/98603dd527e1d790.png)
 
-
 ### 其它一键部署
 
 [Zeabur](https://dash.zeabur.com/templates/AA9MFJ)
 
-A platform that help you deploy your service with one click,                No matter what programming language you use, what framework you use.
-
+A platform that help you deploy your service with one click, No matter what programming language you use, what framework you use.
 
 ### 绑定个性域名
 
 添加域名后进行CNAME解析即可,可参考Vercel绑定自定义域名
 
 ![Untitled](/legacy/ada386bbcaad48df.png)
-
 
 ## 官方文档
 

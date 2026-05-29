@@ -1,11 +1,19 @@
 const { request } = require('./_http')
 
 // 智谱 GLM 翻译适配器；与 DeepSeek 对应的备选实现。
-async function translate({ text, sourceLang, targetLang, glossary, hint, signal }) {
+async function translate({
+  text,
+  sourceLang,
+  targetLang,
+  glossary,
+  hint,
+  signal
+}) {
   const apiKey = process.env.GLM_API_KEY
   if (!apiKey) throw new Error('GLM_API_KEY 未设置')
 
-  const baseUrl = process.env.GLM_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4'
+  const baseUrl =
+    process.env.GLM_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4'
   const model = process.env.GLM_MODEL || 'glm-4-plus'
 
   const preserveList = (glossary?.preserve || []).join(', ')
@@ -17,8 +25,8 @@ async function translate({ text, sourceLang, targetLang, glossary, hint, signal 
     hint === 'mermaid'
       ? 'This input is Mermaid diagram code. Translate ONLY human-readable labels/titles/node text. Preserve every keyword, arrow, bracket, color, and identifier exactly.'
       : hint === 'plantuml'
-      ? 'This input is PlantUML code. Translate ONLY labels/titles. Preserve all keywords/arrows/identifiers exactly.'
-      : ''
+        ? 'This input is PlantUML code. Translate ONLY labels/titles. Preserve all keywords/arrows/identifiers exactly.'
+        : ''
 
   const system = [
     `You are a professional bilingual translator for technical blog posts.`,

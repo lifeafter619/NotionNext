@@ -17,7 +17,10 @@ jest.mock('@/lib/utils/buildMode', () => ({
 
 const { getOrSetDataWithCache } = require('@/lib/cache/cache_manager')
 const { fetchGlobalAllData } = require('@/lib/db/SiteDataApi')
-const { getPriorityPages, prefetchAllBlockMaps } = require('@/lib/build/prefetch')
+const {
+  getPriorityPages,
+  prefetchAllBlockMaps
+} = require('@/lib/build/prefetch')
 const { isExport } = require('@/lib/utils/buildMode')
 
 describe('staticPaths build helpers', () => {

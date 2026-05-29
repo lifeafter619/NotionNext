@@ -12,8 +12,7 @@ const Announcement = ({ post, className }) => {
     return <></>
   }
   return (
-    <aside
-      className={`tl-card mb-6 w-full overflow-hidden ${className || ''}`}>
+    <aside className={`tl-card mb-6 w-full overflow-hidden ${className || ''}`}>
       <h3 className='border-b border-[var(--tl-border)] bg-[var(--tl-bg)] px-4 py-3 text-sm text-[var(--tl-text)]'>
         <i className='mr-2 fas fa-bullhorn' />
         {locale.COMMON.ANNOUNCEMENT}

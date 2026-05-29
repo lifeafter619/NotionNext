@@ -73,8 +73,7 @@ const BlogItem = ({ post, variant = 'default' }) => {
 
         <div className='mb-4 text-sm text-[var(--tl-muted)]'>
           by{' '}
-          <span className='text-[var(--tl-muted)]'>{siteConfig('AUTHOR')}</span>
-          {' '}
+          <span className='text-[var(--tl-muted)]'>{siteConfig('AUTHOR')}</span>{' '}
           on {post.date?.start_date || post.createdTime}
           <TwikooCommentCount post={post} className='pl-1' />
           {post.category && (

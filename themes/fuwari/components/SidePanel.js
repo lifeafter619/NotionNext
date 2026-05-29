@@ -33,7 +33,9 @@ const SidePanel = props => {
   return (
     <aside className='space-y-4'>
       <section className='fuwari-card fuwari-profile-card p-4'>
-        <SmartLink href={siteConfig('FUWARI_PROFILE_PATH', '/about', CONFIG)} className='fuwari-profile-link block mb-2.5'>
+        <SmartLink
+          href={siteConfig('FUWARI_PROFILE_PATH', '/about', CONFIG)}
+          className='fuwari-profile-link block mb-2.5'>
           <div className='fuwari-profile-thumb relative overflow-hidden rounded-2xl'>
             <LazyImage
               src={siteInfo?.icon}
@@ -45,7 +47,9 @@ const SidePanel = props => {
             </span>
           </div>
         </SmartLink>
-        <h2 className='text-xl font-semibold mb-1'>{siteConfig('AUTHOR') || title}</h2>
+        <h2 className='text-xl font-semibold mb-1'>
+          {siteConfig('AUTHOR') || title}
+        </h2>
         {description && (
           <p className='text-sm leading-6 text-[var(--fuwari-muted)]'>
             {description}
@@ -68,62 +72,69 @@ const SidePanel = props => {
       {siteConfig('FUWARI_WIDGET_NOTICE', true, CONFIG) &&
         notice &&
         Object.keys(notice).length > 0 && (
-          <Announcement post={notice} title={locale?.COMMON?.ANNOUNCEMENT || '公告'} className='p-5' />
-      )}
+          <Announcement
+            post={notice}
+            title={locale?.COMMON?.ANNOUNCEMENT || '公告'}
+            className='p-5'
+          />
+        )}
 
-      {siteConfig('FUWARI_WIDGET_LATEST_POSTS', true, CONFIG) && latestPosts.length > 0 && (
-        <section className='fuwari-card p-5'>
-          <h3 className='text-sm font-semibold mb-3 tracking-wide uppercase text-[var(--fuwari-muted)]'>
-            {locale?.COMMON?.LATEST_POSTS || '最新发布'}
-          </h3>
-          <div className='space-y-2'>
-            {latestPosts.slice(0, 6).map(p => (
-              <SmartLink
-                key={p.id}
-                href={p.href || `/${p.slug}`}
-                className='block text-sm leading-6 hover:text-[var(--fuwari-primary)]'>
-                {p.title}
-              </SmartLink>
-            ))}
-          </div>
-        </section>
-      )}
+      {siteConfig('FUWARI_WIDGET_LATEST_POSTS', true, CONFIG) &&
+        latestPosts.length > 0 && (
+          <section className='fuwari-card p-5'>
+            <h3 className='text-sm font-semibold mb-3 tracking-wide uppercase text-[var(--fuwari-muted)]'>
+              {locale?.COMMON?.LATEST_POSTS || '最新发布'}
+            </h3>
+            <div className='space-y-2'>
+              {latestPosts.slice(0, 6).map(p => (
+                <SmartLink
+                  key={p.id}
+                  href={p.href || `/${p.slug}`}
+                  className='block text-sm leading-6 hover:text-[var(--fuwari-primary)]'>
+                  {p.title}
+                </SmartLink>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {siteConfig('FUWARI_WIDGET_CATEGORY_LIST', true, CONFIG) && categoryOptions.length > 0 && (
-        <section className='fuwari-card p-5'>
-          <h3 className='fuwari-section-title text-sm font-semibold mb-3 tracking-wide uppercase text-[var(--fuwari-muted)]'>
-            {locale?.COMMON?.CATEGORY || '分类'}
-          </h3>
-          <div className='flex flex-wrap gap-2'>
-            {categoryOptions.slice(0, 14).map(c => (
-              <SmartLink
-                key={c.name}
-                href={`/category/${encodeURIComponent(c.name)}`}
-                className='fuwari-chip'>
-                {c.name} {c.count ? `(${c.count})` : ''}
-              </SmartLink>
-            ))}
-          </div>
-        </section>
-      )}
+      {siteConfig('FUWARI_WIDGET_CATEGORY_LIST', true, CONFIG) &&
+        categoryOptions.length > 0 && (
+          <section className='fuwari-card p-5'>
+            <h3 className='fuwari-section-title text-sm font-semibold mb-3 tracking-wide uppercase text-[var(--fuwari-muted)]'>
+              {locale?.COMMON?.CATEGORY || '分类'}
+            </h3>
+            <div className='flex flex-wrap gap-2'>
+              {categoryOptions.slice(0, 14).map(c => (
+                <SmartLink
+                  key={c.name}
+                  href={`/category/${encodeURIComponent(c.name)}`}
+                  className='fuwari-chip'>
+                  {c.name} {c.count ? `(${c.count})` : ''}
+                </SmartLink>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {siteConfig('FUWARI_WIDGET_TAG_LIST', true, CONFIG) && tagOptions.length > 0 && (
-        <section className='fuwari-card p-5'>
-          <h3 className='fuwari-section-title text-sm font-semibold mb-3 tracking-wide uppercase text-[var(--fuwari-muted)]'>
-            {locale?.COMMON?.TAGS || '标签'}
-          </h3>
-          <div className='flex flex-wrap gap-2'>
-            {tagOptions.slice(0, 28).map(t => (
-              <SmartLink
-                key={t.name}
-                href={`/tag/${encodeURIComponent(t.name)}`}
-                className='fuwari-chip'>
-                #{t.name}
-              </SmartLink>
-            ))}
-          </div>
-        </section>
-      )}
+      {siteConfig('FUWARI_WIDGET_TAG_LIST', true, CONFIG) &&
+        tagOptions.length > 0 && (
+          <section className='fuwari-card p-5'>
+            <h3 className='fuwari-section-title text-sm font-semibold mb-3 tracking-wide uppercase text-[var(--fuwari-muted)]'>
+              {locale?.COMMON?.TAGS || '标签'}
+            </h3>
+            <div className='flex flex-wrap gap-2'>
+              {tagOptions.slice(0, 28).map(t => (
+                <SmartLink
+                  key={t.name}
+                  href={`/tag/${encodeURIComponent(t.name)}`}
+                  className='fuwari-chip'>
+                  #{t.name}
+                </SmartLink>
+              ))}
+            </div>
+          </section>
+        )}
 
       <ContactCard />
       <AnalyticsCard
@@ -138,4 +149,3 @@ const SidePanel = props => {
 }
 
 export default SidePanel
-

@@ -17,6 +17,7 @@ This theme combines the clean reading experience of **Claude Docs** with the ric
 
 1.  **Configure Environment**:
     Add to your `.env` or `.env.local` (see below for details):
+
     ```bash
     # Activate Theme
     NEXT_PUBLIC_THEME=claude  # or configure in notion configuration page
@@ -42,40 +43,49 @@ This theme combines the clean reading experience of **Claude Docs** with the ric
 ## 1. Design Strategy
 
 ### Desktop View
+
 The layout uses a 3-column structure inspired by technical documentation sites:
--   **Left Sidebar**: Persistent navigation, profile card, contact info, and a simulated terminal prompt.
--   **Center Content**: The main reading area, optimized for long-form content.
--   **Right Sidebar**: Table of Contents (TOC) that tracks scrolling position (Article pages only).
+
+- **Left Sidebar**: Persistent navigation, profile card, contact info, and a simulated terminal prompt.
+- **Center Content**: The main reading area, optimized for long-form content.
+- **Right Sidebar**: Table of Contents (TOC) that tracks scrolling position (Article pages only).
 
 ### Mobile Adaptation
+
 Mobile design is a first-class citizen, not an afterthought:
--   **Navigation**: Collapses into a clean top bar.
--   **Heatmap**: Preserves the square aspect ratio of contribution cells; allows horizontal scrolling instead of shrinking cells.
--   **Typography**: Maintains readability with appropriate font scaling.
--   **Interactions**: Touch-friendly targets for all clickable elements.
+
+- **Navigation**: Collapses into a clean top bar.
+- **Heatmap**: Preserves the square aspect ratio of contribution cells; allows horizontal scrolling instead of shrinking cells.
+- **Typography**: Maintains readability with appropriate font scaling.
+- **Interactions**: Touch-friendly targets for all clickable elements.
 
 ---
 
 ## 2. Features Details
 
 ### Contribution Heatmap & Activity
+
 The homepage features a GitHub-style contribution graph and activity feed.
 
--   **Heatmap**: Displays daily contribution levels (0-4) based on article creation and updates.
--   **Activity Feed**: A chronological stream of your "commits" (article updates) and "created repositories" (new articles).
--   **Yearly View**: Switch between a rolling 1-year window or specific calendar years.
+- **Heatmap**: Displays daily contribution levels (0-4) based on article creation and updates.
+- **Activity Feed**: A chronological stream of your "commits" (article updates) and "created repositories" (new articles).
+- **Yearly View**: Switch between a rolling 1-year window or specific calendar years.
 
 ### README Rendering
+
 Your `readme.md` Notion page is rendered directly on the homepage, serving as your "Profile README".
--   **Rendering Pipeline**: Notion Blocks -> Markdown -> HTML.
--   **Engine**: Prioritizes GitHub's `/markdown` API for perfect GFM (GitHub Flavored Markdown) fidelity, falling back to a local parser if the API limit is reached.
--   **Caching**: Rendered HTML is cached to prevent redundant API calls and speed up page loads.
+
+- **Rendering Pipeline**: Notion Blocks -> Markdown -> HTML.
+- **Engine**: Prioritizes GitHub's `/markdown` API for perfect GFM (GitHub Flavored Markdown) fidelity, falling back to a local parser if the API limit is reached.
+- **Caching**: Rendered HTML is cached to prevent redundant API calls and speed up page loads.
 
 ### Terminal Widget
+
 A dynamic element in the sidebar that shows:
--   Last login time (simulated).
--   Current "user" and "machine" (e.g., `user@Macintosh ~ %`).
--   Typing effect for the blog title.
+
+- Last login time (simulated).
+- Current "user" and "machine" (e.g., `user@Macintosh ~ %`).
+- Typing effect for the blog title.
 
 ---
 
@@ -83,20 +93,20 @@ A dynamic element in the sidebar that shows:
 
 Config file: `themes/claude/config.js`
 
-| Config Key | Description | Default |
-| :--- | :--- | :--- |
-| `CLAUDE_BLOG_NAME` | Main blog title | '活字印刷' |
-| `CLAUDE_BLOG_NAME_EN` | Subtitle / English title | 'Typography' |
-| `CLAUDE_MENU_CATEGORY` | Show sidebar categories | `true` |
-| `CLAUDE_MENU_TAG` | Show sidebar tags | `true` |
-| `CLAUDE_MENU_ARCHIVE` | Show sidebar archives | `true` |
-| `CLAUDE_TOC_ENABLE` | Enable Table of Contents | `true` |
-| `CLAUDE_TOC_SHOW_LEVEL3` | Show H3 in TOC | `true` |
-| `CLAUDE_TOC_SCROLL_BEHAVIOR` | TOC scroll animation | 'instant' (or 'smooth') |
-| `CLAUDE_PROFILE_AVATAR` | Custom avatar URL | `''` (Use global avatar) |
-| `CLAUDE_README_CACHE_ENABLED` | Cache README HTML | `true` |
-| `CLAUDE_CONTRIBUTION_PERSIST_ENABLED` | Enable Supabase persistence | `true` |
-| `CLAUDE_CONTRIBUTION_EVENT_LIMIT` | Max events to fetch | `50000` |
+| Config Key                            | Description                 | Default                  |
+| :------------------------------------ | :-------------------------- | :----------------------- |
+| `CLAUDE_BLOG_NAME`                    | Main blog title             | '活字印刷'               |
+| `CLAUDE_BLOG_NAME_EN`                 | Subtitle / English title    | 'Typography'             |
+| `CLAUDE_MENU_CATEGORY`                | Show sidebar categories     | `true`                   |
+| `CLAUDE_MENU_TAG`                     | Show sidebar tags           | `true`                   |
+| `CLAUDE_MENU_ARCHIVE`                 | Show sidebar archives       | `true`                   |
+| `CLAUDE_TOC_ENABLE`                   | Enable Table of Contents    | `true`                   |
+| `CLAUDE_TOC_SHOW_LEVEL3`              | Show H3 in TOC              | `true`                   |
+| `CLAUDE_TOC_SCROLL_BEHAVIOR`          | TOC scroll animation        | 'instant' (or 'smooth')  |
+| `CLAUDE_PROFILE_AVATAR`               | Custom avatar URL           | `''` (Use global avatar) |
+| `CLAUDE_README_CACHE_ENABLED`         | Cache README HTML           | `true`                   |
+| `CLAUDE_CONTRIBUTION_PERSIST_ENABLED` | Enable Supabase persistence | `true`                   |
+| `CLAUDE_CONTRIBUTION_EVENT_LIMIT`     | Max events to fetch         | `50000`                  |
 
 > Most options can be overridden via `NEXT_PUBLIC_` env vars.
 
@@ -107,12 +117,14 @@ Config file: `themes/claude/config.js`
 To fully enable all features, especially contribution persistence, configure the following in `.env.local` or your deployment platform.
 
 ### Basic Setup
+
 ```bash
 NEXT_PUBLIC_THEME=claude
 NOTION_PAGE_ID=<your-page-id>
 ```
 
 ### Supabase (Required for Persistent Contributions)
+
 Without this, the heatmap is generated on-the-fly from the current post list, which loses historical accuracy (e.g., deleted posts, precise update times).
 
 ```bash
@@ -124,6 +136,7 @@ SUPABASE_SECRET_KEY=your-service-role-key-or-secret
 ```
 
 ### Advanced Cache Control
+
 ```bash
 # Enable internal caching (recommended)
 ENABLE_CACHE=true
@@ -139,6 +152,7 @@ REDIS_URL=redis://user:pass@host:port
 If using Supabase, create these two tables to store contribution data.
 
 ### 1. Events Table (`claude_contribution_events_v1`)
+
 Stores individual contribution events (create/update).
 
 ```sql
@@ -159,6 +173,7 @@ create index if not exists idx_claude_contrib_events_repo
 ```
 
 ### 2. Snapshots Table (`claude_contribution_snapshots_v1`)
+
 Tracks the state of posts to detect changes during builds.
 
 ```sql
@@ -176,10 +191,11 @@ create index if not exists idx_claude_contrib_snapshots_updated
 ```
 
 ### Update Logic
+
 1.  **Sync**: On build (`getStaticProps` of index), the system compares current Notion posts against `snapshots`.
 2.  **Detect**:
-    *   New post? -> Insert `create` event.
-    *   Updated post (`updatedAt > lastSnapshot.updatedAt`)? -> Insert `update` event.
+    - New post? -> Insert `create` event.
+    - Updated post (`updatedAt > lastSnapshot.updatedAt`)? -> Insert `update` event.
 3.  **Persist**: Updates are upserted to Supabase.
 4.  **Display**: The heatmap reads from the `events` table (filtered to exclude today to prevent jitter).
 
@@ -190,33 +206,36 @@ create index if not exists idx_claude_contrib_snapshots_updated
 The theme employs a multi-level caching strategy for stability.
 
 1.  **Contribution Daily Cache** (Local Memory):
-    *   Aggregates events for the day.
-    *   Reduces database reads.
-    *   Refreshes on new builds or via API.
+    - Aggregates events for the day.
+    - Reduces database reads.
+    - Refreshes on new builds or via API.
 
 2.  **README HTML Cache**:
-    *   Caches the expensive GitHub API markdown rendering.
-    *   Key: `readme_render_snapshot_v2_${pageId}`.
+    - Caches the expensive GitHub API markdown rendering.
+    - Key: `readme_render_snapshot_v2_${pageId}`.
 
 3.  **GitHub Markdown API Cache**:
-    *   Caches the raw response from GitHub to avoid rate limits (60 requests/hr for unauthenticated IPs).
-    *   Fallback: If the API fails or limits, falls back to a local `marked` + `highlight.js` renderer.
+    - Caches the raw response from GitHub to avoid rate limits (60 requests/hr for unauthenticated IPs).
+    - Fallback: If the API fails or limits, falls back to a local `marked` + `highlight.js` renderer.
 
 ---
 
 ## 7. Troubleshooting
 
 **Q: My heatmap is empty.**
-*   Ensure `NEXT_PUBLIC_CLAUDE_CONTRIBUTION_PERSIST_ENABLED=true`.
-*   Check if Supabase tables exist and keys are correct.
-*   Verify `NOTION_PAGE_ID` allows access to the posts.
+
+- Ensure `NEXT_PUBLIC_CLAUDE_CONTRIBUTION_PERSIST_ENABLED=true`.
+- Check if Supabase tables exist and keys are correct.
+- Verify `NOTION_PAGE_ID` allows access to the posts.
 
 **Q: Changes made today are not showing.**
-*   By design, the heatmap shows data *up to yesterday* to ensure the grid is stable and complete. Today's dots appear tomorrow.
-*   You can force a refresh manually if needed via the refresh API.
+
+- By design, the heatmap shows data _up to yesterday_ to ensure the grid is stable and complete. Today's dots appear tomorrow.
+- You can force a refresh manually if needed via the refresh API.
 
 **Q: The README styling looks different.**
-*   This usually means the GitHub API rate limit was hit, and the theme fell back to the local renderer. It will recover automatically when the cache expires or the limit resets.
+
+- This usually means the GitHub API rate limit was hit, and the theme fell back to the local renderer. It will recover automatically when the cache expires or the limit resets.
 
 ---
 
@@ -235,6 +254,7 @@ The theme uses three layers so the sidebar only refreshes on browser refresh:
 > **Merge warning:** this modification is in global `pages/_app.js`, not inside the claude theme directory.
 
 The original code had two problems:
+
 1.  `theme` memo depended on the entire `route` object (`[route]`), which changes reference every route change.
 2.  `GLayout` wrapper inside `MyApp` called `getBaseLayoutByTheme(theme)` on each render.
 
@@ -267,25 +287,27 @@ Terminal login time and tty are stored in module-level variables outside React l
 
 ### Files Affected
 
-| File | Scope | Change |
-|---|---|---|
-| `pages/_app.js` | Global | Removed `GLayout`; memoized `Layout` reference |
-| `themes/claude/index.js` | Theme | Added `SidebarContent` memo wrapper |
-| `themes/claude/components/NavBar.js` | Theme | Terminal session moved to module cache |
+| File                                 | Scope  | Change                                         |
+| ------------------------------------ | ------ | ---------------------------------------------- |
+| `pages/_app.js`                      | Global | Removed `GLayout`; memoized `Layout` reference |
+| `themes/claude/index.js`             | Theme  | Added `SidebarContent` memo wrapper            |
+| `themes/claude/components/NavBar.js` | Theme  | Terminal session moved to module cache         |
 
 ---
 
 ## 9. Development
 
 ### Project Structure
-*   `themes/claude/components/`: UI components (NavBar, Catalog, etc.)
-*   `themes/claude/style.js`: CSS variables and global styles
-*   `lib/server/claude/contributionStore.js`: Supabase logic
-*   `pages/api/claude/`: API endpoints for cache revalidation
+
+- `themes/claude/components/`: UI components (NavBar, Catalog, etc.)
+- `themes/claude/style.js`: CSS variables and global styles
+- `lib/server/claude/contributionStore.js`: Supabase logic
+- `pages/api/claude/`: API endpoints for cache revalidation
 
 ### Commands
-*   `yarn dev`: Run locally
-*   `yarn build`: Production build (triggers contribution sync)
+
+- `yarn dev`: Run locally
+- `yarn build`: Production build (triggers contribution sync)
 
 ---
 
@@ -295,18 +317,19 @@ These changes are outside `themes/claude` but affect runtime behavior.
 
 ### 10.1 Stop RSS content fetching when RSS is disabled
 
-*   File: `pages/index.js`
-*   Change: `generateRss(props)` now runs only when `ENABLE_RSS=true`.
+- File: `pages/index.js`
+- Change: `generateRss(props)` now runs only when `ENABLE_RSS=true`.
 
 ### 10.2 Remove subtitle from homepage `<title>`
 
-*   File: `components/SEO.js`
-*   Route: `/`
-*   Change: homepage title changed from `site title | site description` to `site title` only.
+- File: `components/SEO.js`
+- Route: `/`
+- Change: homepage title changed from `site title | site description` to `site title` only.
 
 ### 10.3 Merge / Upgrade Notes
 
 When pulling upstream updates, verify:
+
 1.  `pages/_app.js` still memoizes `Layout` with `useMemo(() => getBaseLayoutByTheme(theme), [theme])`.
 2.  `theme` memo deps stay as `[route.asPath, pageProps?.NOTION_CONFIG?.THEME]`, not `[route]`.
 3.  No wrapper component reintroduces indirect `getBaseLayoutByTheme` calls.

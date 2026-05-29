@@ -36,8 +36,7 @@ export const Footer = ({ title }) => {
                 alt={siteConfig('AUTHOR')}
               />
               <h1 className='text-lg'>{title}</h1>
-              <span
-                className='underline font-bold justify-start'>
+              <span className='underline font-bold justify-start'>
                 {siteConfig('AUTHOR')}
               </span>
             </div>
@@ -59,7 +58,9 @@ export const Footer = ({ title }) => {
                     {group?.menus?.map((menu, index) => {
                       return (
                         <div key={index}>
-                          <SmartLink href={menu.href} className='hover:underline dark:text-gray-200'>
+                          <SmartLink
+                            href={menu.href}
+                            className='hover:underline dark:text-gray-200'>
                             {menu.title}
                           </SmartLink>
                         </div>

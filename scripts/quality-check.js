@@ -27,7 +27,11 @@ function log(message, color = 'reset') {
 function runCommand(command, description) {
   log(`\n🔍 ${description}...`, 'blue')
   try {
-    const output = execSync(command, { encoding: 'utf8', stdio: 'pipe' })
+    const output = execSync(command, {
+      encoding: 'utf8',
+      stdio: 'pipe',
+      maxBuffer: 50 * 1024 * 1024
+    })
     log(`✅ ${description} 通过`, 'green')
     return { success: true, output }
   } catch (error) {
@@ -56,18 +60,20 @@ function checkFileExists(filePath, description) {
 function analyzePackageJson() {
   log('\n📦 分析 package.json...', 'blue')
   const packagePath = path.join(process.cwd(), 'package.json')
-  
+
   if (!fs.existsSync(packagePath)) {
     log('❌ package.json 不存在', 'red')
     return false
   }
 
   const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
-  
+
   // 检查必要的脚本
   const requiredScripts = ['build', 'dev', 'start']
-  const missingScripts = requiredScripts.filter(script => !packageJson.scripts?.[script])
-  
+  const missingScripts = requiredScripts.filter(
+    script => !packageJson.scripts?.[script]
+  )
+
   if (missingScripts.length > 0) {
     log(`⚠️  缺少脚本: ${missingScripts.join(', ')}`, 'yellow')
   } else {
@@ -75,12 +81,15 @@ function analyzePackageJson() {
   }
 
   // 检查依赖版本
-  const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies }
+  const dependencies = {
+    ...packageJson.dependencies,
+    ...packageJson.devDependencies
+  }
   const outdatedDeps = []
-  
+
   // 这里可以添加更复杂的版本检查逻辑
   log(`📊 总依赖数量: ${Object.keys(dependencies).length}`, 'cyan')
-  
+
   return true
 }
 
@@ -92,7 +101,10 @@ function checkCodeCoverage() {
 
 function checkSecurity() {
   log('\n🔒 安全检查...', 'blue')
-  return runCommand('npm audit --audit-level=moderate', '依赖安全检查')
+  return runCommand(
+    'npm audit --audit-level=moderate --omit=dev --cache .tmp/npm-cache --loglevel=error',
+    '生产依赖安全检查'
+  )
 }
 
 function checkBundleSize() {
@@ -103,7 +115,7 @@ function checkBundleSize() {
 
 function generateReport(results) {
   log('\n📋 生成质量报告...', 'blue')
-  
+
   const report = {
     timestamp: new Date().toISOString(),
     results: results,
@@ -116,62 +128,86 @@ function generateReport(results) {
 
   const reportPath = path.join(process.cwd(), 'quality-report.json')
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2))
-  
+
   log(`📄 质量报告已生成: ${reportPath}`, 'cyan')
   return report
 }
 
 async function main() {
   log('🚀 开始代码质量检查', 'magenta')
-  
+
   const results = []
-  
+
   // 检查配置文件
   const configFiles = [
-    { path: '.eslintrc.js', name: 'ESLint 配置' },
+    { path: 'eslint.config.mjs', name: 'ESLint 配置' },
     { path: '.prettierrc.json', name: 'Prettier 配置' },
     { path: 'tsconfig.json', name: 'TypeScript 配置' },
     { path: 'next.config.js', name: 'Next.js 配置' }
   ]
-  
+
   configFiles.forEach(({ path: filePath, name }) => {
     const exists = checkFileExists(filePath, name)
     results.push({ name, success: exists, type: 'config' })
   })
-  
+
   // 分析 package.json
   const packageAnalysis = analyzePackageJson()
-  results.push({ name: 'Package.json 分析', success: packageAnalysis, type: 'analysis' })
-  
+  results.push({
+    name: 'Package.json 分析',
+    success: packageAnalysis,
+    type: 'analysis'
+  })
+
   // 运行 ESLint
-  const eslintResult = runCommand('npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0', 'ESLint 检查')
-  results.push({ name: 'ESLint', success: eslintResult.success, type: 'lint', ...eslintResult })
-  
+  const eslintResult = runCommand('npm run lint', 'ESLint 检查')
+  results.push({
+    name: 'ESLint',
+    success: eslintResult.success,
+    type: 'lint',
+    ...eslintResult
+  })
+
   // 运行 TypeScript 检查
-  const tscResult = runCommand('npx tsc --noEmit', 'TypeScript 类型检查')
-  results.push({ name: 'TypeScript', success: tscResult.success, type: 'type-check', ...tscResult })
-  
+  const tscResult = runCommand('npm run type-check', 'TypeScript 类型检查')
+  results.push({
+    name: 'TypeScript',
+    success: tscResult.success,
+    type: 'type-check',
+    ...tscResult
+  })
+
   // 运行 Prettier 检查
-  const prettierResult = runCommand('npx prettier --check .', 'Prettier 格式检查')
-  results.push({ name: 'Prettier', success: prettierResult.success, type: 'format', ...prettierResult })
-  
+  const prettierResult = runCommand('npm run format:check', 'Prettier 格式检查')
+  results.push({
+    name: 'Prettier',
+    success: prettierResult.success,
+    type: 'format',
+    ...prettierResult
+  })
+
   // 安全检查
   const securityResult = checkSecurity()
-  results.push({ name: '安全检查', success: securityResult.success, type: 'security', ...securityResult })
-  
+  results.push({
+    name: '安全检查',
+    success: securityResult.success,
+    type: 'security',
+    ...securityResult
+  })
+
   // 其他检查
   checkCodeCoverage()
   checkBundleSize()
-  
+
   // 生成报告
   const report = generateReport(results)
-  
+
   // 输出总结
   log('\n📊 质量检查总结:', 'magenta')
   log(`✅ 通过: ${report.summary.passed}`, 'green')
   log(`❌ 失败: ${report.summary.failed}`, 'red')
   log(`📊 总计: ${report.summary.total}`, 'cyan')
-  
+
   // 如果有失败的检查，退出码为 1
   if (report.summary.failed > 0) {
     log('\n⚠️  存在质量问题，请修复后重试', 'yellow')

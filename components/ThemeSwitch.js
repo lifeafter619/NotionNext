@@ -9,7 +9,7 @@ import { Moon, Sun } from './HeroIcons'
 import LazyImage from './LazyImage'
 import SideBarDrawer from './SideBarDrawer'
 
-function ThemeTierBadge ({ tier, labels }) {
+function ThemeTierBadge({ tier, labels }) {
   const isPaid = tier === 'paid'
   const text = isPaid ? labels.paid : labels.free
   const cls = isPaid
@@ -78,7 +78,10 @@ const ThemeSwitch = () => {
                   isDarkMode ? 'from-black/25' : 'from-black/10'
                 }`}
               />
-              <i className='fa-solid fa-palette relative text-[15px]' aria-hidden />
+              <i
+                className='fa-solid fa-palette relative text-[15px]'
+                aria-hidden
+              />
             </span>
             <div className='min-w-0 flex-1 overflow-hidden py-0.5'>
               <label htmlFor='themeSelect' className='sr-only'>
@@ -151,9 +154,7 @@ const ThemeSwitch = () => {
             <button
               type='button'
               onClick={toggleDarkMode}
-              aria-label={
-                isDarkMode ? '切换为浅色模式' : '切换为深色模式'
-              }
+              aria-label={isDarkMode ? '切换为浅色模式' : '切换为深色模式'}
               className='flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-r from-sky-50 via-white to-violet-50 px-4 py-3.5 text-left shadow-sm ring-1 ring-indigo-100/80 transition hover:border-indigo-400 hover:shadow-md active:scale-[0.99] dark:border-indigo-500/40 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/60 dark:ring-indigo-500/20 dark:hover:border-indigo-400/70'>
               <span className='flex min-w-0 flex-1 items-center gap-3'>
                 <span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-md ring-1 ring-gray-200 dark:bg-gray-800 dark:text-amber-300 dark:ring-gray-600 [&_svg]:h-7 [&_svg]:w-7'>
@@ -161,12 +162,12 @@ const ThemeSwitch = () => {
                 </span>
                 <span className='min-w-0'>
                   <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-                    {isDarkMode ? locale.MENU.DARK_MODE : locale.MENU.LIGHT_MODE}
+                    {isDarkMode
+                      ? locale.MENU.DARK_MODE
+                      : locale.MENU.LIGHT_MODE}
                   </span>
                   <span className='mt-0.5 block text-xs text-gray-600 dark:text-gray-400'>
-                    {isDarkMode
-                      ? '点击切换为浅色模式'
-                      : '点击切换为深色模式'}
+                    {isDarkMode ? '点击切换为浅色模式' : '点击切换为深色模式'}
                   </span>
                 </span>
               </span>

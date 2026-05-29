@@ -18,7 +18,6 @@ const PrefixSlug = props => {
   return <Slug {...props} />
 }
 
-
 export async function getStaticPaths() {
   return getStaticPathsBase({
     from: 'slug-paths',
@@ -42,12 +41,11 @@ export async function getStaticProps({
   params: { prefix, slug, suffix },
   locale
 }) {
-
   const props = await resolvePostProps({
     prefix,
     slug,
     suffix,
-    locale,
+    locale
   })
 
   return {
@@ -55,10 +53,10 @@ export async function getStaticProps({
     revalidate: isStaticExport
       ? undefined
       : siteConfig(
-        'NEXT_REVALIDATE_SECOND',
-        BLOG.NEXT_REVALIDATE_SECOND,
-        props.NOTION_CONFIG
-      ),
+          'NEXT_REVALIDATE_SECOND',
+          BLOG.NEXT_REVALIDATE_SECOND,
+          props.NOTION_CONFIG
+        ),
     notFound: !props.post
   }
 }

@@ -12,7 +12,7 @@ const ExternalScript = props => {
   }
 
   // next/script automatically handles deduplication and loading strategies
-  return <Script {...props} strategy="lazyOnload" />
+  return <Script {...props} strategy='lazyOnload' />
 }
 
 export default ExternalScript

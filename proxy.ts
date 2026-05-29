@@ -5,7 +5,7 @@ import { idToUuid } from 'notion-utils'
 import BLOG from './blog.config'
 
 /**
- * Clerk 身份验证中间件
+ * Clerk 身份验证代理
  */
 export const config = {
   // 这里设置白名单，防止静态资源被拦截
@@ -32,8 +32,7 @@ const isTenantAdminRoute = createRouteMatcher([
  * @param ev
  * @returns
  */
-// eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-const noAuthMiddleware = async (req: NextRequest, ev: any) => {
+const noAuthProxy = async (req: NextRequest) => {
   // 如果没有配置 Clerk 相关环境变量，返回一个默认响应或者继续处理请求
   if (BLOG['UUID_REDIRECT']) {
     let redirectJson: Record<string, string> = {}
@@ -61,11 +60,11 @@ const noAuthMiddleware = async (req: NextRequest, ev: any) => {
   return NextResponse.next()
 }
 /**
- * 鉴权中间件
+ * 鉴权代理
  */
-const authMiddleware = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-  ? clerkMiddleware((auth, req) => {
-      const { userId } = auth()
+const authProxy = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  ? clerkMiddleware(async (auth, req) => {
+      const { userId } = await auth()
       // 处理 /dashboard 路由的登录保护
       if (isTenantRoute(req)) {
         if (!userId) {
@@ -78,17 +77,14 @@ const authMiddleware = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
       // 处理管理员相关权限保护
       if (isTenantAdminRoute(req)) {
-        auth().protect(has => {
-          return (
-            has({ permission: 'org:sys_memberships:manage' }) ||
-            has({ permission: 'org:sys_domains_manage' })
-          )
+        await auth.protect(has => {
+          return has({ role: 'org:admin' })
         })
       }
 
       // 默认继续处理请求
       return NextResponse.next()
     })
-  : noAuthMiddleware
+  : noAuthProxy
 
-export default authMiddleware
+export default authProxy

@@ -7,11 +7,13 @@ const STORAGE_HUE_KEY = 'fuwari-theme-hue'
 function hslToHex(h, s, l) {
   s /= 100
   l /= 100
-  const a = (s * Math.min(l, 1 - l))
+  const a = s * Math.min(l, 1 - l)
   const f = n => {
     const k = (n + h / 30) % 12
     const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
-    return Math.round(255 * color).toString(16).padStart(2, '0')
+    return Math.round(255 * color)
+      .toString(16)
+      .padStart(2, '0')
   }
   return `#${f(0)}${f(8)}${f(4)}`
 }
@@ -26,8 +28,14 @@ const ThemeColorSwitch = ({ onColorChange }) => {
     const root = document.getElementById('theme-fuwari')
     if (!root) return
     root.style.setProperty('--fuwari-primary', nextColor)
-    root.style.setProperty('--fuwari-primary-soft', `hsla(${nextHue}, 85%, 62%, 0.14)`)
-    root.style.setProperty('--fuwari-gradient', `linear-gradient(135deg, hsl(${nextHue}, 85%, 62%) 0%, hsl(${(nextHue + 45) % 360}, 88%, 70%) 100%)`)
+    root.style.setProperty(
+      '--fuwari-primary-soft',
+      `hsla(${nextHue}, 85%, 62%, 0.14)`
+    )
+    root.style.setProperty(
+      '--fuwari-gradient',
+      `linear-gradient(135deg, hsl(${nextHue}, 85%, 62%) 0%, hsl(${(nextHue + 45) % 360}, 88%, 70%) 100%)`
+    )
   }
 
   useEffect(() => {
@@ -82,10 +90,11 @@ const ThemeColorSwitch = ({ onColorChange }) => {
           className='fuwari-hue-slider'
         />
       </div>
-      <p className='text-xs text-[var(--fuwari-muted)] mt-2 break-all'>Current HEX: {color}</p>
+      <p className='text-xs text-[var(--fuwari-muted)] mt-2 break-all'>
+        Current HEX: {color}
+      </p>
     </section>
   )
 }
 
 export default ThemeColorSwitch
-

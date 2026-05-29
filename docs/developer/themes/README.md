@@ -7,21 +7,21 @@
 
 ## 文档分工
 
-| 类型 | 位置 | 说明 |
-| --- | --- | --- |
-| 站长教程 | `docs/user-guide/themes/<id>.md` | 启用、场景、配置表；**Proxio / Heo 全文在此** |
-| 开发者深度 | 本目录 `CLAUDE.md` 等 | 实现细节、Supabase、`_app.js` 等 |
-| 已合并存根 | `PROXIO.md`、`HEO.md` | 仅重定向，勿再编辑 |
+| 类型       | 位置                             | 说明                                          |
+| ---------- | -------------------------------- | --------------------------------------------- |
+| 站长教程   | `docs/user-guide/themes/<id>.md` | 启用、场景、配置表；**Proxio / Heo 全文在此** |
+| 开发者深度 | 本目录 `CLAUDE.md` 等            | 实现细节、Supabase、`_app.js` 等              |
+| 已合并存根 | `PROXIO.md`、`HEO.md`            | 仅重定向，勿再编辑                            |
 
 ## 主题索引
 
-| Theme | 站长文档 | 开发者 / 英文 |
-| --- | --- | --- |
-| Proxio | [proxio.md](../../user-guide/themes/proxio.md) | 已合并至站长文档 |
-| HEO | [heo.md](../../user-guide/themes/heo.md) | 已合并至站长文档 |
-| Claude | [claude.md](../../user-guide/themes/claude.md) | [CLAUDE.md](./CLAUDE.md) · [CLAUDE.en.md](./CLAUDE.en.md) |
-| Endspace | [endspace.md](../../user-guide/themes/endspace.md) | [ENDSPACE.md](./ENDSPACE.md) · [ENDSPACE.en.md](./ENDSPACE.en.md) |
-| Fuwari | [fuwari.md](../../user-guide/themes/fuwari.md) | [FUWARI.md](./FUWARI.md) |
+| Theme       | 站长文档                                                 | 开发者 / 英文                                                                 |
+| ----------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Proxio      | [proxio.md](../../user-guide/themes/proxio.md)           | 已合并至站长文档                                                              |
+| HEO         | [heo.md](../../user-guide/themes/heo.md)                 | 已合并至站长文档                                                              |
+| Claude      | [claude.md](../../user-guide/themes/claude.md)           | [CLAUDE.md](./CLAUDE.md) · [CLAUDE.en.md](./CLAUDE.en.md)                     |
+| Endspace    | [endspace.md](../../user-guide/themes/endspace.md)       | [ENDSPACE.md](./ENDSPACE.md) · [ENDSPACE.en.md](./ENDSPACE.en.md)             |
+| Fuwari      | [fuwari.md](../../user-guide/themes/fuwari.md)           | [FUWARI.md](./FUWARI.md)                                                      |
 | ThoughtLite | [thoughtlite.md](../../user-guide/themes/thoughtlite.md) | [THOUGHTLITE.md](./THOUGHTLITE.md) · [THOUGHTLITE.en.md](./THOUGHTLITE.en.md) |
 
 全部主题列表：[THEMES_CATALOG.md](../../user-guide/themes/THEMES_CATALOG.md)

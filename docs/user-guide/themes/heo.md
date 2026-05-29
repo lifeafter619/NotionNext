@@ -1,9 +1,9 @@
 # HEO主题
+
 > 迁移自：[HEO主题](https://docs.tangly1024.com/article/notionnext-heo)
 > 发布日期：2023-7-18
 > 最后编辑：2024-9-12
 > 原栏目：⭐ 主题参数
-
 
 ## 主题预览
 
@@ -11,13 +11,11 @@
 
 > **💡** 感谢张洪大佬的设计 [https://blog.zhheo.com/](https://blog.zhheo.com/)
 
-
 ## 主题说明
 
 此主题参考[张洪大佬](https://blog.zhheo.com/)设计开发的[Acrylic-Promote](https://acrylic.zhheo.com/)主题，相似度极高，但很多细节上并非100%复刻，不足之处，日后改进。
 
 ![Untitled](/legacy/6a61730d8b966617.png)
-
 
 ## 使用主题
 
@@ -28,7 +26,6 @@
 ![Untitled](/legacy/c18a66ba4b1525db.png)
 
 图中从上往下分别标注了6个区域，他们分别的功能和配置内容如下：
-
 
 ## 1. 顶部横幅
 
@@ -42,13 +39,12 @@
   ],
 ```
 
-
 ## 2. 英雄区
-
 
 ### 英雄区左侧
 
 1. **左上角的卡牌**点击是随机跳转到一篇文章，此功能无法修改配置，但是可以在源代码[themes/heo/components/Hero.js](https://github.com/tangly1024/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/components/Hero.js#L58)中看到。
+
 ```JavaScript
 // 跳转到任意文章
   function handleClickBanner() {
@@ -59,7 +55,8 @@
 ```
 
 1. **左上卡牌大标题** [themes/heo/config.js](https://github.com/tangly1024/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/config.js#L12C1-L15C34)
-![Untitled](/legacy/9db05c53471e735b.png)
+   ![Untitled](/legacy/9db05c53471e735b.png)
+
 ```JavaScript
 // 英雄区(首页顶部大卡)
 HERO_TITLE_1: '分享编程',
@@ -137,22 +134,26 @@ HERO_TITLE_3: 'TANGLY1024.COM',
 ![Untitled](/legacy/447da302a4673a35.png)
 
 1. **左下角三个导航标签**，点击跳到特定页面，可以在 [themes/heo/configs.js](https://github.com/tangly1024/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/config.js#L20-L23) 中配置
-![Untitled](/legacy/e35b224d4c228111.png)
+   ![Untitled](/legacy/e35b224d4c228111.png)
+
 ```JavaScript
 // 英雄区显示三个置顶分类
 HERO_CATEGORY_1: { title: '必看精选', url: '/tag/必看精选' },
 HERO_CATEGORY_2: { title: '热门文章', url: '/tag/热门文章' },
 HERO_CATEGORY_3: { title: '实用教程', url: '/tag/实用教程' },
 ```
+
 目前这个三个卡牌，默认跳到的是三个**标签归档页**。
 什么是标签归档？例如 `/tag/必看精选` 这个链接，展示的是所有标签中包含`必看精选`的文章：
 ![Untitled](/legacy/a6d453ad6ab998d3.png)
-一篇文章可以打多个标签，然后通过访问` /tag/[标签]` 的方式，快速浏览一组包含了同一标签的文章，例如您希望某片文章出现在  `/tag/必看精选` 这个链接 这个链接下，只要给这篇文章打上必看精选的`标签(tag)`即可。
+一篇文章可以打多个标签，然后通过访问` /tag/[标签]` 的方式，快速浏览一组包含了同一标签的文章，例如您希望某片文章出现在 `/tag/必看精选` 这个链接 这个链接下，只要给这篇文章打上必看精选的`标签(tag)`即可。
 ![Untitled](/legacy/9907a9bffcfe3c0c.png)
 
 ### 英雄区右侧
+
 显示置顶文章的标题文字，以及跳转链接， 配置方式 [themes/heo/config.js](https://github.com/tangly1024/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/config.js#L16-L18)
 ![Untitled](/legacy/965acb63a2b281e2.png)
+
 ```JavaScript
 HERO_TITLE_4: '新版上线',
 HERO_TITLE_5: 'NotionNext4.0 轻松定制主题',
@@ -160,25 +161,31 @@ HERO_TITLE_LINK: 'https://tangly1024.com',
 ```
 
 #### 推荐置顶文章
+
 点击更多推荐后，可以看到6篇被推荐制定的文章，只有被打了“推荐”标签的文章会在此置顶。
 相关配置请查看 themes/heo/config.js
+
 ```JavaScript
 // 英雄区右侧推荐文章标签, 例如 [推荐] , 最多六篇文章; 若留空白''，则直接推荐最近更新文章
 HERO_RECOMMEND_POST_TAG: '推荐',
 ```
+
 ![Untitled](/legacy/ae2293f3d11de6b8.png)
 
 ## 3. 文章列表区
+
 ![Untitled](/legacy/049f0c2a0fcb13e9.png)
-  1. **文章分类**横幅
-![Untitled](/legacy/70e274e962db7a32.png)
-这里显示您Notion中的所有文章分类，每篇文章可打多个标签，但只能归属于一个分类。
-您可以直接在分类栏中输入分类名字，按下回车键即可创建。
-![Untitled](/legacy/ca196d12d53b0565.png)
-https://notion.so/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F4ff9b53a-b204-4696-8d8c-b4c01bc05e50%2FUntitled.mp4?table=block&id=74bfbeea-9fb8-4208-9399-4b7034d14741
-  1. 个人资料卡牌**欢迎语**
-此处的文字点击会发生变化，在 [themes/heo/config.js](https://github.com/tangly1024/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/config.js#L26-L34) 中配置
-![Untitled](/legacy/9221764faff2cd6d.png)
+
+1. **文章分类**横幅
+   ![Untitled](/legacy/70e274e962db7a32.png)
+   这里显示您Notion中的所有文章分类，每篇文章可打多个标签，但只能归属于一个分类。
+   您可以直接在分类栏中输入分类名字，按下回车键即可创建。
+   ![Untitled](/legacy/ca196d12d53b0565.png)
+   https://notion.so/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F4ff9b53a-b204-4696-8d8c-b4c01bc05e50%2FUntitled.mp4?table=block&id=74bfbeea-9fb8-4208-9399-4b7034d14741
+1. 个人资料卡牌**欢迎语**
+   此处的文字点击会发生变化，在 [themes/heo/config.js](https://github.com/tangly1024/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/config.js#L26-L34) 中配置
+   ![Untitled](/legacy/9221764faff2cd6d.png)
+
 ```JavaScript
 INFOCARD_GREETINGS: [
     '你好！我是',
@@ -190,13 +197,16 @@ INFOCARD_GREETINGS: [
     '🧱 团队小组发动机'
   ],
 ```
+
 下方的 Tangly是显示作者名字，在blog.config.js中配置
-  1. **公告栏**， 卡牌中间的文字是公告内容
-![Untitled](/legacy/ad1cf348d91ede21.png)
-公告内容是您Notion模板中类型为`Notice`的文章内容。
-![Untitled](/legacy/03a6ffb7ae428bd9.png)
+
+1. **公告栏**， 卡牌中间的文字是公告内容
+   ![Untitled](/legacy/ad1cf348d91ede21.png)
+   公告内容是您Notion模板中类型为`Notice`的文章内容。
+   ![Untitled](/legacy/03a6ffb7ae428bd9.png)
 
 ### 移动端-英雄区
+
 在移动端英雄区被精减，默认显示如下：
 左侧是两个标签，默认是必看精选和热门文章，第三个标签被隐藏。
 右侧默认显示打了《推荐》标签的六篇文章

@@ -12,11 +12,20 @@ const SocialButton = () => {
     { key: 'CONTACT_LINKEDIN', icon: 'fab fa-linkedin', label: 'LinkedIn' },
     { key: 'CONTACT_WEIBO', icon: 'fab fa-weibo', label: 'Weibo' },
     { key: 'CONTACT_INSTAGRAM', icon: 'fab fa-instagram', label: 'Instagram' },
-    { key: 'CONTACT_BILIBILI', icon: 'iconfont icon-bilibili', label: 'Bilibili' },
+    {
+      key: 'CONTACT_BILIBILI',
+      icon: 'iconfont icon-bilibili',
+      label: 'Bilibili'
+    },
     { key: 'CONTACT_YOUTUBE', icon: 'fab fa-youtube', label: 'YouTube' },
     { key: 'CONTACT_THREADS', icon: 'fab fa-threads', label: 'Threads' },
     { key: 'CONTACT_STEAM', icon: 'fab fa-steam', label: 'Steam' },
-    { key: 'CONTACT_EMAIL', icon: 'fas fa-envelope', label: 'Email', isMail: true }
+    {
+      key: 'CONTACT_EMAIL',
+      icon: 'fas fa-envelope',
+      label: 'Email',
+      isMail: true
+    }
   ]
 
   const valid = links
@@ -62,4 +71,3 @@ const SocialButton = () => {
 }
 
 export default SocialButton
-

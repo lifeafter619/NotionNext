@@ -6,14 +6,24 @@ const notion = require('./notion-client')
 const { sha256OfBlocks } = require('./state')
 const { translateBlock } = require('./block-mapper')
 const { getProvider } = require('./providers')
-const { envIds, langFromDb, dbForLang, flipLang, mapSelect, mapMultiSelect } = require('./config')
+const {
+  envIds,
+  langFromDb,
+  dbForLang,
+  flipLang,
+  mapSelect,
+  mapMultiSelect
+} = require('./config')
 
 const GLOSSARY = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'glossary.json'), 'utf8')
 )
 
 function buildBudget() {
-  const cap = parseInt(process.env.TRANSLATOR_BUDGET_TOKENS_PER_RUN || '500000', 10)
+  const cap = parseInt(
+    process.env.TRANSLATOR_BUDGET_TOKENS_PER_RUN || '500000',
+    10
+  )
   let usedIn = 0
   let usedOut = 0
   return {
@@ -21,7 +31,9 @@ function buildBudget() {
       usedIn += inT
       usedOut += outT
       if (usedIn + usedOut > cap) {
-        throw new Error(`Token 预算超限: ${usedIn}+${usedOut}=${usedIn + usedOut} > ${cap}`)
+        throw new Error(
+          `Token 预算超限: ${usedIn}+${usedOut}=${usedIn + usedOut} > ${cap}`
+        )
       }
     },
     summary() {
@@ -45,7 +57,9 @@ async function translateOnePage(pageId, opts = {}) {
   if (!sourceDbId) throw new Error(`页面 ${pageId} 不属于任何数据库`)
   const sourceLang = langFromDb(sourceDbId)
   if (!sourceLang) {
-    throw new Error(`页面 ${pageId} 所在数据库 ${sourceDbId} 既不是 NOTION_DB_EN_ID 也不是 NOTION_DB_ZH_ID`)
+    throw new Error(
+      `页面 ${pageId} 所在数据库 ${sourceDbId} 既不是 NOTION_DB_EN_ID 也不是 NOTION_DB_ZH_ID`
+    )
   }
   const targetLang = flipLang(sourceLang)
   const targetDbId = dbForLang(targetLang)
@@ -76,13 +90,16 @@ async function translateOnePage(pageId, opts = {}) {
   }
 
   if (targetExisting && !force) {
-    const targetSourceHash = notion.getProp(targetExisting, 'source_hash', 'rich_text') || ''
+    const targetSourceHash =
+      notion.getProp(targetExisting, 'source_hash', 'rich_text') || ''
     if (targetSourceHash === currentHash) {
       console.log(`[skip] ${pageId} — 目标 ${targetPageId} 已是最新`)
       return { skipped: true }
     }
     if (notion.getProp(targetExisting, 'translation_locked', 'checkbox')) {
-      console.log(`[skip] ${pageId} — 目标 ${targetPageId} 已锁定（translation_locked）`)
+      console.log(
+        `[skip] ${pageId} — 目标 ${targetPageId} 已锁定（translation_locked）`
+      )
       return { skipped: true, locked: true }
     }
   }
@@ -106,7 +123,9 @@ async function translateOnePage(pageId, opts = {}) {
     console.log(`[dry-run] ${pageId} (${sourceLang} → ${targetLang})`)
     console.log(`  title:  ${sourceTitle}`)
     console.log(`  blocks: ${blockCount}`)
-    console.log(`  target: ${targetPageId ? `update ${targetPageId}` : `create in DB ${targetDbId}`}`)
+    console.log(
+      `  target: ${targetPageId ? `update ${targetPageId}` : `create in DB ${targetDbId}`}`
+    )
     return { dryRun: true, blocks: blockCount }
   }
 
@@ -126,13 +145,17 @@ async function translateOnePage(pageId, opts = {}) {
     blocks.map(b => limit(() => translateBlock(b, { translateText })))
   )
   const newBlocks = translated.filter(Boolean)
-  log(`[translate] ${newBlocks.length} 个块, 用时 ${((Date.now() - t0) / 1000).toFixed(1)}s (并发=${concurrency})`)
+  log(
+    `[translate] ${newBlocks.length} 个块, 用时 ${((Date.now() - t0) / 1000).toFixed(1)}s (并发=${concurrency})`
+  )
 
   const mappedCategory = mapSelect('category', sourceCategory, sourceLang)
   const mappedTagsResult = mapMultiSelect('tags', sourceTags, sourceLang)
   const mappedTags = mappedTagsResult.mapped || []
   if (mappedTagsResult.dropped?.length) {
-    log(`[warn] 以下标签缺少映射，已跳过: ${mappedTagsResult.dropped.join(', ')}`)
+    log(
+      `[warn] 以下标签缺少映射，已跳过: ${mappedTagsResult.dropped.join(', ')}`
+    )
   }
   if (sourceCategory && !mappedCategory) {
     log(`[warn] 分类缺少映射，已跳过: ${sourceCategory}`)
@@ -140,15 +163,23 @@ async function translateOnePage(pageId, opts = {}) {
 
   const props = {
     title: { title: [{ type: 'text', text: { content: translatedTitle } }] },
-    summary: { rich_text: [{ type: 'text', text: { content: translatedSummary } }] },
+    summary: {
+      rich_text: [{ type: 'text', text: { content: translatedSummary } }]
+    },
     paired_with: { rich_text: [{ type: 'text', text: { content: pageId } }] },
-    source_hash: { rich_text: [{ type: 'text', text: { content: currentHash } }] },
+    source_hash: {
+      rich_text: [{ type: 'text', text: { content: currentHash } }]
+    },
     type: { select: { name: type } },
     status: { select: { name: status } }
   }
   if (mappedCategory) props.category = { select: { name: mappedCategory } }
-  if (mappedTags.length) props.tags = { multi_select: mappedTags.map(name => ({ name })) }
-  if (sourceSlug) props.slug = { rich_text: [{ type: 'text', text: { content: sourceSlug } }] }
+  if (mappedTags.length)
+    props.tags = { multi_select: mappedTags.map(name => ({ name })) }
+  if (sourceSlug)
+    props.slug = {
+      rich_text: [{ type: 'text', text: { content: sourceSlug } }]
+    }
   if (date && date.start) {
     props.date = { date: { start: date.start, end: date.end || null } }
   }
@@ -182,11 +213,17 @@ async function translateOnePage(pageId, opts = {}) {
   }
 
   await notion.updatePageProperties(pageId, {
-    paired_with: { rich_text: [{ type: 'text', text: { content: targetPageId } }] },
-    source_hash: { rich_text: [{ type: 'text', text: { content: currentHash } }] }
+    paired_with: {
+      rich_text: [{ type: 'text', text: { content: targetPageId } }]
+    },
+    source_hash: {
+      rich_text: [{ type: 'text', text: { content: currentHash } }]
+    }
   })
 
-  console.log(`[ok] ${pageId} → ${targetPageId}  耗用=${JSON.stringify(budget.summary())}`)
+  console.log(
+    `[ok] ${pageId} → ${targetPageId}  耗用=${JSON.stringify(budget.summary())}`
+  )
   return { ok: true, targetPageId, budget: budget.summary() }
 }
 
@@ -216,7 +253,11 @@ async function checkDrift() {
   return drifted
 }
 
-async function findUntranslated({ includeDrafts = false, fromLang = null, includePaired = false } = {}) {
+async function findUntranslated({
+  includeDrafts = false,
+  fromLang = null,
+  includePaired = false
+} = {}) {
   const { en, zh } = envIds()
   const skipped = { alreadyPaired: 0, notPublished: 0, wrongLang: 0, total: 0 }
   const eligible = []
@@ -234,8 +275,14 @@ async function findUntranslated({ includeDrafts = false, fromLang = null, includ
       skipped.total++
       const paired = notion.getProp(p, 'paired_with', 'rich_text')
       const status = notion.getProp(p, 'status', 'select')
-      if (paired && !includePaired) { skipped.alreadyPaired++; continue }
-      if (!includeDrafts && status !== 'Published') { skipped.notPublished++; continue }
+      if (paired && !includePaired) {
+        skipped.alreadyPaired++
+        continue
+      }
+      if (!includeDrafts && status !== 'Published') {
+        skipped.notPublished++
+        continue
+      }
       eligible.push({ page: p, sourceLang: langFromDb(dbId) })
     }
   }

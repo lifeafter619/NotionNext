@@ -125,12 +125,14 @@ watch(
 
   <div
     v-else-if="giscus?.enabled && (!giscus.repoId || !giscus.categoryId)"
-    class="doc-giscus doc-giscus--setup"
-  >
+    class="doc-giscus doc-giscus--setup">
     <h2 class="doc-giscus-title">文档反馈</h2>
     <p>
-      站点管理员尚未配置 Giscus（<code>repoId</code> / <code>categoryId</code>）。请至
-      <a href="https://giscus.app/zh-CN" target="_blank" rel="noreferrer">giscus.app</a>
+      站点管理员尚未配置 Giscus（<code>repoId</code> /
+      <code>categoryId</code>）。请至
+      <a href="https://giscus.app/zh-CN" target="_blank" rel="noreferrer"
+        >giscus.app</a
+      >
       生成后写入构建环境变量，或
       <a
         href="https://github.com/notionnext-org/NotionNext/issues/new/choose"

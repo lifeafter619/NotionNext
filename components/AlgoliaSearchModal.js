@@ -189,7 +189,7 @@ export default function AlgoliaSearchModal({ cRef }) {
    * 获取搜索配置参数
    * 根据搜索类型和排序设置返回Algolia搜索参数
    */
-  const getSearchParams = (page) => {
+  const getSearchParams = page => {
     const params = {
       page,
       hitsPerPage: 10
@@ -222,22 +222,26 @@ export default function AlgoliaSearchModal({ cRef }) {
    * @param {Array} hits 搜索结果
    * @returns {Array} 排序后的结果
    */
-  const sortResults = (hits) => {
+  const sortResults = hits => {
     if (sortOrder === 'relevance') {
       return hits // Algolia默认按相关度排序
     }
-    
+
     const sorted = [...hits]
     if (sortOrder === 'newest') {
       sorted.sort((a, b) => {
-        const timeA = a.createdTimestamp || new Date(a.createdTime || 0).getTime()
-        const timeB = b.createdTimestamp || new Date(b.createdTime || 0).getTime()
+        const timeA =
+          a.createdTimestamp || new Date(a.createdTime || 0).getTime()
+        const timeB =
+          b.createdTimestamp || new Date(b.createdTime || 0).getTime()
         return timeB - timeA
       })
     } else if (sortOrder === 'oldest') {
       sorted.sort((a, b) => {
-        const timeA = a.createdTimestamp || new Date(a.createdTime || 0).getTime()
-        const timeB = b.createdTimestamp || new Date(b.createdTime || 0).getTime()
+        const timeA =
+          a.createdTimestamp || new Date(a.createdTime || 0).getTime()
+        const timeB =
+          b.createdTimestamp || new Date(b.createdTime || 0).getTime()
         return timeA - timeB
       })
     }
@@ -249,7 +253,12 @@ export default function AlgoliaSearchModal({ cRef }) {
    * 支持按类型过滤和按时间排序
    * @param {*} query
    */
-  const handleSearch = async (query, page, currentSearchType = searchType, currentSortOrder = sortOrder) => {
+  const handleSearch = async (
+    query,
+    page,
+    currentSearchType = searchType,
+    currentSortOrder = sortOrder
+  ) => {
     setKeyword(query)
     setPage(page)
     setSearchResults([])
@@ -300,14 +309,14 @@ export default function AlgoliaSearchModal({ cRef }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // 检查筛选条件是否真正发生变化
-    const filtersChanged = 
-      prevFiltersRef.current.searchType !== searchType || 
+    const filtersChanged =
+      prevFiltersRef.current.searchType !== searchType ||
       prevFiltersRef.current.sortOrder !== sortOrder
-    
+
     if (filtersChanged && keyword && isModalOpen) {
       handleSearch(keyword, 0, searchType, sortOrder)
     }
-    
+
     // 更新 ref
     prevFiltersRef.current = { searchType, sortOrder }
   }, [searchType, sortOrder, keyword, isModalOpen])
@@ -377,8 +386,8 @@ export default function AlgoliaSearchModal({ cRef }) {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-3 py-1 rounded-lg text-sm transition-all duration-200 ${
-                showFilters 
-                  ? 'bg-blue-600 dark:bg-yellow-600 text-white' 
+                showFilters
+                  ? 'bg-blue-600 dark:bg-yellow-600 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}>
               <i className='fas fa-filter mr-1'></i>
@@ -412,7 +421,9 @@ export default function AlgoliaSearchModal({ cRef }) {
           <div className='mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3 animate-fade-in'>
             {/* 搜索类型 */}
             <div>
-              <div className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>搜索范围</div>
+              <div className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>
+                搜索范围
+              </div>
               <div className='flex flex-wrap gap-2'>
                 {SEARCH_TYPES.map(type => (
                   <button
@@ -431,7 +442,9 @@ export default function AlgoliaSearchModal({ cRef }) {
             </div>
             {/* 排序方式 */}
             <div>
-              <div className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>排序方式</div>
+              <div className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>
+                排序方式
+              </div>
               <div className='flex flex-wrap gap-2'>
                 {SORT_OPTIONS.map(option => (
                   <button
@@ -454,7 +467,9 @@ export default function AlgoliaSearchModal({ cRef }) {
         {/* 热门标签 - 仅在无搜索结果时显示 */}
         {!keyword && (
           <div className='mt-4'>
-            <div className='text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>热门标签</div>
+            <div className='text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>
+              热门标签
+            </div>
             <TagGroups />
           </div>
         )}
@@ -464,9 +479,15 @@ export default function AlgoliaSearchModal({ cRef }) {
           <div className='py-8 text-center'>
             <i className='fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-3'></i>
             <p className='text-gray-500 dark:text-gray-400'>
-              未找到 <span className='font-semibold text-gray-700 dark:text-gray-200'>&quot;{keyword}&quot;</span> 的相关结果
+              未找到{' '}
+              <span className='font-semibold text-gray-700 dark:text-gray-200'>
+                &quot;{keyword}&quot;
+              </span>{' '}
+              的相关结果
             </p>
-            <p className='text-sm text-gray-400 dark:text-gray-500 mt-1'>尝试使用不同的关键词或调整搜索范围</p>
+            <p className='text-sm text-gray-400 dark:text-gray-500 mt-1'>
+              尝试使用不同的关键词或调整搜索范围
+            </p>
           </div>
         )}
 
@@ -478,9 +499,10 @@ export default function AlgoliaSearchModal({ cRef }) {
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => onJumpSearchResult(index)}
               className={`cursor-pointer replace p-3 duration-150 rounded-xl flex gap-3 group
-              ${activeIndex === index 
-                ? 'bg-blue-600 dark:bg-yellow-600 shadow-md' 
-                : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+              ${
+                activeIndex === index
+                  ? 'bg-blue-600 dark:bg-yellow-600 shadow-md'
+                  : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}>
               {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
               {result.pageCoverThumbnail && (
@@ -494,21 +516,30 @@ export default function AlgoliaSearchModal({ cRef }) {
               )}
               {/* 文章信息 */}
               <div className='flex-1 min-w-0'>
-                <h3 className={`font-medium line-clamp-1 ${
-                  activeIndex === index ? 'text-white' : 'text-gray-800 dark:text-gray-200'
-                }`}>
+                <h3
+                  className={`font-medium line-clamp-1 ${
+                    activeIndex === index
+                      ? 'text-white'
+                      : 'text-gray-800 dark:text-gray-200'
+                  }`}>
                   {result.title}
                 </h3>
                 {result.summary && (
-                  <p className={`text-sm line-clamp-1 mt-0.5 ${
-                    activeIndex === index ? 'text-blue-100 dark:text-yellow-100' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
+                  <p
+                    className={`text-sm line-clamp-1 mt-0.5 ${
+                      activeIndex === index
+                        ? 'text-blue-100 dark:text-yellow-100'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
                     {result.summary}
                   </p>
                 )}
-                <div className={`flex items-center gap-2 mt-1 text-xs ${
-                  activeIndex === index ? 'text-blue-200 dark:text-yellow-200' : 'text-gray-400 dark:text-gray-500'
-                }`}>
+                <div
+                  className={`flex items-center gap-2 mt-1 text-xs ${
+                    activeIndex === index
+                      ? 'text-blue-200 dark:text-yellow-200'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}>
                   {result.category && (
                     <span className='flex items-center gap-1'>
                       <i className='fas fa-folder'></i>
@@ -530,10 +561,14 @@ export default function AlgoliaSearchModal({ cRef }) {
                 </div>
               </div>
               {/* 箭头指示 */}
-              <div className={`self-center transition-transform duration-200 ${
-                activeIndex === index ? 'translate-x-0 opacity-100' : 'translate-x-2 opacity-0'
-              }`}>
-                <i className={`fas fa-arrow-right ${activeIndex === index ? 'text-white' : ''}`}></i>
+              <div
+                className={`self-center transition-transform duration-200 ${
+                  activeIndex === index
+                    ? 'translate-x-0 opacity-100'
+                    : 'translate-x-2 opacity-0'
+                }`}>
+                <i
+                  className={`fas fa-arrow-right ${activeIndex === index ? 'text-white' : ''}`}></i>
               </div>
             </li>
           ))}
@@ -559,8 +594,11 @@ export default function AlgoliaSearchModal({ cRef }) {
             </div>
           ) : (
             <p>
-              共找到 <span className='font-medium text-blue-600 dark:text-yellow-500'>{totalHit}</span> 条结果，
-              用时 <span className='font-medium'>{useTime}</span> 毫秒
+              共找到{' '}
+              <span className='font-medium text-blue-600 dark:text-yellow-500'>
+                {totalHit}
+              </span>{' '}
+              条结果， 用时 <span className='font-medium'>{useTime}</span> 毫秒
             </p>
           )}
           <div className='flex items-center gap-1'>

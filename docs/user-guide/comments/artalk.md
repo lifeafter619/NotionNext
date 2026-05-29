@@ -1,4 +1,5 @@
 # Artalk
+
 > 迁移自：[Artalk](https://docs.tangly1024.com/article/notion-next-artalk)
 > 发布日期：2023-8-8
 > 最后编辑：2024-1-31
@@ -17,12 +18,11 @@
 
 ![image](/legacy/30621e71e984b586.png)
 
-
 ### **功能亮点**
 
 - **轻量设计**
-前端采用 TypeScript (Vanilla JS)，轻量级，无冗余依赖，仅 ~30KB (gzipped)。
-后端采用 Golang 重制 (Artalk v2)，跨平台，体积小巧，五脏俱全，快速部署。
+  前端采用 TypeScript (Vanilla JS)，轻量级，无冗余依赖，仅 ~30KB (gzipped)。
+  后端采用 Golang 重制 (Artalk v2)，跨平台，体积小巧，五脏俱全，快速部署。
 
 - **“麻雀虽小，五脏俱全”**
   - Markdown 语法 + 代码高亮
@@ -36,7 +36,6 @@
   - 评论盖楼 / 评论分页 / 滚动加载 / 实时预览
   - 评论排序 / 评论置顶 / 评论防丢 / 自动填充
   - 图片上传 / 页面管理 / 站点隔离 / 夜间模式
-
 
 ## 样式预览
 
@@ -56,11 +55,9 @@ Artalk后台页面
 
 ![Untitled](/legacy/4e26229d4b60e72b.png)
 
-
 ## 配置方式
 
 Vercel添加一个后台环境变量即可
-
 
 ## Artalk安装
 
@@ -73,6 +70,7 @@ Vercel添加一个后台环境变量即可
 这里为部署方式做个概括
 
 1. Docker一键启动后端
+
 ```JavaScript
 docker run -d \
     --name artalk \
@@ -83,18 +81,19 @@ docker run -d \
 ```
 
 1. 初始化管理后台密码
+
 ```Bash
 docker exec -it artalk artalk admin
 ```
+
 执行以上命令后，按照提示操作即可
 ![Untitled](/legacy/e9d6e3191498709c.png)
-
 
 ### 添加你的信任域名
 
 > **💡** **TIP**
 >
-你需要将「使用该后端的前端」URL 地址加入可信域名列表中，
+> 你需要将「使用该后端的前端」URL 地址加入可信域名列表中，
 > 若非默认 80/443 端口需额外附带端口号，例如：`**https://example.com:8080**`
 
 在管理后台中找到Settings → Trusted domains。
@@ -102,7 +101,6 @@ docker exec -it artalk artalk admin
 配置参考如下；添加可信域名，并点击Apply保存
 
 ![Untitled](/legacy/8232e00cfe65af59.png)
-
 
 ## 完成
 

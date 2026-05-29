@@ -31,7 +31,9 @@ jest.mock('@/lib/db/notion/getNotionAPI', () => ({
 }))
 
 const { formatNotionBlock } = require('@/lib/db/notion/getPostBlocks')
-const { getPageTableOfContents } = require('@/lib/db/notion/getPageTableOfContents')
+const {
+  getPageTableOfContents
+} = require('@/lib/db/notion/getPageTableOfContents')
 
 describe('Notion data format compatibility', () => {
   it('unwraps nested block values returned by newer Notion payloads', () => {
@@ -215,14 +217,19 @@ describe('Notion data format compatibility', () => {
 })
 
 describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
-  const { normalizeExternalMediaBlock, isAppleMusicEmbedUrl } =
-    require('@/lib/db/notion/normalizeExternalMediaBlock')
+  const {
+    normalizeExternalMediaBlock,
+    isAppleMusicEmbedUrl
+  } = require('@/lib/db/notion/normalizeExternalMediaBlock')
 
   describe('isAppleMusicEmbedUrl', () => {
     it.each([
       ['https://embed.music.apple.com/us/song/neon-blue/324357768', true],
       ['https://embed.music.apple.com/cn/song/test-song/123456', true],
-      ['https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768', false],
+      [
+        'https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768',
+        false
+      ],
       ['https://embed.music.apple.com/us/album/test/123456', false],
       ['https://www.youtube.com/watch?v=abc', false],
       ['', false]
@@ -236,7 +243,9 @@ describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
       const block = {
         type: 'video',
         properties: {
-          source: [['https://embed.music.apple.com/us/song/neon-blue/324357768']]
+          source: [
+            ['https://embed.music.apple.com/us/song/neon-blue/324357768']
+          ]
         }
       }
       normalizeExternalMediaBlock(block)
@@ -247,7 +256,11 @@ describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
       const block = {
         type: 'video',
         properties: {
-          source: [['https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768']]
+          source: [
+            [
+              'https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768'
+            ]
+          ]
         }
       }
       normalizeExternalMediaBlock(block)
@@ -280,7 +293,9 @@ describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
       expect(() => normalizeExternalMediaBlock(null)).not.toThrow()
       expect(() => normalizeExternalMediaBlock(undefined)).not.toThrow()
       expect(() => normalizeExternalMediaBlock({ type: 'video' })).not.toThrow()
-      expect(() => normalizeExternalMediaBlock({ type: 'video', properties: {} })).not.toThrow()
+      expect(() =>
+        normalizeExternalMediaBlock({ type: 'video', properties: {} })
+      ).not.toThrow()
     })
   })
 })

@@ -31,7 +31,11 @@ const ContactCard = () => {
     'Share your idea, bug report, or collaboration request.',
     CONFIG
   )
-  const backText = siteConfig('FUWARI_CONTACT_BACK_TEXT', 'Open Contact', CONFIG)
+  const backText = siteConfig(
+    'FUWARI_CONTACT_BACK_TEXT',
+    'Open Contact',
+    CONFIG
+  )
   const openInNewTab = /^https?:\/\//i.test(url)
 
   const jumpToContact = () => {
@@ -70,9 +74,7 @@ const ContactCard = () => {
       <p className='text-sm text-[var(--fuwari-muted)] leading-6 mb-2 line-clamp-2'>
         {backDesc}
       </p>
-      {url && (
-        <p className='fuwari-link text-sm font-medium'>{backText} →</p>
-      )}
+      {url && <p className='fuwari-link text-sm font-medium'>{backText} →</p>}
     </div>
   )
 
@@ -106,4 +108,3 @@ const ContactCard = () => {
 }
 
 export default ContactCard
-

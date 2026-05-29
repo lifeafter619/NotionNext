@@ -1,4 +1,5 @@
 # Gitalk
+
 > 迁移自：[Gitalk](https://docs.tangly1024.com/article/notion-next-gitalk)
 > 发布日期：2022-12-11
 > 最后编辑：2024-1-31
@@ -11,7 +12,6 @@
 完成预览效果
 
 ![Untitled](/legacy/c23d052ab6cdb757.png)
-
 
 ## 配置gitalk
 
@@ -41,7 +41,6 @@ You can't perform that action at this time. You signed in with another tab or wi
 复制 `Client ID`和刚生成的 `Client secret` （对应图中2和3）备用。
 
 </details>
-
 
 ## 配置 NotionNext
 

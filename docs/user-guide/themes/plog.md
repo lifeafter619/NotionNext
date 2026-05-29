@@ -36,13 +36,13 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `NOBELIUM_MENU_CATEGORY` | 见 config.js |
-| `NOBELIUM_MENU_TAG` | 见 config.js |
-| `NOBELIUM_MENU_ARCHIVE` | 见 config.js |
-| `NOBELIUM_MENU_SEARCH` | 见 config.js |
-| `NOBELIUM_MENU_RSS` | 见 config.js |
+| 配置键                     | 说明         |
+| -------------------------- | ------------ |
+| `NOBELIUM_MENU_CATEGORY`   | 见 config.js |
+| `NOBELIUM_MENU_TAG`        | 见 config.js |
+| `NOBELIUM_MENU_ARCHIVE`    | 见 config.js |
+| `NOBELIUM_MENU_SEARCH`     | 见 config.js |
+| `NOBELIUM_MENU_RSS`        | 见 config.js |
 | `NOBELIUM_NAV_NOTION_ICON` | 见 config.js |
 
 <!-- /theme-config-table -->

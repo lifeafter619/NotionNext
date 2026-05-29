@@ -29,20 +29,20 @@
 
 ## 4.9.5.x 近期要点（相对旧版文档）
 
-| 领域 | 变化 |
-| --- | --- |
-| **组织与仓库** | 主仓库迁至 [notionnext-org/NotionNext](https://github.com/notionnext-org/NotionNext) |
-| **主题** | 新增 **ThoughtLite**；Endspace 支持自定义多级菜单；主题切换 manifest 与预览图规范 |
-| **社区官网** | 新增 `Member` / `Event` 数据类型输出：`allMembers`、`allEvents`；支持官方 Notion API 补充成员数据 |
-| **Notion** | 数据源/集合解析兼容；保留所选 Notion 视图筛选结果；外部媒体（含 **Apple Music** 嵌入）规范化 |
-| **构建** | `staticPaths` 缓存与导出稳定性；不可写缓存目录时回退 tmp；多站点 `NOTION_PAGE_ID` 构建期 `ENAMETOOLONG` 修复；Docker PR 构建范围收敛并使用 `yarn.lock` |
-| **评论** | Notion Config 支持 **WALINE_*** 键名 |
-| **置顶** | 全局 **TOP_TAG** 多置顶排序 |
-| **安全** | 文章密码 **SHA256**（兼容旧 md5） |
-| **依赖安全** | 修复 / 收敛 `qs`、`tmp`、`js-cookie`、`uuid`、`lodash`、`picomatch`、`flatted`、`esbuild` 等安全依赖告警 |
-| **图标** | Font Awesome 默认 CDN 升级，修复 `fa-x-twitter` 图标不可用问题 |
-| **CI / 发版** | 恢复 lint/type-check 基线；版本号自动 bump 改为推送维护分支，兼容受保护 `main` |
-| **文档** | 仓库内 `docs/user-guide/` 用户手册、`DEPLOYMENT.md`、维护哲学文档；EdgeOne Node 版本与 ENOSPC 排错文档 |
+| 领域           | 变化                                                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **组织与仓库** | 主仓库迁至 [notionnext-org/NotionNext](https://github.com/notionnext-org/NotionNext)                                                                   |
+| **主题**       | 新增 **ThoughtLite**；Endspace 支持自定义多级菜单；主题切换 manifest 与预览图规范                                                                      |
+| **社区官网**   | 新增 `Member` / `Event` 数据类型输出：`allMembers`、`allEvents`；支持官方 Notion API 补充成员数据                                                      |
+| **Notion**     | 数据源/集合解析兼容；保留所选 Notion 视图筛选结果；外部媒体（含 **Apple Music** 嵌入）规范化                                                           |
+| **构建**       | `staticPaths` 缓存与导出稳定性；不可写缓存目录时回退 tmp；多站点 `NOTION_PAGE_ID` 构建期 `ENAMETOOLONG` 修复；Docker PR 构建范围收敛并使用 `yarn.lock` |
+| **评论**       | Notion Config 支持 **WALINE\_\*** 键名                                                                                                                 |
+| **置顶**       | 全局 **TOP_TAG** 多置顶排序                                                                                                                            |
+| **安全**       | 文章密码 **SHA256**（兼容旧 md5）                                                                                                                      |
+| **依赖安全**   | 修复 / 收敛 `qs`、`tmp`、`js-cookie`、`uuid`、`lodash`、`picomatch`、`flatted`、`esbuild` 等安全依赖告警                                               |
+| **图标**       | Font Awesome 默认 CDN 升级，修复 `fa-x-twitter` 图标不可用问题                                                                                         |
+| **CI / 发版**  | 恢复 lint/type-check 基线；版本号自动 bump 改为推送维护分支，兼容受保护 `main`                                                                         |
+| **文档**       | 仓库内 `docs/user-guide/` 用户手册、`DEPLOYMENT.md`、维护哲学文档；EdgeOne Node 版本与 ENOSPC 排错文档                                                 |
 
 完整提交见 [GitHub Releases](https://github.com/notionnext-org/NotionNext/releases)。
 

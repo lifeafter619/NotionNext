@@ -44,30 +44,30 @@ import MailFillIcon from 'remixicon-react/MailFillIcon'
 
 // Icon mapping (Conceptual Remix Icons)
 const IconComponents = {
-  'Home': AppsFillIcon,
-  'Category': BookMarkFillIcon,
-  'Tag': BarcodeFillIcon,
-  'Archive': StackFillIcon,
-  'Search': Compass3FillIcon,
-  'Friends': EarthFillIcon,
-  'Portfolio': ProfileFillIcon
+  Home: AppsFillIcon,
+  Category: BookMarkFillIcon,
+  Tag: BarcodeFillIcon,
+  Archive: StackFillIcon,
+  Search: Compass3FillIcon,
+  Friends: EarthFillIcon,
+  Portfolio: ProfileFillIcon
 }
 
 // Social icon mapping
 const SocialIconComponents = {
-  'CONTACT_GITHUB': GithubFillIcon,
-  'CONTACT_TWITTER': IconBrandX,
-  'CONTACT_WEIBO': WeiboFillIcon,
-  'CONTACT_BILIBILI': BilibiliFillIcon,
-  'CONTACT_TELEGRAM': TelegramFillIcon,
-  'CONTACT_INSTAGRAM': InstagramFillIcon,
-  'CONTACT_YOUTUBE': YoutubeFillIcon,
-  'CONTACT_LINKEDIN': LinkedinBoxFillIcon,
-  'CONTACT_WEHCHAT_PUBLIC': WechatFillIcon,
-  'CONTACT_ZHISHIXINGQIU': GlobeFillIcon
+  CONTACT_GITHUB: GithubFillIcon,
+  CONTACT_TWITTER: IconBrandX,
+  CONTACT_WEIBO: WeiboFillIcon,
+  CONTACT_BILIBILI: BilibiliFillIcon,
+  CONTACT_TELEGRAM: TelegramFillIcon,
+  CONTACT_INSTAGRAM: InstagramFillIcon,
+  CONTACT_YOUTUBE: YoutubeFillIcon,
+  CONTACT_LINKEDIN: LinkedinBoxFillIcon,
+  CONTACT_WEHCHAT_PUBLIC: WechatFillIcon,
+  CONTACT_ZHISHIXINGQIU: GlobeFillIcon
 }
 
-export const MobileNav = (props) => {
+export const MobileNav = props => {
   const router = useRouter()
   const { siteInfo } = useGlobal()
   const { customNav, customMenu } = props
@@ -75,9 +75,10 @@ export const MobileNav = (props) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [openSubMenu, setOpenSubMenu] = useState(null)
   const emailIcon = useRef(null)
-  
+
   // Get avatar from props or global context
-  const avatarUrl = props?.siteInfo?.icon || siteInfo?.icon || siteConfig('AVATAR')
+  const avatarUrl =
+    props?.siteInfo?.icon || siteInfo?.icon || siteConfig('AVATAR')
 
   const menuItems = useMemo(
     () => buildMenuItems({ customNav, customMenu }),
@@ -93,10 +94,14 @@ export const MobileNav = (props) => {
     { key: 'CONTACT_TELEGRAM', label: 'Telegram' },
     { key: 'CONTACT_INSTAGRAM', label: 'Instagram' },
     { key: 'CONTACT_YOUTUBE', label: 'YouTube' },
-    { key: 'CONTACT_XIAOHONGSHU', svg: '/svg/xiaohongshu.svg', label: 'Xiaohongshu' },
+    {
+      key: 'CONTACT_XIAOHONGSHU',
+      svg: '/svg/xiaohongshu.svg',
+      label: 'Xiaohongshu'
+    },
     { key: 'CONTACT_LINKEDIN', label: 'LinkedIn' },
     { key: 'CONTACT_ZHISHIXINGQIU', label: 'Zhishixingqiu' },
-    { key: 'CONTACT_WEHCHAT_PUBLIC', label: 'WeChat' },
+    { key: 'CONTACT_WEHCHAT_PUBLIC', label: 'WeChat' }
   ]
 
   const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
@@ -126,15 +131,15 @@ export const MobileNav = (props) => {
   }, [isMenuOpen])
 
   // Render icon component
-  const renderIcon = (name) => {
+  const renderIcon = name => {
     const IconComponent = IconComponents[name] || BookMarkFillIcon
-    return <IconComponent size={20} className="w-6 text-center" />
+    return <IconComponent size={20} className='w-6 text-center' />
   }
 
   // Render social icon
   const renderSocialIcon = (key, svg, label) => {
     if (svg) {
-      return <img src={svg} alt={label} className="w-4 h-4 opacity-60" />
+      return <img src={svg} alt={label} className='w-4 h-4 opacity-60' />
     }
     const IconComponent = SocialIconComponents[key]
     if (IconComponent) {
@@ -146,15 +151,18 @@ export const MobileNav = (props) => {
   return (
     <>
       {/* Top Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 md:hidden bg-white border-b border-[var(--endspace-border-base)] safe-area-top">
-        <div className="flex items-center justify-between h-20 px-5">
+      <nav className='fixed top-0 left-0 right-0 z-50 md:hidden bg-white border-b border-[var(--endspace-border-base)] safe-area-top'>
+        <div className='flex items-center justify-between h-20 px-5'>
           {/* Left: Avatar */}
-          <SmartLink href="/aboutme" title="Profile" className="flex-shrink-0 flex items-center">
-            <div className="w-14 h-14 rounded-full overflow-hidden transition-colors">
-              <img 
+          <SmartLink
+            href='/aboutme'
+            title='Profile'
+            className='flex-shrink-0 flex items-center'>
+            <div className='w-14 h-14 rounded-full overflow-hidden transition-colors'>
+              <img
                 src={avatarUrl}
-                alt="Avatar"
-                className="w-full h-full object-cover"
+                alt='Avatar'
+                className='w-full h-full object-cover'
               />
             </div>
           </SmartLink>
@@ -162,9 +170,8 @@ export const MobileNav = (props) => {
           {/* Right: Hamburger Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-14 h-14 flex items-center justify-center text-[var(--endspace-text-primary)] hover:text-[#d4d4d8] transition-colors"
-            aria-label="Toggle Menu"
-          >
+            className='w-14 h-14 flex items-center justify-center text-[var(--endspace-text-primary)] hover:text-[#d4d4d8] transition-colors'
+            aria-label='Toggle Menu'>
             {isMenuOpen ? (
               <IconX size={28} stroke={1.5} />
             ) : (
@@ -175,21 +182,22 @@ export const MobileNav = (props) => {
       </nav>
 
       {/* Full Screen Menu Overlay */}
-      <div 
+      <div
         className={`fixed inset-0 z-40 md:hidden bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-          isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          isMenuOpen
+            ? 'opacity-100 pointer-events-auto'
+            : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMenuOpen(false)}
       />
 
       {/* Slide-in Menu Panel */}
-      <div 
+      <div
         className={`fixed top-20 left-0 right-0 bottom-0 z-40 md:hidden bg-white transition-transform duration-300 ease-out overflow-y-auto ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
+        }`}>
         {/* Navigation Items */}
-        <div className="flex flex-col items-start p-6 space-y-2">
+        <div className='flex flex-col items-start p-6 space-y-2'>
           {menuItems.map(item => {
             const hasSubMenu = item.subMenus?.length > 0
             const itemKey = `${item.name}-${item.path}`
@@ -201,12 +209,18 @@ export const MobileNav = (props) => {
             }`
             const itemContent = (
               <>
-                <div className={`transition-colors ${activeTab === item.name ? 'text-black' : 'text-gray-400 group-hover:text-black'}`}>
-                  {item.icon ? <i className={item.icon} /> : renderIcon(item.name)}
+                <div
+                  className={`transition-colors ${activeTab === item.name ? 'text-black' : 'text-gray-400 group-hover:text-black'}`}>
+                  {item.icon ? (
+                    <i className={item.icon} />
+                  ) : (
+                    renderIcon(item.name)
+                  )}
                 </div>
-                <span className="text-xl font-medium">{item.name}</span>
+                <span className='text-xl font-medium'>{item.name}</span>
                 {hasSubMenu && (
-                  <span className={`ml-auto text-xl transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}>
+                  <span
+                    className={`ml-auto text-xl transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}>
                     &rsaquo;
                   </span>
                 )}
@@ -219,16 +233,14 @@ export const MobileNav = (props) => {
                   <button
                     type='button'
                     onClick={() => setOpenSubMenu(isOpen ? null : itemKey)}
-                    className={itemClassName}
-                  >
+                    className={itemClassName}>
                     {itemContent}
                   </button>
                 ) : (
                   <SmartLink
                     href={item.path}
                     target={item.target}
-                    className={itemClassName}
-                  >
+                    className={itemClassName}>
                     {itemContent}
                   </SmartLink>
                 )}
@@ -240,10 +252,13 @@ export const MobileNav = (props) => {
                         key={`${subMenu.name}-${subMenu.path}`}
                         href={subMenu.path}
                         target={subMenu.target || item.target}
-                        className='flex items-center gap-3 py-2 text-base text-[var(--endspace-text-secondary)] transition-colors hover:text-black'
-                      >
+                        className='flex items-center gap-3 py-2 text-base text-[var(--endspace-text-secondary)] transition-colors hover:text-black'>
                         <span className='w-4 text-center text-gray-400'>
-                          {subMenu.icon ? <i className={subMenu.icon} /> : renderIcon(subMenu.name)}
+                          {subMenu.icon ? (
+                            <i className={subMenu.icon} />
+                          ) : (
+                            renderIcon(subMenu.name)
+                          )}
                         </span>
                         <span>{subMenu.name}</span>
                       </SmartLink>
@@ -256,19 +271,17 @@ export const MobileNav = (props) => {
         </div>
 
         {/* Music Player (No Label, No Divider) */}
-        <div className="px-6 pb-2">
+        <div className='px-6 pb-2'>
           <EndspacePlayer isExpanded={true} />
         </div>
 
         {/* Social Links (No Label, No Divider) */}
-        <div className="px-6 pb-8">
-          <div className="flex items-center gap-3 flex-wrap">
+        <div className='px-6 pb-8'>
+          <div className='flex items-center gap-3 flex-wrap'>
             {/* Email */}
             {CONTACT_EMAIL && (
               <a
-                onClick={e =>
-                  handleEmailClick(e, emailIcon, CONTACT_EMAIL)
-                }
+                onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
                 title='email'
                 className='flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[var(--endspace-bg-secondary)] text-[var(--endspace-text-muted)] transition-colors hover:bg-[#d4d4d8] hover:text-[var(--endspace-text-primary)]'
                 ref={emailIcon}>
@@ -282,11 +295,10 @@ export const MobileNav = (props) => {
                 <a
                   key={social.key}
                   href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target='_blank'
+                  rel='noopener noreferrer'
                   title={social.label}
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-[var(--endspace-bg-secondary)] text-[var(--endspace-text-muted)] hover:text-[var(--endspace-text-primary)] hover:bg-[#d4d4d8] transition-colors"
-                >
+                  className='w-9 h-9 flex items-center justify-center rounded-full bg-[var(--endspace-bg-secondary)] text-[var(--endspace-text-muted)] hover:text-[var(--endspace-text-primary)] hover:bg-[#d4d4d8] transition-colors'>
                   {renderSocialIcon(social.key, social.svg, social.label)}
                 </a>
               )
@@ -296,7 +308,7 @@ export const MobileNav = (props) => {
       </div>
 
       {/* Top spacer for content */}
-      <div className="h-20 md:hidden" />
+      <div className='h-20 md:hidden' />
     </>
   )
 }

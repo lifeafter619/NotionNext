@@ -24,11 +24,11 @@
 
 请在**两个数据库中**分别新增以下属性（名称需保持一致）：
 
-| 属性 | 类型 | 用途 |
-|---|---|---|
-| `paired_with` | Text | 对端语言数据库中孪生页面的 UUID |
-| `translation_locked` | Checkbox | 勾选后，重新同步时不覆盖该页面 |
-| `source_hash` | Text | 源页面可翻译内容的 SHA-256，由脚本写入 |
+| 属性                 | 类型     | 用途                                   |
+| -------------------- | -------- | -------------------------------------- |
+| `paired_with`        | Text     | 对端语言数据库中孪生页面的 UUID        |
+| `translation_locked` | Checkbox | 勾选后，重新同步时不覆盖该页面         |
+| `source_hash`        | Text     | 源页面可翻译内容的 SHA-256，由脚本写入 |
 
 NotionNext 已有的属性（`title`、`slug`、`status`、`type`、`category`、`tags`、`date`、`summary`、`icon`、`password`）会被读取使用，但不会被翻译脚本修改。
 
@@ -93,19 +93,19 @@ yarn translate:all --dry-run
 
 通过 `.env.local` 中的 `TRANSLATOR_PROVIDER` 切换，默认 `deepseek`。
 
-| 提供方 | 模型环境变量 | 默认值 | 价格（约） |
-|---|---|---|---|
+| 提供方     | 模型环境变量     | 默认值          | 价格（约）                 |
+| ---------- | ---------------- | --------------- | -------------------------- |
 | `deepseek` | `DEEPSEEK_MODEL` | `deepseek-chat` | $0.27/M 输入，$1.10/M 输出 |
-| `glm` | `GLM_MODEL` | `glm-4-plus` | 以官网为准 |
+| `glm`      | `GLM_MODEL`      | `glm-4-plus`    | 以官网为准                 |
 
 `deepseek-chat` 是平台级别名，会自动指向当前最新对话模型；如手动指定具体版本（如 `deepseek-v3`）后返回 404，可改回 `deepseek-chat`。
 
 ## 并发、预算与重试
 
-| 环境变量 | 默认值 | 说明 |
-|---|---|---|
-| `TRANSLATOR_CONCURRENCY` | `8` | 单页面内块翻译的并发度（瓶颈在 LLM，不在 Notion） |
-| `TRANSLATOR_BUDGET_TOKENS_PER_RUN` | `500000` | 单次运行的硬性 token 上限，超出立即抛错终止 |
+| 环境变量                           | 默认值   | 说明                                              |
+| ---------------------------------- | -------- | ------------------------------------------------- |
+| `TRANSLATOR_CONCURRENCY`           | `8`      | 单页面内块翻译的并发度（瓶颈在 LLM，不在 Notion） |
+| `TRANSLATOR_BUDGET_TOKENS_PER_RUN` | `500000` | 单次运行的硬性 token 上限，超出立即抛错终止       |
 
 所有 Notion API 调用统一封装了指数退避重试（429 / 5xx / 超时），偶发的 502 不会中断长批量任务。
 
@@ -120,12 +120,12 @@ yarn translate:all --dry-run
 
 ## 块处理规则
 
-| 块类型 | 行为 |
-|---|---|
-| `paragraph`、`heading_1/2/3`、`bulleted_list_item`、`numbered_list_item`、`quote`、`callout`、`toggle`、`to_do` | 翻译 rich_text；保留加粗/斜体/链接等格式注释 |
-| `code`（mermaid / plantuml） | 仅翻译标签，保留语法 |
-| `code`（其他语言）、`equation`、`image`、`video`、`file`、`embed`、`divider`、`table_of_contents`、`bookmark`、`breadcrumb`、`link_preview`、`link_to_page`、`child_page`、`child_database` | 原样保留 |
-| `column_list`、`column`、`table`、`table_row`、`synced_block`、`unsupported` | 跳过 — Notion 创建接口要求这些块在 body 中携带子节点，而扁平拉取无法包含嵌套子节点 |
+| 块类型                                                                                                                                                                                      | 行为                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `paragraph`、`heading_1/2/3`、`bulleted_list_item`、`numbered_list_item`、`quote`、`callout`、`toggle`、`to_do`                                                                             | 翻译 rich_text；保留加粗/斜体/链接等格式注释                                       |
+| `code`（mermaid / plantuml）                                                                                                                                                                | 仅翻译标签，保留语法                                                               |
+| `code`（其他语言）、`equation`、`image`、`video`、`file`、`embed`、`divider`、`table_of_contents`、`bookmark`、`breadcrumb`、`link_preview`、`link_to_page`、`child_page`、`child_database` | 原样保留                                                                           |
+| `column_list`、`column`、`table`、`table_row`、`synced_block`、`unsupported`                                                                                                                | 跳过 — Notion 创建接口要求这些块在 body 中携带子节点，而扁平拉取无法包含嵌套子节点 |
 
 ## 文件结构
 

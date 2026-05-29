@@ -67,7 +67,9 @@ const NavPostItem = props => {
         </div>
         <Collapse isOpen={expanded} onHeightChange={props.onHeightChange}>
           {group?.items?.map((post, index) => (
-            <div key={index} className='ml-3 border-l border-gray-200 dark:border-gray-700'>
+            <div
+              key={index}
+              className='ml-3 border-l border-gray-200 dark:border-gray-700'>
               <BlogPostCard className='ml-3' post={post} />
             </div>
           ))}

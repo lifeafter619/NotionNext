@@ -52,7 +52,10 @@ export const buildMenuItems = ({ customNav, customMenu }) => {
       ? customNavItems.concat(defaultMenuItems)
       : defaultMenuItems
 
-  if (siteConfig('CUSTOM_MENU', BLOG.CUSTOM_MENU) && customMenuItems.length > 0) {
+  if (
+    siteConfig('CUSTOM_MENU', BLOG.CUSTOM_MENU) &&
+    customMenuItems.length > 0
+  ) {
     links = customMenuItems
   }
 
@@ -63,7 +66,9 @@ export const isMenuItemActive = (item, currentPath) => {
   if (!item || !currentPath) return false
   const itemPath = item.path
   const selfActive =
-    itemPath === '/' ? currentPath === '/' : itemPath && currentPath.startsWith(itemPath)
+    itemPath === '/'
+      ? currentPath === '/'
+      : itemPath && currentPath.startsWith(itemPath)
 
   if (selfActive) return true
 

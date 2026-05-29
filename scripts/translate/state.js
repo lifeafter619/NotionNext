@@ -18,7 +18,11 @@ function normalizeForHash(block) {
     }
   }
   if (type === 'code') {
-    return { type, text: (data.rich_text || []).map(rt => rt.plain_text).join(''), language: data.language }
+    return {
+      type,
+      text: (data.rich_text || []).map(rt => rt.plain_text).join(''),
+      language: data.language
+    }
   }
   if (type === 'image' || type === 'video' || type === 'file') {
     const file = data.file || data.external

@@ -50,9 +50,11 @@ export async function getStaticProps({ params: { category, page } }) {
 
 export async function getStaticPaths() {
   const from = 'category-paths'
-  const { categoryOptions, allPages, NOTION_CONFIG } = await fetchGlobalAllData({
-    from
-  })
+  const { categoryOptions, allPages, NOTION_CONFIG } = await fetchGlobalAllData(
+    {
+      from
+    }
+  )
   const paths = []
 
   categoryOptions?.forEach(category => {

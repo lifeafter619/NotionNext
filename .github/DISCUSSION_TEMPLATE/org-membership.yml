@@ -1,4 +1,4 @@
-title: "组织成员申请: "
+title: '组织成员申请: '
 labels: []
 body:
   - type: markdown
@@ -9,7 +9,7 @@ body:
     id: username
     attributes:
       label: GitHub 用户名
-      placeholder: "@your-handle"
+      placeholder: '@your-handle'
     validations:
       required: true
   - type: textarea

@@ -68,5 +68,7 @@ webpack-internal:/
 
 # Verification and temp files
 validation-report.json
+quality-report.json
+health-report.json
 *.pyc
 __pycache__/

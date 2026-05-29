@@ -70,9 +70,7 @@ const SocialButton = () => {
         )}
         {CONTACT_EMAIL && (
           <a
-            onClick={e =>
-              handleEmailClick(e, emailIcon, CONTACT_EMAIL)
-            }
+            onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
             target='_blank'
             rel='noreferrer'
             className='cursor-pointer'

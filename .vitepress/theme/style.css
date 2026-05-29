@@ -101,7 +101,11 @@
 }
 
 .nn-compare-card-strong {
-  background: color-mix(in srgb, var(--vp-c-brand-soft) 70%, var(--vp-c-bg-soft));
+  background: color-mix(
+    in srgb,
+    var(--vp-c-brand-soft) 70%,
+    var(--vp-c-bg-soft)
+  );
 }
 
 .nn-step-grid,

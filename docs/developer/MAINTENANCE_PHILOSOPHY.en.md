@@ -12,12 +12,12 @@ This document is for **core maintainers and frequent contributors**. Read it tog
 
 ## Suggested PR sizing
 
-| Kind | Suggested approach |
-| --- | --- |
-| Bugfix | Minimal fix + tests or clear repro notes |
+| Kind                        | Suggested approach                                                               |
+| --------------------------- | -------------------------------------------------------------------------------- |
+| Bugfix                      | Minimal fix + tests or clear repro notes                                         |
 | Small feature / theme-local | Keep within theme or a single module boundary; avoid drive-by shared-layer edits |
-| Cross-theme / shared API | Agree API and defaults in an Issue first; keep migrations documented |
-| Breaking changes | Document version/config migration; split into phases if it helps reviewers |
+| Cross-theme / shared API    | Agree API and defaults in an Issue first; keep migrations documented             |
+| Breaking changes            | Document version/config migration; split into phases if it helps reviewers       |
 
 ## High-impact areas (extra clarity expected)
 

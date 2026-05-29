@@ -40,48 +40,48 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `FUWARI_MENU_INDEX` | 见 config.js |
-| `FUWARI_MENU_ARCHIVE` | 见 config.js |
-| `FUWARI_MENU_CATEGORY` | 见 config.js |
-| `FUWARI_MENU_TAG` | 见 config.js |
-| `FUWARI_MENU_SEARCH` | 见 config.js |
-| `FUWARI_POST_LIST_COVER` | 见 config.js |
-| `FUWARI_POST_LIST_COVER_DEFAULT` | 见 config.js |
+| 配置键                                 | 说明         |
+| -------------------------------------- | ------------ |
+| `FUWARI_MENU_INDEX`                    | 见 config.js |
+| `FUWARI_MENU_ARCHIVE`                  | 见 config.js |
+| `FUWARI_MENU_CATEGORY`                 | 见 config.js |
+| `FUWARI_MENU_TAG`                      | 见 config.js |
+| `FUWARI_MENU_SEARCH`                   | 见 config.js |
+| `FUWARI_POST_LIST_COVER`               | 见 config.js |
+| `FUWARI_POST_LIST_COVER_DEFAULT`       | 见 config.js |
 | `FUWARI_POST_LIST_COVER_HOVER_ENLARGE` | 见 config.js |
-| `FUWARI_POST_LIST_SUMMARY` | 见 config.js |
-| `FUWARI_POST_LIST_TAG` | 见 config.js |
-| `FUWARI_POST_LIST_COVER_COL_WIDTH` | 见 config.js |
-| `FUWARI_MOBILE_MENU` | 见 config.js |
-| `FUWARI_HERO_ENABLE` | 见 config.js |
-| `FUWARI_HERO_BG_IMAGE` | 见 config.js |
-| `FUWARI_HERO_CREDIT_TEXT` | 见 config.js |
-| `FUWARI_HERO_CREDIT_LINK` | 见 config.js |
-| `FUWARI_WIDGET_NOTICE` | 见 config.js |
-| `FUWARI_WIDGET_LATEST_POSTS` | 见 config.js |
-| `FUWARI_WIDGET_CATEGORY_LIST` | 见 config.js |
-| `FUWARI_WIDGET_TAG_LIST` | 见 config.js |
-| `FUWARI_PROFILE_PATH` | 见 config.js |
-| `FUWARI_WIDGET_CONTACT` | 见 config.js |
-| `FUWARI_WIDGET_AD` | 见 config.js |
-| `FUWARI_WIDGET_WWADS` | 见 config.js |
-| `FUWARI_WIDGET_ADSENSE` | 见 config.js |
-| `FUWARI_WIDGET_PLUGIN_AREA` | 见 config.js |
-| `FUWARI_WIDGET_ANALYTICS` | 见 config.js |
-| `FUWARI_WIDGET_THEME_COLOR_SWITCHER` | 见 config.js |
-| `FUWARI_THEME_COLOR_HUE` | 见 config.js |
-| `FUWARI_THEME_COLOR_FIXED` | 见 config.js |
-| `FUWARI_WIDGET_TO_COMMENT` | 见 config.js |
-| `FUWARI_WIDGET_DARK_MODE` | 见 config.js |
-| `FUWARI_ARTICLE_TOC` | 见 config.js |
-| `FUWARI_CONTACT_TITLE` | 见 config.js |
-| `FUWARI_CONTACT_DESCRIPTION` | 见 config.js |
-| `FUWARI_CONTACT_FRONT_BADGE` | 见 config.js |
-| `FUWARI_CONTACT_URL` | 见 config.js |
-| `FUWARI_CONTACT_TEXT` | 见 config.js |
-| `FUWARI_CONTACT_FLIP_CARD` | 见 config.js |
-| `FUWARI_CONTACT_BACK_TITLE` | 见 config.js |
+| `FUWARI_POST_LIST_SUMMARY`             | 见 config.js |
+| `FUWARI_POST_LIST_TAG`                 | 见 config.js |
+| `FUWARI_POST_LIST_COVER_COL_WIDTH`     | 见 config.js |
+| `FUWARI_MOBILE_MENU`                   | 见 config.js |
+| `FUWARI_HERO_ENABLE`                   | 见 config.js |
+| `FUWARI_HERO_BG_IMAGE`                 | 见 config.js |
+| `FUWARI_HERO_CREDIT_TEXT`              | 见 config.js |
+| `FUWARI_HERO_CREDIT_LINK`              | 见 config.js |
+| `FUWARI_WIDGET_NOTICE`                 | 见 config.js |
+| `FUWARI_WIDGET_LATEST_POSTS`           | 见 config.js |
+| `FUWARI_WIDGET_CATEGORY_LIST`          | 见 config.js |
+| `FUWARI_WIDGET_TAG_LIST`               | 见 config.js |
+| `FUWARI_PROFILE_PATH`                  | 见 config.js |
+| `FUWARI_WIDGET_CONTACT`                | 见 config.js |
+| `FUWARI_WIDGET_AD`                     | 见 config.js |
+| `FUWARI_WIDGET_WWADS`                  | 见 config.js |
+| `FUWARI_WIDGET_ADSENSE`                | 见 config.js |
+| `FUWARI_WIDGET_PLUGIN_AREA`            | 见 config.js |
+| `FUWARI_WIDGET_ANALYTICS`              | 见 config.js |
+| `FUWARI_WIDGET_THEME_COLOR_SWITCHER`   | 见 config.js |
+| `FUWARI_THEME_COLOR_HUE`               | 见 config.js |
+| `FUWARI_THEME_COLOR_FIXED`             | 见 config.js |
+| `FUWARI_WIDGET_TO_COMMENT`             | 见 config.js |
+| `FUWARI_WIDGET_DARK_MODE`              | 见 config.js |
+| `FUWARI_ARTICLE_TOC`                   | 见 config.js |
+| `FUWARI_CONTACT_TITLE`                 | 见 config.js |
+| `FUWARI_CONTACT_DESCRIPTION`           | 见 config.js |
+| `FUWARI_CONTACT_FRONT_BADGE`           | 见 config.js |
+| `FUWARI_CONTACT_URL`                   | 见 config.js |
+| `FUWARI_CONTACT_TEXT`                  | 见 config.js |
+| `FUWARI_CONTACT_FLIP_CARD`             | 见 config.js |
+| `FUWARI_CONTACT_BACK_TITLE`            | 见 config.js |
 
 共 **50** 项，上表列出前 40 项，完整列表见 [config.js](https://github.com/notionnext-org/NotionNext/blob/main/themes/fuwari/config.js)。
 

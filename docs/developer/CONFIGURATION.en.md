@@ -40,4 +40,3 @@ At minimum update:
 
 - comment in config file
 - docs or PR description usage notes
-

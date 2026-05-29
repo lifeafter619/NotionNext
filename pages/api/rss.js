@@ -35,7 +35,11 @@ async function generateRssContent() {
     ? pageIds[0].split(':')[1]
     : pageIds[0]
 
-  const props = await fetchGlobalAllData({ from: 'rss-api', pageId: targetId, locale })
+  const props = await fetchGlobalAllData({
+    from: 'rss-api',
+    pageId: targetId,
+    locale
+  })
   if (!props || !props.allPages) {
     return null
   }
@@ -114,7 +118,10 @@ export default async function handler(req, res) {
 
     const format = req.query.format || 'rss'
 
-    res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=3600')
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=600, stale-while-revalidate=3600'
+    )
 
     if (format === 'atom') {
       res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8')

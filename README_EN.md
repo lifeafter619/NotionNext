@@ -27,7 +27,6 @@ You can set up your personal website in just a few minutes. Here is the link to 
   </a>
 </p>
 
-
 [中文文档](./README.md) | README in English
 
 <hr/>
@@ -38,13 +37,13 @@ A static blog system built with NextJS and Notion API, deployed on Vercel. Desig
 
 ## Community
 
-| | |
-| --- | --- |
-| **Participate** | [community-participate.md](./docs/user-guide/community-participate.md) · [Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
-| **Contributing** | [CONTRIBUTING.md](./CONTRIBUTING.md) |
-| **Governance** | [GOVERNANCE.md](./GOVERNANCE.md) · [MAINTAINERS.md](./MAINTAINERS.md) |
-| **Code of Conduct** | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
-| **Docs site** | [notionnext.tangly1024.com](https://notionnext.tangly1024.com) |
+|                     |                                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Participate**     | [community-participate.md](./docs/user-guide/community-participate.md) · [Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
+| **Contributing**    | [CONTRIBUTING.md](./CONTRIBUTING.md)                                                                                                             |
+| **Governance**      | [GOVERNANCE.md](./GOVERNANCE.md) · [MAINTAINERS.md](./MAINTAINERS.md)                                                                            |
+| **Code of Conduct** | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)                                                                                                       |
+| **Docs site**       | [notionnext.tangly1024.com](https://notionnext.tangly1024.com)                                                                                   |
 
 ## 3-Minute Quick Start
 
@@ -104,7 +103,6 @@ This project exists thanks to all the people who contribute.
 - **Rendering Tool**: [React-notion-x](https://github.com/NotionX/react-notion-x)
 - **COMMENT**: [Twikoo](https://github.com/imaegoo/twikoo), [Giscus](https://giscus.app/zh-CN), [Gitalk](https://gitalk.github.io), [Cusdis](https://cusdis.com), [Utterances](https://utteranc.es)
 - **ICON**: [Fontawesome](https://fontawesome.com/v6/icons/)
-
 
 ## License
 

@@ -26,10 +26,33 @@ const ClerkProvider = dynamic(() =>
   import('@clerk/nextjs').then(m => m.ClerkProvider)
 )
 const AppErrorBoundary = ErrorHandler.createErrorBoundary(
-  <div style={{ padding: '2rem', textAlign: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-    <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Something went wrong</h1>
-    <p style={{ color: '#666', marginBottom: '1.5rem' }}>An unexpected error occurred. Please refresh the page.</p>
-    <button onClick={() => window.location.reload()} style={{ padding: '0.5rem 1.5rem', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '4px', background: 'transparent' }}>Refresh</button>
+  <div
+    style={{
+      padding: '2rem',
+      textAlign: 'center',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+    <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
+      Something went wrong
+    </h1>
+    <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+      An unexpected error occurred. Please refresh the page.
+    </p>
+    <button
+      onClick={() => window.location.reload()}
+      style={{
+        padding: '0.5rem 1.5rem',
+        cursor: 'pointer',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        background: 'transparent'
+      }}>
+      Refresh
+    </button>
   </div>
 )
 
@@ -92,7 +115,7 @@ const MyApp = ({ Component, pageProps }) => {
             <Component {...pageProps} />
           </GLayout>
           <ExternalPlugins {...pageProps} />
-      </ImageViewerProvider>
+        </ImageViewerProvider>
       </GlobalContextProvider>
     </AppErrorBoundary>
   )

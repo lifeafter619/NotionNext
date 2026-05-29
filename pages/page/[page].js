@@ -17,7 +17,10 @@ const Page = props => {
 
 export async function getStaticPaths({ locale }) {
   const from = 'page-paths'
-  const { postCount, NOTION_CONFIG } = await fetchGlobalAllData({ from, locale })
+  const { postCount, NOTION_CONFIG } = await fetchGlobalAllData({
+    from,
+    locale
+  })
   const totalPages = Math.ceil(
     postCount / siteConfig('POSTS_PER_PAGE', null, NOTION_CONFIG)
   )
@@ -58,7 +61,11 @@ export async function getStaticProps({ params: { page }, locale }) {
       if (post.password && post.password !== '') {
         continue
       }
-      const rawBlockMap = await getPostBlocks(post.id, 'slug', POST_PREVIEW_LINES)
+      const rawBlockMap = await getPostBlocks(
+        post.id,
+        'slug',
+        POST_PREVIEW_LINES
+      )
       post.blockMap = adapterNotionBlockMap(rawBlockMap)
       if (post.blockMap?.block) {
         post.blockMap.block = formatNotionBlock(post.blockMap.block)

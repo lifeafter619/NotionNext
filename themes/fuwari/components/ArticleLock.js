@@ -24,7 +24,9 @@ const ArticleLock = ({ validPassword }) => {
       <div className='text-3xl mb-3 text-[var(--fuwari-primary)]'>
         <i className='fas fa-lock' />
       </div>
-      <h2 className='text-xl font-semibold mb-2'>{locale?.COMMON?.ARTICLE_LOCK_TIPS || '这篇文章已加密'}</h2>
+      <h2 className='text-xl font-semibold mb-2'>
+        {locale?.COMMON?.ARTICLE_LOCK_TIPS || '这篇文章已加密'}
+      </h2>
       <p className='text-sm text-[var(--fuwari-muted)] mb-4'>
         {locale?.COMMON?.INPUT_PASSWORD || '请输入访问密码'}
       </p>
@@ -53,4 +55,3 @@ const ArticleLock = ({ validPassword }) => {
 }
 
 export default ArticleLock
-

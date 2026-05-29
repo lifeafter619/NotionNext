@@ -4,7 +4,8 @@ async function runDiagnose() {
   const token = process.env.NOTION_TOKEN
   const enId = process.env.NOTION_DB_EN_ID
   const zhId = process.env.NOTION_DB_ZH_ID
-  if (!token) throw new Error('NOTION_TOKEN 未设置（请检查项目根目录 .env.local）')
+  if (!token)
+    throw new Error('NOTION_TOKEN 未设置（请检查项目根目录 .env.local）')
 
   const client = new Client({ auth: token })
 
@@ -16,7 +17,9 @@ async function runDiagnose() {
 
   try {
     const me = await client.users.me({})
-    console.log(`集成身份: ${me.name || '(无名称)'}  (${me.bot?.owner?.type || '?'})`)
+    console.log(
+      `集成身份: ${me.name || '(无名称)'}  (${me.bot?.owner?.type || '?'})`
+    )
     console.log('')
   } catch (err) {
     console.error(`无法读取集成身份: ${err.message}`)
@@ -36,11 +39,16 @@ async function runDiagnose() {
   } while (cursor)
 
   if (!dbs.length) {
-    console.log('  → 该集成尚未获得任何数据库的访问权限。请先在 Notion 中将两个数据库与该集成连接。')
+    console.log(
+      '  → 该集成尚未获得任何数据库的访问权限。请先在 Notion 中将两个数据库与该集成连接。'
+    )
     return
   }
 
-  const norm = id => String(id || '').replace(/-/g, '').toLowerCase()
+  const norm = id =>
+    String(id || '')
+      .replace(/-/g, '')
+      .toLowerCase()
   console.log(`可访问数据库 (${dbs.length}):`)
   for (const db of dbs) {
     const title = (db.title || []).map(t => t.plain_text).join('') || '(无标题)'
@@ -57,8 +65,10 @@ async function runDiagnose() {
   if (enOk && zhOk) {
     console.log('✓ 两个数据库均可访问，翻译脚本应能正常运行。')
   } else {
-    if (!enOk) console.log(`✗ 英文库 ${enId} 无法访问 — 请在 Notion 中将其与集成连接。`)
-    if (!zhOk) console.log(`✗ 中文库 ${zhId} 无法访问 — 请在 Notion 中将其与集成连接。`)
+    if (!enOk)
+      console.log(`✗ 英文库 ${enId} 无法访问 — 请在 Notion 中将其与集成连接。`)
+    if (!zhOk)
+      console.log(`✗ 中文库 ${zhId} 无法访问 — 请在 Notion 中将其与集成连接。`)
   }
 }
 

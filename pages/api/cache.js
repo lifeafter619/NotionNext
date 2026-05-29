@@ -7,7 +7,9 @@ import { cleanCache } from '@/lib/cache/local_file_cache'
  */
 export default function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ status: 'error', message: 'Method not allowed' })
+    return res
+      .status(405)
+      .json({ status: 'error', message: 'Method not allowed' })
   }
 
   const token = process.env.CACHE_REVALIDATION_TOKEN
@@ -17,7 +19,9 @@ export default function handler(req, res) {
 
   try {
     cleanCache()
-    res.status(200).json({ status: 'success', message: 'Clean cache successful!' })
+    res
+      .status(200)
+      .json({ status: 'success', message: 'Clean cache successful!' })
   } catch (error) {
     console.error('Cache clean error:', error)
     res.status(400).json({ status: 'error', message: 'Clean cache failed!' })

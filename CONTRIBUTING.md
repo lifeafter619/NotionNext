@@ -29,10 +29,10 @@ The fork-and-PR workflow is unchanged; open pull requests against **notionnext-o
 
 ## First contribution
 
-1. Pick an issue labeled **`good first issue`**, or fix a doc page you are reading.  
-2. Docs: edit `docs/user-guide/**/*.md`, preview with `yarn docs:site:dev`, open a PR. See [maintain-docs](./docs/user-guide/maintain-docs.md).  
-3. Code: use a feature branch, run lint/type-check/tests, open a PR.  
-4. Larger changes: read [RFC guide](./docs/developer/rfc/README.md) or start a [Discussion](https://github.com/notionnext-org/NotionNext/discussions) first.  
+1. Pick an issue labeled **`good first issue`**, or fix a doc page you are reading.
+2. Docs: edit `docs/user-guide/**/*.md`, preview with `yarn docs:site:dev`, open a PR. See [maintain-docs](./docs/user-guide/maintain-docs.md).
+3. Code: use a feature branch, run lint/type-check/tests, open a PR.
+4. Larger changes: read [RFC guide](./docs/developer/rfc/README.md) or start a [Discussion](https://github.com/notionnext-org/NotionNext/discussions) first.
 5. Maintainer path: [community-participate](./docs/user-guide/community-participate.md) · [MAINTAINERS.md](./MAINTAINERS.md).
 
 ## Setup
@@ -75,8 +75,8 @@ Here are some commands that you can use:
 ## Creating new themes
 
 If you want to submit your custom theme to NotionNext, copy a new folder in
-[`themes`][themes-dir] from [`example`][example]. The folder name  will be the
-theme's key. 
+[`themes`][themes-dir] from [`example`][example]. The folder name will be the
+theme's key.
 
 ## Adding localizations
 
@@ -86,7 +86,7 @@ localization! Follow these steps to add a new localization:
 1. Copy one of the [en-US.js][en-US.js] in [lang-dir][lang-dir] and rename the new
    directory into your language's code ( e.g. `zh-CN.js`).
 2. Start translating the strings.
-3. Add your language config to [lang.js][lang.js]. 
+3. Add your language config to [lang.js][lang.js].
 4. [Create a PR][pr] with your localization updates.
 
 ## Environment Variables
@@ -99,12 +99,13 @@ NotionNext uses environment variables for configuration. To set up your developm
 
 ## Community and governance
 
-- [Participate](./docs/user-guide/community-participate.md)  
-- [Governance](./GOVERNANCE.md) · [Maintainers](./MAINTAINERS.md)  
-- [Code of Conduct](./CODE_OF_CONDUCT.md)  
+- [Participate](./docs/user-guide/community-participate.md)
+- [Governance](./GOVERNANCE.md) · [Maintainers](./MAINTAINERS.md)
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Discussions](https://github.com/notionnext-org/NotionNext/discussions)
 
 The configuration priority is:
+
 1. Notion Config Table (highest)
 2. Environment Variables
 3. blog.config.js (lowest)

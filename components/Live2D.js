@@ -35,7 +35,7 @@ export default function Live2D() {
                 console.error('读取PET模型', error)
               }
             } else {
-               console.error('loadlive2d function undefined')
+              console.error('loadlive2d function undefined')
             }
           })
           .catch(err => {

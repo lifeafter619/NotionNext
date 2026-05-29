@@ -44,7 +44,8 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
       if (data) {
         const parsed = JSON.parse(data)
         // 检查是否在24小时内
-        const hoursSinceLastRead = (Date.now() - parsed.timestamp) / (1000 * 60 * 60)
+        const hoursSinceLastRead =
+          (Date.now() - parsed.timestamp) / (1000 * 60 * 60)
         if (hoursSinceLastRead < 24) {
           return parsed
         } else {
@@ -158,31 +159,37 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
             />
           </svg>
           <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
-             <span className='font-bold'>已跳转至：</span>
-             <span className='truncate'>上次阅读位置 ({savedPosition.percentage}%)</span>
+            <span className='font-bold'>已跳转至：</span>
+            <span className='truncate'>
+              上次阅读位置 ({savedPosition.percentage}%)
+            </span>
           </div>
         </div>
         <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
-            <button
+          <button
             onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-                setShowNotification(false)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+              setShowNotification(false)
             }}
             className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
             返回开头
-            </button>
-            <button
+          </button>
+          <button
             onClick={dismissNotification}
             className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
-            <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path
+            <svg
+              className='w-5 h-5'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'>
+              <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
                 strokeWidth={2}
                 d='M6 18L18 6M6 6l12 12'
-                />
+              />
             </svg>
-            </button>
+          </button>
         </div>
       </div>
     </div>

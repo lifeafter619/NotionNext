@@ -94,10 +94,16 @@ export const Hero = props => {
 
                   {/* 背景图 */}
                   <div className='absolute -left-9 bottom-0 z-[-1]'>
-                    <LazyImage src='/images/starter/bg-hero-circle.svg' alt='bg-circle-left' />
+                    <LazyImage
+                      src='/images/starter/bg-hero-circle.svg'
+                      alt='bg-circle-left'
+                    />
                   </div>
                   <div className='absolute -right-6 -top-6 z-[-1]'>
-                    <LazyImage src='/images/starter/bg-hero-circle.svg' alt='bg-circle-right' />
+                    <LazyImage
+                      src='/images/starter/bg-hero-circle.svg'
+                      alt='bg-circle-right'
+                    />
                   </div>
                 </div>
               </div>

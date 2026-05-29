@@ -28,7 +28,11 @@ const Catalog = ({ post }) => {
 
   // 配置
   const showLevel3 = siteConfig('CLAUDE_TOC_SHOW_LEVEL3', true, CONFIG)
-  const scrollBehavior = siteConfig('CLAUDE_TOC_SCROLL_BEHAVIOR', 'instant', CONFIG)
+  const scrollBehavior = siteConfig(
+    'CLAUDE_TOC_SCROLL_BEHAVIOR',
+    'instant',
+    CONFIG
+  )
 
   // 最大深度：如果不显示 L3 则只显示到 L2 (indentLevel < 2)，否则到 L3 (indentLevel < 3)
   const maxDepth = showLevel3 ? 3 : 2
@@ -48,11 +52,15 @@ const Catalog = ({ post }) => {
       const id = uuidToId(item.id)
 
       // 回退栈直到找到比当前层级更小的父级
-      while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= item.indentLevel) {
+      while (
+        parentStack.length > 0 &&
+        parentStack[parentStack.length - 1].level >= item.indentLevel
+      ) {
         parentStack.pop()
       }
 
-      const parentId = parentStack.length > 0 ? parentStack[parentStack.length - 1].id : null
+      const parentId =
+        parentStack.length > 0 ? parentStack[parentStack.length - 1].id : null
 
       hierarchy.set(id, {
         item,
@@ -74,16 +82,19 @@ const Catalog = ({ post }) => {
   }, [filteredToc])
 
   // 获取某个 ID 的所有祖先 ID（含自身）
-  const getAncestorChain = useCallback((targetId) => {
-    const chain = new Set()
-    let current = targetId
-    while (current) {
-      chain.add(current)
-      const node = tocHierarchy.get(current)
-      current = node?.parentId
-    }
-    return chain
-  }, [tocHierarchy])
+  const getAncestorChain = useCallback(
+    targetId => {
+      const chain = new Set()
+      let current = targetId
+      while (current) {
+        chain.add(current)
+        const node = tocHierarchy.get(current)
+        current = node?.parentId
+      }
+      return chain
+    },
+    [tocHierarchy]
+  )
 
   // 获取当前激活的 L2 section 的 ID（用于展开其 L3 子级）
   const activeL2Id = useMemo(() => {
@@ -106,21 +117,24 @@ const Catalog = ({ post }) => {
   }, [activeSection, getAncestorChain])
 
   // 判断某项是否应该显示
-  const shouldShowItem = useCallback((id, indentLevel) => {
-    // L1 总是显示
-    if (indentLevel === 0) return true
-    // L2 总是显示
-    if (indentLevel === 1) return true
-    // L3 仅在其父 L2 激活时显示（或者 showLevel3 关闭时已被过滤）
-    if (indentLevel === 2) {
-      if (!showLevel3) return false
-      const node = tocHierarchy.get(id)
-      if (!node) return false
-      // 父级 L2 是否是当前激活的 L2
-      return node.parentId === activeL2Id
-    }
-    return false
-  }, [showLevel3, tocHierarchy, activeL2Id])
+  const shouldShowItem = useCallback(
+    (id, indentLevel) => {
+      // L1 总是显示
+      if (indentLevel === 0) return true
+      // L2 总是显示
+      if (indentLevel === 1) return true
+      // L3 仅在其父 L2 激活时显示（或者 showLevel3 关闭时已被过滤）
+      if (indentLevel === 2) {
+        if (!showLevel3) return false
+        const node = tocHierarchy.get(id)
+        if (!node) return false
+        // 父级 L2 是否是当前激活的 L2
+        return node.parentId === activeL2Id
+      }
+      return false
+    },
+    [showLevel3, tocHierarchy, activeL2Id]
+  )
 
   // 监听滚动事件
   useEffect(() => {
@@ -168,7 +182,10 @@ const Catalog = ({ post }) => {
         if (index !== -1 && tRef?.current) {
           const itemHeight = 28
           const containerHeight = tRef.current.clientHeight
-          const scrollTop = Math.max(0, itemHeight * index - containerHeight / 2 + itemHeight / 2)
+          const scrollTop = Math.max(
+            0,
+            itemHeight * index - containerHeight / 2 + itemHeight / 2
+          )
           tRef.current.scrollTo({ top: scrollTop, behavior: scrollBehavior })
         }
       }
@@ -222,15 +239,18 @@ const Catalog = ({ post }) => {
             if (!show) return null
 
             // 缩进
-            const paddingLeft = tocItem.indentLevel === 0 ? 0
-              : tocItem.indentLevel === 1 ? 20
-                : 40
+            const paddingLeft =
+              tocItem.indentLevel === 0
+                ? 0
+                : tocItem.indentLevel === 1
+                  ? 20
+                  : 40
 
             return (
               <a
                 key={id}
                 href={`#${id}`}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault()
                   clickLockRef.current = true
 
@@ -240,8 +260,15 @@ const Catalog = ({ post }) => {
                     if (container) {
                       const targetRect = target.getBoundingClientRect()
                       const containerRect = container.getBoundingClientRect()
-                      const scrollOffset = container.scrollTop + targetRect.top - containerRect.top - 20
-                      container.scrollTo({ top: scrollOffset, behavior: scrollBehavior })
+                      const scrollOffset =
+                        container.scrollTop +
+                        targetRect.top -
+                        containerRect.top -
+                        20
+                      container.scrollTo({
+                        top: scrollOffset,
+                        behavior: scrollBehavior
+                      })
                     }
                   }
 
@@ -257,9 +284,7 @@ const Catalog = ({ post }) => {
                   ${!isHighlighted ? 'toc-inactive' : ''}
                 `}
                 style={{ paddingLeft: `${paddingLeft}px` }}>
-                <span className='block break-words'>
-                  {tocItem.text}
-                </span>
+                <span className='block break-words'>{tocItem.text}</span>
               </a>
             )
           })}

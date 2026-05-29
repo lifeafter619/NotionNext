@@ -26,7 +26,6 @@ const SocialButton = () => {
 
   const emailIcon = useRef(null)
 
-
   return (
     <div className='flex flex-col transform hover:scale-105 duration-200 text-white text-center bg-indigo-700 rounded-full dark:bg-black cursor-pointer py-2.5'>
       {!show && (

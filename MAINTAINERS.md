@@ -7,18 +7,18 @@
 
 ## 创始人（Founder）
 
-| GitHub | 职责 |
-| --- | --- |
+| GitHub                                       | 职责                                                     |
+| -------------------------------------------- | -------------------------------------------------------- |
 | [@tangly1024](https://github.com/tangly1024) | 项目方向、组织与仓库资产、安全与法律风险、架构与发版守门 |
 
 ## 核心维护者（Core Maintainers）
 
-| GitHub | 负责域 | 说明 |
-| --- | --- | --- |
-| *（招募中）* | 文档站 `docs/user-guide/` | VitePress、迁移、Giscus |
-| *（招募中）* | CI / 构建 | GitHub Actions、Cloudflare Pages |
-| *（招募中）* | 主题（内置） | `themes/*` 评审与回归 |
-| *（招募中）* | 数据层 / Notion API | `lib/db/`、缓存与拉取 |
+| GitHub       | 负责域                    | 说明                             |
+| ------------ | ------------------------- | -------------------------------- |
+| _（招募中）_ | 文档站 `docs/user-guide/` | VitePress、迁移、Giscus          |
+| _（招募中）_ | CI / 构建                 | GitHub Actions、Cloudflare Pages |
+| _（招募中）_ | 主题（内置）              | `themes/*` 评审与回归            |
+| _（招募中）_ | 数据层 / Notion API       | `lib/db/`、缓存与拉取            |
 
 欢迎在 PR 或 Discussion 中**自愿认领**上表某一域，由 Founder 与现有维护者确认后更新本表。
 

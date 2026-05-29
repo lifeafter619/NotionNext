@@ -20,7 +20,8 @@ const normalizeDate = value => {
 
 const toTimestampMs = value => {
   if (value === null || value === undefined || value === '') return 0
-  if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : 0
+  if (typeof value === 'number')
+    return Number.isFinite(value) ? Math.trunc(value) : 0
   const parsed = Date.parse(String(value))
   return Number.isFinite(parsed) ? parsed : 0
 }
@@ -155,12 +156,19 @@ const sanitizeReadmeHtml = html => {
 }
 
 export default function ProfileHome(props) {
-  const { posts = [], readmePage, contributionEvents: persistedContributionEvents = [] } = props
+  const {
+    posts = [],
+    readmePage,
+    contributionEvents: persistedContributionEvents = []
+  } = props
   const heatmapGridRef = useRef(null)
   const tooltipTimerRef = useRef(null)
   const [contribCellSize, setContribCellSize] = useState(11)
   const [heatmapTooltip, setHeatmapTooltip] = useState(null)
-  const authorName = siteConfig('AUTHOR') || siteConfig('CLAUDE_BLOG_NAME', '', CONFIG) || 'Author'
+  const authorName =
+    siteConfig('AUTHOR') ||
+    siteConfig('CLAUDE_BLOG_NAME', '', CONFIG) ||
+    'Author'
 
   const readmeSource = useMemo(() => {
     if (readmePage) return readmePage
@@ -180,9 +188,14 @@ export default function ProfileHome(props) {
         const updatedAt = getUpdatedDate(post)
         if (!createdAt && !updatedAt) return null
 
-        const postId = post.id || post.href || post.slug || `${post.title || 'untitled'}-${index}`
+        const postId =
+          post.id ||
+          post.href ||
+          post.slug ||
+          `${post.title || 'untitled'}-${index}`
         const hasUpdateEvent =
-          Boolean(updatedAt) && (!createdAt || updatedAt.getTime() !== createdAt.getTime())
+          Boolean(updatedAt) &&
+          (!createdAt || updatedAt.getTime() !== createdAt.getTime())
 
         return {
           id: postId,
@@ -232,7 +245,10 @@ export default function ProfileHome(props) {
               event?.repositoryId || event?.identifier || event?.postId
             )
             const timestampMs = toTimestampMs(
-              event?.timestampMs || event?.timestamp || event?.date || event?.time
+              event?.timestampMs ||
+                event?.timestamp ||
+                event?.date ||
+                event?.time
             )
             const date = timestampMs ? new Date(timestampMs) : null
             if (!postId || !date) return null
@@ -255,12 +271,16 @@ export default function ProfileHome(props) {
   }, [persistedContributionEvents, fallbackContributionEvents])
 
   const years = useMemo(() => {
-    const yearSet = new Set(contributionEvents.map(event => event.date.getFullYear()))
+    const yearSet = new Set(
+      contributionEvents.map(event => event.date.getFullYear())
+    )
     yearSet.add(new Date().getFullYear())
     return Array.from(yearSet).sort((a, b) => b - a)
   }, [contributionEvents])
 
-  const [selectedYear, setSelectedYear] = useState(() => years[0] || new Date().getFullYear())
+  const [selectedYear, setSelectedYear] = useState(
+    () => years[0] || new Date().getFullYear()
+  )
   const [isYearModeActive, setIsYearModeActive] = useState(false)
   const [selectedActivityDayKey, setSelectedActivityDayKey] = useState('')
 
@@ -339,7 +359,8 @@ export default function ProfileHome(props) {
       for (let month = 0; month < 12; month++) {
         const firstDayOfMonth = new Date(selectedYear, month, 1)
         const monthWeekIndex = Math.floor(
-          (startOfWeekSunday(firstDayOfMonth).getTime() - start.getTime()) / MS_PER_WEEK
+          (startOfWeekSunday(firstDayOfMonth).getTime() - start.getTime()) /
+            MS_PER_WEEK
         )
         if (monthWeekIndex < 0 || monthWeekIndex >= weekCount) continue
         if (monthWeekIndex === lastWeekIndex) continue
@@ -378,7 +399,7 @@ export default function ProfileHome(props) {
   const contributionTitle = isYearModeActive
     ? `${heatmapEvents.length} contributions in ${selectedYear}`
     : `${heatmapEvents.length} contributions in the last year`
-  const activeYear = isYearModeActive ? selectedYear : (years[0] || selectedYear)
+  const activeYear = isYearModeActive ? selectedYear : years[0] || selectedYear
 
   const handleSelectYear = year => {
     setSelectedYear(year)
@@ -408,7 +429,8 @@ export default function ProfileHome(props) {
   }
 
   const getTooltipAnchorFromCell = target => {
-    if (!target || typeof target.getBoundingClientRect !== 'function') return null
+    if (!target || typeof target.getBoundingClientRect !== 'function')
+      return null
     const rect = target.getBoundingClientRect()
     return {
       x: rect.left + rect.width / 2,
@@ -468,7 +490,9 @@ export default function ProfileHome(props) {
 
   const activitySourceEvents = useMemo(() => {
     if (!selectedActivityDayKey) return yearEvents
-    return heatmapEvents.filter(event => formatDayKey(event.date) === selectedActivityDayKey)
+    return heatmapEvents.filter(
+      event => formatDayKey(event.date) === selectedActivityDayKey
+    )
   }, [selectedActivityDayKey, yearEvents, heatmapEvents])
 
   const activityGroups = useMemo(() => {
@@ -530,13 +554,16 @@ export default function ProfileHome(props) {
           })
         })
 
-        const updateRepositories = Array.from(updateRepoMap.values()).sort((a, b) => {
-          if (b.commitCount !== a.commitCount) return b.commitCount - a.commitCount
-          if (b.updatedAt.getTime() !== a.updatedAt.getTime()) {
-            return b.updatedAt - a.updatedAt
+        const updateRepositories = Array.from(updateRepoMap.values()).sort(
+          (a, b) => {
+            if (b.commitCount !== a.commitCount)
+              return b.commitCount - a.commitCount
+            if (b.updatedAt.getTime() !== a.updatedAt.getTime()) {
+              return b.updatedAt - a.updatedAt
+            }
+            return a.title.localeCompare(b.title)
           }
-          return a.title.localeCompare(b.title)
-        })
+        )
 
         const createdRepositories = group.createEvents
           .map(event => ({
@@ -657,9 +684,12 @@ export default function ProfileHome(props) {
                       <div ref={heatmapGridRef} className='claude-contrib-grid'>
                         {heatmapData.cells.map(cell => {
                           const isFutureCellInLastYearMode =
-                            !isYearModeActive && !cell.inRange && cell.date > heatmapRange.end
+                            !isYearModeActive &&
+                            !cell.inRange &&
+                            cell.date > heatmapRange.end
                           const isPlaceholder =
-                            (isYearModeActive && !cell.inRange) || isFutureCellInLastYearMode
+                            (isYearModeActive && !cell.inRange) ||
+                            isFutureCellInLastYearMode
                           return (
                             <div
                               key={cell.key}
@@ -668,8 +698,12 @@ export default function ProfileHome(props) {
                                   ? 'is-placeholder'
                                   : `level-${getHeatmapLevel(cell.count)}`
                               }`}
-                              onMouseEnter={event => showHeatmapTooltip(event, cell)}
-                              onMouseMove={event => moveHeatmapTooltip(event, cell)}
+                              onMouseEnter={event =>
+                                showHeatmapTooltip(event, cell)
+                              }
+                              onMouseMove={event =>
+                                moveHeatmapTooltip(event, cell)
+                              }
                               onMouseLeave={hideHeatmapTooltip}
                               onClick={() => handleSelectActivityDay(cell)}
                               aria-hidden={isPlaceholder}
@@ -711,9 +745,13 @@ export default function ProfileHome(props) {
                 <h2 className='claude-activity-title'>Contribution activity</h2>
                 <details className='claude-activity-year-dropdown'>
                   <summary className='claude-activity-year-summary'>
-                    <span className='claude-activity-year-summary-label'>Year:</span>
+                    <span className='claude-activity-year-summary-label'>
+                      Year:
+                    </span>
                     <span className='claude-activity-year-summary-main'>
-                      <span className='claude-activity-year-summary-value'>{activeYear}</span>
+                      <span className='claude-activity-year-summary-value'>
+                        {activeYear}
+                      </span>
                       <span
                         className='Button-visual Button-trailingAction claude-activity-year-summary-caret'
                         aria-hidden='true'>
@@ -738,8 +776,12 @@ export default function ProfileHome(props) {
                           <button
                             type='button'
                             className='claude-activity-year-option'
-                            onClick={event => handleSelectYearFromDropdown(year, event)}>
-                            <span className='claude-activity-year-option-check' aria-hidden='true'>
+                            onClick={event =>
+                              handleSelectYearFromDropdown(year, event)
+                            }>
+                            <span
+                              className='claude-activity-year-option-check'
+                              aria-hidden='true'>
                               {isActive ? (
                                 <svg viewBox='0 0 16 16' width='16' height='16'>
                                   <path d='M13.78 3.97a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0l-3.25-3.25a.75.75 0 1 1 1.06-1.06L6 10.69l6.72-6.72a.75.75 0 0 1 1.06 0Z' />
@@ -757,7 +799,6 @@ export default function ProfileHome(props) {
                 </details>
               </div>
               <section className='claude-activity-card'>
-
                 {activityGroups.length === 0 && (
                   <div>
                     {selectedActivityDayDate && (
@@ -781,13 +822,19 @@ export default function ProfileHome(props) {
                 {activityGroups.map(group => (
                   <div key={group.groupKey} className='claude-activity-group'>
                     <div className='claude-activity-group-title'>
-                      <span className='claude-activity-group-title-month'>{group.monthLabel}</span>
-                      <span className='claude-activity-group-title-year'>{group.yearLabel}</span>
+                      <span className='claude-activity-group-title-month'>
+                        {group.monthLabel}
+                      </span>
+                      <span className='claude-activity-group-title-year'>
+                        {group.yearLabel}
+                      </span>
                     </div>
                     <ul className='claude-activity-list'>
                       {group.commitSummary && (
                         <li className='claude-activity-item claude-activity-item-commit'>
-                          <span className='claude-activity-item-badge' aria-hidden='true'>
+                          <span
+                            className='claude-activity-item-badge'
+                            aria-hidden='true'>
                             <svg
                               aria-hidden='true'
                               height='16'
@@ -803,8 +850,11 @@ export default function ProfileHome(props) {
                               <summary className='claude-activity-summary-toggle'>
                                 <span className='claude-activity-item-summary'>
                                   Made {group.commitSummary.commitCount}{' '}
-                                  {pluralize(group.commitSummary.commitCount, 'commit')} in{' '}
-                                  {group.commitSummary.repositoryCount}{' '}
+                                  {pluralize(
+                                    group.commitSummary.commitCount,
+                                    'commit'
+                                  )}{' '}
+                                  in {group.commitSummary.repositoryCount}{' '}
                                   {pluralize(
                                     group.commitSummary.repositoryCount,
                                     'repository',
@@ -842,7 +892,9 @@ export default function ProfileHome(props) {
                                     key={`${group.groupKey}-update-${repo.id}`}
                                     className='claude-activity-subitem claude-activity-subitem-commit'>
                                     <div className='claude-activity-subitem-main'>
-                                      <SmartLink href={repo.href} className='claude-activity-link'>
+                                      <SmartLink
+                                        href={repo.href}
+                                        className='claude-activity-link'>
                                         {repo.title}
                                       </SmartLink>
                                     </div>
@@ -856,7 +908,9 @@ export default function ProfileHome(props) {
 
                       {group.createSummary && (
                         <li className='claude-activity-item claude-activity-item-create'>
-                          <span className='claude-activity-item-badge' aria-hidden='true'>
+                          <span
+                            className='claude-activity-item-badge'
+                            aria-hidden='true'>
                             <svg
                               aria-hidden='true'
                               height='16'
@@ -918,7 +972,9 @@ export default function ProfileHome(props) {
                                         className='claude-activity-subitem-icon'>
                                         <path d='M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z' />
                                       </svg>
-                                      <SmartLink href={repo.href} className='claude-activity-link'>
+                                      <SmartLink
+                                        href={repo.href}
+                                        className='claude-activity-link'>
                                         {repo.title}
                                       </SmartLink>
                                     </div>

@@ -57,18 +57,21 @@ export const useSimpleGlobal = () => useContext(ThemeGlobalSimple)
  * 仅在浏览器刷新（组件重新挂载）时重新加载；客户端路由切换不会触发重渲染。
  * 内部的 MenuList 通过 useRouter() 订阅路由上下文，仍可正常更新菜单激活状态。
  */
-const SidebarContent = memo(function SidebarContent(props) {
-  return (
-    <div className='flex flex-col justify-between h-full py-6 px-5'>
-      <div>
-        <NavBar {...props} />
+const SidebarContent = memo(
+  function SidebarContent(props) {
+    return (
+      <div className='flex flex-col justify-between h-full py-6 px-5'>
+        <div>
+          <NavBar {...props} />
+        </div>
+        <div className='mt-auto'>
+          <Footer />
+        </div>
       </div>
-      <div className='mt-auto'>
-        <Footer />
-      </div>
-    </div>
-  )
-}, () => true)
+    )
+  },
+  () => true
+)
 
 /**
  * 基础布局 — 三栏: 左侧导航 | 中间内容 | 右侧目录
@@ -85,7 +88,10 @@ const LayoutBase = props => {
 
   useEffect(() => {
     const shouldBlockImageAction = target => {
-      return target instanceof Element && Boolean(target.closest('#theme-claude img'))
+      return (
+        target instanceof Element &&
+        Boolean(target.closest('#theme-claude img'))
+      )
     }
 
     const handleImageContextMenu = e => {
@@ -122,7 +128,10 @@ const LayoutBase = props => {
           {/* ====== LEFT SIDEBAR — 导航栏 (桌面端) ====== */}
           {/* 使用 SidebarContent (React.memo) 避免客户端导航时重新加载侧边栏 */}
           <div className='claude-sidebar hidden md:flex md:flex-col md:flex-shrink-0 md:w-[296px] lg:w-[320px] h-full overflow-y-auto overflow-x-hidden'>
-            <SidebarContent customNav={props.customNav} customMenu={props.customMenu} />
+            <SidebarContent
+              customNav={props.customNav}
+              customMenu={props.customMenu}
+            />
           </div>
 
           {/* ====== CENTER — 主内容区 ====== */}
@@ -130,7 +139,6 @@ const LayoutBase = props => {
             <div
               id='container-inner'
               className='h-full w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl px-5 md:px-8 overflow-y-auto scroll-hidden'>
-
               {/* 移动端导航 */}
               <div className='md:hidden pt-4'>
                 <NavBar {...props} />
@@ -216,18 +224,18 @@ const LayoutSearch = props => {
 }
 
 function groupArticlesByYearArray(articles) {
-  const grouped = {};
+  const grouped = {}
   for (const article of articles) {
-    const year = new Date(article.publishDate).getFullYear().toString();
-    if (!grouped[year]) grouped[year] = [];
-    grouped[year].push(article);
+    const year = new Date(article.publishDate).getFullYear().toString()
+    if (!grouped[year]) grouped[year] = []
+    grouped[year].push(article)
   }
   for (const year in grouped) {
-    grouped[year].sort((a, b) => b.publishDate - a.publishDate);
+    grouped[year].sort((a, b) => b.publishDate - a.publishDate)
   }
   return Object.entries(grouped)
     .sort(([a], [b]) => b - a)
-    .map(([year, posts]) => ({ year, posts }));
+    .map(([year, posts]) => ({ year, posts }))
 }
 
 /**
@@ -268,9 +276,7 @@ const LayoutSlug = props => {
 
           <WWAds orientation='horizontal' className='w-full' />
 
-          <div id='article-wrapper'>
-            {!lock && <NotionPage post={post} />}
-          </div>
+          <div id='article-wrapper'>{!lock && <NotionPage post={post} />}</div>
 
           <AdSlot type={'in-article'} />
 
@@ -301,7 +307,9 @@ const Layout404 = props => {
     if (!post) {
       const timer = setTimeout(() => {
         if (isBrowser) {
-          const article = document.querySelector('#article-wrapper #notion-article')
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
           if (!article) {
             router.push('/404').then(() => {
               console.warn('找不到页面', router.asPath)

@@ -53,9 +53,9 @@ export default function PostCopyright({ post }) {
           )}
         </ul>
         <div className='ml-4 hidden md:block'>
-            <div className='w-24 h-24 bg-white p-1 rounded-md shadow-sm overflow-hidden'>
-                <QrCode value={path} />
-            </div>
+          <div className='w-24 h-24 bg-white p-1 rounded-md shadow-sm overflow-hidden'>
+            <QrCode value={path} />
+          </div>
         </div>
       </div>
     </section>

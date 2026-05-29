@@ -77,12 +77,15 @@ export async function getServerSideProps({ res, locale }) {
 
   res.setHeader('Content-Type', 'text/xml')
   // Cache for 1 hour
-  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=59')
+  res.setHeader(
+    'Cache-Control',
+    'public, max-age=3600, stale-while-revalidate=59'
+  )
   res.write(feed.rss2())
   res.end()
 
   return {
-    props: {},
+    props: {}
   }
 }
 

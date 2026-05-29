@@ -54,43 +54,43 @@ function createFlutteringRibbon() {
           }
         },
         e = function (t, i) {
-          ;(this.x = 0), (this.y = 0), this.set(t, i)
+          ;((this.x = 0), (this.y = 0), this.set(t, i))
         }
       e.prototype = {
         constructor: e,
         set: function (t, i) {
-          ;(this.x = t || 0), (this.y = i || 0)
+          ;((this.x = t || 0), (this.y = i || 0))
         },
         copy: function (t) {
-          return (this.x = t.x || 0), (this.y = t.y || 0), this
+          return ((this.x = t.x || 0), (this.y = t.y || 0), this)
         },
         multiply: function (t, i) {
-          return (this.x *= t || 1), (this.y *= i || 1), this
+          return ((this.x *= t || 1), (this.y *= i || 1), this)
         },
         divide: function (t, i) {
-          return (this.x /= t || 1), (this.y /= i || 1), this
+          return ((this.x /= t || 1), (this.y /= i || 1), this)
         },
         add: function (t, i) {
-          return (this.x += t || 0), (this.y += i || 0), this
+          return ((this.x += t || 0), (this.y += i || 0), this)
         },
         subtract: function (t, i) {
-          return (this.x -= t || 0), (this.y -= i || 0), this
+          return ((this.x -= t || 0), (this.y -= i || 0), this)
         },
         clampX: function (t, i) {
-          return (this.x = Math.max(t, Math.min(this.x, i))), this
+          return ((this.x = Math.max(t, Math.min(this.x, i))), this)
         },
         clampY: function (t, i) {
-          return (this.y = Math.max(t, Math.min(this.y, i))), this
+          return ((this.y = Math.max(t, Math.min(this.y, i))), this)
         },
         flipX: function () {
-          return (this.x *= -1), this
+          return ((this.x *= -1), this)
         },
         flipY: function () {
-          return (this.y *= -1), this
+          return ((this.y *= -1), this)
         }
       }
       const h = function (t) {
-        ;(this._canvas = null),
+        ;((this._canvas = null),
           (this._context = null),
           (this._sto = null),
           (this._width = 0),
@@ -113,7 +113,7 @@ function createFlutteringRibbon() {
           (this._onResize = this._onResize.bind(this)),
           (this._onScroll = this._onScroll.bind(this)),
           this.setOptions(t),
-          this.init()
+          this.init())
       }
       return (
         (h.prototype = {
@@ -125,7 +125,7 @@ function createFlutteringRibbon() {
           },
           init: function () {
             try {
-              ;(this._canvas = document.createElement('canvas')),
+              ;((this._canvas = document.createElement('canvas')),
                 (this._canvas.id = 'flutteringRibbon'),
                 (this._canvas.style.display = 'block'),
                 (this._canvas.style.position = 'fixed'),
@@ -145,7 +145,7 @@ function createFlutteringRibbon() {
                 (this._context.globalAlpha = this._options.colorAlpha),
                 window.addEventListener('resize', this._onResize),
                 window.addEventListener('scroll', this._onScroll),
-                document.body.appendChild(this._canvas)
+                document.body.appendChild(this._canvas))
             } catch (t) {
               return void console.warn('Canvas Context Error: ' + t.toString())
             }
@@ -188,7 +188,7 @@ function createFlutteringRibbon() {
               ) {
                 if ((u.add(a, r), d.x >= h)) break
               } else if ('left' === t && (u.subtract(a, r), d.x <= s)) break
-              p.push({
+              ;(p.push({
                 point1: new e(_.x, _.y),
                 point2: new e(d.x, d.y),
                 point3: u,
@@ -201,7 +201,7 @@ function createFlutteringRibbon() {
                 _.copy(d),
                 d.copy(u),
                 (f += 4),
-                (b += this._options.colorCycleSpeed)
+                (b += this._options.colorCycleSpeed))
             }
             this._ribbons.push(p)
           },
@@ -217,7 +217,7 @@ function createFlutteringRibbon() {
                   this._options.animateSections)
                 ) {
                   const i = 0.1 * Math.sin(1 + (t.phase * Math.PI) / 2)
-                  'right' === t.dir
+                  ;('right' === t.dir
                     ? (t.point1.add(i, 0),
                       t.point2.add(i, 0),
                       t.point3.add(i, 0))
@@ -226,7 +226,7 @@ function createFlutteringRibbon() {
                       t.point3.subtract(i, 0)),
                     t.point1.add(0, i),
                     t.point2.add(0, i),
-                    t.point3.add(0, i)
+                    t.point3.add(0, i))
                 }
               } else t.delay -= 0.5
               const i = this._options.colorSaturation,
@@ -241,7 +241,7 @@ function createFlutteringRibbon() {
                   ', ' +
                   t.alpha +
                   ' )'
-              this._context.save(),
+              ;(this._context.save(),
                 0 !== this._options.parallaxAmount &&
                   this._context.translate(
                     0,
@@ -258,7 +258,7 @@ function createFlutteringRibbon() {
                   (this._context.strokeStyle = o),
                   (this._context.lineCap = 'round'),
                   this._context.stroke()),
-                this._context.restore()
+                this._context.restore())
             }
             return !1
           },
@@ -273,19 +273,19 @@ function createFlutteringRibbon() {
               for (let t = 0; t < n; ++t) this._drawRibbonSection(i[t]) && o++
               o >= n && (this._ribbons[t] = null)
             }
-            this._ribbons.length < this._options.ribbonCount &&
+            ;(this._ribbons.length < this._options.ribbonCount &&
               this.addRibbon(),
-              requestAnimationFrame(this._onDraw)
+              requestAnimationFrame(this._onDraw))
           },
           _onResize: function (t) {
             const i = s(t)
-            ;(this._width = i.width),
+            ;((this._width = i.width),
               (this._height = i.height),
               this._canvas &&
                 ((this._canvas.width = this._width),
                 (this._canvas.height = this._height),
                 this._context &&
-                  (this._context.globalAlpha = this._options.colorAlpha))
+                  (this._context.globalAlpha = this._options.colorAlpha)))
           },
           _onScroll: function (t) {
             const i = s(t)

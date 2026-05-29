@@ -9,16 +9,16 @@
 
 ## 按场景选主题
 
-| 你想做什么 | 优先看 | 备选 | 选择理由 |
-| --- | --- | --- | --- |
-| 个人博客 / 日常写作 | [simple](./simple.md)、[hexo](./hexo.md) | [nobelium](./nobelium.md)、[typography](./typography.md) | 结构清楚、文章优先、配置负担低 |
-| 文档 / 知识库 / 教程站 | [gitbook](./gitbook.md)、[claude](./claude.md) | [thoughtlite](./thoughtlite.md) | 侧边栏、目录和阅读连续性更强 |
-| 作品集 / 个人品牌 | [proxio](./proxio.md)、[starter](./starter.md) | [landing](./landing.md) | 首屏表达强，适合展示身份、作品和服务 |
-| 产品官网 / SaaS 落地页 | [starter](./starter.md)、[landing](./landing.md) | [commerce](./commerce.md) | 有产品介绍、功能区块、价格和 CTA 结构 |
-| 图片 / 摄影 / 视觉内容 | [photo](./photo.md)、[plog](./plog.md) | [magzine](./magzine.md) | 图片展示密度更高，适合视觉浏览 |
-| 导航站 / 资源聚合 | [nav](./nav.md) | [gitbook](./gitbook.md) | 更适合分类入口、链接集合和资源导航 |
-| 杂志感 / 强视觉首页 | [magzine](./magzine.md)、[heo](./heo.md) | [fuwari](./fuwari.md) | 首页表现力强，适合内容品牌化 |
-| 游戏 / 互动展示 | [game](./game.md) | [movie](./movie.md) | 适合特殊内容形态和沉浸式展示 |
+| 你想做什么             | 优先看                                           | 备选                                                     | 选择理由                              |
+| ---------------------- | ------------------------------------------------ | -------------------------------------------------------- | ------------------------------------- |
+| 个人博客 / 日常写作    | [simple](./simple.md)、[hexo](./hexo.md)         | [nobelium](./nobelium.md)、[typography](./typography.md) | 结构清楚、文章优先、配置负担低        |
+| 文档 / 知识库 / 教程站 | [gitbook](./gitbook.md)、[claude](./claude.md)   | [thoughtlite](./thoughtlite.md)                          | 侧边栏、目录和阅读连续性更强          |
+| 作品集 / 个人品牌      | [proxio](./proxio.md)、[starter](./starter.md)   | [landing](./landing.md)                                  | 首屏表达强，适合展示身份、作品和服务  |
+| 产品官网 / SaaS 落地页 | [starter](./starter.md)、[landing](./landing.md) | [commerce](./commerce.md)                                | 有产品介绍、功能区块、价格和 CTA 结构 |
+| 图片 / 摄影 / 视觉内容 | [photo](./photo.md)、[plog](./plog.md)           | [magzine](./magzine.md)                                  | 图片展示密度更高，适合视觉浏览        |
+| 导航站 / 资源聚合      | [nav](./nav.md)                                  | [gitbook](./gitbook.md)                                  | 更适合分类入口、链接集合和资源导航    |
+| 杂志感 / 强视觉首页    | [magzine](./magzine.md)、[heo](./heo.md)         | [fuwari](./fuwari.md)                                    | 首页表现力强，适合内容品牌化          |
+| 游戏 / 互动展示        | [game](./game.md)                                | [movie](./movie.md)                                      | 适合特殊内容形态和沉浸式展示          |
 
 ## 新手怎么选？
 
@@ -45,33 +45,33 @@
 
 ## 完整主题表
 
-| ID | 名称 | 定位 | 说明文档 |
-| --- | --- | --- | --- |
-| `simple` | Simple | 默认极简文字博客 | [simple.md](./simple.md) |
-| `hexo` | Hexo | 经典双栏博客 | [hexo.md](./hexo.md) |
-| `heo` | Heo | 模块化首页、通知条、英雄区 | [heo.md](./heo.md) |
-| `gitbook` | GitBook | 文档/手册侧栏目录 | [gitbook.md](./gitbook.md) |
-| `next` | Next | 双栏 + 移动悬浮目录 | [next.md](./next.md) |
-| `medium` | Medium | Medium 风阅读 | [medium.md](./medium.md) |
-| `matery` | Matery | Material 卡片列表 | [matery.md](./matery.md) |
-| `nobelium` | Nobelium | 极简 | [nobelium.md](./nobelium.md) |
-| `fukasawa` | Fukasawa | 多栏高密度 | [fukasawa.md](./fukasawa.md) |
-| `fuwari` | Fuwari | 日系双栏色板 | [fuwari.md](./fuwari.md) · [FUWARI.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/FUWARI.md) |
-| `typography` | Typography | 排版优先 | [typography.md](./typography.md) |
-| `nav` | Nav | 导航站/聚合 | [nav.md](./nav.md) |
-| `plog` | Plog | 图文/轻博客 | [plog.md](./plog.md) |
-| `photo` | Photo | 摄影相册 | [photo.md](./photo.md) |
-| `movie` | Movie | 影视海报墙 | [movie.md](./movie.md) |
-| `game` | Game | 游戏像素风 | [game.md](./game.md) |
-| `landing` | Landing | 单页着陆 | [landing.md](./landing.md) |
-| `starter` | Starter | 营销落地页区块 | [starter.md](./starter.md) |
-| `proxio` | Proxio | 作品集/品牌站 | [proxio.md](./proxio.md) |
-| `commerce` | Commerce | 商品展示 | [commerce.md](./commerce.md) |
-| `magzine` | Magazine | 杂志封面风（目录名 `magzine`） | [magzine.md](./magzine.md) |
-| `claude` | Claude | 文档风 + 贡献热力图首页 | [claude.md](./claude.md) · [CLAUDE.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/CLAUDE.md) |
-| `endspace` | Endspace | 终末工业风加载与侧栏 | [endspace.md](./endspace.md) · [ENDSPACE.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/ENDSPACE.md) |
-| `example` | Example | 主题开发骨架 | [example.md](./example.md) |
-| `thoughtlite` | ThoughtLite | 时间线首页 + Latest 卡片 | [thoughtlite.md](./thoughtlite.md) · [THOUGHTLITE.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/THOUGHTLITE.md) |
+| ID            | 名称        | 定位                           | 说明文档                                                                                                                                                     |
+| ------------- | ----------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `simple`      | Simple      | 默认极简文字博客               | [simple.md](./simple.md)                                                                                                                                     |
+| `hexo`        | Hexo        | 经典双栏博客                   | [hexo.md](./hexo.md)                                                                                                                                         |
+| `heo`         | Heo         | 模块化首页、通知条、英雄区     | [heo.md](./heo.md)                                                                                                                                           |
+| `gitbook`     | GitBook     | 文档/手册侧栏目录              | [gitbook.md](./gitbook.md)                                                                                                                                   |
+| `next`        | Next        | 双栏 + 移动悬浮目录            | [next.md](./next.md)                                                                                                                                         |
+| `medium`      | Medium      | Medium 风阅读                  | [medium.md](./medium.md)                                                                                                                                     |
+| `matery`      | Matery      | Material 卡片列表              | [matery.md](./matery.md)                                                                                                                                     |
+| `nobelium`    | Nobelium    | 极简                           | [nobelium.md](./nobelium.md)                                                                                                                                 |
+| `fukasawa`    | Fukasawa    | 多栏高密度                     | [fukasawa.md](./fukasawa.md)                                                                                                                                 |
+| `fuwari`      | Fuwari      | 日系双栏色板                   | [fuwari.md](./fuwari.md) · [FUWARI.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/FUWARI.md)                     |
+| `typography`  | Typography  | 排版优先                       | [typography.md](./typography.md)                                                                                                                             |
+| `nav`         | Nav         | 导航站/聚合                    | [nav.md](./nav.md)                                                                                                                                           |
+| `plog`        | Plog        | 图文/轻博客                    | [plog.md](./plog.md)                                                                                                                                         |
+| `photo`       | Photo       | 摄影相册                       | [photo.md](./photo.md)                                                                                                                                       |
+| `movie`       | Movie       | 影视海报墙                     | [movie.md](./movie.md)                                                                                                                                       |
+| `game`        | Game        | 游戏像素风                     | [game.md](./game.md)                                                                                                                                         |
+| `landing`     | Landing     | 单页着陆                       | [landing.md](./landing.md)                                                                                                                                   |
+| `starter`     | Starter     | 营销落地页区块                 | [starter.md](./starter.md)                                                                                                                                   |
+| `proxio`      | Proxio      | 作品集/品牌站                  | [proxio.md](./proxio.md)                                                                                                                                     |
+| `commerce`    | Commerce    | 商品展示                       | [commerce.md](./commerce.md)                                                                                                                                 |
+| `magzine`     | Magazine    | 杂志封面风（目录名 `magzine`） | [magzine.md](./magzine.md)                                                                                                                                   |
+| `claude`      | Claude      | 文档风 + 贡献热力图首页        | [claude.md](./claude.md) · [CLAUDE.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/CLAUDE.md)                     |
+| `endspace`    | Endspace    | 终末工业风加载与侧栏           | [endspace.md](./endspace.md) · [ENDSPACE.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/ENDSPACE.md)             |
+| `example`     | Example     | 主题开发骨架                   | [example.md](./example.md)                                                                                                                                   |
+| `thoughtlite` | ThoughtLite | 时间线首页 + Latest 卡片       | [thoughtlite.md](./thoughtlite.md) · [THOUGHTLITE.md（GitHub）](https://github.com/notionnext-org/NotionNext/blob/main/docs/developer/themes/THOUGHTLITE.md) |
 
 ## 主题切换挂件
 

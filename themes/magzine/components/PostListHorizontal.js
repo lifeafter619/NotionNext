@@ -40,7 +40,9 @@ const PostListHorizontal = ({ title, href, posts, hasBg }) => {
         <div className='block lg:hidden px-2'>
           <Swiper posts={posts} />
           {href && (
-            <SmartLink className='lg:hidden block text-lg underline' href={href}>
+            <SmartLink
+              className='lg:hidden block text-lg underline'
+              href={href}>
               <span>查看全部</span>
               <i className='ml-2 fas fa-arrow-right' />
             </SmartLink>

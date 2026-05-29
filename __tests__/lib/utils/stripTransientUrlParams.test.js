@@ -17,8 +17,8 @@ describe('stripTransientQueryParamsFromAsPath', () => {
     expect(stripTransientQueryParamsFromAsPath('/a/b?giscus=1')).toBe('/a/b')
   })
   it('preserves other query and hash', () => {
-    expect(
-      stripTransientQueryParamsFromAsPath('/p?k=1&giscus=x#c')
-    ).toBe('/p?k=1#c')
+    expect(stripTransientQueryParamsFromAsPath('/p?k=1&giscus=x#c')).toBe(
+      '/p?k=1#c'
+    )
   })
 })

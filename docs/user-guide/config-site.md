@@ -1,4 +1,5 @@
 # 如何配置站点
+
 > 迁移自：[如何配置站点](https://docs.tangly1024.com/article/how-to-config-notion-next)
 > 发布日期：2024-5-13
 > 最后编辑：2026-5-2
@@ -18,7 +19,6 @@
 
 以下展开说明
 
-
 ## 1. 在Notion中修改
 
 网站的图标、标题、描述、封面图将直接读取您的Notion模板
@@ -28,17 +28,15 @@
 
 > **💡**
 >
-在4.1 之前的版本（1.0 - 4.0） 中，很多配置需要到配置文件或环境变量里改，这需要用户打开编辑器或者登录github，乃至登录vercel后台编辑环境变量。
+> 在4.1 之前的版本（1.0 - 4.0） 中，很多配置需要到配置文件或环境变量里改，这需要用户打开编辑器或者登录github，乃至登录vercel后台编辑环境变量。
 >
 > 4.1版本之后，支持在Notion中创建一个Config文档，并且随时可以在Notion中编辑配置文件。
-
 
 ### 使用Notion-Config
 
 > **💡**
 >
-在Notion中编辑一个文档，即可实时同步站点配置，开关功能等等，无需登录github、vercel或者服务器。
-
+> 在Notion中编辑一个文档，即可实时同步站点配置，开关功能等等，无需登录github、vercel或者服务器。
 
 #### 如何使用？
 
@@ -47,7 +45,6 @@
 ![配置中心-Config](/legacy/c0a66c338d215735.png)
 ![配置中心的内置表格](/legacy/175d91ab905f2e22.png)
 
-
 #### 配置中心使用说明
 
 1. 仅 **V4.1.0** 之后的版本中支持该配置页面
@@ -55,25 +52,23 @@
 1. 此处配置的优先级最高，它将覆盖Vercel环境变量、覆盖blog.config.js。
 
 1. 您可以在`blog.config.js`以及各个主题的`config.js`中找到支持的配置，在4.8.0之后的版本，为了减少`blog.config.js`的体积，不同模块的配置被拆分到了 `/conf/xx.js` 中
-![image.png](/legacy/13a2b97c3617197f.png)
-各类配置的参考路径： [https://github.com/tangly1024/NotionNext/tree/main/conf](https://github.com/tangly1024/NotionNext/tree/main/conf)
-主题支持的配置内容参考路径： [https://github.com/tangly1024/NotionNext/blob/main/themes/example/config.js](https://github.com/tangly1024/NotionNext/blob/main/themes/example/config.js)
+   ![image.png](/legacy/13a2b97c3617197f.png)
+   各类配置的参考路径： [https://github.com/tangly1024/NotionNext/tree/main/conf](https://github.com/tangly1024/NotionNext/tree/main/conf)
+   主题支持的配置内容参考路径： [https://github.com/tangly1024/NotionNext/blob/main/themes/example/config.js](https://github.com/tangly1024/NotionNext/blob/main/themes/example/config.js)
 
 1. `NOTION_PAGE_ID` 必须在你的环境变量或代码中配置，不支持Notion_Config文档配置
 
 1. 配置中心的表格中我预置了几个常用配置，您可以按照自己的需求手动添加更多配置
-点击右上角的`new`或者左侧加号`+`都可以新增一行配置，然后填入对应的“配置名”和“配置值”
-![Untitled](/legacy/dfa8945c4ec07eff.png)
+   点击右上角的`new`或者左侧加号`+`都可以新增一行配置，然后填入对应的“配置名”和“配置值”
+   ![Untitled](/legacy/dfa8945c4ec07eff.png)
 
 1. 强烈建议添加的配置
-`**AUTHOR**`，作者名
-`**LINK**`，你的站点网址
-`**CONTACT_EMAIL **`, 你的联系邮箱，更多联系方式，在此查看配置方式： [https://github.com/tangly1024/NotionNext/blob/main/conf/contact.config.js](https://github.com/tangly1024/NotionNext/blob/main/conf/contact.config.js)
-（务必配置你自己的联系方式！）
-
+   `**AUTHOR**`，作者名
+   `**LINK**`，你的站点网址
+   `**CONTACT_EMAIL **`, 你的联系邮箱，更多联系方式，在此查看配置方式： [https://github.com/tangly1024/NotionNext/blob/main/conf/contact.config.js](https://github.com/tangly1024/NotionNext/blob/main/conf/contact.config.js)
+   （务必配置你自己的联系方式！）
 
 #### 表格字段说明
-
 
 #### 支持主题配置与复杂格式
 
@@ -98,13 +93,11 @@ HEO_NOTICE_BAR: [
 
 Built with Notion, the all-in-one connected workspace with publishing capabilities.
 
-
 ### 如何将代码中的Config转换成JSON？
 
 如何将config中的对象转成json可以借助AI，或者一些在线json格式化工具。
 
 ![image.png](/legacy/0f62bc102d9f0c2e.png)
-
 
 ### 老用户升级
 
@@ -120,17 +113,16 @@ A new tool that blends your everyday work apps into one. It's the all-in-one wor
 
 ![Untitled](/legacy/8551ccd7c1216e06.png)
 
-
 ## 2. 修改代码
 
 > **💡**
 >
-重要：站点的大部分配置都可以在您代码仓库的 **[blog.config.js](https://github.com/tangly1024/NotionNext/blob/main/blog.config.js)**** **文件中找到；
+> 重要：站点的大部分配置都可以在您代码仓库的 **[blog.config.js](https://github.com/tangly1024/NotionNext/blob/main/blog.config.js)\*\*** \*\*文件中找到；
 > 您只需修改对应的配置，Vercel将自动部署您Github仓库中的最新代码。
 
 > **💡**
 >
-若您更新到了NotionNext4.1之后的版本，推荐您直接在Notion-Config文件中添加配置，它将覆盖blog.config.js中的配置。
+> 若您更新到了NotionNext4.1之后的版本，推荐您直接在Notion-Config文件中添加配置，它将覆盖blog.config.js中的配置。
 
 配置方法：在您的github中找到此文件，点击右上角的编辑按钮，即可修改参数。
 
@@ -138,31 +130,31 @@ A new tool that blends your everyday work apps into one. It's the all-in-one wor
 
 > **💡**
 >
-每次修改代码后，Vercel自动创建一个部署任务以打包部署您的最新代码，且每次部署任务都有唯一的**网址提供预览**。
->   - 若编译**成功：**您的线上域名会更新为此次部署的**最新版本**。
->   - 若部署**失败：**例如代码格式错误、拼写错误，则这次部署则会作废，线上原先运行中的旧版网站**不受任何影响**。您可以查看后台部署日志找到错误原因。
+> 每次修改代码后，Vercel自动创建一个部署任务以打包部署您的最新代码，且每次部署任务都有唯一的**网址提供预览**。
+>
+> - 若编译**成功：**您的线上域名会更新为此次部署的**最新版本**。
+> - 若部署**失败：**例如代码格式错误、拼写错误，则这次部署则会作废，线上原先运行中的旧版网站**不受任何影响**。您可以查看后台部署日志找到错误原因。
 > <details>
 > <summary>附-如何获取部署日志</summary>
 >
-> 截图您的部署日志，向[群友](/user-guide/help/feedback)寻求帮助
->       1. 在Vercel的后台看到您的每次部署记录(点击展开)
-> ![Untitled](/legacy/8b4050dd2f9d0b67.png)
->       1. 请截图部署的错误日志，错误信息越完整越好；
+> 截图您的部署日志，向[群友](/user-guide/help/feedback)寻求帮助1. 在Vercel的后台看到您的每次部署记录(点击展开)
+> ![Untitled](/legacy/8b4050dd2f9d0b67.png) 1. 请截图部署的错误日志，错误信息越完整越好；
 > ![Untitled](/legacy/665f2e790c2ff248.png)
 >
 > </details>
-
 
 #### 修改示例
 
 > 以下示例修改了网站的默认作者
 
 - 修改前
+
 ```JavaScript
 AUTHOR: process.env.NEXT_PUBLIC_AUTHOR || 'NotionNext', // 修改前 作者 NotionNext
 ```
 
 - 修改后
+
 ```JavaScript
 AUTHOR: process.env.NEXT_PUBLIC_AUTHOR || 'momo', // 修改后 作者 momo
 ```
@@ -170,18 +162,20 @@ AUTHOR: process.env.NEXT_PUBLIC_AUTHOR || 'momo', // 修改后 作者 momo
 > 以下示例修改了当前网站的网址
 
 - 修改前
+
 ```JavaScript
 LINK: process.env.NEXT_PUBLIC_LINK || '/user-guide/intro', // 修改前网址
 ```
 
 - 修改后
+
 ```JavaScript
 LINK: process.env.NEXT_PUBLIC_LINK || 'https://qq.com', // 修改后
 ```
+
 > **💡**
 >
-请将这项配置修改为您的站点域名，否则会影响分享和版权申明的功能使用
-
+> 请将这项配置修改为您的站点域名，否则会影响分享和版权申明的功能使用
 
 ## 3. 在环境变量中配置
 
@@ -189,8 +183,7 @@ LINK: process.env.NEXT_PUBLIC_LINK || 'https://qq.com', // 修改后
 
 > **💡**
 >
-网站配置优先来自**NotionConfig**，其次**环境变量**，最后**代码配置**。
-
+> 网站配置优先来自**NotionConfig**，其次**环境变量**，最后**代码配置**。
 
 #### 内置主题名称一览（与仓库同步）
 
@@ -205,6 +198,7 @@ LINK: process.env.NEXT_PUBLIC_LINK || 'https://qq.com', // 修改后
 - 各主题个性化选项与预览方式见文档 [《⭐️主题配置》](/user-guide/themes/overview)；若你本地或 fork 的 `themes/` 与官方不一致，以实际目录为准。
 
 - 在`blog.config.js` 文件中可以看到类似 `process.env.NEXT_PUBLIC_THEME` 的格式，这意味着此类参数支持在Vercel中使用环境变量来配置。默认主题为 `simple`；若需在页面上显示主题切换菜单，可在仓库 `conf/widget.config.js` 中配置 `THEME_SWITCH`（可选用环境变量 `NEXT_PUBLIC_THEME_SWITCH`）。
+
 ```JavaScript
 NOTION_PAGE_ID: process.env.NOTION_PAGE_ID || '02ab3b8678004aa69e9e415905ef32a5',
 THEME: process.env.NEXT_PUBLIC_THEME || 'simple', // 默认主题（与仓库 blog.config.js 一致）
@@ -212,44 +206,51 @@ LINK: process.env.NEXT_PUBLIC_LINK || '/user-guide/intro', // 站点域名
 ```
 
 - 网站优先读取环境变量配置、其次是文件中的配置。
-> **💡**
->
-用后台环境变量配置的好处：有些敏感信息不适合直接在代码中修改，例如一些第三方插件的key，这时候推荐通过环境变量来配置。
+  > **💡**
+  >
+  > 用后台环境变量配置的好处：有些敏感信息不适合直接在代码中修改，例如一些第三方插件的key，这时候推荐通过环境变量来配置。
 
 <details>
 <summary>Vercel环境变量如何操作 (点击展开教程)</summary>
 
-  1. 项目主页点击`Settings`，并选择`Environment Variables`配置环境变量
-![Untitled](/legacy/42709cbcd16f30f9.png)
-  1. 找到Setting → Environment Variables
-![Untitled](/legacy/85bd32320336be3a.png)
-  1. 在Key中填写配置名称，Value中填写配置的值，如下图:
-![4DA432EF-AC19-46EA-AF59-DD0BC45C6483.jpeg](/legacy/604775d846955850.jpg)
-  1. 环境变量修改后，点击顶部`Deployments`标签，将列表中最上面的一条部署记录`Redeploy`即可（如下图）
-![Untitled](/legacy/964e0c08eaa8c73f.png)
+1. 项目主页点击`Settings`，并选择`Environment Variables`配置环境变量
+   ![Untitled](/legacy/42709cbcd16f30f9.png)
+1. 找到Setting → Environment Variables
+   ![Untitled](/legacy/85bd32320336be3a.png)
+1. 在Key中填写配置名称，Value中填写配置的值，如下图:
+   ![4DA432EF-AC19-46EA-AF59-DD0BC45C6483.jpeg](/legacy/604775d846955850.jpg)
+1. 环境变量修改后，点击顶部`Deployments`标签，将列表中最上面的一条部署记录`Redeploy`即可（如下图）
+   ![Untitled](/legacy/964e0c08eaa8c73f.png)
 
 #### 修改示例
 
 ### 如何知道key？
-在[blog.config.js](https://github.com/tangly1024/NotionNext/blob/main/blog.config.js)文件中可以看到大量的配置项，配置项中的类似 `process.env.``**NEXT_PUBLIC_THEME**`** **； 这样的结构中、加粗部分就是key的名字。例如以下配置表明当前仓库默认值主题为 **simple**（也可通过环境变量改为 hexo 等）。
+
+在[blog.config.js](https://github.com/tangly1024/NotionNext/blob/main/blog.config.js)文件中可以看到大量的配置项，配置项中的类似 `process.env.``**NEXT_PUBLIC_THEME**`\*\* **； 这样的结构中、加粗部分就是key的名字。例如以下配置表明当前仓库默认值主题为 **simple\*\*（也可通过环境变量改为 hexo 等）。
+
 ```JavaScript
 THEME: process.env.NEXT_PUBLIC_THEME || 'simple', // 默认主题
 ```
+
 如果需要将主题变为 hexo，则可以添加如下环境变量:
 
 #### 获取key示例2
+
 同样地，再以修改网站的联系邮箱地址为例，blog.config.js中修改邮箱地址的配置如下：
+
 ```JavaScript
 CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL || ''  // 填写邮箱地址
 ```
+
 如果直接修改配置是这样的：
+
 ```JavaScript
 CONTACT_EMAIL: process.env.NEXT_PUBLIC_CONTACT_EMAIL || '123456@qq.com'  // 填写邮箱地址
 ```
+
 若不想修改文件，只改环境变量，则添加以下环境变量即可
 
 </details>
-
 
 ### VPS本地部署如何操作环境变量
 
@@ -261,7 +262,6 @@ NOTION_PAGE_ID=xxxxxxxx
 NEXT_PUBLIC_THEME=simple
 NEXT_PUBLIC_LINK=http://xxx.com
 ```
-
 
 ## 4. 不同主题的个性化配置
 

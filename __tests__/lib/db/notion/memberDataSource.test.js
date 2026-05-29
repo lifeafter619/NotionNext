@@ -57,9 +57,7 @@ describe('memberDataSource', () => {
         json: async () => ({
           has_more: true,
           next_cursor: 'cursor-2',
-          results: [
-            memberPage({ id: 'member-1', title: 'Ada', slug: 'ada' })
-          ]
+          results: [memberPage({ id: 'member-1', title: 'Ada', slug: 'ada' })]
         })
       })
       .mockResolvedValueOnce({

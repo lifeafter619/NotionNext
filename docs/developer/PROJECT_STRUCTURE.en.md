@@ -28,4 +28,3 @@
 - **Theme visuals**: prefer `themes/<theme>/`
 - **New config keys**: add in `conf/*.config.js`, aggregate from `blog.config.js`
 - **Avoid copying same business logic across many `pages/*`**
-

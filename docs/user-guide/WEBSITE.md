@@ -4,11 +4,11 @@
 
 ## 本地命令
 
-| 命令 | 作用 |
-| --- | --- |
-| `yarn docs:site:dev` | 本地开发预览 |
-| `yarn docs:site:build` | 构建 → `.vitepress/dist` |
-| `yarn docs:site:preview` | 预览构建结果 |
+| 命令                     | 作用                     |
+| ------------------------ | ------------------------ |
+| `yarn docs:site:dev`     | 本地开发预览             |
+| `yarn docs:site:build`   | 构建 → `.vitepress/dist` |
+| `yarn docs:site:preview` | 预览构建结果             |
 
 ## Cloudflare Pages
 
@@ -27,5 +27,5 @@ docs/
 
 ## 配置位置
 
-- `.vitepress/config.mts` — 导航、侧栏  
-- `docs/index.md` — 站点首页  
+- `.vitepress/config.mts` — 导航、侧栏
+- `docs/index.md` — 站点首页

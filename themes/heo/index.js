@@ -43,11 +43,21 @@ import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
 
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
-const NotionPage = dynamic(() => import('@/components/NotionPage'), { ssr: true })
-const PostAdjacent = dynamic(() => import('./components/PostAdjacent'), { ssr: false })
-const PostCopyright = dynamic(() => import('./components/PostCopyright'), { ssr: false })
-const PostRecommend = dynamic(() => import('./components/PostRecommend'), { ssr: false })
-const AISummary = dynamic(() => import('@/components/AISummary'), { ssr: false })
+const NotionPage = dynamic(() => import('@/components/NotionPage'), {
+  ssr: true
+})
+const PostAdjacent = dynamic(() => import('./components/PostAdjacent'), {
+  ssr: false
+})
+const PostCopyright = dynamic(() => import('./components/PostCopyright'), {
+  ssr: false
+})
+const PostRecommend = dynamic(() => import('./components/PostRecommend'), {
+  ssr: false
+})
+const AISummary = dynamic(() => import('@/components/AISummary'), {
+  ssr: false
+})
 const WWAds = dynamic(() => import('@/components/WWAds'), { ssr: false })
 
 /**
@@ -91,7 +101,11 @@ const LayoutBase = props => {
     CONFIG
   )
   const HEO_LOADING_COVER = siteConfig('HEO_LOADING_COVER', true, CONFIG)
-  const HEO_ANIMATE_ON_SCROLL = siteConfig('HEO_ANIMATE_ON_SCROLL', true, CONFIG)
+  const HEO_ANIMATE_ON_SCROLL = siteConfig(
+    'HEO_ANIMATE_ON_SCROLL',
+    true,
+    CONFIG
+  )
 
   // 加载wow动画
   useEffect(() => {
@@ -194,52 +208,65 @@ const LayoutSearch = props => {
   const [loading, setLoading] = useState(false)
 
   // 检查是否开启 Algolia
-  const enableAlgolia = siteConfig('ALGOLIA_APP_ID') && siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY') && siteConfig('ALGOLIA_INDEX')
+  const enableAlgolia =
+    siteConfig('ALGOLIA_APP_ID') &&
+    siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY') &&
+    siteConfig('ALGOLIA_INDEX')
 
   useEffect(() => {
     if (enableAlgolia && currentSearch) {
       setLoading(true)
-      const client = algoliasearch(siteConfig('ALGOLIA_APP_ID'), siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY'))
+      const client = algoliasearch(
+        siteConfig('ALGOLIA_APP_ID'),
+        siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
+      )
       const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
-      index.search(currentSearch, {
-        attributesToSnippet: ['content:150', 'summary:100'],
-        highlightPreTag: '<span class="text-red-500 font-bold">',
-        highlightPostTag: '</span>'
-      }).then(({ hits }) => {
-        // 去重逻辑：使用 slug 作为唯一标识
-        const uniqueHitsMap = new Map()
-        hits.forEach(hit => {
-            if (!uniqueHitsMap.has(hit.slug)) {
-                uniqueHitsMap.set(hit.slug, hit)
-            }
+      index
+        .search(currentSearch, {
+          attributesToSnippet: ['content:150', 'summary:100'],
+          highlightPreTag: '<span class="text-red-500 font-bold">',
+          highlightPostTag: '</span>'
         })
-        const uniqueHits = Array.from(uniqueHitsMap.values())
+        .then(({ hits }) => {
+          // 去重逻辑：使用 slug 作为唯一标识
+          const uniqueHitsMap = new Map()
+          hits.forEach(hit => {
+            if (!uniqueHitsMap.has(hit.slug)) {
+              uniqueHitsMap.set(hit.slug, hit)
+            }
+          })
+          const uniqueHits = Array.from(uniqueHitsMap.values())
 
-        const mappedHits = uniqueHits.map(hit => ({
-          ...hit,
-          id: hit.objectID,
-          title: hit._highlightResult?.title?.value || hit.title,
-          summary: hit._snippetResult?.content?.value || hit.summary,
-          // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
-          // 为了兼容 SearchResultCard 的 href 构建
-          slug: hit.slug,
-          href: hit.slug?.startsWith('http') ? hit.slug : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
-          createdTime: hit.createdTime || hit.createdTimestamp
-        }))
-        setAlgoliaResults(mappedHits)
-        setLoading(false)
-      }).catch(err => {
-        console.error('Algolia search failed:', err)
-        setAlgoliaResults(null)
-        setLoading(false)
-      })
+          const mappedHits = uniqueHits.map(hit => ({
+            ...hit,
+            id: hit.objectID,
+            title: hit._highlightResult?.title?.value || hit.title,
+            summary: hit._snippetResult?.content?.value || hit.summary,
+            // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
+            // 为了兼容 SearchResultCard 的 href 构建
+            slug: hit.slug,
+            href: hit.slug?.startsWith('http')
+              ? hit.slug
+              : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
+            createdTime: hit.createdTime || hit.createdTimestamp
+          }))
+          setAlgoliaResults(mappedHits)
+          setLoading(false)
+        })
+        .catch(err => {
+          console.error('Algolia search failed:', err)
+          setAlgoliaResults(null)
+          setLoading(false)
+        })
     } else {
       setAlgoliaResults(null)
     }
   }, [currentSearch, enableAlgolia])
 
   // 优先使用 Algolia 结果，否则使用本地结果
-  const displayPosts = (algoliaResults || posts || []).filter(post => post.slug || post.objectID)
+  const displayPosts = (algoliaResults || posts || []).filter(
+    post => post.slug || post.objectID
+  )
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -283,11 +310,20 @@ const LayoutSearch = props => {
                   搜索结果
                 </h1>
                 <p className='text-gray-600 dark:text-gray-400 mt-1'>
-                  找到 <span className='font-bold text-blue-600 dark:text-yellow-500'>{sortedPosts.length}</span> 篇关于
-                  <span className='font-bold mx-1'>{'"'}{currentSearch}{'"'}</span> 的文章
+                  找到{' '}
+                  <span className='font-bold text-blue-600 dark:text-yellow-500'>
+                    {sortedPosts.length}
+                  </span>{' '}
+                  篇关于
+                  <span className='font-bold mx-1'>
+                    {'"'}
+                    {currentSearch}
+                    {'"'}
+                  </span>{' '}
+                  的文章
                 </p>
               </div>
-              
+
               {/* 排序和视图控制 */}
               <div className='flex items-center gap-3'>
                 {/* 排序选择 */}
@@ -320,7 +356,7 @@ const LayoutSearch = props => {
                     <i className='fas fa-history mr-1'></i>最早
                   </button>
                 </div>
-                
+
                 {/* 视图切换 */}
                 <div className='flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1'>
                   <button
@@ -348,23 +384,25 @@ const LayoutSearch = props => {
         )}
 
         {/* 搜索结果列表 - 只有当 loading 为真或有搜索结果，或无结果时才显示内容 */}
-        {(loading || (sortedPosts.length > 0) || (currentSearch && sortedPosts.length === 0)) && (
+        {(loading ||
+          sortedPosts.length > 0 ||
+          (currentSearch && sortedPosts.length === 0)) && (
           <div id='posts-wrapper'>
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="flex flex-col items-center gap-4 mb-8">
-                  <i className="fas fa-spinner animate-spin text-4xl text-blue-500"></i>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm animate-pulse">
+              <div className='flex flex-col items-center justify-center py-12'>
+                <div className='flex flex-col items-center gap-4 mb-8'>
+                  <i className='fas fa-spinner animate-spin text-4xl text-blue-500'></i>
+                  <p className='text-gray-500 dark:text-gray-400 text-sm animate-pulse'>
                     搜索较慢，请耐心等待亿下下~
                   </p>
                 </div>
 
                 {/* 搜索加载时的推荐文章 */}
-                <div className="w-full max-w-4xl">
-                  <div className="text-center mb-4 text-gray-400 dark:text-gray-500 text-xs uppercase tracking-wider">
+                <div className='w-full max-w-4xl'>
+                  <div className='text-center mb-4 text-gray-400 dark:text-gray-500 text-xs uppercase tracking-wider'>
                     推荐阅读
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     {posts.slice(0, 2).map((post, index) => (
                       <SearchResultCard
                         key={post.id}
@@ -381,21 +419,39 @@ const LayoutSearch = props => {
               viewMode === 'list' ? (
                 <div className='space-y-4'>
                   {sortedPosts.map((post, index) => (
-                    <SearchResultCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} isAlgolia={!!enableAlgolia} />
+                    <SearchResultCard
+                      key={post.id}
+                      post={post}
+                      index={index}
+                      currentSearch={currentSearch}
+                      siteInfo={props.siteInfo}
+                      isAlgolia={!!enableAlgolia}
+                    />
                   ))}
                 </div>
               ) : (
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                   {sortedPosts.map((post, index) => (
-                    <SearchResultGridCard key={post.id} post={post} index={index} currentSearch={currentSearch} siteInfo={props.siteInfo} isAlgolia={!!enableAlgolia} />
+                    <SearchResultGridCard
+                      key={post.id}
+                      post={post}
+                      index={index}
+                      currentSearch={currentSearch}
+                      siteInfo={props.siteInfo}
+                      isAlgolia={!!enableAlgolia}
+                    />
                   ))}
                 </div>
               )
             ) : (
               <div className='text-center py-16 bg-white dark:bg-[#1e1e1e] rounded-2xl'>
                 <i className='fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4'></i>
-                <p className='text-xl text-gray-600 dark:text-gray-400'>未找到相关文章</p>
-                <p className='text-gray-500 dark:text-gray-500 mt-2'>尝试使用不同的关键词搜索</p>
+                <p className='text-xl text-gray-600 dark:text-gray-400'>
+                  未找到相关文章
+                </p>
+                <p className='text-gray-500 dark:text-gray-500 mt-2'>
+                  尝试使用不同的关键词搜索
+                </p>
               </div>
             )}
           </div>
@@ -408,7 +464,13 @@ const LayoutSearch = props => {
 /**
  * 搜索结果卡片 - 列表视图
  */
-const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = false }) => {
+const SearchResultCard = ({
+  post,
+  index,
+  currentSearch,
+  siteInfo,
+  isAlgolia = false
+}) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
 
   let displayContent = post.summary
@@ -430,14 +492,17 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
       const titleMatch = (post.title || '').toLowerCase().includes(keyword)
       const summaryMatch = (post.summary || '').toLowerCase().includes(keyword)
       const contentMatch = (post.content || '').toLowerCase().includes(keyword)
-      
+
       if (contentMatch) {
         // 如果在内容中匹配，显示内容片段
         const text = post.content || ''
         const indexInText = text.toLowerCase().indexOf(keyword)
         const start = Math.max(0, indexInText - 50)
         const end = Math.min(text.length, indexInText + 150)
-        displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+        displayContent =
+          (start > 0 ? '...' : '') +
+          text.substring(start, end) +
+          (end < text.length ? '...' : '')
         showJumpButton = true
         matchLocation = '文章内容'
       } else if (summaryMatch) {
@@ -447,7 +512,7 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
         matchLocation = '标题'
         showJumpButton = true
       }
-      
+
       // 检查 results 字段（某些主题可能使用）
       if (post.results && post.results.length > 0) {
         displayContent = post.results.map(r => r).join('...')
@@ -483,33 +548,45 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
               </div>
             )}
             {showJumpButton && (
-               <div className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
-                      // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
-                      window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
-                    }}>
-                    <i className="fas fa-search-location"></i>
-                    <span>跳转到搜索位置</span>
-                    {matchLocation && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
-               </div>
+              <div
+                className='mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer'
+                onClick={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
+                  // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
+                  window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+                }}>
+                <i className='fas fa-search-location'></i>
+                <span>跳转到搜索位置</span>
+                {matchLocation && (
+                  <span className='text-gray-500 dark:text-gray-400'>
+                    ({matchLocation})
+                  </span>
+                )}
+              </div>
             )}
           </div>
           <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
             {post.category && (
               <span className='px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded'>
-                <i className='fas fa-folder mr-1'></i>{post.category}
+                <i className='fas fa-folder mr-1'></i>
+                {post.category}
               </span>
             )}
-            {post.tags && post.tags.slice(0, 2).map(tag => (
-              <span key={tag} className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded'>
-                #{tag}
-              </span>
-            ))}
+            {post.tags &&
+              post.tags.slice(0, 2).map(tag => (
+                <span
+                  key={tag}
+                  className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded'>
+                  #{tag}
+                </span>
+              ))}
             {post.createdTime && (
-              <span><i className='fas fa-calendar mr-1'></i>{new Date(post.createdTime).toLocaleDateString()}</span>
+              <span>
+                <i className='fas fa-calendar mr-1'></i>
+                {new Date(post.createdTime).toLocaleDateString()}
+              </span>
             )}
           </div>
         </div>
@@ -521,7 +598,13 @@ const SearchResultCard = ({ post, index, currentSearch, siteInfo, isAlgolia = fa
 /**
  * 搜索结果卡片 - 网格视图
  */
-const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia = false }) => {
+const SearchResultGridCard = ({
+  post,
+  index,
+  currentSearch,
+  siteInfo,
+  isAlgolia = false
+}) => {
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
 
   let displayContent = post.summary
@@ -540,13 +623,16 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
       const titleMatch = (post.title || '').toLowerCase().includes(keyword)
       const summaryMatch = (post.summary || '').toLowerCase().includes(keyword)
       const contentMatch = (post.content || '').toLowerCase().includes(keyword)
-      
+
       if (contentMatch) {
         const text = post.content || ''
         const indexInText = text.toLowerCase().indexOf(keyword)
         const start = Math.max(0, indexInText - 50)
         const end = Math.min(text.length, indexInText + 150)
-        displayContent = (start > 0 ? '...' : '') + text.substring(start, end) + (end < text.length ? '...' : '')
+        displayContent =
+          (start > 0 ? '...' : '') +
+          text.substring(start, end) +
+          (end < text.length ? '...' : '')
         showJumpButton = true
         matchLocation = '文章内容'
       } else if (summaryMatch) {
@@ -556,7 +642,7 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
         matchLocation = '标题'
         showJumpButton = true
       }
-      
+
       if (post.results && post.results.length > 0) {
         displayContent = post.results.map(r => r).join('...')
         showJumpButton = true
@@ -566,7 +652,9 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
   }
 
   // 将搜索词附加到主链接，实现点击卡片任意位置跳转
-  const hrefWithFragment = showJumpButton ? `${post.href}?keyword=${encodeURIComponent(currentSearch)}` : post.href
+  const hrefWithFragment = showJumpButton
+    ? `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+    : post.href
 
   return (
     <SmartLink href={hrefWithFragment}>
@@ -594,16 +682,21 @@ const SearchResultGridCard = ({ post, index, currentSearch, siteInfo, isAlgolia 
               </div>
             )}
             {showJumpButton && (
-               <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
-                    }}>
-                    <i className="fas fa-search-location"></i>
-                    <span>跳转到搜索位置</span>
-                    {matchLocation && <span className="text-gray-500 dark:text-gray-400">({matchLocation})</span>}
-               </div>
+              <div
+                className='mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer'
+                onClick={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+                }}>
+                <i className='fas fa-search-location'></i>
+                <span>跳转到搜索位置</span>
+                {matchLocation && (
+                  <span className='text-gray-500 dark:text-gray-400'>
+                    ({matchLocation})
+                  </span>
+                )}
+              </div>
             )}
           </div>
           <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
@@ -682,22 +775,22 @@ const LayoutSlug = props => {
   // 检查 URL 是否包含搜索跳转
   useEffect(() => {
     if (isBrowser) {
-        const hash = window.location.hash
-        if (hash && hash.includes('text=')) {
-            // 解析 text= 后的内容 (简单处理，浏览器会自动高亮)
-            // const text = decodeURIComponent(hash.split('text=')[1])
-            // 这里我们只需要提示用户跳转成功
-            const toastElement = document.getElementById('toast-wrapper')
-            if (!toastElement) {
-                // 如果没有 Toast 容器，这里可以手动触发一个 (theme-heo 通常有全局 Toast，这里复用 logic 或创建临时提示)
-                // 由于 Toast 组件通常是命令式调用的，这里我们尝试一个简单的 dom 操作或依赖全局状态
-                // 暂时使用 alert 替代验证，或者更好的方式是使用 context
-                // 但 themes/heo/index.js 似乎没有直接暴露 toast context
-                // 我们直接渲染一个临时的 Toast
-                setShowJumpToast(true)
-                setTimeout(() => setShowJumpToast(false), 3000)
-            }
+      const hash = window.location.hash
+      if (hash && hash.includes('text=')) {
+        // 解析 text= 后的内容 (简单处理，浏览器会自动高亮)
+        // const text = decodeURIComponent(hash.split('text=')[1])
+        // 这里我们只需要提示用户跳转成功
+        const toastElement = document.getElementById('toast-wrapper')
+        if (!toastElement) {
+          // 如果没有 Toast 容器，这里可以手动触发一个 (theme-heo 通常有全局 Toast，这里复用 logic 或创建临时提示)
+          // 由于 Toast 组件通常是命令式调用的，这里我们尝试一个简单的 dom 操作或依赖全局状态
+          // 暂时使用 alert 替代验证，或者更好的方式是使用 context
+          // 但 themes/heo/index.js 似乎没有直接暴露 toast context
+          // 我们直接渲染一个临时的 Toast
+          setShowJumpToast(true)
+          setTimeout(() => setShowJumpToast(false), 3000)
         }
+      }
     }
   }, [])
 
@@ -725,21 +818,18 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      const timer = setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector(
-              '#article-wrapper #notion-article'
-            )
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      const timer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
       return () => clearTimeout(timer)
     }
   }, [post, router, waiting404])
@@ -770,32 +860,33 @@ const LayoutSlug = props => {
               </section>
 
               {/* 用于检测滚动的锚点 */}
-              <div id="article-end-observer" className="h-1" />
+              <div id='article-end-observer' className='h-1' />
 
               {/* 上一篇\下一篇文章 */}
               <PostAdjacent {...props} />
 
               {/* 延迟加载底部区域 */}
               {showRecommended && (
-                  <div className="animate-fade-in">
-                      {/* 分享 */}
-                      <ShareBar post={post} />
-                      {post?.type === 'Post' && (
-                        <div className='px-5'>
-                          {/* 版权 */}
-                          <PostCopyright {...props} />
-                          {/* 文章推荐 */}
-                          <PostRecommend {...props} />
-                        </div>
-                      )}
-                  </div>
+                <div className='animate-fade-in'>
+                  {/* 分享 */}
+                  <ShareBar post={post} />
+                  {post?.type === 'Post' && (
+                    <div className='px-5'>
+                      {/* 版权 */}
+                      <PostCopyright {...props} />
+                      {/* 文章推荐 */}
+                      <PostRecommend {...props} />
+                    </div>
+                  )}
+                </div>
               )}
             </article>
 
             {/* 评论区 */}
             {fullWidth ? null : (
               <div id='post-comments' className='px-5'>
-                <div className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
+                <div
+                  className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
                   <hr className='my-4 border-dashed' />
                   {/* 评论区上方广告 */}
                   <div className='py-2'>
@@ -821,11 +912,11 @@ const LayoutSlug = props => {
 
       {/* 搜索跳转提示 */}
       {showJumpToast && (
-        <div className="fixed top-20 left-0 right-0 mx-auto z-50 w-fit">
-            <div className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-fade-in-down">
-                <i className="fas fa-search-location"></i>
-                <span>已跳转到搜索内容位置</span>
-            </div>
+        <div className='fixed top-20 left-0 right-0 mx-auto z-50 w-fit'>
+          <div className='bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-fade-in-down'>
+            <i className='fas fa-search-location'></i>
+            <span>已跳转到搜索内容位置</span>
+          </div>
         </div>
       )}
     </>
@@ -908,7 +999,9 @@ const LayoutCategoryIndex = props => {
           <i className='fas fa-folder-open text-3xl'></i>
           <div>
             <h1 className='text-3xl font-bold'>{locale.COMMON.CATEGORY}</h1>
-            <p className='text-blue-100 mt-1'>共 {categoryOptions?.length || 0} 个分类</p>
+            <p className='text-blue-100 mt-1'>
+              共 {categoryOptions?.length || 0} 个分类
+            </p>
           </div>
         </div>
       </div>
@@ -916,7 +1009,7 @@ const LayoutCategoryIndex = props => {
       {/* 分类统计卡片 */}
       <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8'>
         {categoryOptions?.map(category => (
-          <SmartLink 
+          <SmartLink
             key={category.name}
             href={`/category/${category.name}`}
             className='p-4 bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-purple-500 hover:shadow-lg transition-all duration-300 group'>
@@ -924,8 +1017,12 @@ const LayoutCategoryIndex = props => {
               <div className='w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform'>
                 <i className='fas fa-folder text-blue-500 dark:text-blue-400'></i>
               </div>
-              <span className='font-medium text-gray-800 dark:text-gray-200 text-sm truncate w-full'>{category.name}</span>
-              <span className='text-xs text-gray-500 dark:text-gray-400 mt-1'>{category.count} 篇文章</span>
+              <span className='font-medium text-gray-800 dark:text-gray-200 text-sm truncate w-full'>
+                {category.name}
+              </span>
+              <span className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                {category.count} 篇文章
+              </span>
             </div>
           </SmartLink>
         ))}
@@ -934,14 +1031,18 @@ const LayoutCategoryIndex = props => {
       {/* 分类文章列表 */}
       <div id='category-list' className='space-y-10'>
         {categoryOptions?.map(category => {
-          const posts = allPages?.filter(
-            p => p.category === category.name && p.status === 'Published'
-          ).slice(0, 4) // 每个分类显示4篇文章
+          const posts = allPages
+            ?.filter(
+              p => p.category === category.name && p.status === 'Published'
+            )
+            .slice(0, 4) // 每个分类显示4篇文章
 
           if (!posts || posts.length === 0) return null
 
           return (
-            <div key={category.name} className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
+            <div
+              key={category.name}
+              className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
               {/* 分类标题 */}
               <div className='flex items-center justify-between mb-6'>
                 <div className='flex items-center gap-3'>
@@ -949,21 +1050,30 @@ const LayoutCategoryIndex = props => {
                     <i className='fas fa-folder text-white'></i>
                   </div>
                   <div>
-                    <h2 className='text-xl font-bold dark:text-white'>{category.name}</h2>
-                    <span className='text-sm text-gray-500 dark:text-gray-400'>{category.count} 篇文章</span>
+                    <h2 className='text-xl font-bold dark:text-white'>
+                      {category.name}
+                    </h2>
+                    <span className='text-sm text-gray-500 dark:text-gray-400'>
+                      {category.count} 篇文章
+                    </span>
                   </div>
                 </div>
-                <SmartLink 
-                  href={`/category/${category.name}`} 
+                <SmartLink
+                  href={`/category/${category.name}`}
                   className='px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
-                  查看全部 <i className='fas fa-arrow-right text-xs'/>
+                  查看全部 <i className='fas fa-arrow-right text-xs' />
                 </SmartLink>
               </div>
 
               {/* 文章卡片 - 横向大图布局 */}
               <div className='space-y-4'>
                 {posts?.map((post, index) => (
-                  <CategoryPostCard key={post.id} post={post} index={index} siteInfo={props.siteInfo} />
+                  <CategoryPostCard
+                    key={post.id}
+                    post={post}
+                    index={index}
+                    siteInfo={props.siteInfo}
+                  />
                 ))}
               </div>
             </div>
@@ -1040,8 +1150,13 @@ const LayoutTagIndex = props => {
   const [selectedTag, setSelectedTag] = useState(null)
 
   // 获取选中标签的文章
-  const selectedPosts = selectedTag 
-    ? allPages?.filter(p => p.tags && p.tags.includes(selectedTag) && p.status === 'Published').slice(0, 8)
+  const selectedPosts = selectedTag
+    ? allPages
+        ?.filter(
+          p =>
+            p.tags && p.tags.includes(selectedTag) && p.status === 'Published'
+        )
+        .slice(0, 8)
     : []
 
   return (
@@ -1052,7 +1167,9 @@ const LayoutTagIndex = props => {
           <i className='fas fa-tags text-3xl'></i>
           <div>
             <h1 className='text-3xl font-bold'>{locale.COMMON.TAGS}</h1>
-            <p className='text-emerald-100 mt-1'>共 {tagOptions?.length || 0} 个标签</p>
+            <p className='text-emerald-100 mt-1'>
+              共 {tagOptions?.length || 0} 个标签
+            </p>
           </div>
         </div>
       </div>
@@ -1069,9 +1186,9 @@ const LayoutTagIndex = props => {
             const maxCount = Math.max(...(tagOptions?.map(t => t.count) || [1]))
             const minSize = 0.8
             const maxSize = 1.4
-            const size = minSize + ((tag.count / maxCount) * (maxSize - minSize))
+            const size = minSize + (tag.count / maxCount) * (maxSize - minSize)
             const isSelected = selectedTag === tag.name
-            
+
             return (
               <button
                 key={tag.name}
@@ -1100,15 +1217,20 @@ const LayoutTagIndex = props => {
               </span>
               的相关文章
             </h2>
-            <SmartLink 
+            <SmartLink
               href={`/tag/${selectedTag}`}
               className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
-              查看全部 <i className='fas fa-arrow-right text-xs'/>
+              查看全部 <i className='fas fa-arrow-right text-xs' />
             </SmartLink>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {selectedPosts.map((post, index) => (
-              <TagPostCard key={post.id} post={post} index={index} siteInfo={props.siteInfo} />
+              <TagPostCard
+                key={post.id}
+                post={post}
+                index={index}
+                siteInfo={props.siteInfo}
+              />
             ))}
           </div>
         </div>
@@ -1117,14 +1239,19 @@ const LayoutTagIndex = props => {
       {/* 按标签分组的文章列表 */}
       <div id='tag-list' className='space-y-8'>
         {tagOptions?.slice(0, 10).map(tag => {
-          const posts = allPages?.filter(
-            p => p.tags && p.tags.includes(tag.name) && p.status === 'Published'
-          ).slice(0, 3)
+          const posts = allPages
+            ?.filter(
+              p =>
+                p.tags && p.tags.includes(tag.name) && p.status === 'Published'
+            )
+            .slice(0, 3)
 
           if (!posts || posts.length === 0) return null
 
           return (
-            <div key={tag.name} className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
+            <div
+              key={tag.name}
+              className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
               {/* 标签标题 */}
               <div className='flex items-center justify-between mb-5'>
                 <div className='flex items-center gap-3'>
@@ -1132,21 +1259,30 @@ const LayoutTagIndex = props => {
                     <i className='fas fa-hashtag text-white'></i>
                   </div>
                   <div>
-                    <h2 className='text-xl font-bold dark:text-white'>#{tag.name}</h2>
-                    <span className='text-sm text-gray-500 dark:text-gray-400'>{tag.count} 篇文章</span>
+                    <h2 className='text-xl font-bold dark:text-white'>
+                      #{tag.name}
+                    </h2>
+                    <span className='text-sm text-gray-500 dark:text-gray-400'>
+                      {tag.count} 篇文章
+                    </span>
                   </div>
                 </div>
-                <SmartLink 
-                  href={`/tag/${tag.name}`} 
+                <SmartLink
+                  href={`/tag/${tag.name}`}
                   className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
-                  查看全部 <i className='fas fa-arrow-right text-xs'/>
+                  查看全部 <i className='fas fa-arrow-right text-xs' />
                 </SmartLink>
               </div>
 
               {/* 文章卡片 - 网格大图布局 */}
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                 {posts?.map((post, index) => (
-                  <TagPostCard key={post.id} post={post} index={index} siteInfo={props.siteInfo} />
+                  <TagPostCard
+                    key={post.id}
+                    post={post}
+                    index={index}
+                    siteInfo={props.siteInfo}
+                  />
                 ))}
               </div>
             </div>

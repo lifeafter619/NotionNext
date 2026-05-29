@@ -31,10 +31,10 @@ Fork 开发与向 `main` 提 PR 的流程不变；PR 的目标仓库请选择 **
 
 ## 第一次贡献（推荐路径）
 
-1. 在 [Issues](https://github.com/notionnext-org/NotionNext/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) 挑选带 **`good first issue`** 的任务，或修正你正在阅读的文档页。  
-2. 文档改动：编辑 `docs/user-guide/**/*.md`，`yarn docs:site:dev` 预览，提 PR。详见 [参与维护在线文档](./docs/user-guide/maintain-docs.md)。  
-3. 代码改动：独立分支 → `yarn lint` / `yarn type-check` / 必要测试 → PR。  
-4. 大功能或公共 API：先读 [RFC 指南](./docs/developer/rfc/README.md) 或在 [Discussions](https://github.com/notionnext-org/NotionNext/discussions) 对齐。  
+1. 在 [Issues](https://github.com/notionnext-org/NotionNext/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) 挑选带 **`good first issue`** 的任务，或修正你正在阅读的文档页。
+2. 文档改动：编辑 `docs/user-guide/**/*.md`，`yarn docs:site:dev` 预览，提 PR。详见 [参与维护在线文档](./docs/user-guide/maintain-docs.md)。
+3. 代码改动：独立分支 → `yarn lint` / `yarn type-check` / 必要测试 → PR。
+4. 大功能或公共 API：先读 [RFC 指南](./docs/developer/rfc/README.md) 或在 [Discussions](https://github.com/notionnext-org/NotionNext/discussions) 对齐。
 5. 长期维护：见 [参与社区](./docs/user-guide/community-participate.md) 与 [MAINTAINERS.md](./MAINTAINERS.md)。
 
 ## 环境准备
@@ -93,9 +93,9 @@ Fork 开发与向 `main` 提 PR 的流程不变；PR 的目标仓库请选择 **
 
 ## 社区与治理
 
-- [参与社区](./docs/user-guide/community-participate.md)  
-- [项目治理](./GOVERNANCE.zh-CN.md) · [维护者名单](./MAINTAINERS.md)  
-- [行为准则](./CODE_OF_CONDUCT.md)  
+- [参与社区](./docs/user-guide/community-participate.md)
+- [项目治理](./GOVERNANCE.zh-CN.md) · [维护者名单](./MAINTAINERS.md)
+- [行为准则](./CODE_OF_CONDUCT.md)
 - [Discussions](https://github.com/notionnext-org/NotionNext/discussions)
 
 配置优先级：

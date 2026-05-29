@@ -1,4 +1,5 @@
 # 基础教程-如何用Git提交代码
+
 > 迁移自：[基础教程-如何用Git提交代码](https://docs.tangly1024.com/article/notionnext-how-to-pr)
 > 发布日期：2024-2-27
 > 最后编辑：2024-9-12
@@ -8,21 +9,19 @@
 
 通过GithubDesktop\VSCode\TortoiseGit等工具，将您的代码提交后，推送到Github云端即可，Vercel会自动部署代码中的更新。
 
-
-### 1.****创建新主题****
+### 1.\***\*创建新主题\*\***
 
 如果您想创建一个新主题、并提交到NotionNext，请复制一个[`/themes/example`](https://github.com/tangly1024/NotionNext/blob/main/themes/example)文件夹在[`themes`](https://github.com/tangly1024/NotionNext/blob/main/themes)目录下，并修改文件夹的名称主题的名称。
-
 
 ### 2.**添加本地化**
 
 如果您的语言尚未得到NotionNext的支持，欢迎贡献本地化！按照以下步骤添加新的本地化：
+
 1. 在[/lib/lang](https://github.com/tangly1024/NotionNext/blob/main/lib/lang)中复制一个[en-US.js](https://github.com/tangly1024/NotionNext/blob/main/lib/lang/en-US.js)文件，并将文件命名为语言的代码（例如`zh-CN.js`）。
 2. 开始翻译字符串。
 3. 将您的语言配置添加到[lang.js](https://github.com/tangly1024/NotionNext/blob/main/lib/lang.js)中。
 
 欢迎将你的代码分支，合并到NotionNext主仓库中，要为NotionNext做出贡献，请按照以下步骤操作：
-
 
 ### 3.提交代码到NotionNext
 
@@ -35,7 +34,7 @@
 1. 在分支中进行修改。
 
 1. 提交修改并推送分支。(请勿在分支中提交您自己的配置信息)
-![Untitled](/legacy/ead1ee047149aec5.png)
+   ![Untitled](/legacy/ead1ee047149aec5.png)
 
 1. 从fork中的分支[创建](https://github.com/tangly1024/NotionNext/compare)到NotionNext的`main`分支的[PR](https://github.com/tangly1024/NotionNext/compare)。
 

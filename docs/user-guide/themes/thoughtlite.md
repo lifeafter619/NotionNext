@@ -40,19 +40,19 @@
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `THOUGHTLITE_MENU_CATEGORY` | 见 config.js |
-| `THOUGHTLITE_MENU_TAG` | 见 config.js |
-| `THOUGHTLITE_MENU_ARCHIVE` | 见 config.js |
-| `THOUGHTLITE_MENU_SEARCH` | 见 config.js |
-| `THOUGHTLITE_HOME_TIMELINE` | 见 config.js |
-| `THOUGHTLITE_HOME_LATEST_CARD` | 见 config.js |
-| `THOUGHTLITE_SIDEBAR_ONLY_ON_POST` | 见 config.js |
-| `THOUGHTLITE_POST_LIST_COVER` | 见 config.js |
-| `THOUGHTLITE_TITLE_IMAGE` | 见 config.js |
-| `THOUGHTLITE_HOME_MINIMAL_HEADER` | 见 config.js |
-| `THOUGHTLITE_ARTICLE_LAYOUT_VERTICAL` | 见 config.js |
+| 配置键                                    | 说明         |
+| ----------------------------------------- | ------------ |
+| `THOUGHTLITE_MENU_CATEGORY`               | 见 config.js |
+| `THOUGHTLITE_MENU_TAG`                    | 见 config.js |
+| `THOUGHTLITE_MENU_ARCHIVE`                | 见 config.js |
+| `THOUGHTLITE_MENU_SEARCH`                 | 见 config.js |
+| `THOUGHTLITE_HOME_TIMELINE`               | 见 config.js |
+| `THOUGHTLITE_HOME_LATEST_CARD`            | 见 config.js |
+| `THOUGHTLITE_SIDEBAR_ONLY_ON_POST`        | 见 config.js |
+| `THOUGHTLITE_POST_LIST_COVER`             | 见 config.js |
+| `THOUGHTLITE_TITLE_IMAGE`                 | 见 config.js |
+| `THOUGHTLITE_HOME_MINIMAL_HEADER`         | 见 config.js |
+| `THOUGHTLITE_ARTICLE_LAYOUT_VERTICAL`     | 见 config.js |
 | `THOUGHTLITE_ARTICLE_HIDDEN_NOTIFICATION` | 见 config.js |
 
 <!-- /theme-config-table -->

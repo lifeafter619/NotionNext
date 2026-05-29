@@ -626,8 +626,9 @@ summary > .notion-h {
 }
 
 .notion-page-icon {
-  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', NotoColorEmoji,
-    'Noto Color Emoji', 'Segoe UI Symbol', 'Android Emoji', EmojiSymbols;
+  font-family:
+    'Apple Color Emoji', 'Segoe UI Emoji', NotoColorEmoji, 'Noto Color Emoji',
+    'Segoe UI Symbol', 'Android Emoji', EmojiSymbols;
   font-size: 1.1em;
   margin: 2px 4px 0 2px;
   fill: var(--fg-color-6);
@@ -668,8 +669,8 @@ svg.notion-page-icon {
   background: var(--bg-color-2);
   border-radius: 3px;
   font-size: 85%;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
-    monospace;
+  font-family:
+    'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 }
 
 .notion-inline-underscore {
@@ -796,8 +797,8 @@ code[class*='language-'] {
   display: block;
   box-sizing: border-box;
   overflow: auto;
-  font-family: SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier,
-    monospace;
+  font-family:
+    SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace;
   @apply w-full mb-0 dark:bg-black !important;
 }
 
@@ -941,7 +942,9 @@ code[class*='language-'] {
   width: 100%;
   border-radius: 1px;
   cursor: zoom-in;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .notion-image:hover {
@@ -995,7 +998,7 @@ code[class*='language-'] {
   overflow: hidden;
 }
 
-.notion-callout-text .notion-text{
+.notion-callout-text .notion-text {
   padding: 0px 0px !important;
   margin: 0px 0px !important;
   line-height: normal !important;
@@ -2003,7 +2006,7 @@ svg + .notion-page-title-text {
 
 /* Notion Button Block (approximate style if not supported by library) */
 .notion-button,
-a.notion-link[href*="notion.site"],
+a.notion-link[href*='notion.site'],
 .notion-callout.notion-button-style {
   display: inline-flex;
   justify-content: center;
@@ -2087,7 +2090,7 @@ code.language-mermaid {
   display: none;
 }
 
-.mermaid .invisible{
+.mermaid .invisible {
   visibility: inherit;
 }
 
@@ -2177,7 +2180,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion-quote {
   display: block;
   border-radius: var(--notion-rounded-radius);
-  background: linear-gradient(135deg, var(--notion-blue_background) 0%, var(--notion-purple_background_co) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--notion-blue_background) 0%,
+    var(--notion-purple_background_co) 100%
+  );
   width: 100%;
   white-space: pre-wrap;
   word-break: break-word;
@@ -2188,7 +2195,9 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   font-style: italic;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .notion-quote:hover {
@@ -2209,7 +2218,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 }
 
 .dark .notion-quote {
-  background: linear-gradient(135deg, rgba(45, 85, 115, 0.3) 0%, rgba(85, 60, 120, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(45, 85, 115, 0.3) 0%,
+    rgba(85, 60, 120, 0.2) 100%
+  );
   border-left-color: rgba(100, 150, 200, 0.8);
 }
 
@@ -2223,9 +2236,15 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   box-sizing: border-box;
   margin: 12px 0;
   border: none;
-  background: linear-gradient(135deg, var(--notion-gray_background) 0%, var(--notion-default_background_co) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--notion-gray_background) 0%,
+    var(--notion-default_background_co) 100%
+  );
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .notion-callout:hover {
@@ -2234,7 +2253,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 }
 
 .dark .notion-callout {
-  background: linear-gradient(135deg, rgba(50, 50, 55, 0.8) 0%, rgba(45, 45, 50, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(50, 50, 55, 0.8) 0%,
+    rgba(45, 45, 50, 0.6) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2280,7 +2303,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion strong {
   font-weight: 700;
   color: var(--fg-color-4);
-  background: linear-gradient(180deg, transparent 50%, rgba(255, 230, 0, 0.5) 50%);
+  background: linear-gradient(
+    180deg,
+    transparent 50%,
+    rgba(255, 230, 0, 0.5) 50%
+  );
   padding: 0 3px;
   border-radius: 3px;
 }
@@ -2288,7 +2315,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .dark .notion b,
 .dark .notion strong {
   color: #fff;
-  background: linear-gradient(180deg, transparent 50%, rgba(255, 200, 0, 0.45) 50%);
+  background: linear-gradient(
+    180deg,
+    transparent 50%,
+    rgba(255, 200, 0, 0.45) 50%
+  );
 }
 
 /* 背景色文字 - 内联显示，只包裹文字长度 */
@@ -2362,16 +2393,25 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion-inline-code {
   color: #e83e8c;
   padding: 0.15em 0.5em;
-  background: linear-gradient(135deg, rgba(255, 0, 100, 0.08) 0%, rgba(200, 50, 150, 0.08) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 100, 0.08) 0%,
+    rgba(200, 50, 150, 0.08) 100%
+  );
   border-radius: 6px;
   font-size: 0.9em;
-  font-family: 'SF Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-family:
+    'SF Mono', 'Fira Code', Consolas, 'Liberation Mono', Menlo, monospace;
   border: 1px solid rgba(255, 0, 100, 0.1);
 }
 
 .dark .notion-inline-code {
   color: #ff79c6;
-  background: linear-gradient(135deg, rgba(255, 0, 100, 0.15) 0%, rgba(200, 50, 150, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 0, 100, 0.15) 0%,
+    rgba(200, 50, 150, 0.15) 100%
+  );
   border-color: rgba(255, 100, 150, 0.2);
 }
 
@@ -2386,7 +2426,10 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   display: flex;
   overflow: hidden;
   user-select: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   background: var(--bg-color);
 }
 
@@ -2492,7 +2535,13 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
   padding: 0;
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--fg-color-1) 20%, var(--fg-color-1) 80%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--fg-color-1) 20%,
+    var(--fg-color-1) 80%,
+    transparent 100%
+  );
 }
 
 /* 链接 - 现代化动画 (更醒目的效果) */
@@ -2509,7 +2558,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion-link:hover {
   color: #0052a3;
   border-bottom-color: #0052a3;
-  background: linear-gradient(180deg, transparent 70%, rgba(0, 102, 204, 0.1) 70%);
+  background: linear-gradient(
+    180deg,
+    transparent 70%,
+    rgba(0, 102, 204, 0.1) 70%
+  );
 }
 
 .dark .notion-link {
@@ -2520,14 +2573,20 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .dark .notion-link:hover {
   color: #93c5fd;
   border-bottom-color: #93c5fd;
-  background: linear-gradient(180deg, transparent 70%, rgba(96, 165, 250, 0.15) 70%);
+  background: linear-gradient(
+    180deg,
+    transparent 70%,
+    rgba(96, 165, 250, 0.15) 70%
+  );
 }
 
 /* 收藏卡片 - 现代化 */
 .notion-collection-card {
   border-radius: var(--notion-rounded-radius) !important;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .notion-collection-card:hover {
@@ -2562,7 +2621,9 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion-page-link {
   border-radius: var(--notion-rounded-radius-sm);
   padding: 8px 12px;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .notion-page-link:hover {
@@ -2619,7 +2680,9 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 .notion-google-drive-link {
   border-radius: var(--notion-rounded-radius);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .notion-google-drive-link:hover {

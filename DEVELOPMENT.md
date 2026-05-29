@@ -199,6 +199,7 @@ NotionNext/
 ```
 
 **类型 (type):**
+
 - `feat`: 新功能
 - `fix`: 修复bug
 - `docs`: 文档更新
@@ -212,6 +213,7 @@ NotionNext/
 - `revert`: 回滚之前的提交
 
 **示例:**
+
 ```
 feat(auth): add user authentication
 fix(ui): resolve button alignment issue

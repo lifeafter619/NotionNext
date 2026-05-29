@@ -1,4 +1,5 @@
 # 代码块风格
+
 > 迁移自：[代码块风格](https://docs.tangly1024.com/article/notion-next-code-style)
 > 发布日期：2023-7-30
 > 最后编辑：2024-1-31
@@ -24,7 +25,6 @@ CODE_COLLAPSE: process.env.NEXT_PUBLIC_CODE_COLLAPSE || true, // 是否折叠代
 // END********代码相关********
 ```
 
-
 ### 代码风格配置说明
 
 浅色模式（日间模式）和深色模式（夜间模式）支持各配置一种代码风格；
@@ -32,7 +32,6 @@ CODE_COLLAPSE: process.env.NEXT_PUBLIC_CODE_COLLAPSE || true, // 是否折叠代
 目前默认浅色模式主题 prism-solarizedlight，深色模式代码主题prism-okaidia
 
 ![Untitled](/legacy/f5a5161867f2796a.png)
-
 
 ## 支持的代码主题列表
 

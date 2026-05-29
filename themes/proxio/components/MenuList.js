@@ -17,7 +17,6 @@ export const MenuList = props => {
   const router = useRouter()
   const menuRef = useRef(null) // 监听点击外部区域
 
-
   const defaultLinks = [
     {
       icon: 'fas fa-archive',
@@ -66,7 +65,7 @@ export const MenuList = props => {
 
   // 监听点击外部区域，收起子菜单
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = event => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setOpenSubMenuIdx(null)
       }
@@ -102,11 +101,13 @@ export const MenuList = props => {
         }`}>
         <ul className='blcok lg:flex 2xl:ml-20'>
           {links?.map((link, index) => (
-            <MenuItem 
-              key={index} 
-              link={link} 
+            <MenuItem
+              key={index}
+              link={link}
               isOpen={openSubMenuIdx === index}
-              toggleOpen={() => setOpenSubMenuIdx(openSubMenuIdx === index ? null : index)}
+              toggleOpen={() =>
+                setOpenSubMenuIdx(openSubMenuIdx === index ? null : index)
+              }
             />
           ))}
         </ul>

@@ -39,7 +39,10 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
     .replace(/\/$/, '')
 
   const pages = buildPages(currentPage, totalPage)
-  const prevHref = currentPage <= 2 ? `${pagePrefix || ''}/` : `${pagePrefix}/page/${currentPage - 1}`
+  const prevHref =
+    currentPage <= 2
+      ? `${pagePrefix || ''}/`
+      : `${pagePrefix}/page/${currentPage - 1}`
   const nextHref = `${pagePrefix}/page/${currentPage + 1}`
 
   return (
@@ -64,7 +67,9 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
           return (
             <SmartLink
               key={`p-${p}`}
-              href={p === 1 ? `${pagePrefix || ''}/` : `${pagePrefix}/page/${p}`}
+              href={
+                p === 1 ? `${pagePrefix || ''}/` : `${pagePrefix}/page/${p}`
+              }
               className={`fuwari-page-num ${p === currentPage ? 'fuwari-page-num-active' : ''}`}>
               {p}
             </SmartLink>
@@ -83,4 +88,3 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
 }
 
 export default Pagination
-

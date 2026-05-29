@@ -1,7 +1,14 @@
 const { request } = require('./_http')
 
 // DeepSeek 翻译适配器；OpenAI 兼容接口，默认模型 deepseek-chat。
-async function translate({ text, sourceLang, targetLang, glossary, hint, signal }) {
+async function translate({
+  text,
+  sourceLang,
+  targetLang,
+  glossary,
+  hint,
+  signal
+}) {
   const apiKey = process.env.DEEPSEEK_API_KEY
   if (!apiKey) throw new Error('DEEPSEEK_API_KEY 未设置')
 
@@ -17,17 +24,15 @@ async function translate({ text, sourceLang, targetLang, glossary, hint, signal 
     hint === 'mermaid'
       ? 'This input is Mermaid diagram code. Translate ONLY the human-readable labels, titles, and node text inside quotes or after `title`. Preserve every keyword, arrow, bracket, color directive, and identifier exactly.'
       : hint === 'plantuml'
-      ? 'This input is PlantUML code. Translate ONLY the human-readable labels and titles. Preserve every keyword, arrow, and identifier exactly.'
-      : ''
+        ? 'This input is PlantUML code. Translate ONLY the human-readable labels and titles. Preserve every keyword, arrow, and identifier exactly.'
+        : ''
 
   const system = [
     `You are a professional bilingual translator for technical blog posts.`,
     `Translate from ${sourceName} to ${targetName}.`,
     `Preserve markdown, code, URLs, technical terms exactly.`,
     `Match the original tone (formal/casual).`,
-    preserveList
-      ? `Always keep these terms verbatim: ${preserveList}.`
-      : '',
+    preserveList ? `Always keep these terms verbatim: ${preserveList}.` : '',
     hintLine,
     `Output ONLY the translation. No commentary, no quotes, no explanations.`,
     `If the input is empty or only whitespace, output the input unchanged.`

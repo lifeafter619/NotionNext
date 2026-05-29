@@ -24,7 +24,9 @@ export async function getStaticProps({ params: { keyword }, locale }) {
   })
   const { allPages } = props
   const allPosts = allPages?.filter(
-    page => (page.type === 'Post' || page.type === 'Page') && page.status === 'Published'
+    page =>
+      (page.type === 'Post' || page.type === 'Page') &&
+      page.status === 'Published'
   )
   props.posts = await filterByMemCache(allPosts, keyword)
   props.postCount = props.posts.length
@@ -91,7 +93,9 @@ async function filterByMemCache(allPosts, keyword) {
       post.content = page.block[pId].value.content
     } else if (page?.block) {
       // 兼容id不一致的情况
-      const blockId = Object.keys(page.block).find(id => page.block[id].value.type === 'page')
+      const blockId = Object.keys(page.block).find(
+        id => page.block[id].value.type === 'page'
+      )
       if (blockId) {
         post.content = page.block[blockId].value.content
       }

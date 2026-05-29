@@ -3,6 +3,7 @@
 > 适用目录：`themes/claude`（部分修改涉及全局 `pages/_app.js`、`pages/index.js`、`components/SEO.js`）
 >
 > 本文档描述当前 `claude` 主题的实际实现，重点覆盖：
+>
 > 1. 主题特性与视觉设计目标
 > 2. 文章页（Claude Code Docs 风格）与首页（GitHub Profile 风格）
 > 3. 移动端复刻与优化策略
@@ -41,6 +42,7 @@
 
 1.  **配置环境变量**：
     在 `.env` 或 `.env.local` 中添加（完整配置见下文）：
+
     ```bash
     # 启用主题
     NEXT_PUBLIC_THEME=claude  # 或者在notion配置页面中配置
@@ -424,25 +426,25 @@ create index if not exists idx_claude_contrib_snapshots_updated
 
 以下配置可由环境变量覆盖（`NEXT_PUBLIC_*`），并可被 Notion 配置页同名项再覆盖：
 
-| 配置项 | 默认值 | 说明 |
-|---|---|---|
-| `CLAUDE_BLOG_NAME` | `活字印刷` | 主题主标题 |
-| `CLAUDE_BLOG_NAME_EN` | 同主标题 | 副标题/英文标题 |
-| `CLAUDE_POST_AD_ENABLE` | `false` | 列表插广告 |
-| `CLAUDE_POST_COVER_ENABLE` | `false` | 列表显示封面 |
-| `CLAUDE_ARTICLE_RECOMMEND_POSTS` | `true` | 文章页推荐文章 |
-| `CLAUDE_MENU_CATEGORY` | `true` | 显示分类菜单 |
-| `CLAUDE_MENU_TAG` | `true` | 显示标签菜单 |
-| `CLAUDE_MENU_ARCHIVE` | `true` | 显示归档菜单 |
-| `CLAUDE_TOC_ENABLE` | `true` | 启用右侧目录 |
-| `CLAUDE_TOC_SHOW_LEVEL3` | `true` | 目录显示三级标题 |
-| `CLAUDE_TOC_SCROLL_BEHAVIOR` | `instant` | TOC 点击/联动滚动行为 |
-| `CLAUDE_SUBTITLE_DARK_ONLY` | `false` | 副标题仅暗色显示 |
-| `CLAUDE_PROFILE_AVATAR` | `''` | 侧栏头像 URL |
-| `CLAUDE_FOOTER_COPYRIGHT` | `''` | 自定义页脚版权文案 |
-| `CLAUDE_README_CACHE_ENABLED` | `true` | README 快照缓存开关 |
-| `CLAUDE_CONTRIBUTION_PERSIST_ENABLED` | `true` | Contribution 持久化开关 |
-| `CLAUDE_CONTRIBUTION_EVENT_LIMIT` | `50000` | 拉取事件上限 |
+| 配置项                                | 默认值     | 说明                    |
+| ------------------------------------- | ---------- | ----------------------- |
+| `CLAUDE_BLOG_NAME`                    | `活字印刷` | 主题主标题              |
+| `CLAUDE_BLOG_NAME_EN`                 | 同主标题   | 副标题/英文标题         |
+| `CLAUDE_POST_AD_ENABLE`               | `false`    | 列表插广告              |
+| `CLAUDE_POST_COVER_ENABLE`            | `false`    | 列表显示封面            |
+| `CLAUDE_ARTICLE_RECOMMEND_POSTS`      | `true`     | 文章页推荐文章          |
+| `CLAUDE_MENU_CATEGORY`                | `true`     | 显示分类菜单            |
+| `CLAUDE_MENU_TAG`                     | `true`     | 显示标签菜单            |
+| `CLAUDE_MENU_ARCHIVE`                 | `true`     | 显示归档菜单            |
+| `CLAUDE_TOC_ENABLE`                   | `true`     | 启用右侧目录            |
+| `CLAUDE_TOC_SHOW_LEVEL3`              | `true`     | 目录显示三级标题        |
+| `CLAUDE_TOC_SCROLL_BEHAVIOR`          | `instant`  | TOC 点击/联动滚动行为   |
+| `CLAUDE_SUBTITLE_DARK_ONLY`           | `false`    | 副标题仅暗色显示        |
+| `CLAUDE_PROFILE_AVATAR`               | `''`       | 侧栏头像 URL            |
+| `CLAUDE_FOOTER_COPYRIGHT`             | `''`       | 自定义页脚版权文案      |
+| `CLAUDE_README_CACHE_ENABLED`         | `true`     | README 快照缓存开关     |
+| `CLAUDE_CONTRIBUTION_PERSIST_ENABLED` | `true`     | Contribution 持久化开关 |
+| `CLAUDE_CONTRIBUTION_EVENT_LIMIT`     | `50000`    | 拉取事件上限            |
 
 ---
 
@@ -625,14 +627,21 @@ const Layout = useMemo(() => getBaseLayoutByTheme(theme), [theme])
 桌面端侧边栏用 `React.memo(() => true)` 包裹：
 
 ```javascript
-const SidebarContent = memo(function SidebarContent(props) {
-  return (
-    <div className='flex flex-col justify-between h-full py-6 px-5'>
-      <div><NavBar {...props} /></div>
-      <div className='mt-auto'><Footer /></div>
-    </div>
-  )
-}, () => true)  // 始终返回 true -> 阻止所有来自父组件的 prop 变化触发重渲染
+const SidebarContent = memo(
+  function SidebarContent(props) {
+    return (
+      <div className='flex flex-col justify-between h-full py-6 px-5'>
+        <div>
+          <NavBar {...props} />
+        </div>
+        <div className='mt-auto'>
+          <Footer />
+        </div>
+      </div>
+    )
+  },
+  () => true
+) // 始终返回 true -> 阻止所有来自父组件的 prop 变化触发重渲染
 ```
 
 - `React.memo` 的第二个参数 `() => true` 表示"props 始终相等"，阻止父组件 re-render 传播。
@@ -661,11 +670,11 @@ function getOrCreateTerminalSession() {
 
 ### 16.3 涉及文件清单
 
-| 文件 | 所属 | 修改内容 |
-|---|---|---|
-| `pages/_app.js` | **全局**（非主题目录） | 移除 `GLayout`，用 `useMemo` 缓存 Layout 引用 |
-| `themes/claude/index.js` | 主题 | 新增 `SidebarContent` memo 组件 |
-| `themes/claude/components/NavBar.js` | 主题 | 终端会话改为模块级缓存 |
+| 文件                                 | 所属                   | 修改内容                                      |
+| ------------------------------------ | ---------------------- | --------------------------------------------- |
+| `pages/_app.js`                      | **全局**（非主题目录） | 移除 `GLayout`，用 `useMemo` 缓存 Layout 引用 |
+| `themes/claude/index.js`             | 主题                   | 新增 `SidebarContent` memo 组件               |
+| `themes/claude/components/NavBar.js` | 主题                   | 终端会话改为模块级缓存                        |
 
 ---
 

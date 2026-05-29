@@ -56,7 +56,9 @@ const Footer = ({ title }) => {
                     {group?.menus?.map((menu, index) => {
                       return (
                         <div key={index}>
-                          <SmartLink href={menu.href} className='hover:underline'>
+                          <SmartLink
+                            href={menu.href}
+                            className='hover:underline'>
                             {menu.title}
                           </SmartLink>
                         </div>

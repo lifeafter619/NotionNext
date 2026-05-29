@@ -6,13 +6,13 @@
 
 自 **2026 年起**，NotionNext **面向部署者的使用说明** 以本仓库 **`docs/user-guide/`** 目录为**主维护面**，并逐步替代仅依赖 Notion 托管的在线手册（[docs.tangly1024.com](https://docs.tangly1024.com/about)）。
 
-| 目录 | 用途 |
-| --- | --- |
-| [`docs/user-guide/`](./user-guide/) | 部署、配置、Notion 数据库、菜单、升级等**用户教程**（从官方站点迁移并持续更新） |
-| [`docs/user-guide/reference/`](./user-guide/reference/) | **4.9.x 参考手册**：全站配置索引、Notion 新能力（与 `conf/` 同步维护） |
-| [`docs/user-guide/themes/THEMES_CATALOG.md`](./user-guide/themes/THEMES_CATALOG.md) | **25 个内置主题**全表与选型 |
-| [`docs/developer/themes/`（GitHub）](https://github.com/notionnext-org/NotionNext/tree/main/docs/developer/themes) | **开发者向**长篇（Claude 全局改动等）；站长向在 `user-guide/themes/<id>.md` |
-| [`docs/developer/`（GitHub）](https://github.com/notionnext-org/NotionNext/tree/main/docs/developer) | 架构、贡献流程、主题开发者长文（不进在线站） |
+| 目录                                                                                                               | 用途                                                                            |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| [`docs/user-guide/`](./user-guide/)                                                                                | 部署、配置、Notion 数据库、菜单、升级等**用户教程**（从官方站点迁移并持续更新） |
+| [`docs/user-guide/reference/`](./user-guide/reference/)                                                            | **4.9.x 参考手册**：全站配置索引、Notion 新能力（与 `conf/` 同步维护）          |
+| [`docs/user-guide/themes/THEMES_CATALOG.md`](./user-guide/themes/THEMES_CATALOG.md)                                | **25 个内置主题**全表与选型                                                     |
+| [`docs/developer/themes/`（GitHub）](https://github.com/notionnext-org/NotionNext/tree/main/docs/developer/themes) | **开发者向**长篇（Claude 全局改动等）；站长向在 `user-guide/themes/<id>.md`     |
+| [`docs/developer/`（GitHub）](https://github.com/notionnext-org/NotionNext/tree/main/docs/developer)               | 架构、贡献流程、主题开发者长文（不进在线站）                                    |
 
 ## 为何迁到 GitHub
 

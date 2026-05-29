@@ -267,10 +267,13 @@ const ShareButtons = ({ post }) => {
               <button
                 aria-label={singleService}
                 key={singleService}
-                onClick={() => openRedirectShare('https://link.csdn.net/?target=')}
+                onClick={() =>
+                  openRedirectShare('https://link.csdn.net/?target=')
+                }
                 className='cursor-pointer rounded-full mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500'>
-                <div className='w-8 h-8 rounded-full items-center justify-center'
-                  style={{backgroundColor: '#ff6a00'}}>
+                <div
+                  className='w-8 h-8 rounded-full items-center justify-center'
+                  style={{ backgroundColor: '#ff6a00' }}>
                   <Image
                     src='/svg/csdn.svg'
                     alt='CSDN'
@@ -288,10 +291,13 @@ const ShareButtons = ({ post }) => {
               <button
                 aria-label={singleService}
                 key={singleService}
-                onClick={() => openRedirectShare('https://link.juejin.cn/?target=')}
+                onClick={() =>
+                  openRedirectShare('https://link.juejin.cn/?target=')
+                }
                 className='cursor-pointer rounded-full mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'>
-                <div className='w-8 h-8 rounded-full flex items-center justify-center'
-                     style={{ backgroundColor: '#5dade2' }}>
+                <div
+                  className='w-8 h-8 rounded-full flex items-center justify-center'
+                  style={{ backgroundColor: '#5dade2' }}>
                   <Image
                     src='/svg/juejin.svg'
                     alt='掘金'

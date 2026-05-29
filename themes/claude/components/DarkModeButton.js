@@ -60,7 +60,10 @@ export default function DarkModeButton({ className = '' }) {
 
     const fromStorage = getLocalStorageDarkMode()
     const initial =
-      fromStorage !== null ? fromStorage : readDomDarkMode() || window.matchMedia('(prefers-color-scheme: dark)').matches
+      fromStorage !== null
+        ? fromStorage
+        : readDomDarkMode() ||
+          window.matchMedia('(prefers-color-scheme: dark)').matches
 
     withInstantThemeSwitch(() => applyTheme(initial))
     setIsDarkMode(initial)
@@ -84,7 +87,8 @@ export default function DarkModeButton({ className = '' }) {
   }
 
   return (
-    <div className={`${className} flex justify-center dark:text-gray-200 text-gray-800`}>
+    <div
+      className={`${className} flex justify-center dark:text-gray-200 text-gray-800`}>
       <div
         id='darkModeButton'
         onClick={handleToggle}

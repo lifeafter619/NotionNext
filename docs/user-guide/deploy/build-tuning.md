@@ -25,13 +25,13 @@ Sending SIGTERM signal to Next.js build worker due to timeout of 300 seconds
 
 在部署平台（Cloudflare Pages → **Settings → Environment variables**）或本地 `.env.local` 中配置（**构建时**生效，无需 `NEXT_PUBLIC_` 前缀）：
 
-| 变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `BUILD_PREFETCH_ENABLED` | `true`（未设置即开启） | 设为 `false`、`0`、`off`、`skip` 等可**关闭**全量 block 预热 |
-| `BUILD_PREFETCH_CONCURRENCY` | `8` | 预热时的并发数（1–32）。Notion API 慢时可降到 `2`～`4` |
-| `NOTION_BUILD_RATE_MAX_PER_MINUTE` | `50` | 构建期每分钟最多向 Notion 发起的请求数（1–600） |
-| `NOTION_BUILD_RATE_MIN_INTERVAL_MS` | `300` | 构建期两次请求之间的最小间隔（毫秒，0–60000）。**数值越大越慢、越不易触发限流** |
-| `STATIC_PAGE_GENERATION_TIMEOUT` | `300` | Next.js **单页**静态生成超时（秒，60–3600）。文章特别大或 API 慢时可设为 `600` 及以上 |
+| 变量                                | 默认值                 | 说明                                                                                  |
+| ----------------------------------- | ---------------------- | ------------------------------------------------------------------------------------- |
+| `BUILD_PREFETCH_ENABLED`            | `true`（未设置即开启） | 设为 `false`、`0`、`off`、`skip` 等可**关闭**全量 block 预热                          |
+| `BUILD_PREFETCH_CONCURRENCY`        | `8`                    | 预热时的并发数（1–32）。Notion API 慢时可降到 `2`～`4`                                |
+| `NOTION_BUILD_RATE_MAX_PER_MINUTE`  | `50`                   | 构建期每分钟最多向 Notion 发起的请求数（1–600）                                       |
+| `NOTION_BUILD_RATE_MIN_INTERVAL_MS` | `300`                  | 构建期两次请求之间的最小间隔（毫秒，0–60000）。**数值越大越慢、越不易触发限流**       |
+| `STATIC_PAGE_GENERATION_TIMEOUT`    | `300`                  | Next.js **单页**静态生成超时（秒，60–3600）。文章特别大或 API 慢时可设为 `600` 及以上 |
 
 ### 如何确认已生效
 
@@ -76,10 +76,10 @@ STATIC_PAGE_GENERATION_TIMEOUT=600
 
 ## 与 `ENABLE_CACHE` 的关系
 
-| 变量 | 阶段 |
-| --- | --- |
-| `ENABLE_CACHE` | 开发 / 生产运行时是否使用文件+内存缓存（见 [全站配置索引](../reference/features.md)） |
-| `BUILD_PREFETCH_*` / `NOTION_BUILD_RATE_*` | 仅 **`BUILD_MODE=true` 或 `EXPORT=true`** 的构建、导出 |
+| 变量                                       | 阶段                                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `ENABLE_CACHE`                             | 开发 / 生产运行时是否使用文件+内存缓存（见 [全站配置索引](../reference/features.md)） |
+| `BUILD_PREFETCH_*` / `NOTION_BUILD_RATE_*` | 仅 **`BUILD_MODE=true` 或 `EXPORT=true`** 的构建、导出                                |
 
 构建缓存目录见 `lib/cache/build_session.js`、`.next/cache/notion`。
 

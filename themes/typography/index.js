@@ -171,28 +171,26 @@ const LayoutSearch = props => {
   return <LayoutPostList {...props} />
 }
 
- function groupArticlesByYearArray(articles) {
-  const grouped = {};
+function groupArticlesByYearArray(articles) {
+  const grouped = {}
 
   for (const article of articles) {
-    const year = new Date(article.publishDate).getFullYear().toString();
+    const year = new Date(article.publishDate).getFullYear().toString()
     if (!grouped[year]) {
-      grouped[year] = [];
+      grouped[year] = []
     }
-    grouped[year].push(article);
+    grouped[year].push(article)
   }
 
   for (const year in grouped) {
-    grouped[year].sort((a, b) => b.publishDate - a.publishDate);
+    grouped[year].sort((a, b) => b.publishDate - a.publishDate)
   }
 
   // 转成数组并按年份倒序
   return Object.entries(grouped)
     .sort(([a], [b]) => b - a)
-    .map(([year, posts]) => ({ year, posts }));
+    .map(([year, posts]) => ({ year, posts }))
 }
-
-
 
 /**
  * 归档页

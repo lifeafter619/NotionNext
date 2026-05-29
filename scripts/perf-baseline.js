@@ -85,8 +85,10 @@ function readRuntimeMetrics() {
     .sort((a, b) => b.mtime - a.mtime)[0].file
 
   const report = JSON.parse(fs.readFileSync(latest, 'utf8'))
-  summary.lcpMs = report.audits?.['largest-contentful-paint']?.numericValue ?? null
-  summary.inpMs = report.audits?.['interaction-to-next-paint']?.numericValue ?? null
+  summary.lcpMs =
+    report.audits?.['largest-contentful-paint']?.numericValue ?? null
+  summary.inpMs =
+    report.audits?.['interaction-to-next-paint']?.numericValue ?? null
   summary.cls = report.audits?.['cumulative-layout-shift']?.numericValue ?? null
   summary.note = `Parsed from ${path.relative(rootDir, latest)}`
   return summary
@@ -94,7 +96,9 @@ function readRuntimeMetrics() {
 
 function printDiff(previous, current) {
   if (!previous) {
-    console.log('\nNo previous baseline found. Created initial baseline only.\n')
+    console.log(
+      '\nNo previous baseline found. Created initial baseline only.\n'
+    )
     return
   }
   const deltaBuild = current.build.durationMs - previous.build.durationMs
@@ -121,8 +125,7 @@ async function main() {
       coldStartMs: null,
       firstCompileMs: null,
       hmrMs: null,
-      note:
-        'Use local terminal timing for `yarn dev` + first page compile/HMR and fill into this report when needed.'
+      note: 'Use local terminal timing for `yarn dev` + first page compile/HMR and fill into this report when needed.'
     },
     build: {
       durationMs: null,
@@ -142,11 +145,18 @@ async function main() {
   }
 
   fs.writeFileSync(reportPath, JSON.stringify(result, null, 2))
-  console.log('\nSaved performance baseline report:', path.relative(rootDir, reportPath))
+  console.log(
+    '\nSaved performance baseline report:',
+    path.relative(rootDir, reportPath)
+  )
   if (result.build.durationMs != null) {
     console.log(`- Build duration: ${result.build.durationMs} ms`)
-    console.log(`- Static assets: ${formatBytes(result.build.staticAssetBytes)}`)
-    console.log(`- Server assets: ${formatBytes(result.build.serverAssetBytes)}`)
+    console.log(
+      `- Static assets: ${formatBytes(result.build.staticAssetBytes)}`
+    )
+    console.log(
+      `- Server assets: ${formatBytes(result.build.serverAssetBytes)}`
+    )
   }
   printDiff(previous, result)
 }

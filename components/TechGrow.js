@@ -4,7 +4,8 @@ import { isBrowser, loadExternalResource } from '@/lib/utils'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
-const DEFAULT_TECH_GROW_JS = 'https://qiniu.techgrow.cn/readmore/dist/readmore.js'
+const DEFAULT_TECH_GROW_JS =
+  'https://qiniu.techgrow.cn/readmore/dist/readmore.js'
 const DEFAULT_TECH_GROW_CSS = 'https://qiniu.techgrow.cn/readmore/dist/hexo.css'
 
 const hasValue = value => value !== undefined && value !== null && value !== ''
@@ -66,9 +67,7 @@ const installReadmoreNetworkProbe = debug => {
         const init = args[1]
         url = typeof input === 'string' ? input : input?.url || ''
         method =
-          init?.method ||
-          (typeof input !== 'string' && input?.method) ||
-          'GET'
+          init?.method || (typeof input !== 'string' && input?.method) || 'GET'
       } catch {}
 
       const related = isReadmoreRelatedUrl(url)
@@ -101,7 +100,7 @@ const installReadmoreNetworkProbe = debug => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalSend = XHR.prototype.send
 
-    XHR.prototype.open = function(method, url, ...rest) {
+    XHR.prototype.open = function (method, url, ...rest) {
       this.__techGrowDebugMeta = {
         method: method || 'GET',
         url: String(url || '')
@@ -109,7 +108,7 @@ const installReadmoreNetworkProbe = debug => {
       return originalOpen.call(this, method, url, ...rest)
     }
 
-    XHR.prototype.send = function(body) {
+    XHR.prototype.send = function (body) {
       const meta = this.__techGrowDebugMeta || { method: 'GET', url: '' }
       const related = isReadmoreRelatedUrl(meta.url)
       const start = Date.now()
@@ -159,9 +158,7 @@ const logReadmoreState = (debug, contentId, stage) => {
   }
   const container = document.getElementById(contentId)
   const wrapper = getReadmoreWrapper()
-  const containerStyle = container
-    ? window.getComputedStyle(container)
-    : null
+  const containerStyle = container ? window.getComputedStyle(container) : null
   const wrapperStyle = wrapper ? window.getComputedStyle(wrapper) : null
   console.log('[TechGrow][state]', stage, {
     contentId,
@@ -186,7 +183,10 @@ const TechGrow = ({ lock } = {}) => {
   const name = getFirstConfig(['TECH_GROW_NAME'], '请配置公众号名')
   const id = getFirstConfig(['TECH_GROW_CONTENT_ID'], 'notion-article')
   const keyword = getFirstConfig(['TECH_GROW_KEYWORD'], '请配置公众号关键词')
-  const btnText = getFirstConfig(['TECH_GROW_BTN_TEXT'], '原创不易，完成人机检测，阅读全文')
+  const btnText = getFirstConfig(
+    ['TECH_GROW_BTN_TEXT'],
+    '原创不易，完成人机检测，阅读全文'
+  )
   // 验证一次后的有效时长，单位小时
   const cookieAge = getFirstConfig(['TECH_GROW_VALIDITY_DURATION'], 1)
   const random = getFirstConfig(['TECH_GROW_RANDOM'], 1)
@@ -194,7 +194,10 @@ const TechGrow = ({ lock } = {}) => {
   const expires = getFirstConfig(['TECH_GROW_EXPIRES'], 365)
   const lockToc = getFirstConfig(['TECH_GROW_LOCK_TOC'], 'yes')
   const height = getFirstConfig(['TECH_GROW_HEIGHT'], 'auto')
-  const tocSelector = getFirstConfig(['TECH_GROW_TOC_SELECTOR'], 'a.catalog-item')
+  const tocSelector = getFirstConfig(
+    ['TECH_GROW_TOC_SELECTOR'],
+    'a.catalog-item'
+  )
   // 白名单，想要放行的页面
   const whiteList = getFirstConfig(['TECH_GROW_WHITE_LIST'], '')
   // 黄名单，优先级最高，设置后只有这里的路径会被上锁，其他页面自动全部放行

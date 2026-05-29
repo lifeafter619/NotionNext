@@ -117,12 +117,12 @@ Do not scatter constants in component bodies.
 
 The `NEXT_PUBLIC_CONTACT_EMAIL` environment variable is compiled into `conf/contact.config.js` and stored in `siteConfig('CONTACT_EMAIL')` as a Base64-encoded payload (UTF-8), so plain addresses do not appear verbatim in static HTML. When migrating or adding theme UI, pick the right helper or you will see garbled `mailto:` targets or wrong Gravatar hashes.
 
-| Scenario | Do | Don't |
-| --- | --- | --- |
-| Icon/link opens the system mail client | Use `handleEmailClick` (below) | `href={\`mailto:${siteConfig('CONTACT_EMAIL')}\`}` |
-| Footer or copy shows the address | `resolveContactEmail(siteConfig('CONTACT_EMAIL'))` | Render `siteConfig('CONTACT_EMAIL')` directly |
-| md5 for Gravatar | Hash **lowercased** plaintext from `resolveContactEmail` | md5 the encrypted string |
-| Server-generated text (e.g. `security.txt`) | `resolveContactEmail` before `mailto:` | Write the encrypted blob into the file |
+| Scenario                                    | Do                                                       | Don't                                              |
+| ------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------- |
+| Icon/link opens the system mail client      | Use `handleEmailClick` (below)                           | `href={\`mailto:${siteConfig('CONTACT_EMAIL')}\`}` |
+| Footer or copy shows the address            | `resolveContactEmail(siteConfig('CONTACT_EMAIL'))`       | Render `siteConfig('CONTACT_EMAIL')` directly      |
+| md5 for Gravatar                            | Hash **lowercased** plaintext from `resolveContactEmail` | md5 the encrypted string                           |
+| Server-generated text (e.g. `security.txt`) | `resolveContactEmail` before `mailto:`                   | Write the encrypted blob into the file             |
 
 **Click-to-mail pattern (match `themes/next/components/SocialButton.js`):**
 
@@ -135,15 +135,17 @@ const emailIcon = useRef(null)
 const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
 
 // ...
-{CONTACT_EMAIL && (
-  <a
-    onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
-    title='email'
-    className='cursor-pointer'
-    ref={emailIcon}>
-    {/* icon */}
-  </a>
-)}
+{
+  CONTACT_EMAIL && (
+    <a
+      onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
+      title='email'
+      className='cursor-pointer'
+      ref={emailIcon}>
+      {/* icon */}
+    </a>
+  )
+}
 ```
 
 Helpers live in `lib/plugins/mailEncrypt.js`: `handleEmailClick`, `decryptEmail`, `resolveContactEmail`.
@@ -160,9 +162,9 @@ Commit static previews under:
 
 **`public/images/themes-preview/`**
 
-| File | Purpose |
-| --- | --- |
-| `<theme-id>.png` | Baseline image; **must** match the folder name under `themes/` (lowercase), e.g. `endspace.png`. Used as `LazyImage` **`fallbackSrc`**. |
+| File              | Purpose                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `<theme-id>.png`  | Baseline image; **must** match the folder name under `themes/` (lowercase), e.g. `endspace.png`. Used as `LazyImage` **`fallbackSrc`**. |
 | `<theme-id>.webp` | **Strongly recommended**; convert from PNG (`cwebp`, Squoosh, ImageMagick, etc.). Used as the preferred **`src`** for smaller payloads. |
 
 By default, `getThemeSwitchMeta()` resolves **`/images/themes-preview/<id>.webp`** and **`.png`**. Submit both in PRs when possible.
@@ -230,4 +232,3 @@ For `themes/fuwari`, these specifics are already applied:
   - avoid putting markdown docs under `themes/<theme>/` if build pipeline treats theme dirs as runtime modules
   - place theme docs under `docs/developer/themes/` instead
 - **Route transition feel**: add lightweight page/card transition to mimic source theme interaction rhythm.
-

@@ -1,4 +1,5 @@
 # Vercel部署NotionNext
+
 > 迁移自：[Vercel部署NotionNext](https://docs.tangly1024.com/article/vercel-deploy-notion-next)
 > 发布日期：2023-2-10
 > 最后编辑：2026-5-2
@@ -12,7 +13,7 @@
 
 > **❓**
 >
-[NotionNext](/user-guide/intro)是一个完全开源免费的建站脚本，将您的[Notion](https://blog.tangly1024.com/article/notion)笔记实时渲染成博客。
+> [NotionNext](/user-guide/intro)是一个完全开源免费的建站脚本，将您的[Notion](https://blog.tangly1024.com/article/notion)笔记实时渲染成博客。
 >
 > Vercel是一个来自国外的在线脚本托管平台，对于个人使用，其免费版已经完全足够，因此您无需购买服务器即可搭建自己的网站。
 
@@ -21,7 +22,6 @@
 ![image.png](/legacy/a83043dbc31d736e.png)
 
 想查看更多网站搭建效果，欢迎访问友情链接：[https://blog.tangly1024.com/links](https://blog.tangly1024.com/links)
-
 
 ### 部署步骤
 
@@ -35,39 +35,39 @@
 
 部署文档已经过大量网友实践验证，如您实在无法完成独立部署，可以考虑[向我们求助](/user-guide/help/support)。
 
-
 ### 视频帮助
 
 **我录了一个1分38秒的简略视频**，演示了整个部署过程，最终以文档为主。
 
 https://player.bilibili.com/player.html?aid=913088616&bvid=BV1fM4y1L7Qi&cid=1203316294&page=1
-## 一、创建您的Notion页面
 
+## 一、创建您的Notion页面
 
 ### 复制模板
 
 1. 请先注册登陆您的[Notion](https://www.notion.so/)账号。
 
 1. 点击下方链接，打开模板
-[Notion Blog](https://tanghh.notion.site/02ab3b8678004aa69e9e415905ef32a5)
+   [Notion Blog](https://tanghh.notion.site/02ab3b8678004aa69e9e415905ef32a5)
 
 一个NotionNext搭建的博客
 
 1. 在右上角点击**Duplicate**复制模板，如图所示。点击后会将这个博客数据模板复制到您的笔记空间中。
-![点击右上角的Duplicate，将模板复制到您的笔记中](/legacy/b6b81e01d512a122.png)
-
+   ![点击右上角的Duplicate，将模板复制到您的笔记中](/legacy/b6b81e01d512a122.png)
 
 ### 获取页面ID
 
 1. 在Notion笔记中：在页面右上角的菜单栏中，依次点击**Share**→**Published**→**Share To Web，**开启页面分享，获取**共享链接**
-  - 如下图所示，点击右上角 **Share ，**在弹出窗口中点击 **Publish **→ **Share to web**  (点击展开截图)
-![Untitled](/legacy/529223fa2a1ffd16.png)
+
+- 如下图所示，点击右上角 **Share ，**在弹出窗口中点击 **Publish **→ **Share to web** (点击展开截图)
+  ![Untitled](/legacy/529223fa2a1ffd16.png)
 
 1. 复制**页面ID**
-页面ID在您的共享链接中、域名中间的一串**32位字母与数字**。
-  - 如下图所示：
-![Untitled](/legacy/3be621dcdd736f88.png)
-  - 页面ID注意
+   页面ID在您的共享链接中、域名中间的一串**32位字母与数字**。
+
+- 如下图所示：
+  ![Untitled](/legacy/3be621dcdd736f88.png)
+- 页面ID注意
 
 > **如何识别页面ID**
 >
@@ -91,23 +91,20 @@ https://player.bilibili.com/player.html?aid=913088616&bvid=BV1fM4y1L7Qi&cid=1203
 
 请将您的**页面ID**记录下来，步骤三配置环境变量时会用到。
 
-
 ## 二、复制源代码
 
 > **💡**
 >
-注意，请不要使用qq邮箱等国内邮箱，**尽量使用hotmail或gmail等国际邮箱**，否则下一步登陆vercel后会提示账号被封禁。
+> 注意，请不要使用qq邮箱等国内邮箱，**尽量使用hotmail或gmail等国际邮箱**，否则下一步登陆vercel后会提示账号被封禁。
 
 1. 请先注册并登陆[Github账号](https://github.com/)，
 
 1. 仅需点击下方链接，即可一键**Fork(复刻)**项目。
-[Build software better, together](https://github.com/tangly1024/NotionNext/fork)
+   [Build software better, together](https://github.com/tangly1024/NotionNext/fork)
 
 You can't perform that action at this time. You signed in with another tab or window. You signed out in another tab or window. Reload to refresh your session. Reload to refresh your session.
 
-
 ## 三、Vercel部署
-
 
 ### 准备账号
 
@@ -122,65 +119,65 @@ You can't perform that action at this time. You signed in with another tab or wi
 这是由于 `Vercel` 不支持大部分国内邮箱。可以将 `github` 账号主邮箱改为 `Gmail` 邮箱。
 **但是**根据群友反应，将 `github` 账号主邮箱切换为 `Gmail` 以后，`Vercel` 又会提示需要使用手机号码验证。然而 `github` 并没有提供手机号码绑定的内容。
 综上，建议一开始注册 `github` 账号时就使用 `Gmail` 等国外邮箱进行注册。
-  1. 国内访问`Gmail`的方案：
-  - 直接使用 QQ 邮箱手机版，它提供 `Gmail` 的访问路线，可以直接注册并使用。使用 `Ghelper` 等浏览器插件访问。详情可以参考这篇文章：[玩转 Microsoft-Edge](https://github.com/Zfour/python_github_calendar_api/blob/master/posts/8c8df126)
-  1. 若是执着于当前`Github`账号，可以参考以下方案进行尝试:
-  - 完成了 `Gmail` 等国外邮箱的注册，打开 [github-&gt; 头像 -&gt;settings-&gt;Emails](https://github.com/settings/emails)&gt;Add email address, 并完成邮箱验证。在Add email address 下方的Primary email address 选项中将 `Gmail` 设置为主邮箱。
+
+1. 国内访问`Gmail`的方案：
+
+- 直接使用 QQ 邮箱手机版，它提供 `Gmail` 的访问路线，可以直接注册并使用。使用 `Ghelper` 等浏览器插件访问。详情可以参考这篇文章：[玩转 Microsoft-Edge](https://github.com/Zfour/python_github_calendar_api/blob/master/posts/8c8df126)
+
+1. 若是执着于当前`Github`账号，可以参考以下方案进行尝试:
+
+- 完成了 `Gmail` 等国外邮箱的注册，打开 [github-&gt; 头像 -&gt;settings-&gt;Emails](https://github.com/settings/emails)&gt;Add email address, 并完成邮箱验证。在Add email address 下方的Primary email address 选项中将 `Gmail` 设置为主邮箱。
 
 </details>
-
 
 ### 导入代码
 
 1. 点击下方创建新项目
-[New Project - Vercel](https://vercel.com/new)
+   [New Project - Vercel](https://vercel.com/new)
 
 To deploy a new Project, import an existing Git Repository or get started with one of our Templates.
 
 1. 在代码仓库列表中选择导入**NotionNext**
-![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
-> **💡**
->
-注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
-
+   ![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
+   > **💡**
+   >
+   > 注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
 
 ### 配置页面ID并部署
 
 1. 点击**Environment Variables**（环境变量），并添加一个属性名称为`**NOTION_PAGE_ID**`**，**值为步骤一获取的**页面ID**。
-例如，我的页面ID是：`02ab3b8678004aa69e9e415905ef32a5`，则配置如下：
-![左侧填写 NOTION_PAGE_ID ， 右侧填写 页面ID的值](/legacy/1b6bad1ad0dee297.png)
-填写后要**点击右边的****`Add`****按钮**确认添加
+   例如，我的页面ID是：`02ab3b8678004aa69e9e415905ef32a5`，则配置如下：
+   ![左侧填写 NOTION_PAGE_ID ， 右侧填写 页面ID的值](/legacy/1b6bad1ad0dee297.png)
+   填写后要**点击右边的\*\***`Add`\***\*按钮**确认添加
 
 1. 点击`Deploy`按钮，静候两分钟等待部署。
-![1.点击Deploy进行自动部署](/legacy/9a881298d4a9b142.png)
-
+   ![1.点击Deploy进行自动部署](/legacy/9a881298d4a9b142.png)
 
 ## 四、完成🎉🎉🎉
 
 1. 在部署完成页面，点击`Go to Dashboard`访问控制台
-![Untitled](/legacy/78f86a1a1c05b5c3.png)
+   ![Untitled](/legacy/78f86a1a1c05b5c3.png)
 
 1. 在控制台右上角的`Visit`按钮访问您的站点。或在DOMAINS中获取您的网站地址
-![2.在Vercel控制台中找到访问地址](/legacy/0cde1f7486038757.png)
-
+   ![2.在Vercel控制台中找到访问地址](/legacy/0cde1f7486038757.png)
 
 ## 注意事项
 
 > **💡**
 >
-NotionNext会实时抓取Notion笔记内容
+> NotionNext会实时抓取Notion笔记内容
 > (由于缓存和网络延迟，最多刷新两次页面即可看到同步结果)。
 
 > **⚠️**
 >
-**若您的站点始终无法同步笔记的数据**，请再次检查上面的步骤，或者干脆重来一遍：
+> **若您的站点始终无法同步笔记的数据**，请再次检查上面的步骤，或者干脆重来一遍：
+>
 > 1. 在Notion中检查您的`NOTION_PAGE_ID` 格式是否正确、并已开起页面分享。
 > 2. Vercel后台环境变量中`NOTION_PAGE_ID`是否配置，并重新配置后尝试`Redeploy`。
-> 如何检查Vercel后台环境变量配置：
-> ![Untitled](/legacy/27a7df016686481d.png)
-> 如何重新部署
-> ![Untitled](/legacy/1f4cae5794779d16.png)
-
+>    如何检查Vercel后台环境变量配置：
+>    ![Untitled](/legacy/27a7df016686481d.png)
+>    如何重新部署
+>    ![Untitled](/legacy/1f4cae5794779d16.png)
 
 ## 自定义您的站点
 
