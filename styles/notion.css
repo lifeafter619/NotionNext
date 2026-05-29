@@ -389,6 +389,32 @@ summary > .notion-h {
   display: inline;
 }
 
+.notion details {
+  width: 100%;
+  padding: 3px 2px;
+}
+
+.notion details > summary {
+  cursor: pointer;
+  outline: none;
+  font-size: 1em;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notion details > summary::marker {
+  font-size: 0.8em;
+}
+
+.notion details > summary::-webkit-details-marker {
+  font-size: 0.8em;
+}
+
+.notion details > :not(summary) {
+  margin-left: 1.1em;
+}
+
 .notion-h {
   position: relative;
   font-weight: 600;
