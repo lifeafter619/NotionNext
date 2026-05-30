@@ -2,6 +2,7 @@ import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { isBrowser } from '@/lib/utils'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import { DynamicLayout } from '@/themes/theme'
 import { useEffect } from 'react'
@@ -51,7 +52,7 @@ export async function getStaticProps({ locale }) {
 
   delete props.allPages
 
-  const postsSortByDate = [...posts]
+  const postsSortByDate = cleanPostListForClient(posts)
 
   postsSortByDate.sort((a, b) => {
     return b?.publishDate - a?.publishDate
@@ -69,7 +70,6 @@ export async function getStaticProps({ locale }) {
   })
 
   props.archivePosts = archivePosts
-  props.posts = posts
 
   return {
     props,

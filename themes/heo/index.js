@@ -13,6 +13,7 @@ import LoadingCover from '@/components/LoadingCover'
 import replaceSearchResult from '@/components/Mark'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
 import algoliasearch from 'algoliasearch'
@@ -208,10 +209,7 @@ const LayoutSearch = props => {
   const [loading, setLoading] = useState(false)
 
   // 检查是否开启 Algolia
-  const enableAlgolia =
-    siteConfig('ALGOLIA_APP_ID') &&
-    siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY') &&
-    siteConfig('ALGOLIA_INDEX')
+  const enableAlgolia = isAlgoliaSearchEnabled(siteConfig)
 
   useEffect(() => {
     if (enableAlgolia && currentSearch) {

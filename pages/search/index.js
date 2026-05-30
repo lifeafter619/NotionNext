@@ -6,6 +6,7 @@ import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
 import { getPageContentText } from '@/lib/db/notion/getPageContentText'
+import { hasAlgoliaAdminConfig } from '@/lib/plugins/algoliaConfig'
 import { idToUuid } from 'notion-utils'
 import { useMemo } from 'react'
 
@@ -191,7 +192,11 @@ export async function getStaticProps({ locale }) {
 
   // 上传数据到 Algolia
   if (
-    siteConfig('ALGOLIA_APP_ID') &&
+    hasAlgoliaAdminConfig({
+      ALGOLIA_APP_ID: siteConfig('ALGOLIA_APP_ID'),
+      ALGOLIA_ADMIN_APP_KEY: siteConfig('ALGOLIA_ADMIN_APP_KEY'),
+      ALGOLIA_INDEX: siteConfig('ALGOLIA_INDEX')
+    }) &&
     process.env.npm_lifecycle_event === 'build'
   ) {
     await overwriteAlgoliaSearch(props.posts)

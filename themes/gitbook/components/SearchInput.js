@@ -3,6 +3,7 @@ import { deepClone } from '@/lib/utils'
 import { useGitBookGlobal } from '@/themes/gitbook'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 let lock = false
 
 /**
@@ -11,6 +12,7 @@ let lock = false
 const SearchInput = ({ currentSearch, cRef, className }) => {
   const searchInputRef = useRef()
   const { searchModal, setFilteredNavPages, allNavPages } = useGitBookGlobal()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   useImperativeHandle(cRef, () => {
     return {
@@ -31,8 +33,9 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
 
   const handleSearch = () => {
     // 使用Algolia
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
+      return
     }
     let keyword = searchInputRef.current.value
     if (keyword) {
@@ -63,7 +66,7 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
    */
   const handleKeyUp = e => {
     // 使用Algolia
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
       return
     }
@@ -79,7 +82,7 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
 
   const handleFocus = () => {
     // 使用Algolia
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
     }
   }

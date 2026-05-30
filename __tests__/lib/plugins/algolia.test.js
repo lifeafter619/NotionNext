@@ -126,4 +126,29 @@ describe('overwriteAlgoliaSearch', () => {
       ])
     ).resolves.toBeUndefined()
   })
+
+  it('does not fail production builds when Algolia credentials are rejected during replacement indexing', async () => {
+    process.env.npm_lifecycle_event = 'build'
+    const credentialsError = Object.assign(
+      new Error('Invalid Application-ID or API key'),
+      { status: 403 }
+    )
+    replaceAllWaitMock.mockRejectedValue(credentialsError)
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { overwriteAlgoliaSearch } = await import('@/lib/plugins/algolia')
+
+    await expect(
+      overwriteAlgoliaSearch([
+        {
+          id: 'post-1',
+          slug: 'post-1',
+          status: 'Published',
+          title: 'Post 1',
+          type: 'Post',
+          content: 'searchable content'
+        }
+      ])
+    ).resolves.toBeUndefined()
+  })
 })

@@ -7,6 +7,10 @@ import SmartLink from '@/components/SmartLink'
 import LazyImage from '@/components/LazyImage'
 import { useRouter } from 'next/router'
 import {
+  getAlgoliaSearchConfig,
+  hasAlgoliaSearchConfig
+} from '@/lib/plugins/algoliaConfig'
+import {
   Fragment,
   useEffect,
   useImperativeHandle,
@@ -54,6 +58,8 @@ const SORT_OPTIONS = [
  * https://www.algolia.com/doc/api-reference/search-api-parameters/
  */
 export default function AlgoliaSearchModal({ cRef }) {
+  const algoliaConfig = getAlgoliaSearchConfig(siteConfig)
+  const algoliaEnabled = hasAlgoliaSearchConfig(algoliaConfig)
   const [searchResults, setSearchResults] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [page, setPage] = useState(0)
@@ -119,7 +125,7 @@ export default function AlgoliaSearchModal({ cRef }) {
     'enter',
     e => {
       if (isInputFocused && searchResults.length > 0) {
-        onJumpSearchResult(index)
+        onJumpSearchResult()
       }
     },
     { enableOnFormTags: true }
@@ -179,11 +185,13 @@ export default function AlgoliaSearchModal({ cRef }) {
     }
   })
 
-  const client = algoliasearch(
-    siteConfig('ALGOLIA_APP_ID'),
-    siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
-  )
-  const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
+  const client = algoliaEnabled
+    ? algoliasearch(
+        algoliaConfig.ALGOLIA_APP_ID,
+        algoliaConfig.ALGOLIA_SEARCH_ONLY_APP_KEY
+      )
+    : null
+  const index = client ? client.initIndex(algoliaConfig.ALGOLIA_INDEX) : null
 
   /**
    * 获取搜索配置参数
@@ -267,6 +275,9 @@ export default function AlgoliaSearchModal({ cRef }) {
     setTotalHit(0)
     setActiveIndex(0)
     if (!query || query === '') {
+      return
+    }
+    if (!index) {
       return
     }
     setIsLoading(true)
@@ -361,7 +372,7 @@ export default function AlgoliaSearchModal({ cRef }) {
     setIsModalOpen(false)
   }
 
-  if (!siteConfig('ALGOLIA_APP_ID')) {
+  if (!algoliaEnabled) {
     return <></>
   }
   return (

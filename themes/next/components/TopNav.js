@@ -12,6 +12,7 @@ import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
 import { useNextGlobal } from '..'
 import { useRouter } from 'next/router'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 
 let windowTop = 0
 
@@ -77,8 +78,9 @@ const TopNav = props => {
   }
 
   const { searchModal } = useNextGlobal()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
   const showSearchModal = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
     } else {
       searchDrawer?.current?.show()

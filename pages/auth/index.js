@@ -1,6 +1,10 @@
 // pages/sitemap.xml.js
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import axios from 'axios'
+import {
+  buildSafeOAuthRedirectQuery,
+  NOTION_API_VERSION
+} from '@/lib/db/notion/oauth'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import Slug from '../[prefix]'
@@ -38,12 +42,11 @@ export const getServerSideProps = async ctx => {
 
   // 授权成功的划保存下用户的workspace信息
   if (params?.status === 200) {
-    console.log('请求成功', params)
-    props.redirect_query = {
-      ...params.data,
-      msg: '成功了' + JSON.stringify(params.data)
-    }
-    console.log('用户信息', JSON.stringify(params.data))
+    props.redirect_query = buildSafeOAuthRedirectQuery(params.data)
+    console.log('Notion OAuth token exchange succeeded', {
+      workspaceId: params.data?.workspace_id,
+      workspaceName: params.data?.workspace_name
+    })
   } else if (!params) {
     console.log('请求异常', params)
     props.redirect_query = { msg: '无效请求' }
@@ -63,18 +66,22 @@ const fetchToken = async code => {
   if (!code) {
     return '无效请求'
   }
-  console.log('Auth', code)
   const clientId = process.env.OAUTH_CLIENT_ID
   const clientSecret = process.env.OAUTH_CLIENT_SECRET
   const redirectUri = process.env.OAUTH_REDIRECT_URI
+
+  if (!clientId || !clientSecret || !redirectUri) {
+    return {
+      status: 500,
+      statusText: 'OAuth configuration is missing',
+      data: null
+    }
+  }
 
   // encode in base 64
   const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
   try {
-    console.log(
-      `请求Code换取Token ${clientId}:${clientSecret} -- ${redirectUri}`
-    )
     const response = await axios.post(
       'https://api.notion.com/v1/oauth/token',
       {
@@ -86,15 +93,26 @@ const fetchToken = async code => {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'Notion-Version': NOTION_API_VERSION,
           Authorization: `Basic ${encoded}`
         }
       }
     )
 
-    console.log('Token response', response.data)
     return response
   } catch (error) {
-    console.error('Error fetching token', error)
+    if (axios.isAxiosError(error)) {
+      console.error('Error fetching token', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message
+      })
+    } else {
+      console.error(
+        'Error fetching token',
+        error instanceof Error ? error.message : String(error)
+      )
+    }
   }
 }
 

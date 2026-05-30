@@ -2,7 +2,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { loadExternalResource } from '@/lib/utils'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 /**
  * 获取博客的评论数，用与在列表中展示
@@ -14,11 +14,15 @@ const TwikooCommentCounter = props => {
   let commentsData = []
   const { theme } = useGlobal()
   const router = useRouter()
+  const commentPosts = useMemo(
+    () => getCommentCounterPosts(props),
+    [props.posts, props.archivePosts]
+  )
 
   useEffect(() => {
     // console.log('路由触发评论计数')
-    if (props?.posts && props?.posts?.length > 0) {
-      fetchTwikooData(props.posts)
+    if (commentPosts.length > 0) {
+      fetchTwikooData(commentPosts)
     }
   }, [router.events])
 
@@ -36,9 +40,9 @@ const TwikooCommentCounter = props => {
    * @param {*} posts
    */
   const fetchTwikooData = async posts => {
-    posts.forEach(post => {
-      post.slug = post.slug.startsWith('/') ? post.slug : `/${post.slug}`
-    })
+    const urls = posts.map(post =>
+      post.slug.startsWith('/') ? post.slug : `/${post.slug}`
+    )
     try {
       await loadExternalResource(twikooCDNURL, 'js')
       const twikoo = window.twikoo
@@ -46,7 +50,7 @@ const TwikooCommentCounter = props => {
         .getCommentsCount({
           envId: twikooENVID, // 环境 ID
           // region: 'ap-guangzhou', // 环境地域，默认为 ap-shanghai，如果您的环境地域不是上海，需传此参数
-          urls: posts?.map(post => post.slug), // 不包含协议、域名、参数的文章路径列表，必传参数
+          urls, // 不包含协议、域名、参数的文章路径列表，必传参数
           includeReply: true // 评论数是否包括回复，默认：false
         })
         .then(function (res) {
@@ -66,8 +70,9 @@ const TwikooCommentCounter = props => {
     if (commentsData.length === 0) {
       return
     }
-    props.posts.forEach(post => {
-      const matchingRes = commentsData.find(r => r.url === post.slug)
+    commentPosts.forEach(post => {
+      const slug = post.slug.startsWith('/') ? post.slug : `/${post.slug}`
+      const matchingRes = commentsData.find(r => r.url === slug)
       if (matchingRes) {
         // 修改评论数量div
         const textElements = document.querySelectorAll(
@@ -88,6 +93,13 @@ const TwikooCommentCounter = props => {
   }
 
   return null
+}
+
+export function getCommentCounterPosts(props = {}) {
+  if (Array.isArray(props.posts)) return props.posts
+  if (!props.archivePosts || typeof props.archivePosts !== 'object') return []
+
+  return Object.values(props.archivePosts).flat().filter(Boolean)
 }
 
 export default TwikooCommentCounter

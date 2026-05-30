@@ -185,7 +185,7 @@ const NotionPage = ({ post, className }) => {
   }, [post])
 
   const cleanBlockMap = post?.blockMap
-    ? cleanBlocksWithWarn(post.blockMap)
+    ? cleanBlocksForRender(post.blockMap)
     : post?.blockMap
 
   return (
@@ -217,23 +217,30 @@ const NotionPage = ({ post, className }) => {
   )
 }
 
-function cleanBlocksWithWarn(blockMap) {
+export function cleanBlocksForRender(blockMap) {
   const cleanedBlocks = {}
-  const removedBlockIds = []
+  const removedBlockIds = new Set()
+  const sourceBlocks = blockMap.block || {}
 
-  for (const [id, block] of Object.entries(blockMap.block || {})) {
-    if (!block?.value?.id) {
-      removedBlockIds.push(id)
+  for (const [id, block] of Object.entries(sourceBlocks)) {
+    if (
+      !block?.value?.id ||
+      isUnrenderableCollectionView(block.value, blockMap)
+    ) {
+      removedBlockIds.add(id)
       continue
     }
 
-    const newBlock = { ...block }
+    cleanedBlocks[id] = { ...block }
+  }
 
+  for (const [id, block] of Object.entries(cleanedBlocks)) {
+    const newBlock = { ...block, value: { ...block.value } }
     if (Array.isArray(newBlock.value.content)) {
       // 递归清理 content 中无效的 blockId
       newBlock.value.content = newBlock.value.content.filter(cid => {
-        if (!blockMap.block[cid]?.value?.id) {
-          removedBlockIds.push(cid)
+        if (!cleanedBlocks[cid]?.value?.id) {
+          removedBlockIds.add(cid)
           return false
         }
         return true
@@ -243,14 +250,48 @@ function cleanBlocksWithWarn(blockMap) {
     cleanedBlocks[id] = newBlock
   }
 
-  if (removedBlockIds.length) {
-    console.warn('Removed invalid blocks:', removedBlockIds)
+  if (removedBlockIds.size && process.env.NODE_ENV === 'development') {
+    console.warn('Removed invalid blocks:', Array.from(removedBlockIds))
   }
 
   return {
     ...blockMap,
     block: cleanedBlocks
   }
+}
+
+function isUnrenderableCollectionView(blockValue, blockMap) {
+  if (blockValue?.type !== 'collection_view') return false
+
+  const collectionViewId = blockValue.view_ids?.[0]
+  if (!collectionViewId) return true
+
+  const collectionId = getCollectionId(blockValue, blockMap, collectionViewId)
+  if (!collectionId) return true
+
+  return !(
+    getNotionValue(blockMap.collection?.[collectionId]) &&
+    getNotionValue(blockMap.collection_view?.[collectionViewId]) &&
+    blockMap.collection_query?.[collectionId]?.[collectionViewId]
+  )
+}
+
+function getCollectionId(blockValue, blockMap, collectionViewId) {
+  const directCollectionId =
+    blockValue.collection_id || blockValue.format?.collection_pointer?.id
+
+  if (directCollectionId) return directCollectionId
+
+  const collectionView = getNotionValue(
+    blockMap.collection_view?.[collectionViewId]
+  )
+  return collectionView?.format?.collection_pointer?.id || null
+}
+
+function getNotionValue(record) {
+  if (!record) return undefined
+  if (record.value) return getNotionValue(record.value)
+  return record.id ? record : undefined
 }
 
 /**

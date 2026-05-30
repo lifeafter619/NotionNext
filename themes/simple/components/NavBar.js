@@ -1,4 +1,5 @@
 import { siteConfig } from '@/lib/config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { useSimpleGlobal } from '..'
@@ -13,11 +14,12 @@ export default function NavBar(props) {
   const [showSearchInput, changeShowSearchInput] = useState(false)
   const router = useRouter()
   const { searchModal } = useSimpleGlobal()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   // 展示搜索框
   const toggleShowSearchInput = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     } else {
       changeShowSearchInput(!showSearchInput)
     }

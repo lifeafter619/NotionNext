@@ -10,6 +10,7 @@ import { generateRedirectJson } from '@/lib/utils/redirect'
 import { checkDataFromAlgolia } from '@/lib/plugins/algolia'
 import pLimit from 'p-limit'
 import { adapterNotionBlockMap } from '@/lib/utils/notion.util'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 
 /**
  * 首页布局
@@ -116,6 +117,9 @@ export async function getStaticProps(req) {
 
   // 生成全文索引 - 仅在 yarn build 时执行 && process.env.npm_lifecycle_event === 'build'
 
+  props.posts = cleanPostListForClient(props.posts, {
+    keepBlockMap: siteConfig('POST_LIST_PREVIEW', false, props?.NOTION_CONFIG)
+  })
   delete props.allPages
 
   return {

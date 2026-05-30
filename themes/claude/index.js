@@ -223,35 +223,19 @@ const LayoutSearch = props => {
   return <LayoutPostList {...props} />
 }
 
-function groupArticlesByYearArray(articles) {
-  const grouped = {}
-  for (const article of articles) {
-    const year = new Date(article.publishDate).getFullYear().toString()
-    if (!grouped[year]) grouped[year] = []
-    grouped[year].push(article)
-  }
-  for (const year in grouped) {
-    grouped[year].sort((a, b) => b.publishDate - a.publishDate)
-  }
-  return Object.entries(grouped)
-    .sort(([a], [b]) => b - a)
-    .map(([year, posts]) => ({ year, posts }))
-}
-
 /**
  * 归档页
  */
 const LayoutArchive = props => {
-  const { posts } = props
-  const sortPosts = groupArticlesByYearArray(posts)
+  const { archivePosts = {} } = props
   return (
     <>
       <div className='mb-10 pb-20 md:pb-12 min-h-screen w-full'>
-        {sortPosts.map(p => (
+        {Object.keys(archivePosts).map(archiveTitle => (
           <BlogArchiveItem
-            key={p.year}
-            archiveTitle={p.year}
-            archivePosts={p.posts}
+            key={archiveTitle}
+            archiveTitle={archiveTitle}
+            archivePosts={archivePosts[archiveTitle]}
           />
         ))}
       </div>

@@ -2,6 +2,7 @@ import BLOG from '@/blog.config'
 import { getDataFromCache } from '@/lib/cache/cache_manager'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
 
 const Index = props => {
@@ -35,6 +36,9 @@ export async function getStaticProps({ params: { keyword, page }, locale }) {
     POSTS_PER_PAGE * (page - 1),
     POSTS_PER_PAGE * page
   )
+  props.posts = cleanPostListForClient(props.posts, {
+    keepResults: true
+  })
   props.keyword = keyword
   props.page = page
   delete props.allPages
@@ -110,7 +114,7 @@ const isIterable = obj =>
 async function filterByMemCache(allPosts, keyword) {
   const filterPosts = []
   if (keyword) {
-    keyword = keyword.trim()
+    keyword = keyword.trim().toLowerCase()
   }
   for (const post of allPosts) {
     const cacheKey = 'page_block_' + post.id
@@ -122,7 +126,7 @@ async function filterByMemCache(allPosts, keyword) {
         ? post.category.join(' ')
         : ''
     const articleInfo = post.title + post.summary + tagContent + categoryContent
-    let hit = articleInfo.indexOf(keyword) > -1
+    let hit = articleInfo.toLowerCase().indexOf(keyword) > -1
     let indexContent = [post.summary]
     if (page && page.block) {
       const contentIds = Object.keys(page.block)
@@ -135,18 +139,21 @@ async function filterByMemCache(allPosts, keyword) {
     // console.log('全文搜索缓存', cacheKey, page != null)
     post.results = []
     let hitCount = 0
-    for (const i of indexContent) {
-      const c = indexContent[i]
+    for (const [index, c] of indexContent.entries()) {
       if (!c) {
         continue
       }
-      const index = c.toLowerCase().indexOf(keyword.toLowerCase())
-      if (index > -1) {
+      const hitIndex = c.toLowerCase().indexOf(keyword)
+      if (hitIndex > -1) {
         hit = true
         hitCount += 1
         post.results.push(c)
       } else {
-        if ((post.results.length - 1) / hitCount < 3 || i === 0) {
+        if (
+          hitCount === 0 ||
+          (post.results.length - 1) / hitCount < 3 ||
+          index === 0
+        ) {
           post.results.push(c)
         }
       }

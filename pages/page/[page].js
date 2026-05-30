@@ -3,6 +3,7 @@ import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData, getPostBlocks } from '@/lib/db/SiteDataApi'
 import { formatNotionBlock } from '@/lib/db/notion/getPostBlocks'
 import { adapterNotionBlockMap } from '@/lib/utils/notion.util'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -73,6 +74,9 @@ export async function getStaticProps({ params: { page }, locale }) {
     }
   }
 
+  props.posts = cleanPostListForClient(props.posts, {
+    keepBlockMap: siteConfig('POST_LIST_PREVIEW', false, props?.NOTION_CONFIG)
+  })
   delete props.allPages
   return {
     props,

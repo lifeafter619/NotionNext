@@ -1,6 +1,7 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -30,6 +31,7 @@ export async function getStaticProps({ params: { category, page } }) {
     POSTS_PER_PAGE * (page - 1),
     POSTS_PER_PAGE * page
   )
+  props.posts = cleanPostListForClient(props.posts)
 
   delete props.allPages
   props.page = page

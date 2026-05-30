@@ -113,6 +113,48 @@ describe('generateRss', () => {
     expect(fs.writeFileSync).toHaveBeenCalledTimes(3)
   })
 
+  it('does not mutate latestPosts while rendering RSS content', async () => {
+    const rawBlockMap = {
+      block: {
+        x1: { id: 'x1', type: 'text' }
+      }
+    }
+    const latestPost = {
+      id: 'post-1',
+      slug: 'hello',
+      title: 'Hello',
+      summary: 'Summary',
+      publishDay: '2026-02-18'
+    }
+
+    getPostBlocks.mockResolvedValue(rawBlockMap)
+    adapterNotionBlockMap.mockImplementation(blockMap => ({
+      ...blockMap,
+      block: { ...blockMap.block }
+    }))
+    formatNotionBlock.mockImplementation(block => ({
+      ...block,
+      formatted: { id: 'formatted', type: 'text' }
+    }))
+
+    await generateRss({
+      NOTION_CONFIG: {
+        AUTHOR: 'author',
+        LANG: 'zh-CN',
+        SUB_PATH: '',
+        CONTACT_EMAIL: ''
+      },
+      siteInfo: {
+        title: 'site',
+        description: 'desc',
+        link: 'https://example.com'
+      },
+      latestPosts: [latestPost]
+    })
+
+    expect(latestPost).not.toHaveProperty('blockMap')
+  })
+
   it('generates RSS only for the default locale during multi-locale builds', () => {
     expect(shouldGenerateRssForLocale({ locale: undefined })).toBe(true)
     expect(

@@ -7,6 +7,7 @@ import NotionPage from '@/components/NotionPage'
 import ShareBar from '@/components/ShareBar'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -350,10 +351,11 @@ const Layout404 = props => {
   const { locale } = useGlobal()
   const { searchModal } = useMovieGlobal()
   const router = useRouter()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
   // 展示搜索框
   const toggleShowSearchInput = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     }
   }
 

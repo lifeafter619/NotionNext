@@ -136,4 +136,21 @@ describe('formatNotionBlock', () => {
 
     expect(formatted['hosted-video'].value.type).toBe('video')
   })
+
+  it('fills external object instance domain from its original URL', () => {
+    const formatted = formatNotionBlock({
+      'github-repo': {
+        value: {
+          id: 'github-repo',
+          type: 'external_object_instance',
+          format: {
+            original_url: 'https://github.com/lifeafter619/Aboard',
+            attributes: [{ id: 'title', values: ['Aboard'] }]
+          }
+        }
+      }
+    })
+
+    expect(formatted['github-repo'].value.format.domain).toBe('github.com')
+  })
 })

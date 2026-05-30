@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { useFukasawaGlobal } from '@/themes/fukasawa'
 import { siteConfig } from '@/lib/config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 
 const SearchInput = props => {
   const { keyword, cRef } = props
@@ -11,6 +12,7 @@ const SearchInput = props => {
   const { locale } = useGlobal()
   const router = useRouter()
   const searchInputRef = useRef()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
   useImperativeHandle(cRef, () => {
     return {
       focus: () => {
@@ -23,8 +25,9 @@ const SearchInput = props => {
    * 搜索
    */
   const handleSearch = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
+      return
     }
     const key = searchInputRef.current.value
     if (key && key !== '') {
@@ -43,7 +46,7 @@ const SearchInput = props => {
    * @param {*} e
    */
   const handleKeyUp = e => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
       return
     }
@@ -57,7 +60,7 @@ const SearchInput = props => {
   }
   const handleFocus = () => {
     // 使用Algolia
-    if (siteConfig('ALGOLIA_APP_ID')) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
     }
   }

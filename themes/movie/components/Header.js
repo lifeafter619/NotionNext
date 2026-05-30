@@ -6,6 +6,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useMovieGlobal } from '..'
 import CONFIG from '../config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { MenuItemCollapse } from './MenuItemCollapse'
 import { MenuItemDrop } from './MenuItemDrop'
 
@@ -20,6 +21,7 @@ export const Header = props => {
   const { locale } = useGlobal()
   const [isOpen, setIsOpen] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
   const toggleMenuOpen = () => {
     setIsOpen(!isOpen)
   }
@@ -66,8 +68,8 @@ export const Header = props => {
 
   // 展示搜索框
   const toggleShowSearchInput = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     } else {
       setShowSearch(!showSearch)
     }

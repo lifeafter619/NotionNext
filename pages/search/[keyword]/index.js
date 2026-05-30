@@ -5,6 +5,7 @@ import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 import { getPageContentText } from '@/lib/db/notion/getPageContentText'
 import { fetchNotionPageBlocks as getPage } from '@/lib/db/notion/getPostBlocks'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { idToUuid } from 'notion-utils'
 
 const Index = props => {
@@ -43,7 +44,12 @@ export async function getStaticProps({ params: { keyword }, locale }) {
   } else if (POST_LIST_STYLE) {
     props.posts = props.posts?.slice(0, POSTS_PER_PAGE)
   }
+  props.posts = cleanPostListForClient(props.posts, {
+    keepContent: true,
+    keepResults: true
+  })
   props.keyword = keyword
+  delete props.allPages
   return {
     props,
     revalidate: process.env.EXPORT

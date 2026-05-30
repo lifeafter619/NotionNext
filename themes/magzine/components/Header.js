@@ -10,6 +10,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import { useMagzineGlobal } from '..'
 import CONFIG from '../config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import LogoBar from './LogoBar'
 import { MenuBarMobile } from './MenuBarMobile'
 import { MenuItemDrop } from './MenuItemDrop'
@@ -27,6 +28,7 @@ export default function Header(props) {
   const { locale } = useGlobal()
   const router = useRouter()
   const { searchModal } = useMagzineGlobal()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   const defaultLinks = [
     {
@@ -92,8 +94,8 @@ export default function Header(props) {
 
   // 展示搜索框
   const toggleShowSearchInput = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     } else {
       changeShowSearchInput(!showSearchInput)
     }

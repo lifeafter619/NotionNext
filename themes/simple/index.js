@@ -2,6 +2,7 @@ import { AdSlot } from '@/components/GoogleAdsense'
 import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
 import { siteConfig } from '@/lib/config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -182,7 +183,7 @@ const LayoutSearch = props => {
     }
   }, [])
 
-  const slotTop = siteConfig('ALGOLIA_APP_ID') ? null : (
+  const slotTop = isAlgoliaSearchEnabled(siteConfig) ? null : (
     <SearchInput {...props} />
   )
 

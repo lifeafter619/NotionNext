@@ -3,6 +3,7 @@ import { useGlobal } from '@/lib/global'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { useNextGlobal } from '..'
 import { siteConfig } from '@/lib/config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 
 let lock = false
 
@@ -12,6 +13,7 @@ const SearchInput = ({ currentTag, keyword, cRef }) => {
   const router = useRouter()
   const searchInputRef = useRef()
   const { searchModal } = useNextGlobal()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   useImperativeHandle(cRef, () => {
     return {
@@ -23,15 +25,15 @@ const SearchInput = ({ currentTag, keyword, cRef }) => {
 
   const handleFocus = () => {
     // 使用Algolia
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     }
   }
 
   const handleSearch = () => {
     // 使用Algolia
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
       return
     }
 

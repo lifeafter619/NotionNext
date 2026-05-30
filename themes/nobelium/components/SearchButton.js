@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { useRouter } from 'next/router'
 import { useNobeliumGlobal } from '..'
 
@@ -11,10 +12,11 @@ export default function SearchButton(props) {
   const { locale } = useGlobal()
   const { searchModal } = useNobeliumGlobal()
   const router = useRouter()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   function handleSearch() {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     } else {
       router.push('/search')
     }

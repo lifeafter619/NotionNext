@@ -1,6 +1,7 @@
 import SmartLink from '@/components/SmartLink'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { useEffect, useRef, useState } from 'react'
 import MenuList from './MenuList'
 import MobileNav from './MobileNav'
@@ -10,7 +11,7 @@ const Header = ({ locale, customNav, customMenu, searchModal }) => {
   const { isDarkMode, toggleDarkMode } = useGlobal()
   const [showPalette, setShowPalette] = useState(false)
   const panelRef = useRef(null)
-  const algoliaEnabled = Boolean(siteConfig('ALGOLIA_APP_ID'))
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
   const paletteFixed = siteConfig('FUWARI_THEME_COLOR_FIXED', false)
 
   const handleSearch = () => {

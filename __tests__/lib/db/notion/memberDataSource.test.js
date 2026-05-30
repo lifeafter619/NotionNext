@@ -82,6 +82,9 @@ describe('memberDataSource', () => {
     expect(JSON.parse(global.fetch.mock.calls[1][1].body)).toMatchObject({
       start_cursor: 'cursor-2'
     })
+    expect(global.fetch.mock.calls[0][1].headers).toMatchObject({
+      'Notion-Version': '2026-03-11'
+    })
     expect(members.map(member => member.id)).toEqual(['member-1'])
   })
 })

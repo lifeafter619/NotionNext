@@ -1,5 +1,9 @@
 // pages/api/auth.js
 import axios from 'axios'
+import {
+  buildSafeOAuthRedirectQuery,
+  NOTION_API_VERSION
+} from '@/lib/db/notion/oauth'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 /**
@@ -7,6 +11,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
  */
 export interface NotionTokenResponseData {
   access_token: string
+  refresh_token?: string
   token_type: string
   bot_id: string
   workspace_name: string
@@ -32,7 +37,7 @@ export interface NotionTokenResponseData {
 export interface NotionTokenResponse {
   status: number
   statusText: string
-  data: NotionTokenResponseData
+  data: NotionTokenResponseData | null
 }
 
 /**
@@ -57,9 +62,7 @@ export default async function handler(
     const params = await fetchToken(code)
 
     if (params?.status === 200) {
-      const redirectQuery = {
-        msg: '成功了' + JSON.stringify(params.data)
-      }
+      const redirectQuery = buildSafeOAuthRedirectQuery(params.data)
 
       // 这里将用户数据写入到Notion数据库
       res.redirect(
@@ -87,6 +90,15 @@ const fetchToken = async (code: string): Promise<NotionTokenResponse> => {
   const clientId = process.env.OAUTH_CLIENT_ID
   const clientSecret = process.env.OAUTH_CLIENT_SECRET
   const redirectUri = process.env.OAUTH_REDIRECT_URI
+
+  if (!clientId || !clientSecret || !redirectUri) {
+    return {
+      status: 500,
+      statusText: 'OAuth configuration is missing',
+      data: null
+    }
+  }
+
   const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
   try {
@@ -101,22 +113,37 @@ const fetchToken = async (code: string): Promise<NotionTokenResponse> => {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'Notion-Version': NOTION_API_VERSION,
           Authorization: `Basic ${encoded}`
         }
       }
     )
-    console.log('OAuth身份信息', response.data)
+    console.log('Notion OAuth token exchange succeeded', {
+      workspaceId: response.data.workspace_id,
+      workspaceName: response.data.workspace_name
+    })
     return {
       status: response.status,
       statusText: response.statusText,
       data: response.data
     }
   } catch (error) {
-    console.error('Error fetching token', error)
+    if (axios.isAxiosError(error)) {
+      console.error('Error fetching token', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        message: error.message
+      })
+    } else {
+      console.error(
+        'Error fetching token',
+        error instanceof Error ? error.message : String(error)
+      )
+    }
     return {
       status: 400,
       statusText: 'failed',
-      data: null as unknown as NotionTokenResponseData
+      data: null
     }
   }
 }
