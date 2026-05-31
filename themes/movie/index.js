@@ -361,9 +361,9 @@ const Layout404 = props => {
 
   const onKeyUp = e => {
     if (e.keyCode === 13) {
-      const search = document.getElementById('search').value
+      const search = document.getElementById('search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + search })
+        router.push({ pathname: '/search/' + encodeURIComponent(search) })
       }
     }
   }

@@ -1,5 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
-import { isBrowser } from '@/lib/utils'
+import {
+  isBrowser,
+  safeLocalStorageGet,
+  safeLocalStorageRemove,
+  safeLocalStorageSet
+} from '@/lib/utils'
 
 /**
  * 阅读进度保存和恢复组件
@@ -31,7 +36,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
         ),
         timestamp: Date.now()
       }
-      localStorage.setItem(getStorageKey(), JSON.stringify(data))
+      safeLocalStorageSet(getStorageKey(), JSON.stringify(data))
     }
   }, [postId, enabled, getStorageKey])
 
@@ -40,7 +45,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
     if (!isBrowser || !postId) return null
 
     try {
-      const data = localStorage.getItem(getStorageKey())
+      const data = safeLocalStorageGet(getStorageKey())
       if (data) {
         const parsed = JSON.parse(data)
         // 检查是否在24小时内
@@ -50,7 +55,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
           return parsed
         } else {
           // 超过24小时，清除记录
-          localStorage.removeItem(getStorageKey())
+          safeLocalStorageRemove(getStorageKey())
         }
       }
     } catch {
@@ -68,7 +73,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
       })
       setShowNotification(false)
       // 清除保存的位置
-      localStorage.removeItem(getStorageKey())
+      safeLocalStorageRemove(getStorageKey())
     }
   }, [savedPosition, getStorageKey])
 
@@ -77,7 +82,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
     setShowNotification(false)
     // 清除保存的位置
     if (postId) {
-      localStorage.removeItem(getStorageKey())
+      safeLocalStorageRemove(getStorageKey())
     }
   }, [postId, getStorageKey])
 
@@ -97,7 +102,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
         })
         setShowNotification(true)
         // 清除保存的位置
-        localStorage.removeItem(getStorageKey())
+        safeLocalStorageRemove(getStorageKey())
       }
     }, 500)
 

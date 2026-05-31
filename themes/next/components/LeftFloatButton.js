@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import DarkModeButton from './DarkModeButton'
 
 /**

@@ -2,6 +2,7 @@ import SmartLink from '@/components/SmartLink'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
+import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import MenuList from './MenuList'
 import MobileNav from './MobileNav'
@@ -9,6 +10,7 @@ import ThemeColorSwitch from './ThemeColorSwitch'
 
 const Header = ({ locale, customNav, customMenu, searchModal }) => {
   const { isDarkMode, toggleDarkMode } = useGlobal()
+  const router = useRouter()
   const [showPalette, setShowPalette] = useState(false)
   const panelRef = useRef(null)
   const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
@@ -19,7 +21,7 @@ const Header = ({ locale, customNav, customMenu, searchModal }) => {
       searchModal?.current?.openSearch()
       return
     }
-    window.location.href = '/search'
+    router.push('/search')
   }
 
   useEffect(() => {

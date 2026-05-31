@@ -335,7 +335,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
     } catch (error) {
       console.error('Download failed:', error)
       // 降级：直接打开链接
-      window.open(currentSrc, '_blank')
+      window.open(currentSrc, '_blank', 'noopener,noreferrer')
     }
   }
 

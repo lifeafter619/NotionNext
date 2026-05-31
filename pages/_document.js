@@ -3,9 +3,12 @@ import BLOG from '@/blog.config'
 import Document, { Head, Html, Main, NextScript } from 'next/document'
 
 // 预先设置深色模式的脚本内容
-const darkModeScript = `
+export const darkModeScript = `
 (function() {
-  const darkMode = localStorage.getItem('darkMode')
+  let darkMode = null
+  try {
+    darkMode = localStorage.getItem('darkMode')
+  } catch (err) {}
 
   const prefersDark =
     window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches

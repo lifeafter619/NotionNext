@@ -119,7 +119,7 @@ function Banner(props) {
  * 图标滚动标签组
  * 英雄区左上角banner条中斜向滚动的图标
  */
-const TagsGroupBar = memo(() => {
+const TagsGroupBar = memo(function TagsGroupBar() {
   let groupIcons = siteConfig('HEO_GROUP_ICONS', null, CONFIG)
   if (groupIcons) {
     groupIcons = groupIcons.concat(groupIcons)

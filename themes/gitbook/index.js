@@ -11,7 +11,12 @@ import DashboardBody from '@/components/ui/dashboard/DashboardBody'
 import DashboardHeader from '@/components/ui/dashboard/DashboardHeader'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import { isBrowser } from '@/lib/utils'
+import {
+  isBrowser,
+  parseJsonWithFallback,
+  safeLocalStorageGet,
+  safeLocalStorageSet
+} from '@/lib/utils'
 import { getShortId } from '@/lib/utils/pageId'
 import { SignIn, SignUp } from '@clerk/nextjs'
 import dynamic from 'next/dynamic'
@@ -54,14 +59,16 @@ export const useGitBookGlobal = () => useContext(ThemeGlobalGitbook)
  */
 function getNavPagesWithLatest(allNavPages, latestPosts, post) {
   // localStorage 保存id和上次阅读时间戳： posts_read_time = {"${post.id}":"Date()"}
-  const postReadTime = JSON.parse(
-    localStorage.getItem('post_read_time') || '{}'
+  const postReadTime = parseJsonWithFallback(
+    safeLocalStorageGet('post_read_time'),
+    {},
+    parsed => parsed && typeof parsed === 'object' && !Array.isArray(parsed)
   )
   if (post) {
     postReadTime[getShortId(post.id)] = new Date().getTime()
   }
   // 更新
-  localStorage.setItem('post_read_time', JSON.stringify(postReadTime))
+  safeLocalStorageSet('post_read_time', JSON.stringify(postReadTime))
 
   return allNavPages?.map(item => {
     const res = {

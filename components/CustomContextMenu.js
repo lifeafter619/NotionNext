@@ -1,6 +1,7 @@
 import useWindowSize from '@/hooks/useWindowSize'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { stripTransientQueryParamsFromUrl } from '@/lib/utils/stripTransientUrlParams'
 import { THEMES, saveDarkModeToLocalStorage } from '@/themes/theme'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
@@ -89,7 +90,7 @@ export default function CustomContextMenu(props) {
   }
 
   function handleCopyLink() {
-    const url = window.location.href
+    const url = stripTransientQueryParamsFromUrl(window.location.href)
     navigator.clipboard
       .writeText(url)
       .then(() => {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Catalog from './Catalog'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 
 /**
@@ -16,7 +16,12 @@ export default function FloatTocButton(props) {
   // 移动端按钮展开状态
   const [isExpandedButton, setIsExpandedButton] = useState(true)
   // 移动端按钮位置偏移 {x: right, y: bottom}
-  const [buttonPos, setButtonPos] = useState({ x: null, y: null })
+  const [buttonPos, setButtonPos] = useState(
+    /** @type {{x: number | null, y: number | null}} */ ({
+      x: null,
+      y: null
+    })
+  )
   // 移动端抽屉高度
   const [drawerHeight, setDrawerHeight] = useState('30vh')
   const [touchStartY, setTouchStartY] = useState(null)
@@ -276,8 +281,8 @@ export default function FloatTocButton(props) {
       {/* 移动端始终显示 */}
       <div
         style={{
-          right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
-          bottom: buttonPos.y !== null ? `${buttonPos.y}px` : undefined
+          right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
+          bottom: buttonPos.y !== null ? buttonPos.y + 'px' : undefined
         }}
         className={`fixed xl:hidden bottom-80 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
         onTouchStart={handleButtonTouchStart}
@@ -302,8 +307,8 @@ export default function FloatTocButton(props) {
       <div
         className={`fixed xl:hidden z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
         style={{
-          right: buttonPos.x !== null ? `${buttonPos.x}px` : undefined,
-          bottom: buttonPos.y !== null ? `${buttonPos.y - 60}px` : '260px'
+          right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
+          bottom: buttonPos.y !== null ? buttonPos.y - 60 + 'px' : '260px'
         }}>
         <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
       </div>

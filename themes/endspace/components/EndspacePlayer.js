@@ -30,16 +30,14 @@ export const EndspacePlayer = ({ isExpanded }) => {
   const musicPlayerEnabled = siteConfig('MUSIC_PLAYER')
   const playOrder = siteConfig('MUSIC_PLAYER_ORDER')
   const audioList = siteConfig('MUSIC_PLAYER_AUDIO_LIST') || []
-
-  // Don't render if disabled or no audio
-  if (!musicPlayerEnabled || audioList.length === 0) {
-    return null
-  }
+  const hasAudio = musicPlayerEnabled && audioList.length > 0
 
   const currentAudio = audioList[currentTrack] || {}
 
   // Initialize audio element
   useEffect(() => {
+    if (!hasAudio) return
+
     if (!audioRef.current) {
       audioRef.current = new Audio()
       audioRef.current.volume = 0.7
@@ -62,10 +60,12 @@ export const EndspacePlayer = ({ isExpanded }) => {
         clearInterval(progressIntervalRef.current)
       }
     }
-  }, [])
+  }, [hasAudio])
 
   // Load track when currentTrack changes
   useEffect(() => {
+    if (!hasAudio) return
+
     if (audioRef.current && currentAudio.url) {
       audioRef.current.src = currentAudio.url
       audioRef.current.load()
@@ -79,10 +79,12 @@ export const EndspacePlayer = ({ isExpanded }) => {
           .catch(e => console.log('Autoplay prevented:', e))
       }
     }
-  }, [currentTrack, currentAudio.url, isPlaying])
+  }, [currentTrack, currentAudio.url, isPlaying, hasAudio])
 
   // Progress update
   useEffect(() => {
+    if (!hasAudio) return
+
     if (isPlaying) {
       progressIntervalRef.current = setInterval(() => {
         if (audioRef.current) {
@@ -102,7 +104,7 @@ export const EndspacePlayer = ({ isExpanded }) => {
         clearInterval(progressIntervalRef.current)
       }
     }
-  }, [isPlaying])
+  }, [isPlaying, hasAudio])
 
   // Close playlist when sidebar collapses
   useEffect(() => {
@@ -174,6 +176,11 @@ export const EndspacePlayer = ({ isExpanded }) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Don't render if disabled or no audio
+  if (!hasAudio) {
+    return null
   }
 
   // Collapsed State: Rotating cover when playing, music icon when not

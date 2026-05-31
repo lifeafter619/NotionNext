@@ -5,7 +5,7 @@ import DashboardButton from '@/components/ui/dashboard/DashboardButton'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { SignInButton, UserButton } from '@clerk/nextjs'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import { useMagzineGlobal } from '..'
@@ -103,9 +103,9 @@ export default function Header(props) {
 
   const onKeyUp = e => {
     if (e.keyCode === 13) {
-      const search = document.getElementById('simple-search').value
+      const search = document.getElementById('simple-search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + search })
+        router.push({ pathname: '/search/' + encodeURIComponent(search) })
       }
     }
   }

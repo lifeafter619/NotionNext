@@ -469,6 +469,7 @@ const SearchResultCard = ({
   siteInfo,
   isAlgolia = false
 }) => {
+  const router = useRouter()
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
 
   let displayContent = post.summary
@@ -520,6 +521,8 @@ const SearchResultCard = ({
     }
   }
 
+  const hrefWithKeyword = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+
   return (
     <SmartLink href={post?.href}>
       <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 p-4 flex gap-4 hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer'>
@@ -553,7 +556,7 @@ const SearchResultCard = ({
                   e.stopPropagation()
                   // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
                   // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
-                  window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+                  router.push(hrefWithKeyword)
                 }}>
                 <i className='fas fa-search-location'></i>
                 <span>跳转到搜索位置</span>
@@ -603,6 +606,7 @@ const SearchResultGridCard = ({
   siteInfo,
   isAlgolia = false
 }) => {
+  const router = useRouter()
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
 
   let displayContent = post.summary
@@ -685,7 +689,7 @@ const SearchResultGridCard = ({
                 onClick={e => {
                   e.preventDefault()
                   e.stopPropagation()
-                  window.location.href = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+                  router.push(hrefWithFragment)
                 }}>
                 <i className='fas fa-search-location'></i>
                 <span>跳转到搜索位置</span>
@@ -1145,7 +1149,9 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
 const LayoutTagIndex = props => {
   const { tagOptions, allPages } = props
   const { locale } = useGlobal()
-  const [selectedTag, setSelectedTag] = useState(null)
+  const [selectedTag, setSelectedTag] = useState(
+    /** @type {string | null} */ (null)
+  )
 
   // 获取选中标签的文章
   const selectedPosts = selectedTag
@@ -1216,7 +1222,7 @@ const LayoutTagIndex = props => {
               的相关文章
             </h2>
             <SmartLink
-              href={`/tag/${selectedTag}`}
+              href={'/tag/' + selectedTag}
               className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
               查看全部 <i className='fas fa-arrow-right text-xs' />
             </SmartLink>

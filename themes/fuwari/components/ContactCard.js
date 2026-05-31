@@ -1,8 +1,11 @@
 import FlipCard from '@/components/FlipCard'
 import { siteConfig } from '@/lib/config'
+import { useRouter } from 'next/router'
 import CONFIG from '../config'
 
 const ContactCard = () => {
+  const router = useRouter()
+
   if (!siteConfig('FUWARI_WIDGET_CONTACT', true, CONFIG)) return null
 
   const title =
@@ -37,11 +40,16 @@ const ContactCard = () => {
     CONFIG
   )
   const openInNewTab = /^https?:\/\//i.test(url)
+  const isInternalPath = typeof url === 'string' && url.startsWith('/')
 
   const jumpToContact = () => {
     if (!url) return
     if (openInNewTab) {
       window.open(url, '_blank', 'noopener,noreferrer')
+      return
+    }
+    if (isInternalPath) {
+      void router.push(url)
       return
     }
     window.location.href = url

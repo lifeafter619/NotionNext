@@ -1,6 +1,6 @@
 'use client'
 
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ListCheck2Icon from 'remixicon-react/ListCheck2Icon'

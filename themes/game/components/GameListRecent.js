@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { deepClone } from '@/lib/utils'
+import { deepClone, safeLocalStorageSet } from '@/lib/utils'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import { useGameGlobal } from '..'
@@ -67,7 +67,7 @@ const GameItem = ({ item }) => {
     if (indexToRemove !== -1) {
       updatedRecentGames.splice(indexToRemove, 1) // 使用 splice 方法删除项
       setRecentGames(updatedRecentGames) // 更新 recentGames 状态
-      localStorage.setItem('recent_games', JSON.stringify(updatedRecentGames))
+      safeLocalStorageSet('recent_games', JSON.stringify(updatedRecentGames))
     }
   }
 

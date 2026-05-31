@@ -13,6 +13,10 @@ export default function VisitorInfoCard() {
   const [readingTime, setReadingTime] = useState(0)
   const [todayVisitors, setTodayVisitors] = useState('-')
   const [startTime] = useState(Date.now())
+  const parseStoredMinutes = value => {
+    const minutes = parseInt(value || '0', 10)
+    return Number.isFinite(minutes) && minutes >= 0 ? minutes : 0
+  }
 
   // 更新当前时间和问候语
   useEffect(() => {
@@ -56,9 +60,7 @@ export default function VisitorInfoCard() {
       let storedTime = 0
       try {
         const stored = localStorage.getItem(key)
-        if (stored) {
-          storedTime = parseInt(stored, 10)
-        }
+        storedTime = parseStoredMinutes(stored)
       } catch (e) {
         console.error('Failed to read reading time:', e)
       }
@@ -81,7 +83,7 @@ export default function VisitorInfoCard() {
         const stored = localStorage.getItem(key)
         let newTime = 1
         if (stored) {
-          newTime = parseInt(stored, 10) + 1
+          newTime = parseStoredMinutes(stored) + 1
         }
         localStorage.setItem(key, newTime.toString())
         setReadingTime(newTime)

@@ -1,4 +1,4 @@
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { isBrowser } from '@/lib/utils'
 import { uuidToId } from 'notion-utils'
 import { useEffect, useMemo, useState } from 'react'

@@ -1,5 +1,5 @@
 import { isBrowser } from '@/lib/utils'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useState } from 'react'
 

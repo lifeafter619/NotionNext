@@ -17,11 +17,13 @@ const SearchInput = props => {
     }
   })
   const handleSearch = () => {
-    const key = searchInputRef.current.value
+    const key = searchInputRef.current.value?.trim()
     if (key && key !== '') {
-      router.push({ pathname: '/search/' + key }).then(r => {
-        // console.log('搜索', key)
-      })
+      router
+        .push({ pathname: '/search/' + encodeURIComponent(key) })
+        .then(r => {
+          // console.log('搜索', key)
+        })
     } else {
       router.push({ pathname: '/' }).then(r => {})
     }

@@ -150,7 +150,7 @@ async function main() {
     path.relative(rootDir, reportPath)
   )
   if (result.build.durationMs != null) {
-    console.log(`- Build duration: ${result.build.durationMs} ms`)
+    console.log('- Build duration:', result.build.durationMs, 'ms')
     console.log(
       `- Static assets: ${formatBytes(result.build.staticAssetBytes)}`
     )

@@ -8,14 +8,15 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
   const [open, setOpen] = useState(false)
   const [openSub, setOpenSub] = useState('')
   const panelRef = useRef(null)
-  if (!siteConfig('FUWARI_MOBILE_MENU', true, CONFIG)) return null
+  const enabled = siteConfig('FUWARI_MOBILE_MENU', true, CONFIG)
 
-  const links = getFuwariMenuLinks({ locale, customNav, customMenu }).slice(
-    0,
-    5
-  )
+  const links = enabled
+    ? getFuwariMenuLinks({ locale, customNav, customMenu }).slice(0, 5)
+    : []
 
   useEffect(() => {
+    if (!enabled) return
+
     const onClickOutside = e => {
       if (!open) return
       if (panelRef.current && !panelRef.current.contains(e.target)) {
@@ -24,7 +25,9 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
     }
     document.addEventListener('mousedown', onClickOutside)
     return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [open])
+  }, [enabled, open])
+
+  if (!enabled) return null
 
   return (
     <div className='relative md:hidden' ref={panelRef}>

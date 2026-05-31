@@ -7,6 +7,7 @@ import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import SmartLink from '@/components/SmartLink'
 import WavesArea from './WavesArea'
+import { useRouter } from 'next/router'
 
 /**
  * 文章页头
@@ -15,6 +16,7 @@ import WavesArea from './WavesArea'
  */
 export default function PostHeader({ post, siteInfo, isDarkMode }) {
   const { setOnLoading } = useGlobal()
+  const router = useRouter()
 
   if (!post) {
     return <></>
@@ -30,6 +32,25 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
 
   const handleCoverError = () => {
     setOnLoading(false)
+  }
+
+  const searchInArticle = value => {
+    const keyword = value?.trim()
+    if (!keyword) {
+      return
+    }
+
+    router.push(
+      {
+        pathname: router.pathname,
+        query: {
+          ...router.query,
+          keyword
+        }
+      },
+      undefined,
+      { shallow: true }
+    )
   }
 
   return (
@@ -191,11 +212,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   className='w-24 focus:w-40 transition-all duration-300 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none'
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
-                      const val = e.target.value
-                      if (val) {
-                        // 跳转到当前页面的 keyword 参数，触发 SearchHighlightNav
-                        window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
-                      }
+                      searchInArticle(e.target.value)
                     }
                   }}
                 />
@@ -203,10 +220,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   className='fa-solid fa-magnifying-glass absolute right-2 top-1.5 text-gray-400 text-xs cursor-pointer'
                   onClick={e => {
                     const input = e.target.previousElementSibling
-                    const val = input.value
-                    if (val) {
-                      window.location.href = `${window.location.pathname}?keyword=${encodeURIComponent(val)}`
-                    }
+                    searchInArticle(input.value)
                   }}></i>
               </div>
             </div>

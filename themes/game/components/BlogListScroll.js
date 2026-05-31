@@ -1,7 +1,7 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { deepClone } from '@/lib/utils'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { GameListIndexCombine } from './GameListIndexCombine'
 

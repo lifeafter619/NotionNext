@@ -9,7 +9,7 @@ export default function Live2DWife() {
   return (
     <>
       <Head>
-        <SmartLink
+        <link
           rel='stylesheet'
           href='https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css'
         />

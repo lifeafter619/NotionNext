@@ -1,4 +1,4 @@
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useCallback, useEffect } from 'react'
 import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'

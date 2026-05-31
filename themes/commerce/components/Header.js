@@ -1,7 +1,7 @@
 import Collapse from '@/components/Collapse'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useEffect, useRef, useState } from 'react'
 import CONFIG from '../config'
 import LogoBar from './LogoBar'

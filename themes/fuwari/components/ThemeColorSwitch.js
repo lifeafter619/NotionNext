@@ -4,6 +4,11 @@ import CONFIG from '../config'
 
 const STORAGE_HUE_KEY = 'fuwari-theme-hue'
 
+const normalizeHue = (value, fallback) => {
+  const hue = parseInt(value, 10)
+  return Number.isFinite(hue) && hue >= 0 && hue <= 360 ? hue : fallback
+}
+
 function hslToHex(h, s, l) {
   s /= 100
   l /= 100
@@ -39,23 +44,30 @@ const ThemeColorSwitch = ({ onColorChange }) => {
   }
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_HUE_KEY)
-    const initialHue = stored ? parseInt(stored, 10) : defaultHue
+    let stored = null
+    try {
+      stored = localStorage.getItem(STORAGE_HUE_KEY)
+    } catch {}
+    const initialHue = normalizeHue(stored, defaultHue)
     setHue(initialHue)
     applyColor(hslToHex(initialHue, 85, 62), initialHue)
   }, [])
 
   const handleSelect = nextHue => {
-    setHue(nextHue)
-    localStorage.setItem(STORAGE_HUE_KEY, String(nextHue))
-    const nextColor = hslToHex(nextHue, 85, 62)
-    applyColor(nextColor, nextHue)
+    const normalizedHue = normalizeHue(nextHue, defaultHue)
+    setHue(normalizedHue)
+    try {
+      localStorage.setItem(STORAGE_HUE_KEY, String(normalizedHue))
+    } catch {}
+    const nextColor = hslToHex(normalizedHue, 85, 62)
+    applyColor(nextColor, normalizedHue)
     onColorChange?.(nextColor)
   }
 
   if (!enabled) return null
 
   const copyHex = async () => {
+    if (typeof navigator === 'undefined' || !navigator.clipboard) return
     await navigator.clipboard.writeText(color)
   }
 
@@ -73,7 +85,9 @@ const ThemeColorSwitch = ({ onColorChange }) => {
           </button>
           <button
             type='button'
-            onClick={copyHex}
+            onClick={() => {
+              void copyHex()
+            }}
             className='px-2 h-8 rounded-md bg-[var(--fuwari-bg-soft)] border border-[var(--fuwari-border)] text-[var(--fuwari-primary)] font-bold'>
             {hue}
           </button>

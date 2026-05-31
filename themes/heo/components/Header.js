@@ -1,6 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { isBrowser } from '@/lib/utils'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import DarkModeButton from './DarkModeButton'

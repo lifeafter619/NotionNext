@@ -1,5 +1,9 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import {
+  stripTransientQueryParamsFromAsPath,
+  stripTransientQueryParamsFromUrl
+} from '@/lib/utils/stripTransientUrlParams'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -66,7 +70,9 @@ const SHARE_BG_CLASS = {
  */
 const ShareButtons = ({ post }) => {
   const router = useRouter()
-  const [shareUrl, setShareUrl] = useState(siteConfig('LINK') + router.asPath)
+  const [shareUrl, setShareUrl] = useState(
+    siteConfig('LINK') + stripTransientQueryParamsFromAsPath(router.asPath)
+  )
   const title = post?.title || siteConfig('TITLE')
   const image = post?.pageCover
   const tags = post.tags || []
@@ -179,7 +185,7 @@ const ShareButtons = ({ post }) => {
     )
   }
   useEffect(() => {
-    setShareUrl(window.location.href)
+    setShareUrl(stripTransientQueryParamsFromUrl(window.location.href))
   }, [])
 
   return (
@@ -256,8 +262,9 @@ const ShareButtons = ({ post }) => {
               <button
                 aria-label={singleService}
                 key={singleService}
+                onClick={copyUrl}
                 className='cursor-pointer bg-yellow-500 text-white rounded-full mx-1'>
-                <div alt={locale.COMMON.URL_COPIED} onClick={copyUrl}>
+                <div alt={locale.COMMON.URL_COPIED}>
                   <i className='fas fa-link w-8' />
                 </div>
               </button>

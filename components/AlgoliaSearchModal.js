@@ -2,7 +2,7 @@ import replaceSearchResult from '@/components/Mark'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import algoliasearch from 'algoliasearch'
-import throttle from 'lodash/throttle'
+import throttle from '@/lib/utils/throttle'
 import SmartLink from '@/components/SmartLink'
 import LazyImage from '@/components/LazyImage'
 import { useRouter } from 'next/router'
@@ -12,8 +12,10 @@ import {
 } from '@/lib/plugins/algoliaConfig'
 import {
   Fragment,
+  useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -131,13 +133,15 @@ export default function AlgoliaSearchModal({ cRef }) {
     { enableOnFormTags: true }
   )
   // 跳转Search结果
-  const onJumpSearchResult = () => {
+  const onJumpSearchResult = selectedIndex => {
     if (searchResults.length > 0) {
-      const searchResult = searchResults[activeIndex]
+      const searchResult = searchResults[selectedIndex ?? activeIndex]
       if (!searchResult.slug && !searchResult.objectID) {
         return
       }
-      window.location.href = `${siteConfig('SUB_PATH', '')}/${searchResult.slug || searchResult.objectID}?keyword=${encodeURIComponent(keyword)}`
+      router.push(
+        `${siteConfig('SUB_PATH', '')}/${searchResult.slug || searchResult.objectID}?keyword=${encodeURIComponent(keyword)}`
+      )
     }
   }
 
@@ -197,127 +201,134 @@ export default function AlgoliaSearchModal({ cRef }) {
    * 获取搜索配置参数
    * 根据搜索类型和排序设置返回Algolia搜索参数
    */
-  const getSearchParams = page => {
-    const params = {
-      page,
-      hitsPerPage: 10
-    }
+  const getSearchParams = useCallback(
+    (page, currentSearchType = searchType) => {
+      const params = {
+        page,
+        hitsPerPage: 10
+      }
 
-    // 根据搜索类型限制搜索属性
-    switch (searchType) {
-      case 'title':
-        params.restrictSearchableAttributes = ['title']
-        break
-      case 'content':
-        params.restrictSearchableAttributes = ['content', 'summary']
-        break
-      case 'tags':
-        params.restrictSearchableAttributes = ['tags']
-        break
-      case 'category':
-        params.restrictSearchableAttributes = ['category']
-        break
-      default:
-        // 'all' - 搜索所有字段
-        break
-    }
+      // 根据搜索类型限制搜索属性
+      switch (currentSearchType) {
+        case 'title':
+          params.restrictSearchableAttributes = ['title']
+          break
+        case 'content':
+          params.restrictSearchableAttributes = ['content', 'summary']
+          break
+        case 'tags':
+          params.restrictSearchableAttributes = ['tags']
+          break
+        case 'category':
+          params.restrictSearchableAttributes = ['category']
+          break
+        default:
+          // 'all' - 搜索所有字段
+          break
+      }
 
-    return params
-  }
+      return params
+    },
+    [searchType]
+  )
 
   /**
    * 对搜索结果进行排序
    * @param {Array} hits 搜索结果
    * @returns {Array} 排序后的结果
    */
-  const sortResults = hits => {
-    if (sortOrder === 'relevance') {
-      return hits // Algolia默认按相关度排序
-    }
+  const sortResults = useCallback(
+    (hits, currentSortOrder = sortOrder) => {
+      if (currentSortOrder === 'relevance') {
+        return hits // Algolia默认按相关度排序
+      }
 
-    const sorted = [...hits]
-    if (sortOrder === 'newest') {
-      sorted.sort((a, b) => {
-        const timeA =
-          a.createdTimestamp || new Date(a.createdTime || 0).getTime()
-        const timeB =
-          b.createdTimestamp || new Date(b.createdTime || 0).getTime()
-        return timeB - timeA
-      })
-    } else if (sortOrder === 'oldest') {
-      sorted.sort((a, b) => {
-        const timeA =
-          a.createdTimestamp || new Date(a.createdTime || 0).getTime()
-        const timeB =
-          b.createdTimestamp || new Date(b.createdTime || 0).getTime()
-        return timeA - timeB
-      })
-    }
-    return sorted
-  }
+      const sorted = [...hits]
+      if (currentSortOrder === 'newest') {
+        sorted.sort((a, b) => {
+          const timeA =
+            a.createdTimestamp || new Date(a.createdTime || 0).getTime()
+          const timeB =
+            b.createdTimestamp || new Date(b.createdTime || 0).getTime()
+          return timeB - timeA
+        })
+      } else if (currentSortOrder === 'oldest') {
+        sorted.sort((a, b) => {
+          const timeA =
+            a.createdTimestamp || new Date(a.createdTime || 0).getTime()
+          const timeB =
+            b.createdTimestamp || new Date(b.createdTime || 0).getTime()
+          return timeA - timeB
+        })
+      }
+      return sorted
+    },
+    [sortOrder]
+  )
 
   /**
    * 搜索
    * 支持按类型过滤和按时间排序
    * @param {*} query
    */
-  const handleSearch = async (
-    query,
-    page,
-    currentSearchType = searchType,
-    currentSortOrder = sortOrder
-  ) => {
-    setKeyword(query)
-    setPage(page)
-    setSearchResults([])
-    setUseTime(0)
-    setTotalPage(0)
-    setTotalHit(0)
-    setActiveIndex(0)
-    if (!query || query === '') {
-      return
-    }
-    if (!index) {
-      return
-    }
-    setIsLoading(true)
-    try {
-      const searchParams = getSearchParams(page)
-      const res = await index.search(query, searchParams)
-      const { hits, nbHits, nbPages, processingTimeMS } = res
-      setUseTime(processingTimeMS)
-      setTotalPage(nbPages)
-      setTotalHit(nbHits)
-      // 应用排序
-      const sortedHits = sortResults(hits)
-      setSearchResults(sortedHits)
-      setIsLoading(false)
-      const doms = document
-        .getElementById('search-wrapper')
-        .getElementsByClassName('replace')
+  const handleSearch = useCallback(
+    async (
+      query,
+      page,
+      currentSearchType = searchType,
+      currentSortOrder = sortOrder
+    ) => {
+      setKeyword(query)
+      setPage(page)
+      setSearchResults([])
+      setUseTime(0)
+      setTotalPage(0)
+      setTotalHit(0)
+      setActiveIndex(0)
+      if (!query || query === '') {
+        return
+      }
+      if (!index) {
+        return
+      }
+      setIsLoading(true)
+      try {
+        const searchParams = getSearchParams(page, currentSearchType)
+        const res = await index.search(query, searchParams)
+        const { hits, nbHits, nbPages, processingTimeMS } = res
+        setUseTime(processingTimeMS)
+        setTotalPage(nbPages)
+        setTotalHit(nbHits)
+        // 应用排序
+        const sortedHits = sortResults(hits, currentSortOrder)
+        setSearchResults(sortedHits)
+        setIsLoading(false)
+        const doms = document
+          .getElementById('search-wrapper')
+          .getElementsByClassName('replace')
 
-      setTimeout(() => {
-        replaceSearchResult({
-          doms,
-          search: query,
-          target: {
-            element: 'span',
-            className: 'font-bold border-b border-dashed'
-          }
-        })
-      }, 200) // 延时高亮
-    } catch (error) {
-      console.error('Algolia search error:', error)
-      setIsLoading(false)
-    }
-  }
+        setTimeout(() => {
+          replaceSearchResult({
+            doms,
+            search: query,
+            target: {
+              element: 'span',
+              className: 'font-bold border-b border-dashed'
+            }
+          })
+        }, 200) // 延时高亮
+      } catch (error) {
+        console.error('Algolia search error:', error)
+        setIsLoading(false)
+      }
+    },
+    [getSearchParams, index, searchType, sortOrder, sortResults]
+  )
 
   // 使用 ref 追踪上一次的筛选条件，只在条件变化时触发搜索
   const prevFiltersRef = useRef({ searchType: 'all', sortOrder: 'relevance' })
 
   // 当搜索类型或排序改变时重新搜索
-  // handleSearch 被有意排除在依赖数组外，因为我们只想在筛选条件变化时触发
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // 检查筛选条件是否真正发生变化
     const filtersChanged =
@@ -330,13 +341,15 @@ export default function AlgoliaSearchModal({ cRef }) {
 
     // 更新 ref
     prevFiltersRef.current = { searchType, sortOrder }
-  }, [searchType, sortOrder, keyword, isModalOpen])
+  }, [searchType, sortOrder, keyword, isModalOpen, handleSearch])
 
   // 定义节流函数，确保在用户停止输入一段时间后才会调用处理搜索的方法
-  const throttledHandleInputChange = useRef(
-    throttle((query, page = 0) => {
-      handleSearch(query, page)
-    }, 1000)
+  const throttledHandleInputChange = useMemo(
+    () =>
+      throttle((query, page = 0, currentSearchType, currentSortOrder) => {
+        handleSearch(query, page, currentSearchType, currentSortOrder)
+      }, 1000),
+    [handleSearch]
   )
 
   // 用于存储搜索延迟的计时器
@@ -353,9 +366,15 @@ export default function AlgoliaSearchModal({ cRef }) {
 
     // 设置新的计时器，在用户停止输入一段时间后触发搜索
     searchTimer.current = setTimeout(() => {
-      throttledHandleInputChange.current(query)
+      throttledHandleInputChange(query, 0, searchType, sortOrder)
     }, 800)
   }
+
+  useEffect(() => {
+    return () => {
+      throttledHandleInputChange.cancel()
+    }
+  }, [throttledHandleInputChange])
 
   /**
    * 切换页码

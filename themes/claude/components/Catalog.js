@@ -1,6 +1,6 @@
 import { useGlobal } from '@/lib/global'
 import { siteConfig } from '@/lib/config'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import CONFIG from '../config'

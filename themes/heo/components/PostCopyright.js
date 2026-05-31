@@ -6,6 +6,10 @@ import { useEffect, useState } from 'react'
 import CONFIG from '../config'
 import NotByAI from '@/components/NotByAI'
 import QrCode from '@/components/QrCode'
+import {
+  stripTransientQueryParamsFromAsPath,
+  stripTransientQueryParamsFromUrl
+} from '@/lib/utils/stripTransientUrlParams'
 
 /**
  * 版权声明
@@ -13,10 +17,12 @@ import QrCode from '@/components/QrCode'
  */
 export default function PostCopyright({ post }) {
   const router = useRouter()
-  const [path, setPath] = useState(siteConfig('LINK') + router.asPath)
+  const [path, setPath] = useState(
+    siteConfig('LINK') + stripTransientQueryParamsFromAsPath(router.asPath)
+  )
   useEffect(() => {
-    setPath(window.location.href)
-  })
+    setPath(stripTransientQueryParamsFromUrl(window.location.href))
+  }, [router.asPath])
 
   const { locale } = useGlobal()
 

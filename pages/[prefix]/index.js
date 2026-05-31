@@ -7,7 +7,7 @@ import { useGlobal } from '@/lib/global'
 import { getPageTableOfContents } from '@/lib/db/notion/getPageTableOfContents'
 import {
   getPasswordQuery,
-  getPasswordStoragePath,
+  rememberPasswordForPath,
   sha256Digest
 } from '@/lib/utils/password'
 import { checkSlugHasNoSlash } from '@/lib/utils/post'
@@ -49,10 +49,7 @@ const Slug = props => {
     if (nextHash === post?.password || legacy === post?.password) {
       setLock(false)
       // 输入密码存入 localStorage；键仅含 pathname，避免 query/hash 导致读写不一致（PR #3389）
-      localStorage.setItem(
-        'password_' + getPasswordStoragePath(router.asPath),
-        passInput
-      )
+      rememberPasswordForPath(router.asPath, passInput)
       showNotification(locale.COMMON.ARTICLE_UNLOCK_TIPS) // 设置解锁成功提示显示
       return true
     }

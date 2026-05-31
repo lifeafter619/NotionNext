@@ -8,7 +8,14 @@ import ShareBar from '@/components/ShareBar'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { loadWowJS } from '@/lib/plugins/wow'
-import { deepClone, isBrowser, shuffleArray } from '@/lib/utils'
+import {
+  deepClone,
+  isBrowser,
+  parseJsonWithFallback,
+  safeLocalStorageGet,
+  safeLocalStorageSet,
+  shuffleArray
+} from '@/lib/utils'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
@@ -288,9 +295,11 @@ const LayoutSlug = props => {
 
   useEffect(() => {
     // 更新最新游戏
-    const recentGames = localStorage.getItem('recent_games')
-      ? JSON.parse(localStorage.getItem('recent_games'))
-      : []
+    const recentGames = parseJsonWithFallback(
+      safeLocalStorageGet('recent_games'),
+      [],
+      Array.isArray
+    )
 
     const existedIndex = recentGames.findIndex(item => item?.id === post?.id)
     if (existedIndex === -1) {
@@ -300,7 +309,7 @@ const LayoutSlug = props => {
       const existingGame = recentGames.splice(existedIndex, 1)[0]
       recentGames.unshift(existingGame)
     }
-    localStorage.setItem('recent_games', JSON.stringify(recentGames))
+    safeLocalStorageSet('recent_games', JSON.stringify(recentGames))
 
     setRecentGames(recentGames)
   }, [post])
