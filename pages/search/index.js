@@ -128,6 +128,13 @@ export async function getStaticProps({ locale }) {
       newPost.pageCoverThumbnail = newPost.pageCoverThumbnail || null
       newPost.ext = newPost.ext || {}
 
+      // Do not expose protected body text through the public search payload.
+      if (newPost.password) {
+        newPost.content = null
+        delete newPost.blockMap
+        return newPost
+      }
+
       // 尝试获取全文内容
       if (!newPost.content && !newPost.blockMap?.rawText) {
         try {
@@ -147,8 +154,8 @@ export async function getStaticProps({ locale }) {
             }
           }
           newPost.content = contentIds
-          newPost.content = getPageContentText(newPost, blockMap)
-          if (!newPost.content) {
+          newPost.content = getPageContentText(newPost, blockMap) || null
+          if (!newPost.content && contentIds.length > 0) {
             console.warn('Search index: content is empty for', post.id)
           }
         } catch (e) {

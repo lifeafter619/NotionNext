@@ -72,4 +72,38 @@ describe('handleDataBeforeReturn', () => {
       }
     ])
   })
+
+  it('strips server-only fields from global page lists', () => {
+    const page = {
+      id: 'page-1',
+      title: 'Page',
+      slug: 'page',
+      type: 'Post',
+      status: 'Published',
+      password: 'hashed-password',
+      content: ['block-1'],
+      toc: [{ id: 'block-1' }],
+      blockMap: { block: {} },
+      customField: 'keep-me'
+    }
+    const data = createSiteData({
+      allPages: [page],
+      allNavPages: [page],
+      latestPosts: [page]
+    })
+
+    const result = handleDataBeforeReturn(data)
+
+    for (const post of [
+      result.allPages[0],
+      result.allNavPages[0],
+      result.latestPosts[0]
+    ]) {
+      expect(post.password).toBeUndefined()
+      expect(post.content).toBeUndefined()
+      expect(post.toc).toBeUndefined()
+      expect(post.blockMap).toBeUndefined()
+      expect(post.customField).toBe('keep-me')
+    }
+  })
 })

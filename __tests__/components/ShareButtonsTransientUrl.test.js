@@ -61,4 +61,26 @@ describe('ShareButtons transient URL cleanup', () => {
       )
     })
   })
+
+  it('copies URLs with malformed percent encoding without throwing', async () => {
+    window.history.pushState({}, '', '/post/bad%path?x=1')
+
+    render(
+      <ShareButtons
+        post={{
+          title: 'Post',
+          summary: 'Summary',
+          tags: []
+        }}
+      />
+    )
+
+    expect(() => fireEvent.click(screen.getByLabelText('link'))).not.toThrow()
+
+    await waitFor(() => {
+      expect(writeTextMock).toHaveBeenCalledWith(
+        'http://localhost/post/bad%path?x=1'
+      )
+    })
+  })
 })

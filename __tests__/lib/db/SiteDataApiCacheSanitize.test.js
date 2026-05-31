@@ -138,4 +138,77 @@ describe('fetchGlobalAllData cache sanitization', () => {
       }
     ])
   })
+
+  it('sanitizes global post lists even when site data comes from cache', async () => {
+    const postId = '12345678-1234-1234-1234-123456789abc'
+    const cachedPost = {
+      id: postId,
+      title: 'Post',
+      type: 'Post',
+      status: 'Published',
+      slug: 'article/post',
+      href: '/article/post',
+      summary: 'Summary',
+      category: 'Category',
+      tags: ['tag'],
+      password: 'hashed-password',
+      content: ['block-1'],
+      toc: [{ id: 'block-1' }],
+      blockMap: {
+        block: {
+          'block-1': { value: { id: 'block-1' } }
+        }
+      }
+    }
+    getOrSetDataWithCache.mockResolvedValue({
+      NOTION_CONFIG: {},
+      siteInfo: {},
+      notice: null,
+      allPages: [cachedPost],
+      allMembers: [],
+      allEvents: [],
+      allNavPages: [cachedPost],
+      latestPosts: [cachedPost],
+      tagOptions: [{ name: 'tag' }],
+      categoryOptions: [],
+      customNav: [],
+      customMenu: [],
+      postCount: 1
+    })
+
+    const result = await fetchGlobalAllData({
+      pageId: 'test-page',
+      from: 'unit-test',
+      locale: 'zh-CN'
+    })
+
+    for (const post of [result.allPages[0], result.latestPosts[0]]) {
+      expect(post).toEqual(
+        expect.objectContaining({
+          id: postId,
+          title: 'Post',
+          slug: 'article/post',
+          href: '/article/post'
+        })
+      )
+      expect(post.password).toBeUndefined()
+      expect(post.content).toBeUndefined()
+      expect(post.toc).toBeUndefined()
+      expect(post.blockMap).toBeUndefined()
+    }
+
+    expect(result.allNavPages[0]).toEqual(
+      expect.objectContaining({
+        short_id: postId.substring(14),
+        title: 'Post',
+        slug: 'article/post',
+        href: '/article/post'
+      })
+    )
+    expect(result.allNavPages[0].id).toBeUndefined()
+    expect(result.allNavPages[0].password).toBeUndefined()
+    expect(result.allNavPages[0].content).toBeUndefined()
+    expect(result.allNavPages[0].toc).toBeUndefined()
+    expect(result.allNavPages[0].blockMap).toBeUndefined()
+  })
 })

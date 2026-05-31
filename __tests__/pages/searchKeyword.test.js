@@ -100,7 +100,7 @@ describe('search keyword page props', () => {
           href: '/article/needle',
           tags: [],
           category: '',
-          password: 'hashed-password'
+          password: ''
         }
       ]
     })
@@ -127,5 +127,43 @@ describe('search keyword page props', () => {
     expect(result.props.posts[0].results).toEqual(
       expect.arrayContaining([expect.stringMatching(/needle/i)])
     )
+  })
+
+  it('does not search protected post body content on paginated search', async () => {
+    fetchGlobalAllData.mockResolvedValue({
+      NOTION_CONFIG: {},
+      allPages: [
+        {
+          id: 'protected-post',
+          type: 'Post',
+          status: 'Published',
+          title: 'Protected title',
+          summary: 'Public summary',
+          slug: 'article/protected',
+          href: '/article/protected',
+          tags: [],
+          category: '',
+          password: 'hashed-password'
+        }
+      ]
+    })
+    getDataFromCache.mockResolvedValueOnce({
+      block: {
+        block1: {
+          value: {
+            properties: {
+              title: [['private needle body']]
+            }
+          }
+        }
+      }
+    })
+
+    const result = await getSearchPageStaticProps({
+      params: { keyword: 'needle', page: '1' },
+      locale: 'zh-CN'
+    })
+
+    expect(result.props.posts).toHaveLength(0)
   })
 })

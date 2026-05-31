@@ -2,12 +2,13 @@ import Badge from '@/components/Badge'
 import NotionIcon from '@/components/NotionIcon'
 import { siteConfig } from '@/lib/config'
 import SmartLink from '@/components/SmartLink'
+import { safeDecodeURIComponent } from '@/lib/utils'
 import { useRouter } from 'next/router'
 
 const BlogPostCard = ({ post, className }) => {
   const router = useRouter()
   const currentSelected =
-    decodeURIComponent(router.asPath.split('?')[0]) === post?.href
+    safeDecodeURIComponent(router.asPath.split('?')[0]) === post?.href
 
   return (
     <SmartLink href={post?.href} passHref>

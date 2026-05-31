@@ -63,6 +63,67 @@ describe('Notion data format compatibility', () => {
     })
   })
 
+  it('unwraps nested record maps used by collection views and automations', () => {
+    const blockMap = {
+      block: {},
+      collection: {},
+      collection_view: {
+        view_1: {
+          spaceId: 'space_1',
+          value: {
+            role: 'reader',
+            value: {
+              id: 'view_1',
+              type: 'table',
+              page_sort: ['page_1']
+            }
+          }
+        }
+      },
+      automation: {
+        automation_1: {
+          spaceId: 'space_1',
+          value: {
+            role: 'reader',
+            value: {
+              id: 'automation_1',
+              action_ids: ['action_1'],
+              properties: { name: 'Open page' }
+            }
+          }
+        }
+      },
+      automation_action: {
+        action_1: {
+          value: {
+            role: 'reader',
+            value: {
+              id: 'action_1',
+              type: 'open_page'
+            }
+          }
+        }
+      }
+    }
+
+    const adapted = adapterNotionBlockMap(blockMap)
+
+    expect(adapted.collection_view.view_1.value).toMatchObject({
+      id: 'view_1',
+      type: 'table',
+      page_sort: ['page_1']
+    })
+    expect(adapted.automation.automation_1.value).toMatchObject({
+      id: 'automation_1',
+      action_ids: ['action_1'],
+      properties: { name: 'Open page' }
+    })
+    expect(adapted.automation_action.action_1.value).toMatchObject({
+      id: 'action_1',
+      type: 'open_page'
+    })
+  })
+
   it('extracts page ids from collection view page_sort in newer payloads', () => {
     const pageIds = getAllPageIds(
       {},

@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { safeDecodeURIComponent } from '@/lib/utils'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import CONFIG from '../config'
@@ -34,7 +35,7 @@ const NavPostList = props => {
   useEffect(() => {
     // 展开文件夹
     setTimeout(() => {
-      const currentPath = decodeURIComponent(router.asPath.split('?')[0])
+      const currentPath = safeDecodeURIComponent(router.asPath.split('?')[0])
       const defaultOpenIndex = getDefaultOpenIndexByPath(
         categoryFolders,
         currentPath

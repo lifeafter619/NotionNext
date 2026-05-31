@@ -101,4 +101,172 @@ describe('cleanBlockMapForClient', () => {
     expect(post.content).toEqual(['block1'])
     expect(post.blockMap.block.block1.value.space_id).toBe('space1')
   })
+
+  it('drops orphan automation record maps while keeping renderer data', () => {
+    const blockMap = {
+      block: {
+        block1: {
+          value: {
+            id: 'block1',
+            type: 'text',
+            properties: { title: [['Hello']] }
+          }
+        }
+      },
+      collection: {
+        collection1: { value: { id: 'collection1' } }
+      },
+      collection_view: {
+        view1: { value: { id: 'view1' } }
+      },
+      collection_query: {},
+      signed_urls: {
+        block1: 'https://file.notion.so/signed-url'
+      },
+      notion_user: {},
+      automation: {
+        automation1: {
+          value: {
+            value: {
+              id: 'automation1',
+              status: 'active'
+            }
+          }
+        }
+      },
+      automation_action: {
+        action1: {
+          value: {
+            value: {
+              id: 'action1'
+            }
+          }
+        }
+      }
+    }
+
+    const result = cleanBlockMapForClient(blockMap)
+
+    expect(result.collection).toEqual(blockMap.collection)
+    expect(result.collection_view).toEqual(blockMap.collection_view)
+    expect(result.collection_query).toEqual(blockMap.collection_query)
+    expect(result.signed_urls).toEqual(blockMap.signed_urls)
+    expect(result.notion_user).toEqual(blockMap.notion_user)
+    expect(result.automation).toBeUndefined()
+    expect(result.automation_action).toBeUndefined()
+    expect(blockMap.signed_urls.block1).toBe(
+      'https://file.notion.so/signed-url'
+    )
+  })
+
+  it('keeps automation records referenced by button blocks', () => {
+    const blockMap = {
+      block: {
+        button1: {
+          value: {
+            id: 'button1',
+            type: 'button',
+            format: {
+              automation_id: 'automation1'
+            }
+          }
+        }
+      },
+      automation: {
+        automation1: {
+          value: {
+            id: 'automation1',
+            action_ids: ['action1'],
+            properties: {
+              name: 'Run action'
+            }
+          }
+        },
+        orphanAutomation: {
+          value: {
+            id: 'orphanAutomation'
+          }
+        }
+      },
+      automation_action: {
+        action1: {
+          value: {
+            id: 'action1',
+            type: 'open_page'
+          }
+        },
+        orphanAction: {
+          value: {
+            id: 'orphanAction'
+          }
+        }
+      }
+    }
+
+    const result = cleanBlockMapForClient(blockMap)
+
+    expect(result.automation).toEqual({
+      automation1: blockMap.automation.automation1
+    })
+    expect(result.automation_action).toEqual({
+      action1: blockMap.automation_action.action1
+    })
+  })
+
+  it('drops image and page signed URLs that the client can derive from block data', () => {
+    const blockMap = {
+      block: {
+        page1: {
+          value: {
+            id: 'page1',
+            type: 'page',
+            format: {
+              page_cover: 'attachment:cover-id:cover.png'
+            }
+          }
+        },
+        image1: {
+          value: {
+            id: 'image1',
+            type: 'image',
+            properties: {
+              source: [['attachment:image-id:image.png']]
+            }
+          }
+        },
+        gif1: {
+          value: {
+            id: 'gif1',
+            type: 'image',
+            properties: {
+              source: [['attachment:gif-id:animated.gif']]
+            }
+          }
+        },
+        file1: {
+          value: {
+            id: 'file1',
+            type: 'file',
+            properties: {
+              source: [['attachment:file-id:file.zip']]
+            }
+          }
+        }
+      },
+      signed_urls: {
+        page1: 'https://file.notion.so/cover.png',
+        image1: 'https://file.notion.so/image.png',
+        gif1: 'https://file.notion.so/animated.gif',
+        file1: 'https://file.notion.so/file.zip'
+      }
+    }
+
+    const result = cleanBlockMapForClient(blockMap)
+
+    expect(result.signed_urls).toEqual({
+      gif1: 'https://file.notion.so/animated.gif',
+      file1: 'https://file.notion.so/file.zip'
+    })
+    expect(blockMap.signed_urls.page1).toBe('https://file.notion.so/cover.png')
+  })
 })

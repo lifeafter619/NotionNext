@@ -4,6 +4,7 @@ import {
   stripTransientQueryParamsFromAsPath,
   stripTransientQueryParamsFromUrl
 } from '@/lib/utils/stripTransientUrlParams'
+import { safeDecodeURIComponent } from '@/lib/utils'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -86,8 +87,7 @@ const ShareButtons = ({ post }) => {
   const [qrCodeShow, setQrCodeShow] = useState(false)
 
   const copyUrl = () => {
-    // 确保 shareUrl 是一个正确的字符串并进行解码
-    const decodedUrl = decodeURIComponent(shareUrl)
+    const decodedUrl = safeDecodeURIComponent(shareUrl)
     navigator?.clipboard?.writeText(decodedUrl)
     alert(locale.COMMON.URL_COPIED + ' \n' + decodedUrl)
   }

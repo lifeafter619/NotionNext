@@ -56,6 +56,22 @@ export function cleanPages<T>(
   return pages
 }
 
+export function stripServerOnlyPostFields<T>(page: T): T {
+  if (!page || typeof page !== 'object') return page
+
+  const cleanedPage = { ...(page as Record<string, unknown>) }
+  delete cleanedPage.password
+  delete cleanedPage.content
+  delete cleanedPage.toc
+  delete cleanedPage.blockMap
+  return cleanedPage as T
+}
+
+export function stripServerOnlyPostFieldsFromList<T>(pages?: T[]): T[] {
+  if (!Array.isArray(pages)) return pages || []
+  return pages.map(page => stripServerOnlyPostFields(page))
+}
+
 export function shortenIds<T>(items?: T[]): T[] | undefined {
   if (!Array.isArray(items)) return items
   return items

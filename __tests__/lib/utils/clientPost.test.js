@@ -1,7 +1,8 @@
 import {
   cleanMenuItemsForClient,
   cleanPostListForClient,
-  cleanPostListItemForClient
+  cleanPostListItemForClient,
+  stripServerOnlyPostFields
 } from '@/lib/utils/clientPost'
 
 describe('client post data cleaning', () => {
@@ -166,5 +167,32 @@ describe('client post data cleaning', () => {
         ]
       }
     ])
+  })
+
+  it('strips server-only fields without dropping custom page metadata', () => {
+    const post = {
+      id: 'member-1',
+      title: 'Member',
+      slug: 'member',
+      type: 'Member',
+      avatar: '/avatar.png',
+      role: 'Maintainer',
+      password: 'hashed-password',
+      content: ['block1'],
+      toc: [{ id: 'block1' }],
+      blockMap: { block: {} }
+    }
+
+    const result = stripServerOnlyPostFields(post)
+
+    expect(result).toEqual({
+      id: 'member-1',
+      title: 'Member',
+      slug: 'member',
+      type: 'Member',
+      avatar: '/avatar.png',
+      role: 'Maintainer'
+    })
+    expect(post.password).toBe('hashed-password')
   })
 })
