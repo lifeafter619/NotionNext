@@ -55,14 +55,26 @@ export default async function replaceSearchResult({ doms, search, target }) {
     const regex = new RegExp(escapeSearchKeyword(keyword), 'gim')
 
     const markContainer = container => {
-      const instance = new Mark(container)
-      instance.markRegExp(regex, target)
+      return new Promise(resolve => {
+        const originalDone = target.done
+
+        const options = {
+          ...target,
+          done: totalMatches => {
+            originalDone?.(totalMatches)
+            resolve(totalMatches)
+          }
+        }
+
+        const instance = new Mark(container)
+        instance.markRegExp(regex, options)
+      })
     }
 
     if (doms instanceof HTMLCollection) {
-      Array.from(doms).forEach(markContainer)
+      await Promise.all(Array.from(doms).map(markContainer))
     } else {
-      markContainer(doms)
+      await markContainer(doms)
     }
   } catch (error) {
     console.error('Search highlight failed:', error)

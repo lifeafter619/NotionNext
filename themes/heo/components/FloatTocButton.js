@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Catalog from './Catalog'
 import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
+import { useArticleToc } from './useArticleToc'
 
 /**
  * 悬浮目录按钮
@@ -42,6 +43,8 @@ export default function FloatTocButton(props) {
   const isMouseDownRef = useRef(false)
 
   const { post, lock } = props
+  const hasServerToc = Array.isArray(post?.toc) && post.toc.length > 0
+  const toc = useArticleToc(post?.toc, Boolean(post) && !lock)
 
   const toggleToc = () => {
     // 如果正在拖拽，不触发点击
@@ -272,7 +275,13 @@ export default function FloatTocButton(props) {
     }
   }, [showOnDesktop, tocVisible])
 
-  if (!post || lock || !post.toc || post.toc.length < 1) {
+  useEffect(() => {
+    if (window.innerWidth >= 1280 && toc.length > 0 && !hasServerToc) {
+      setShowOnDesktop(true)
+    }
+  }, [toc.length, hasServerToc])
+
+  if (!post || lock || toc.length < 1) {
     return <></>
   }
 
@@ -347,7 +356,7 @@ export default function FloatTocButton(props) {
           <div className='flex-1 px-5 overflow-hidden'>
             <Catalog
               className='!max-h-none h-full'
-              toc={post.toc}
+              toc={toc}
               onActiveSectionChange={setActiveSectionId}
               onItemClick={() => changeTocVisible(false)}
             />
@@ -383,7 +392,7 @@ export default function FloatTocButton(props) {
                 <div
                   className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
                   <Catalog
-                    toc={post.toc}
+                    toc={toc}
                     onActiveSectionChange={setActiveSectionId}
                     forceSpy={true}
                   />
@@ -392,7 +401,7 @@ export default function FloatTocButton(props) {
                 {!tocVisible && (
                   <div className='h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500'>
                     {(activeSectionId &&
-                      post.toc?.find(
+                      toc.find(
                         t => uuidToId(t.id || '') === activeSectionId
                       )?.text) ||
                       '目录'}

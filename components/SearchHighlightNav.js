@@ -1,6 +1,34 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import replaceSearchResult from '@/components/Mark'
+
+function normalizeKeyword(keyword) {
+  const value = Array.isArray(keyword) ? keyword[0] : keyword
+  if (!value) return ''
+
+  try {
+    return decodeURIComponent(String(value)).trim()
+  } catch {
+    return String(value).trim()
+  }
+}
+
+function getKeywordFromAsPath(asPath) {
+  if (!asPath || !asPath.includes('?')) return ''
+
+  const queryString = asPath.split('?')[1]?.split('#')[0]
+  if (!queryString) return ''
+
+  return normalizeKeyword(new URLSearchParams(queryString).get('keyword'))
+}
+
+function clearSearchHighlights() {
+  const highlights = document.querySelectorAll('.search-highlight')
+  highlights.forEach(el => {
+    const text = document.createTextNode(el.textContent || '')
+    el.replaceWith(text)
+  })
+}
 
 /**
  * 文章内搜索关键词高亮导航组件（通用版本）
@@ -13,61 +41,15 @@ import replaceSearchResult from '@/components/Mark'
  */
 export default function SearchHighlightNav() {
   const router = useRouter()
-  const { keyword } = router.query
+  const keyword =
+    normalizeKeyword(router.query.keyword) || getKeywordFromAsPath(router.asPath)
   const [matchCount, setMatchCount] = useState(0)
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const containerRef = useRef(null)
 
-  // 初始化高亮
-  useEffect(() => {
-    if (!keyword) return
-
-    // 延迟执行以确保内容已渲染
-    const initHighlight = () => {
-      // 等待文章内容加载
-      const article = document.getElementById('notion-article')
-      if (!article) {
-        setTimeout(initHighlight, 500)
-        return
-      }
-
-      replaceSearchResult({
-        doms: article,
-        search: keyword,
-        target: {
-          element: 'span',
-          className:
-            'search-highlight bg-yellow-300 dark:bg-yellow-600 text-black dark:text-white px-1 rounded border-b-2 border-red-500 cursor-pointer'
-        }
-      })
-        .then(() => {
-          // 统计匹配数量
-          const highlights = document.querySelectorAll('.search-highlight')
-
-          if (highlights.length > 0) {
-            setMatchCount(highlights.length)
-            setIsVisible(true)
-            // 自动跳转到第一个
-            scrollToMatch(0)
-          }
-        })
-        .catch(e => {
-          console.error('SearchHighlightNav: replaceSearchResult failed', e)
-        })
-    }
-
-    // 稍微延迟等待页面水合
-    const timer = setTimeout(initHighlight, 1000)
-
-    return () => {
-      // 清理定时器
-      clearTimeout(timer)
-    }
-  }, [keyword])
-
   // 跳转到指定匹配
-  const scrollToMatch = index => {
+  const scrollToMatch = useCallback(index => {
     const highlights = document.querySelectorAll('.search-highlight')
     if (highlights.length === 0 || index < 0 || index >= highlights.length)
       return
@@ -82,17 +64,84 @@ export default function SearchHighlightNav() {
     // 滚动到视图中心
     target.scrollIntoView({ behavior: 'smooth', block: 'center' })
     setCurrentMatchIndex(index)
-  }
+  }, [])
 
-  const handleNext = () => {
+  // 初始化高亮
+  useEffect(() => {
+    let cancelled = false
+    let retryTimer = null
+
+    clearSearchHighlights()
+    setMatchCount(0)
+    setCurrentMatchIndex(0)
+
+    if (!keyword) {
+      setIsVisible(false)
+      return
+    }
+
+    setIsVisible(true)
+
+    // 延迟执行以确保内容已渲染
+    const initHighlight = () => {
+      if (cancelled) return
+
+      // 等待文章内容加载
+      const article = document.getElementById('notion-article')
+      if (!article) {
+        retryTimer = setTimeout(initHighlight, 500)
+        return
+      }
+
+      replaceSearchResult({
+        doms: article,
+        search: keyword,
+        target: {
+          element: 'span',
+          className:
+            'search-highlight bg-yellow-300 dark:bg-yellow-600 text-black dark:text-white px-1 rounded border-b-2 border-red-500 cursor-pointer'
+        }
+      })
+        .then(() => {
+          if (cancelled) return
+
+          // 统计匹配数量
+          const highlights = document.querySelectorAll('.search-highlight')
+
+          setMatchCount(highlights.length)
+
+          if (highlights.length > 0) {
+            // 自动跳转到第一个
+            scrollToMatch(0)
+          }
+        })
+        .catch(e => {
+          console.error('SearchHighlightNav: replaceSearchResult failed', e)
+        })
+    }
+
+    // 稍微延迟等待页面水合
+    const timer = setTimeout(initHighlight, 1000)
+
+    return () => {
+      cancelled = true
+      // 清理定时器
+      clearTimeout(timer)
+      clearTimeout(retryTimer)
+    }
+  }, [keyword, scrollToMatch])
+
+  const handleNext = useCallback(() => {
+    if (matchCount < 1) return
     const nextIndex = (currentMatchIndex + 1) % matchCount
     scrollToMatch(nextIndex)
-  }
+  }, [currentMatchIndex, matchCount, scrollToMatch])
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
+    if (matchCount < 1) return
     const prevIndex = (currentMatchIndex - 1 + matchCount) % matchCount
     scrollToMatch(prevIndex)
-  }
+  }, [currentMatchIndex, matchCount, scrollToMatch])
 
   // 监听输入框变化，直接跳转
   const handleInputChange = e => {
@@ -102,7 +151,7 @@ export default function SearchHighlightNav() {
     }
   }
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsVisible(false)
     // 移除 URL 中的 keyword 参数，但保留其他参数
     const { pathname, query } = router
@@ -112,12 +161,8 @@ export default function SearchHighlightNav() {
     })
 
     // 移除高亮样式
-    const highlights = document.querySelectorAll('.search-highlight')
-    highlights.forEach(el => {
-      const text = document.createTextNode(el.textContent || '')
-      el.replaceWith(text)
-    })
-  }
+    clearSearchHighlights()
+  }, [router])
 
   // 拖拽逻辑
   const [position, setPosition] = useState({ x: 20, y: 100 }) // x: right, y: top
@@ -193,7 +238,7 @@ export default function SearchHighlightNav() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isVisible, currentMatchIndex, matchCount])
+  }, [isVisible, handleClose, handleNext, handlePrev])
 
   if (!isVisible) return null
 
@@ -224,60 +269,71 @@ export default function SearchHighlightNav() {
         </button>
       </div>
 
-      <div className='text-xs text-gray-600 dark:text-gray-300 text-center'>
-        关键词{' '}
-        <span className='font-bold text-blue-600 dark:text-yellow-500'>
-          &quot;{keyword}&quot;
-        </span>
-        <span className='mx-1'>|</span>共{' '}
-        <span className='font-bold'>{matchCount}</span> 处
-      </div>
+      {matchCount > 0 ? (
+        <>
+          <div className='text-xs text-gray-600 dark:text-gray-300 text-center'>
+            关键词{' '}
+            <span className='font-bold text-blue-600 dark:text-yellow-500'>
+              &quot;{keyword}&quot;
+            </span>
+            <span className='mx-1'>|</span>共{' '}
+            <span className='font-bold'>{matchCount}</span> 处
+          </div>
 
-      <div className='flex justify-between gap-2'>
-        <button
-          onClick={handlePrev}
-          className='flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-yellow-500 text-gray-700 dark:text-gray-200 py-1.5 px-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1 group'
-          title='上一个 (↑ / P)'>
-          <i className='fas fa-chevron-up text-xs text-gray-400 group-hover:text-blue-500 dark:group-hover:text-yellow-500'></i>
-          上一个
-        </button>
-        <button
-          onClick={handleNext}
-          className='flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-yellow-500 text-gray-700 dark:text-gray-200 py-1.5 px-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1 group'
-          title='下一个 (↓ / N)'>
-          下一个
-          <i className='fas fa-chevron-down text-xs text-gray-400 group-hover:text-blue-500 dark:group-hover:text-yellow-500'></i>
-        </button>
-      </div>
+          <div className='flex justify-between gap-2'>
+            <button
+              onClick={handlePrev}
+              className='flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-yellow-500 text-gray-700 dark:text-gray-200 py-1.5 px-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1 group'
+              title='上一个 (↑ / P)'>
+              <i className='fas fa-chevron-up text-xs text-gray-400 group-hover:text-blue-500 dark:group-hover:text-yellow-500'></i>
+              上一个
+            </button>
+            <button
+              onClick={handleNext}
+              className='flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-yellow-500 text-gray-700 dark:text-gray-200 py-1.5 px-2 rounded-lg text-sm transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1 group'
+              title='下一个 (↓ / N)'>
+              下一个
+              <i className='fas fa-chevron-down text-xs text-gray-400 group-hover:text-blue-500 dark:group-hover:text-yellow-500'></i>
+            </button>
+          </div>
 
-      <div className='flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg py-1.5 px-2 border border-gray-100 dark:border-gray-800'>
-        <span className='text-xs text-gray-500'>第</span>
-        <input
-          type='number'
-          min='1'
-          max={matchCount}
-          value={currentMatchIndex + 1}
-          onChange={handleInputChange}
-          className='w-12 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-sm font-medium text-blue-600 dark:text-yellow-500 focus:outline-none focus:border-blue-500 dark:focus:border-yellow-500 focus:ring-1 focus:ring-blue-500 dark:focus:ring-yellow-500 transition-colors py-0.5'
-        />
-        <span className='text-xs text-gray-500'>/ {matchCount} 处</span>
-      </div>
+          <div className='flex items-center justify-center gap-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg py-1.5 px-2 border border-gray-100 dark:border-gray-800'>
+            <span className='text-xs text-gray-500'>第</span>
+            <input
+              type='number'
+              min='1'
+              max={matchCount}
+              value={currentMatchIndex + 1}
+              onChange={handleInputChange}
+              className='w-12 text-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-sm font-medium text-blue-600 dark:text-yellow-500 focus:outline-none focus:border-blue-500 dark:focus:border-yellow-500 focus:ring-1 focus:ring-blue-500 dark:focus:ring-yellow-500 transition-colors py-0.5'
+            />
+            <span className='text-xs text-gray-500'>/ {matchCount} 处</span>
+          </div>
 
-      {/* 快捷键提示 */}
-      <div className='text-xs text-gray-400 dark:text-gray-500 text-center border-t border-gray-100 dark:border-gray-800 pt-2'>
-        <kbd className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs'>
-          ↑
-        </kbd>
-        <kbd className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs mx-1'>
-          ↓
-        </kbd>
-        导航
-        <span className='mx-2'>|</span>
-        <kbd className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs'>
-          ESC
-        </kbd>
-        关闭
-      </div>
+          {/* 快捷键提示 */}
+          <div className='text-xs text-gray-400 dark:text-gray-500 text-center border-t border-gray-100 dark:border-gray-800 pt-2'>
+            <kbd className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs'>
+              ↑
+            </kbd>
+            <kbd className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs mx-1'>
+              ↓
+            </kbd>
+            导航
+            <span className='mx-2'>|</span>
+            <kbd className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs'>
+              ESC
+            </kbd>
+            关闭
+          </div>
+        </>
+      ) : (
+        <div className='text-xs text-gray-600 dark:text-gray-300 text-center leading-5'>
+          <div className='font-bold text-blue-600 dark:text-yellow-500 break-words'>
+            &quot;{keyword}&quot;
+          </div>
+          <span>未找到匹配</span>
+        </div>
+      )}
     </div>
   )
 }

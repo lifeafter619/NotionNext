@@ -7,6 +7,7 @@ import LatestPostsGroupMini from './LatestPostsGroupMini'
 import TagGroups from './TagGroups'
 import TouchMeCard from './TouchMeCard'
 import VisitorInfoCard from './VisitorInfoCard'
+import { useArticleToc } from './useArticleToc'
 
 const FaceBookPage = dynamic(
   () => {
@@ -30,6 +31,7 @@ const Live2D = dynamic(() => import('@/components/Live2D'), { ssr: false })
  */
 export default function SideRight(props) {
   const { post, lock, tagOptions, currentTag, rightAreaSlot } = props
+  const toc = useArticleToc(post?.toc, Boolean(post) && !lock)
 
   // 只摘取标签的前60个，防止右侧过长
   const sortedTags = tagOptions?.slice(0, 60) || []
@@ -47,9 +49,9 @@ export default function SideRight(props) {
         <VisitorInfoCard />
 
         {/* 文章页显示目录（上锁文章不显示） */}
-        {!lock && post && post.toc && post.toc.length > 0 && (
+        {!lock && post && toc.length > 0 && (
           <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
-            <Catalog toc={post.toc} />
+            <Catalog toc={toc} />
           </Card>
         )}
 
