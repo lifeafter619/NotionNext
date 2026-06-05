@@ -48,7 +48,7 @@ const Catalog = ({ toc }) => {
     }, throttleMs)
 
     actionSectionScrollSpy()
-    window.addEventListener('scroll', actionSectionScrollSpy)
+    window.addEventListener('scroll', actionSectionScrollSpy, { passive: true })
     return () => {
       window.removeEventListener('scroll', actionSectionScrollSpy)
     }

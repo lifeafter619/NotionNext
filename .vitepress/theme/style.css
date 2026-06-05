@@ -80,6 +80,25 @@
   background: var(--vp-c-bg-soft);
 }
 
+.VPHome .VPHomeHero .name,
+.VPHome .VPHomeHero .text,
+.VPHome .VPHomeHero .tagline,
+.VPHome .VPHomeHero .actions,
+.VPHome .VPHomeHero .image,
+.VPHome .VPFeature,
+.nn-home-section,
+.nn-home-section .nn-home-kicker,
+.nn-home-section h2,
+.nn-section-heading > a,
+.nn-compare-card,
+.nn-step-card,
+.nn-theme-card,
+.nn-usecase-grid > a,
+.nn-open-grid > div,
+.nn-faq-list details {
+  will-change: transform, opacity;
+}
+
 .nn-compare-card {
   min-height: 220px;
   padding: 24px;
@@ -132,6 +151,20 @@
 .nn-theme-card:hover {
   border-color: var(--vp-c-brand-1);
   transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nn-step-card,
+  .nn-usecase-grid > a,
+  .nn-theme-card {
+    transition: none;
+  }
+
+  .nn-step-card:hover,
+  .nn-usecase-grid > a:hover,
+  .nn-theme-card:hover {
+    transform: none;
+  }
 }
 
 .nn-step-card span {
@@ -257,11 +290,37 @@
   .VPHome .VPHomeHero .text,
   .VPHome .VPHomeHero .tagline {
     max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .VPHome .VPHomeHero .container {
+    box-sizing: border-box;
+    padding-inline: 24px;
+  }
+
+  .VPHome .VPHomeHero .text {
+    width: 100%;
+    max-width: 280px;
+    margin-inline: auto;
+    font-size: 28px;
+    line-height: 1.18;
+    white-space: normal;
+  }
+
+  .VPHome .VPHomeHero .tagline {
+    max-width: 280px;
+    margin-inline: auto;
+    font-size: 18px;
+    line-height: 1.7;
+    white-space: normal;
   }
 
   .VPHome .VPHomeHero .actions {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: min(100%, 280px);
+    margin-inline: auto;
   }
 
   .VPHome .VPHomeHero .action {
@@ -269,17 +328,29 @@
   }
 
   .VPHome .VPHomeHero .VPButton {
+    width: 100%;
     max-width: 100%;
     white-space: normal;
   }
 
   .VPHome .VPFeatures .items {
     grid-template-columns: 1fr !important;
+    max-width: 100%;
   }
 
   .VPHome .VPFeature {
+    box-sizing: border-box;
+    width: 100%;
     min-width: 0;
     overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+
+  .VPHome .VPFeature .title,
+  .VPHome .VPFeature .details {
+    max-width: 280px;
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 
   .nn-home-section {

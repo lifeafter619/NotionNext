@@ -104,10 +104,12 @@ const preBuild = (function () {
   }
 
   const notionCacheRoot = path.resolve(__dirname, '.next', 'cache', 'notion')
+  const dataDir = path.join(notionCacheRoot, 'data')
   const prefetchDir = path.join(notionCacheRoot, 'sessions')
   const sessionFile = path.join(notionCacheRoot, 'build-session.json')
   const sessionId = `${process.env.npm_lifecycle_event}-${Date.now()}-${process.pid}`
 
+  fs.rmSync(dataDir, { recursive: true, force: true })
   fs.rmSync(prefetchDir, { recursive: true, force: true })
   fs.mkdirSync(notionCacheRoot, { recursive: true })
   fs.writeFileSync(

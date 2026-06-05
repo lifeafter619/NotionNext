@@ -1,6 +1,6 @@
 {
   "name": "notion-next",
-  "version": "4.9.5.7",
+  "version": "4.10.1",
   "packageManager": "yarn@1.22.22",
   "homepage": "https://github.com/tangly1024/NotionNext.git",
   "license": "MIT",
@@ -57,6 +57,7 @@
     "perf:compare": "node scripts/perf-baseline.js --mode=compare",
     "perf:lighthouse": "lhci autorun",
     "perf:audit:themes": "node scripts/audit-theme-performance.js",
+    "perf:page-data": "node scripts/check-page-data-budget.js",
     "perf:compress-theme-previews": "node scripts/compress-theme-previews.js",
     "translate": "node scripts/translate/index.js",
     "translate:all": "node scripts/translate/index.js --batch",
@@ -78,6 +79,7 @@
     "axios": "^1.16.1",
     "critters": "^0.0.23",
     "feed": "^4.2.2",
+    "gsap": "^3.15.0",
     "ioredis": "^5.10.1",
     "js-md5": "^0.8.3",
     "js-sha256": "^0.11.1",

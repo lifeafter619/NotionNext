@@ -33,6 +33,12 @@
 
 首页文章列表默认显示summary，当鼠标指向时会显示背景图片
 
+如果希望文章列表直接显示每篇文章的主图，可以在 Notion Config 表或 `themes/proxio/config.js` 中设置：
+
+```js
+PROXIO_BLOG_AUTO_SHOW_COVER: true
+```
+
 ![image.png](/legacy/dd46b067b0216714.png)
 
 ![image.png](/legacy/735ff1431cd689db.png)

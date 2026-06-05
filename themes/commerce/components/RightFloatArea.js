@@ -27,7 +27,7 @@ export default function RightFloatArea({ floatSlot }) {
   )
 
   useEffect(() => {
-    document.addEventListener('scroll', scrollListener)
+    document.addEventListener('scroll', scrollListener, { passive: true })
     return () => document.removeEventListener('scroll', scrollListener)
   }, [])
 

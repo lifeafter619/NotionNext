@@ -1,6 +1,5 @@
 'use client'
 
-import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import ListCheck2Icon from 'remixicon-react/ListCheck2Icon'
@@ -15,55 +14,67 @@ const MobileToc = ({ toc }) => {
   const [activeSection, setActiveSection] = useState(null)
   const [progress, setProgress] = useState(0)
   const tRef = useRef(null)
-  const tocIds = []
+  const rafRef = useRef(null)
+  const progressRef = useRef(0)
+  const activeSectionRef = useRef(null)
 
-  // Listen to scroll events
-  useEffect(() => {
-    window.addEventListener('scroll', actionSectionScrollSpy)
-    window.addEventListener('scroll', updateProgress)
-    actionSectionScrollSpy()
-    updateProgress()
-    return () => {
-      window.removeEventListener('scroll', actionSectionScrollSpy)
-      window.removeEventListener('scroll', updateProgress)
+  // Update reading progress and active section.
+  const updateScrollState = useCallback(() => {
+    const scrollTop = window.scrollY
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight
+    const nextProgress =
+      docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0
+    if (nextProgress !== progressRef.current) {
+      progressRef.current = nextProgress
+      setProgress(nextProgress)
+    }
+
+    const sections = document.getElementsByClassName('notion-h')
+    let prevBBox = null
+    let currentSectionId = activeSectionRef.current
+    for (let i = 0; i < sections.length; ++i) {
+      const section = sections[i]
+      if (!section || !(section instanceof Element)) continue
+      if (!currentSectionId) {
+        currentSectionId = section.getAttribute('data-id')
+      }
+      const bbox = section.getBoundingClientRect()
+      const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
+      const offset = Math.max(150, prevHeight / 4)
+      if (bbox.top - offset < 0) {
+        currentSectionId = section.getAttribute('data-id')
+        prevBBox = bbox
+        continue
+      }
+      break
+    }
+    if (currentSectionId !== activeSectionRef.current) {
+      activeSectionRef.current = currentSectionId
+      setActiveSection(currentSectionId)
     }
   }, [])
 
-  // Update reading progress
-  const updateProgress = () => {
-    const scrollTop = window.scrollY
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight
-    const progress =
-      docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0
-    setProgress(progress)
-  }
+  const onScroll = useCallback(() => {
+    if (rafRef.current) {
+      return
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null
+      updateScrollState()
+    })
+  }, [updateScrollState])
 
-  // Sync selected TOC item
-  const throttleMs = 200
-  const actionSectionScrollSpy = useCallback(
-    throttle(() => {
-      const sections = document.getElementsByClassName('notion-h')
-      let prevBBox = null
-      let currentSectionId = activeSection
-      for (let i = 0; i < sections.length; ++i) {
-        const section = sections[i]
-        if (!section || !(section instanceof Element)) continue
-        if (!currentSectionId) {
-          currentSectionId = section.getAttribute('data-id')
-        }
-        const bbox = section.getBoundingClientRect()
-        const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
-        const offset = Math.max(150, prevHeight / 4)
-        if (bbox.top - offset < 0) {
-          currentSectionId = section.getAttribute('data-id')
-          prevBBox = bbox
-          continue
-        }
-        break
+  // Listen to scroll events
+  useEffect(() => {
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
       }
-      setActiveSection(currentSectionId)
-    }, throttleMs)
-  )
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [onScroll])
 
   // Prevent scroll through
   useEffect(() => {
@@ -98,11 +109,13 @@ const MobileToc = ({ toc }) => {
       {/* Floating TOC Button - Mobile Only (Styled like Desktop) */}
       <button
         onClick={() => setIsOpen(true)}
-        className='fixed right-4 bottom-24 z-40 md:hidden
-                   w-10 h-10 flex items-center justify-center shadow-md cursor-pointer border rounded-full
-                   bg-white text-gray-400 border-gray-200
-                   hover:bg-[#FBFB46] hover:text-black hover:border-[#FBFB46] hover:shadow-lg hover:-translate-y-1
-                   transition-all duration-300 group'
+        className={[
+          'fixed right-4 bottom-24 z-40 md:hidden',
+          'w-10 h-10 flex items-center justify-center shadow-md cursor-pointer border rounded-full',
+          'bg-white text-gray-400 border-gray-200',
+          'hover:bg-[#FBFB46] hover:text-black hover:border-[#FBFB46] hover:shadow-lg hover:-translate-y-1',
+          'transition-all duration-300 group'
+        ].join(' ')}
         title='Table of Contents'>
         {/* Show Percentage by default, Icon logic similar to desktop for consistency */}
         <div className='relative w-full h-full flex items-center justify-center'>
@@ -165,9 +178,8 @@ const MobileToc = ({ toc }) => {
           className='overflow-y-auto overflow-x-hidden py-3'
           style={{ maxHeight: 'calc(70vh - 80px)', scrollbarWidth: 'thin' }}>
           <nav className='px-4 space-y-1'>
-            {toc.map((tocItem, index) => {
+            {toc.map(tocItem => {
               const id = uuidToId(tocItem.id)
-              tocIds.push(id)
               const isActive = activeSection === id
 
               return (

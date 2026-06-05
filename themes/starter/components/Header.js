@@ -31,7 +31,7 @@ export const Header = props => {
       setColor('')
     }
     // ======= Sticky
-    window.addEventListener('scroll', navBarScollListener)
+    window.addEventListener('scroll', navBarScollListener, { passive: true })
     return () => {
       window.removeEventListener('scroll', navBarScollListener)
     }

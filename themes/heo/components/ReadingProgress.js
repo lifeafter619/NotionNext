@@ -38,7 +38,7 @@ export default function ReadingProgress({ title }) {
       requestId = requestAnimationFrame(updateScrollPercentage)
     }
 
-    window.addEventListener('scroll', handleAnimationFrame)
+    window.addEventListener('scroll', handleAnimationFrame, { passive: true })
     return () => {
       window.removeEventListener('scroll', handleAnimationFrame)
       if (requestId) {

@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
 
 /**
- * 跳转到网页顶部
- * 当屏幕下滑500像素后会出现该控件
- * @param targetRef 关联高度的目标html标签
+ * 跳转到网页底部
+ * 当屏幕下滑 100 像素后会出现该控件
  * @param showPercent 是否显示百分比
  * @returns {JSX.Element}
  * @constructor
@@ -13,25 +12,63 @@ import { siteConfig } from '@/lib/config'
 const JumpToBottomButton = ({ showPercent = false }) => {
   const [show, switchShow] = useState(false)
   const [percent, changePercent] = useState(0)
+  const showRef = useRef(show)
+  const percentRef = useRef(percent)
+  const rafRef = useRef(null)
 
   useEffect(() => {
-    document.addEventListener('scroll', scrollListener)
-    return () => document.removeEventListener('scroll', scrollListener)
+    showRef.current = show
   }, [show])
 
-  const scrollListener = () => {
+  useEffect(() => {
+    percentRef.current = percent
+  }, [percent])
+
+  const updateState = useCallback(() => {
     const targetRef = document.getElementById('wrapper')
     const clientHeight = targetRef?.clientHeight
+    const fullHeight = clientHeight - window.innerHeight
+    if (!targetRef || !fullHeight || fullHeight <= 0) {
+      return
+    }
+
     const scrollY = window.pageYOffset
-    const fullHeight = clientHeight - window.outerHeight
     let per = parseFloat(((scrollY / fullHeight) * 100).toFixed(0))
     if (per > 100) per = 100
+    if (per < 0) per = 0
     const shouldShow = scrollY > 100 && per > 0
-    if (shouldShow !== show) {
+
+    if (shouldShow !== showRef.current) {
+      showRef.current = shouldShow
       switchShow(shouldShow)
     }
-    changePercent(per)
-  }
+    if (per !== percentRef.current) {
+      percentRef.current = per
+      changePercent(per)
+    }
+  }, [changePercent, switchShow])
+
+  const scrollListener = useCallback(() => {
+    if (rafRef.current) {
+      return
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null
+      updateState()
+    })
+  }, [updateState])
+
+  useEffect(() => {
+    document.addEventListener('scroll', scrollListener, { passive: true })
+    updateState()
+    return () => {
+      document.removeEventListener('scroll', scrollListener)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+    }
+  }, [scrollListener, updateState])
 
   function scrollToBottom() {
     const targetRef = document.getElementById('wrapper')

@@ -8,13 +8,10 @@ const giscusRepoId = process.env.VITE_GISCUS_REPO_ID || ''
 const giscusCategoryId = process.env.VITE_GISCUS_CATEGORY_ID || ''
 
 /**
- * 在线站仅发布：
- *   docs/index.md
- *   docs/DOCUMENTATION_POLICY.md
- *   docs/user-guide/**
- * 开发者文档在 docs/developer/**（整目录排除）
+ * 在线站发布用户教程、开发文档与社区文档。
+ * 根目录 README 仍作为 GitHub 目录说明，不进入 VitePress。
  */
-const srcExclude = ['developer/**', 'README.md', 'README.en.md']
+const srcExclude = ['**/README.md', '**/README.en.md']
 
 export default defineConfig({
   title: 'NotionNext 使用说明',
@@ -24,6 +21,13 @@ export default defineConfig({
   srcExclude,
   cleanUrls: true,
   lastUpdated: true,
+  vite: {
+    css: {
+      postcss: {
+        plugins: []
+      }
+    }
+  },
   ignoreDeadLinks: [/^https?:\/\//],
   head: [
     [
@@ -32,6 +36,9 @@ export default defineConfig({
     ],
     ['link', { rel: 'apple-touch-icon', href: '/brand/notionnext-logo.png' }]
   ],
+  transformHtml(html) {
+    return html.replace(/rel="preload stylesheet"/g, 'rel="stylesheet"')
+  },
   themeConfig: {
     logo: '/brand/notionnext-logo.png',
     nav: [
@@ -50,6 +57,7 @@ export default defineConfig({
         link: '/user-guide/reference/features',
         activeMatch: '/user-guide/reference/'
       },
+      { text: '开发文档', link: '/developer/', activeMatch: '/developer/' },
       { text: '维护策略', link: '/DOCUMENTATION_POLICY' },
       { text: '参与社区', link: '/user-guide/community-participate' },
       { text: '参与维护', link: '/user-guide/maintain-docs' },
@@ -379,6 +387,89 @@ export default defineConfig({
           ]
         }
       ],
+      '/developer/': [
+        {
+          text: '开发入门',
+          items: [
+            { text: '开发文档首页', link: '/developer/' },
+            { text: '快速上手', link: '/developer/GETTING_STARTED' },
+            { text: '架构总览', link: '/developer/ARCHITECTURE' },
+            { text: '目录与模块', link: '/developer/PROJECT_STRUCTURE' },
+            { text: '配置体系', link: '/developer/CONFIGURATION' },
+            { text: '提交与 PR', link: '/developer/CONTRIBUTION_WORKFLOW' }
+          ]
+        },
+        {
+          text: '维护与治理',
+          collapsed: true,
+          items: [
+            {
+              text: '维护哲学',
+              link: '/developer/MAINTENANCE_PHILOSOPHY.zh-CN'
+            },
+            { text: '维护者手册', link: '/developer/MAINTAINER_RUNBOOK.zh-CN' },
+            { text: '版本更新说明', link: '/developer/UPDATE' },
+            { text: '社区路线图', link: '/developer/COMMUNITY_SITE_ROADMAP' },
+            { text: 'RFC', link: '/developer/rfc/' }
+          ]
+        },
+        {
+          text: '主题共建',
+          collapsed: true,
+          items: [
+            { text: '主题开发文档首页', link: '/developer/themes/' },
+            {
+              text: '主题迁移指南',
+              link: '/developer/THEME_MIGRATION_GUIDE.zh-CN'
+            },
+            { text: 'Claude', link: '/developer/themes/CLAUDE' },
+            { text: 'Endspace', link: '/developer/themes/ENDSPACE' },
+            { text: 'Fuwari', link: '/developer/themes/FUWARI' },
+            { text: 'Heo', link: '/developer/themes/HEO' },
+            { text: 'Proxio', link: '/developer/themes/PROXIO' },
+            { text: 'ThoughtLite', link: '/developer/themes/THOUGHTLITE' },
+            {
+              text: 'ThoughtLite 迁移计划',
+              link: '/developer/themes/THOUGHTLITE_MIGRATION_PLAN.zh-CN'
+            }
+          ]
+        },
+        {
+          text: 'English',
+          collapsed: true,
+          items: [
+            { text: 'Getting Started', link: '/developer/GETTING_STARTED.en' },
+            { text: 'Architecture', link: '/developer/ARCHITECTURE.en' },
+            {
+              text: 'Project Structure',
+              link: '/developer/PROJECT_STRUCTURE.en'
+            },
+            { text: 'Configuration', link: '/developer/CONFIGURATION.en' },
+            {
+              text: 'Contribution Workflow',
+              link: '/developer/CONTRIBUTION_WORKFLOW.en'
+            },
+            {
+              text: 'Maintainer Runbook',
+              link: '/developer/MAINTAINER_RUNBOOK.en'
+            },
+            {
+              text: 'Maintenance Philosophy',
+              link: '/developer/MAINTENANCE_PHILOSOPHY.en'
+            },
+            {
+              text: 'Theme Migration Guide',
+              link: '/developer/THEME_MIGRATION_GUIDE'
+            },
+            { text: 'Claude Theme', link: '/developer/themes/CLAUDE.en' },
+            { text: 'Endspace Theme', link: '/developer/themes/ENDSPACE.en' },
+            {
+              text: 'ThoughtLite Theme',
+              link: '/developer/themes/THOUGHTLITE.en'
+            }
+          ]
+        }
+      ],
       '/': [
         {
           text: '文档',
@@ -386,6 +477,7 @@ export default defineConfig({
             { text: '首页', link: '/' },
             { text: '从这里开始', link: '/user-guide/start-here' },
             { text: '使用说明', link: '/user-guide/intro' },
+            { text: '开发文档', link: '/developer/' },
             { text: '参与社区', link: '/user-guide/community-participate' },
             { text: '文档维护策略', link: '/DOCUMENTATION_POLICY' },
             { text: '参与维护', link: '/user-guide/maintain-docs' },

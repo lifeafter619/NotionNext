@@ -10,21 +10,20 @@ export default function Messenger() {
   // 新增一个状态变量用于追踪是否已经滚动过
   const [showMessenger, setShowMessenger] = useState(false)
 
-  const showTheComponent = () => {
-    window.removeEventListener('scroll', showTheComponent)
-    if (!showMessenger) {
-      setShowMessenger(true)
-    }
-  }
-
   // 延时7秒，或页面滚动时加载该组件
   useEffect(() => {
-    window.addEventListener('scroll', showTheComponent)
-    setTimeout(() => {
+    const showTheComponent = () => {
+      setShowMessenger(true)
+    }
+
+    window.addEventListener('scroll', showTheComponent, { passive: true })
+    const timer = setTimeout(() => {
       showTheComponent()
     }, 7000)
+
     return () => {
       window.removeEventListener('scroll', showTheComponent)
+      clearTimeout(timer)
     }
   }, [])
 
