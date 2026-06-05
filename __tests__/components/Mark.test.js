@@ -46,4 +46,25 @@ describe('replaceSearchResult', () => {
 
     expect(document.querySelectorAll('.search-highlight')).toHaveLength(1)
   })
+
+  it('uses a native highlighter when mark.js is unavailable', async () => {
+    delete window.Mark
+    loadExternalResource.mockRejectedValueOnce(new Error('blocked'))
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const article = document.getElementById('article')
+
+    await replaceSearchResult({
+      doms: article,
+      search: 'hello',
+      target: {
+        element: 'span',
+        className: 'search-highlight'
+      }
+    })
+
+    expect(document.querySelectorAll('.search-highlight')).toHaveLength(1)
+    expect(document.querySelector('.search-highlight')).toHaveTextContent('hello')
+    warnSpy.mockRestore()
+  })
 })

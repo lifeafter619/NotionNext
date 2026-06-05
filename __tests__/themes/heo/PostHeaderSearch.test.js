@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { fireEvent, render, screen } from '@testing-library/react'
 import PostHeader from '@/themes/heo/components/PostHeader'
 
@@ -77,6 +78,7 @@ describe('heo PostHeader article search', () => {
   }
 
   it('updates keyword query with shallow client-side routing when pressing Enter', () => {
+    const dispatchEventSpy = jest.spyOn(window, 'dispatchEvent')
     render(<PostHeader post={post} siteInfo={{ pageCover: '/cover.jpg' }} />)
 
     const input = screen.getByPlaceholderText('在文中搜索...')
@@ -96,5 +98,12 @@ describe('heo PostHeader article search', () => {
       undefined,
       { shallow: true }
     )
+    expect(dispatchEventSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'notionnext:article-search',
+        detail: { keyword: 'hello 世界' }
+      })
+    )
+    dispatchEventSpy.mockRestore()
   })
 })

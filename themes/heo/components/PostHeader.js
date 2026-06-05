@@ -40,6 +40,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
       return
     }
 
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('notionnext:article-search', {
+          detail: { keyword }
+        })
+      )
+    }
+
     router.push(
       {
         pathname: router.pathname,

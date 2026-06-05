@@ -70,4 +70,32 @@ describe('SearchHighlightNav', () => {
     expect(screen.getByText('1')).toBeInTheDocument()
     expect(mockScrollIntoView).toHaveBeenCalled()
   })
+
+  it('starts article search from the browser search event', async () => {
+    mockRouterQuery = {}
+    document.body.innerHTML =
+      '<article id="notion-article">A dispatched keyword appears here.</article>'
+    mockReplaceSearchResult.mockImplementation(async ({ doms }) => {
+      doms.innerHTML =
+        'A <span class="search-highlight">dispatched</span> keyword appears here.'
+    })
+
+    render(<SearchHighlightNav />)
+
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('notionnext:article-search', {
+          detail: { keyword: 'dispatched' }
+        })
+      )
+    })
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+
+    expect(screen.getByText('内容定位')).toBeInTheDocument()
+    expect(screen.getByText('1')).toBeInTheDocument()
+  })
 })

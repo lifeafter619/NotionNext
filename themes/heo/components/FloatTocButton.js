@@ -293,7 +293,7 @@ export default function FloatTocButton(props) {
           right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
           bottom: buttonPos.y !== null ? buttonPos.y + 'px' : undefined
         }}
-        className={`fixed xl:hidden bottom-80 z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+        className={`fixed bottom-24 sm:bottom-28 z-50 right-4 ${showOnDesktop ? 'xl:hidden' : ''}`}
         onTouchStart={handleButtonTouchStart}
         onTouchMove={handleButtonTouchMove}>
         {/* 按钮 */}
@@ -314,17 +314,17 @@ export default function FloatTocButton(props) {
 
       {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
       <div
-        className={`fixed xl:hidden z-50 ${buttonPos.x === null ? 'right-0' : 'right-4'}`}
+        className={`fixed z-50 right-4 ${showOnDesktop ? 'xl:hidden' : ''}`}
         style={{
           right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
-          bottom: buttonPos.y !== null ? buttonPos.y - 60 + 'px' : '260px'
+          bottom: buttonPos.y !== null ? buttonPos.y - 60 + 'px' : '5rem'
         }}>
         <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
       </div>
 
       {/* 移动端目录弹窗 - 底部抽屉样式 */}
       <div
-        className={`fixed inset-0 z-[60] xl:hidden ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
+        className={`fixed inset-0 z-[60] ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
         <div
           className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${tocVisible ? 'opacity-100' : 'opacity-0'}`}
           onClick={toggleToc}

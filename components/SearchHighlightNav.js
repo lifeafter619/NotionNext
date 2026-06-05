@@ -41,12 +41,26 @@ function clearSearchHighlights() {
  */
 export default function SearchHighlightNav() {
   const router = useRouter()
+  const [eventKeyword, setEventKeyword] = useState('')
   const keyword =
-    normalizeKeyword(router.query.keyword) || getKeywordFromAsPath(router.asPath)
+    eventKeyword ||
+    normalizeKeyword(router.query.keyword) ||
+    getKeywordFromAsPath(router.asPath)
   const [matchCount, setMatchCount] = useState(0)
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const containerRef = useRef(null)
+
+  useEffect(() => {
+    const handleArticleSearch = event => {
+      setEventKeyword(normalizeKeyword(event.detail?.keyword))
+    }
+
+    window.addEventListener('notionnext:article-search', handleArticleSearch)
+    return () => {
+      window.removeEventListener('notionnext:article-search', handleArticleSearch)
+    }
+  }, [])
 
   // 跳转到指定匹配
   const scrollToMatch = useCallback(index => {
@@ -153,6 +167,7 @@ export default function SearchHighlightNav() {
 
   const handleClose = useCallback(() => {
     setIsVisible(false)
+    setEventKeyword('')
     // 移除 URL 中的 keyword 参数，但保留其他参数
     const { pathname, query } = router
     const { keyword: _keyword, ...otherQuery } = query
