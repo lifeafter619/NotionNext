@@ -322,47 +322,48 @@ export default function FloatTocButton(props) {
         <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
       </div>
 
-      {/* 移动端目录弹窗 - 底部抽屉样式 */}
-      <div
-        className={`fixed inset-0 z-[60] ${tocVisible ? 'visible' : 'invisible pointer-events-none'}`}>
-        <div
-          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${tocVisible ? 'opacity-100' : 'opacity-0'}`}
-          onClick={toggleToc}
-        />
-        <div
-          id='toc-drawer'
-          style={{ height: drawerHeight }}
-          className={`absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1e1e1e] rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col ${tocVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+      {/* 目录弹窗 - 底部抽屉样式，打开时再挂载目录内容 */}
+      {tocVisible && (
+        <div className='fixed inset-0 z-[60] visible'>
           <div
-            className='flex justify-center pt-3 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none'
-            onTouchStart={handleDrawerTouchStart}
-            onTouchMove={handleDrawerTouchMove}
-            onTouchEnd={handleDrawerTouchEnd}
-            onMouseDown={handleDrawerMouseDownV2}>
-            <div className='w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full' />
-          </div>
-          <div className='flex items-center justify-between px-5 py-2 shrink-0'>
-            <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
-              <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
-              <span>目录导航</span>
+            className='absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-100'
+            onClick={toggleToc}
+          />
+          <div
+            id='toc-drawer'
+            style={{ height: drawerHeight }}
+            className='absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1e1e1e] rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out overflow-hidden flex flex-col translate-y-0'>
+            <div
+              className='flex justify-center pt-3 pb-3 shrink-0 cursor-grab active:cursor-grabbing touch-none'
+              onTouchStart={handleDrawerTouchStart}
+              onTouchMove={handleDrawerTouchMove}
+              onTouchEnd={handleDrawerTouchEnd}
+              onMouseDown={handleDrawerMouseDownV2}>
+              <div className='w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full' />
             </div>
-            <button
-              onClick={toggleToc}
-              className='p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'>
-              <i className='fas fa-times' />
-            </button>
-          </div>
+            <div className='flex items-center justify-between px-5 py-2 shrink-0'>
+              <div className='flex items-center gap-2 font-bold text-lg text-black dark:text-white'>
+                <i className='fa-list-ol fas text-indigo-600 dark:text-yellow-500' />
+                <span>目录导航</span>
+              </div>
+              <button
+                onClick={toggleToc}
+                className='p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'>
+                <i className='fas fa-times' />
+              </button>
+            </div>
 
-          <div className='flex-1 px-5 overflow-hidden'>
-            <Catalog
-              className='!max-h-none h-full'
-              toc={toc}
-              onActiveSectionChange={setActiveSectionId}
-              onItemClick={() => changeTocVisible(false)}
-            />
+            <div className='flex-1 px-5 overflow-hidden'>
+              <Catalog
+                className='!max-h-none h-full'
+                toc={toc}
+                onActiveSectionChange={setActiveSectionId}
+                onItemClick={() => changeTocVisible(false)}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
       {showOnDesktop && (
@@ -389,14 +390,15 @@ export default function FloatTocButton(props) {
 
               <div
                 className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
-                <div
-                  className={`${tocVisible ? 'block' : 'hidden'} dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]`}>
+                {tocVisible && (
+                  <div className='block dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]'>
                   <Catalog
                     toc={toc}
                     onActiveSectionChange={setActiveSectionId}
                     forceSpy={true}
                   />
-                </div>
+                  </div>
+                )}
 
                 {!tocVisible && (
                   <div className='h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500'>

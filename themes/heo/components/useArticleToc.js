@@ -44,7 +44,9 @@ function buildTocFromArticleHeadings() {
       if (!node.id) {
         node.id = id
       }
-      node.setAttribute('data-id', id)
+      if (node.getAttribute('data-id') !== id) {
+        node.setAttribute('data-id', id)
+      }
 
       return {
         id,
@@ -71,11 +73,21 @@ export function useArticleToc(postToc, enabled = true) {
     let cancelled = false
     let observer = null
     let retryTimer = null
+    let syncTimer = null
 
     const syncToc = () => {
       if (!cancelled) {
         setClientToc(buildTocFromArticleHeadings())
       }
+    }
+
+    const scheduleSyncToc = () => {
+      if (cancelled || syncTimer) return
+
+      syncTimer = setTimeout(() => {
+        syncTimer = null
+        syncToc()
+      }, 100)
     }
 
     const observeArticle = () => {
@@ -91,9 +103,8 @@ export function useArticleToc(postToc, enabled = true) {
 
       if (typeof MutationObserver !== 'function') return
 
-      observer = new MutationObserver(syncToc)
+      observer = new MutationObserver(scheduleSyncToc)
       observer.observe(article, {
-        attributes: true,
         childList: true,
         subtree: true
       })
@@ -104,6 +115,7 @@ export function useArticleToc(postToc, enabled = true) {
     return () => {
       cancelled = true
       clearTimeout(retryTimer)
+      clearTimeout(syncTimer)
       observer?.disconnect()
     }
   }, [enabled, serverToc.length])

@@ -31,6 +31,10 @@ describe('heo FloatTocButton fallback toc', () => {
       observe: jest.fn(),
       disconnect: jest.fn()
     }))
+    window.MutationObserver = jest.fn(() => ({
+      observe: jest.fn(),
+      disconnect: jest.fn()
+    }))
     HTMLElement.prototype.scrollTo = jest.fn()
     document.body.innerHTML = `
       <article id="notion-article">
@@ -42,6 +46,7 @@ describe('heo FloatTocButton fallback toc', () => {
   afterEach(() => {
     document.body.innerHTML = ''
     delete window.IntersectionObserver
+    delete window.MutationObserver
   })
 
   it('shows the floating toc button from article headings when post.toc is missing', async () => {
@@ -50,6 +55,24 @@ describe('heo FloatTocButton fallback toc', () => {
     await waitFor(() => {
       expect(screen.getAllByText('目录导航').length).toBeGreaterThan(0)
     })
+  })
+
+  it('does not mount the drawer catalog until the toc drawer is opened', async () => {
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByText('目录导航').length).toBeGreaterThan(0)
+    })
+
+    expect(document.querySelectorAll('.catalog-item')).toHaveLength(0)
   })
 
   it('keeps a floating toc entry available on desktop width', async () => {
@@ -74,5 +97,19 @@ describe('heo FloatTocButton fallback toc', () => {
           !tocButtonWrapper?.parentElement?.className.includes('xl:hidden')
       ).toBe(true)
     })
+  })
+
+  it('does not observe article attribute churn when building fallback toc', async () => {
+    render(<FloatTocButton post={{ title: 'Demo article' }} lock={false} />)
+
+    await waitFor(() => {
+      expect(window.MutationObserver).toHaveBeenCalled()
+    })
+
+    const observer = window.MutationObserver.mock.results[0].value
+    expect(observer.observe).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      expect.not.objectContaining({ attributes: true })
+    )
   })
 })
