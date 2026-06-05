@@ -223,19 +223,13 @@ const fixThemeDOM = () => {
  * @description 读取cookie中存的用户主题
  */
 export const initDarkMode = (updateDarkMode, defaultDarkMode) => {
-  // 查看用户设备浏览器是否深色模型
-  let newDarkMode = isPreferDark()
+  let newDarkMode = getDefaultDarkMode(defaultDarkMode)
 
   // 查看localStorage中用户记录的是否深色模式
   const userDarkMode = loadDarkModeFromLocalStorage()
   if (userDarkMode) {
     newDarkMode = userDarkMode === 'dark' || userDarkMode === 'true'
     saveDarkModeToLocalStorage(newDarkMode) // 用户手动的才保存
-  }
-
-  // 如果站点强制设置默认深色，则优先级改过用
-  if (defaultDarkMode === 'true') {
-    newDarkMode = true
   }
 
   // url查询条件中是否深色模式
@@ -248,6 +242,24 @@ export const initDarkMode = (updateDarkMode, defaultDarkMode) => {
   document
     .getElementsByTagName('html')[0]
     .setAttribute('class', newDarkMode ? 'dark' : 'light')
+}
+
+function getDefaultDarkMode(defaultDarkMode) {
+  if (defaultDarkMode === true) return true
+  if (defaultDarkMode === false) return false
+
+  if (typeof defaultDarkMode === 'string') {
+    const normalizedDefault = defaultDarkMode.toLowerCase()
+    if (normalizedDefault === 'true' || normalizedDefault === 'dark') {
+      return true
+    }
+    if (normalizedDefault === 'false' || normalizedDefault === 'light') {
+      return false
+    }
+  }
+
+  // 查看用户设备浏览器是否深色模型
+  return isPreferDark()
 }
 
 /**

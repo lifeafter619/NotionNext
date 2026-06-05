@@ -1,6 +1,8 @@
 import {
+  compactBlockMapForClient,
   cleanBlockMapForClient,
-  cleanPostForClient
+  cleanPostForClient,
+  restoreCompactBlockMapForRender
 } from '@/lib/db/notion/cleanBlockMapForClient'
 
 describe('cleanBlockMapForClient', () => {
@@ -268,5 +270,129 @@ describe('cleanBlockMapForClient', () => {
       file1: 'https://file.notion.so/file.zip'
     })
     expect(blockMap.signed_urls.page1).toBe('https://file.notion.so/cover.png')
+  })
+
+  it('compacts repeated block ids and block references for client transfer', () => {
+    const blockMap = {
+      block: {
+        page1: {
+          value: {
+            id: 'page1',
+            type: 'page',
+            content: ['child1', 'ref1']
+          }
+        },
+        child1: {
+          value: {
+            id: 'child1',
+            type: 'text',
+            parent_id: 'page1',
+            properties: { title: [['Body']] }
+          }
+        },
+        ref1: {
+          value: {
+            id: 'ref1',
+            type: 'transclusion_reference',
+            parent_id: 'page1',
+            format: {
+              transclusion_reference_pointer: {
+                id: 'source1'
+              }
+            }
+          }
+        },
+        source1: {
+          value: {
+            id: 'source1',
+            type: 'transclusion_container',
+            parent_id: 'other-page',
+            content: ['child1']
+          }
+        }
+      }
+    }
+
+    const result = compactBlockMapForClient(blockMap)
+
+    expect(result.__compact_block_ids).toEqual([
+      'page1',
+      'child1',
+      'ref1',
+      'source1'
+    ])
+    expect(Array.isArray(result.block)).toBe(true)
+    expect(result.block.page1).toBeUndefined()
+
+    const restored = restoreCompactBlockMapForRender(result)
+
+    expect(restored.block.page1.value.content).toEqual(['child1', 'ref1'])
+    expect(restored.block.child1.value.parent_id).toBe('page1')
+    expect(
+      restored.block.ref1.value.format.transclusion_reference_pointer.id
+    ).toBe('source1')
+    expect(restored.block.source1.value.parent_id).toBe('other-page')
+  })
+
+  it('compacts repeated block value keys and restores renderable records', () => {
+    const blockMap = {
+      block: {
+        page1: {
+          value: {
+            id: 'page1',
+            type: 'page',
+            parent_id: 'workspace',
+            properties: {
+              title: [['Post title']]
+            },
+            content: ['child1']
+          }
+        },
+        child1: {
+          value: {
+            id: 'child1',
+            type: 'text',
+            parent_id: 'page1',
+            properties: {
+              title: [['Body']]
+            },
+            format: {
+              block_color: 'gray_background'
+            }
+          }
+        }
+      }
+    }
+
+    const compact = compactBlockMapForClient(blockMap)
+
+    expect(Array.isArray(compact.block)).toBe(true)
+    expect(compact.__compact_block_value_keys).toEqual([
+      'type',
+      'parent_id',
+      'properties',
+      'content',
+      'format',
+      'file_ids'
+    ])
+    expect(compact.__compact_block_types).toEqual(['page', 'text'])
+    expect(compact.__compact_property_keys).toEqual(['title'])
+    expect(compact.block[0]).toEqual([0, 'workspace', [[['Post title']]], [1]])
+    expect(compact.block[1]).toEqual([
+      1,
+      0,
+      [[['Body']]],
+      null,
+      { block_color: 'gray_background' }
+    ])
+
+    const restored = restoreCompactBlockMapForRender(compact)
+
+    expect(restored.__compact_block_ids).toBeUndefined()
+    expect(restored.__compact_block_value_keys).toBeUndefined()
+    expect(restored.__compact_block_types).toBeUndefined()
+    expect(restored.__compact_property_keys).toBeUndefined()
+    expect(restored.block.page1.value).toEqual(blockMap.block.page1.value)
+    expect(restored.block.child1.value).toEqual(blockMap.block.child1.value)
   })
 })

@@ -46,6 +46,10 @@ const PostListRecommend = ({ latestPosts, allNavPages }) => {
  */
 export function getTopPosts({ latestPosts, allNavPages }) {
   const recommendTag = siteConfig('MAGZINE_RECOMMEND_POST_TAG', '', CONFIG)
+  const sourcePosts =
+    Array.isArray(allNavPages) && allNavPages.length > 0
+      ? allNavPages
+      : latestPosts || []
 
   // 默认展示最近更新
   if (!recommendTag || recommendTag === '') {
@@ -57,13 +61,13 @@ export function getTopPosts({ latestPosts, allNavPages }) {
 
   // 排序方式
   if (siteConfig('MAGZINE_RECOMMEND_POST_SORT_BY_UPDATE_TIME', false, CONFIG)) {
-    sortPosts = [...allNavPages].sort((a, b) => {
+    sortPosts = [...sourcePosts].sort((a, b) => {
       const dateA = new Date(a?.lastEditedDate)
       const dateB = new Date(b?.lastEditedDate)
       return dateB - dateA
     })
   } else {
-    sortPosts = [...allNavPages]
+    sortPosts = [...sourcePosts]
   }
 
   const count = siteConfig('MAGZINE_RECOMMEND_POST_COUNT', 6, CONFIG)

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import LazyImage from '@/components/LazyImage'
 
 describe('LazyImage Component', () => {
@@ -31,11 +31,67 @@ describe('LazyImage Component', () => {
     expect(image).toHaveAttribute('height', '200')
   })
 
+  it('uses fixed pixel sizes for fixed-width images', () => {
+    render(
+      <LazyImage
+        {...defaultProps}
+        src='https://example.com/avatar.jpg?width=1200'
+        width={120}
+        height={120}
+      />
+    )
+
+    const image = screen.getByAltText('Test image')
+    expect(image).toHaveAttribute('sizes', '120px')
+  })
+
+  it('omits invalid auto width and height attributes when dimensions are not provided', () => {
+    render(<LazyImage {...defaultProps} />)
+
+    const image = screen.getByAltText('Test image')
+    expect(image).not.toHaveAttribute('width')
+    expect(image).not.toHaveAttribute('height')
+  })
+
   it('handles priority loading', () => {
     render(<LazyImage {...defaultProps} priority />)
 
     const image = screen.getByAltText('Test image')
     expect(image).toHaveAttribute('loading', 'eager')
+  })
+
+  it('marks priority images as high fetch priority', () => {
+    render(<LazyImage {...defaultProps} priority />)
+
+    const image = screen.getByAltText('Test image')
+    expect(image).toHaveAttribute('fetchpriority', 'high')
+  })
+
+  it('uses the optimized image URL immediately for priority images', () => {
+    const originalInnerWidth = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 640
+    })
+
+    try {
+      render(
+        <LazyImage
+          {...defaultProps}
+          src='https://images.unsplash.com/photo.jpg?width=1080&q=80'
+          priority
+        />
+      )
+
+      const image = screen.getByAltText('Test image')
+      expect(image.getAttribute('src')).toContain('width=640')
+      expect(image.getAttribute('src')).not.toContain('data:image/gif')
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        value: originalInnerWidth
+      })
+    }
   })
 
   it('uses lazy loading by default', () => {
@@ -87,10 +143,27 @@ describe('LazyImage Component', () => {
     const image = screen.getByAltText('Test image')
 
     // Simulate image error
-    image.dispatchEvent(new Event('error'))
+    fireEvent.error(image)
 
     // Component should still be in the document
     expect(image).toBeInTheDocument()
+  })
+
+  it('falls back past a failed relative fallback image', () => {
+    render(
+      <LazyImage
+        {...defaultProps}
+        fallbackSrc='/broken-fallback.jpg'
+        placeholderSrc='/placeholder.jpg'
+      />
+    )
+
+    const image = screen.getByAltText('Test image')
+    fireEvent.error(image)
+    expect(image).toHaveAttribute('src', '/broken-fallback.jpg')
+
+    fireEvent.error(image)
+    expect(image).toHaveAttribute('src', '/placeholder.jpg')
   })
 
   it('applies correct decoding attribute', () => {
@@ -114,13 +187,115 @@ describe('LazyImage Component', () => {
     expect(image).toHaveStyle('border: 1px solid red')
   })
 
-  it('generates srcset for Notion-like image URLs', () => {
+  it('does not expose real srcset before lazy image loading starts', () => {
     const notionSrc = 'https://example.com/image.jpg?width=1200'
     render(<LazyImage {...defaultProps} src={notionSrc} />)
+
+    const image = screen.getByAltText('Test image')
+    expect(image).not.toHaveAttribute('srcset')
+  })
+
+  it('generates srcset for priority Notion-like image URLs', () => {
+    const notionSrc = 'https://example.com/image.jpg?width=1200'
+    render(<LazyImage {...defaultProps} src={notionSrc} priority />)
 
     const image = screen.getByAltText('Test image')
     expect(image).toHaveAttribute('srcset')
     expect(image.getAttribute('srcset')).toContain('320w')
     expect(image.getAttribute('srcset')).toContain('640w')
+  })
+
+  it('adds srcset after a lazy image enters the viewport', async () => {
+    const OriginalImage = global.Image
+    const OriginalIntersectionObserver = global.IntersectionObserver
+
+    global.Image = class MockImage {
+      constructor() {
+        this.onload = null
+      }
+
+      set src(_val) {
+        queueMicrotask(() => {
+          if (this.onload) this.onload()
+        })
+      }
+    }
+    global.IntersectionObserver = class MockIntersectionObserver {
+      constructor(callback) {
+        this.callback = callback
+      }
+
+      observe(target) {
+        this.callback([{ isIntersecting: true, target }])
+      }
+
+      unobserve() {}
+    }
+
+    try {
+      const notionSrc = 'https://example.com/image.jpg?width=1200'
+      render(<LazyImage {...defaultProps} src={notionSrc} />)
+
+      const image = screen.getByAltText('Test image')
+      await waitFor(() => {
+        expect(image).toHaveAttribute('srcset')
+      })
+      expect(image.getAttribute('srcset')).toContain('320w')
+    } finally {
+      global.Image = OriginalImage
+      global.IntersectionObserver = OriginalIntersectionObserver
+    }
+  })
+
+  it('uses viewport width instead of physical screen width for optimized image URLs', async () => {
+    const OriginalImage = global.Image
+    const originalInnerWidth = window.innerWidth
+    const originalScreenWidth = window.screen.width
+
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 480
+    })
+    Object.defineProperty(window.screen, 'width', {
+      configurable: true,
+      value: 1920
+    })
+
+    global.Image = class MockImage {
+      constructor() {
+        this.onload = null
+      }
+
+      set src(_val) {
+        queueMicrotask(() => {
+          if (this.onload) this.onload()
+        })
+      }
+    }
+
+    try {
+      render(
+        <LazyImage
+          {...defaultProps}
+          src='https://images.unsplash.com/photo.jpg?width=1080&q=80'
+          priority
+        />
+      )
+
+      const image = screen.getByAltText('Test image')
+      await waitFor(() => {
+        expect(image.getAttribute('src')).toContain('width=480')
+      })
+    } finally {
+      global.Image = OriginalImage
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        value: originalInnerWidth
+      })
+      Object.defineProperty(window.screen, 'width', {
+        configurable: true,
+        value: originalScreenWidth
+      })
+    }
   })
 })

@@ -68,4 +68,15 @@ describe('magzine PostListRecommend', () => {
 
     expect(getTopPosts({ latestPosts, allNavPages: [] })).toBe(latestPosts)
   })
+
+  it('uses latest posts as the source when all navigation pages are omitted', () => {
+    setupThemeConfig({})
+
+    const latestPosts = [
+      { id: 'latest', title: 'Latest post', tags: ['随笔'] },
+      { id: 'recommended', title: 'Recommended post', tags: ['推荐'] }
+    ]
+
+    expect(getTopPosts({ latestPosts })).toEqual([latestPosts[1]])
+  })
 })

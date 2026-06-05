@@ -26,10 +26,14 @@ export default function LazyImage({
 }) {
   const maxWidth = siteConfig('IMAGE_COMPRESS_WIDTH')
   const defaultPlaceholderSrc = siteConfig('IMG_LAZY_LOAD_PLACEHOLDER')
+  const placeholderImageSrc = placeholderSrc || defaultPlaceholderSrc
+  const optimizedImageSrc = adjustImgSize(src, maxWidth) || src
+  const initialImageSrc = priority
+    ? optimizedImageSrc || placeholderImageSrc
+    : placeholderImageSrc
   const imageRef = useRef(null)
-  const [currentSrc, setCurrentSrc] = useState(
-    placeholderSrc || defaultPlaceholderSrc
-  )
+  const fallbackIndexRef = useRef(0)
+  const [currentSrc, setCurrentSrc] = useState(initialImageSrc)
 
   /**
    * 占位图加载成功
@@ -41,14 +45,21 @@ export default function LazyImage({
   }
 
   const handleImageError = useCallback(() => {
+    const fallbackCandidates = getFallbackCandidates([
+      fallbackSrc,
+      placeholderSrc,
+      defaultPlaceholderSrc
+    ])
+    const nextFallbackSrc =
+      fallbackCandidates[
+        Math.min(fallbackIndexRef.current, fallbackCandidates.length - 1)
+      ]
+    fallbackIndexRef.current += 1
+
     if (imageRef.current) {
-      // 优先回退 fallbackSrc，再尝试 placeholderSrc，最后 defaultPlaceholderSrc
-      if (imageRef.current.src !== fallbackSrc && fallbackSrc) {
-        imageRef.current.src = fallbackSrc
-      } else if (imageRef.current.src !== placeholderSrc && placeholderSrc) {
-        imageRef.current.src = placeholderSrc
-      } else {
-        imageRef.current.src = defaultPlaceholderSrc
+      if (nextFallbackSrc) {
+        imageRef.current.src = nextFallbackSrc
+        setCurrentSrc(nextFallbackSrc)
       }
       imageRef.current.classList.remove('lazy-image-placeholder')
     }
@@ -58,10 +69,10 @@ export default function LazyImage({
   }, [defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
 
   useEffect(() => {
-    const adjustedImageSrc =
-      adjustImgSize(src, maxWidth) || defaultPlaceholderSrc
+    const adjustedImageSrc = optimizedImageSrc || defaultPlaceholderSrc
     const imageElement = imageRef.current
     const handleImageLoaded = () => {
+      fallbackIndexRef.current = 0
       if (typeof onLoad === 'function') {
         onLoad()
       }
@@ -132,8 +143,9 @@ export default function LazyImage({
       }
     }
   }, [
-    src,
     maxWidth,
+    optimizedImageSrc,
+    src,
     priority,
     defaultPlaceholderSrc,
     fallbackSrc,
@@ -152,37 +164,41 @@ export default function LazyImage({
     }
 
     const breakpoints = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840]
+    const maxImageWidth = normalizeImageWidth(maxWidth)
 
     return breakpoints
-      .filter(w => w <= maxWidth)
+      .filter(w => w <= maxImageWidth)
       .map(w => {
-        const newSrc = imageSrc
-          .replace(/width=\d+/, `width=${w}`)
-          .replace(/w=\d+/, `w=${w}`)
+        const newSrc = replaceImageWidthParam(imageSrc, w)
         return `${newSrc} ${w}w`
       })
       .join(', ')
   }
 
-  const srcSet = generateSrcSet(src)
+  const shouldAttachRealSources = priority || currentSrc === optimizedImageSrc
+  const srcSet = shouldAttachRealSources
+    ? generateSrcSet(optimizedImageSrc)
+    : undefined
+  const normalizedWidth = normalizeDimensionAttribute(width)
+  const normalizedHeight = normalizeDimensionAttribute(height)
+  const imageSizes = sizes || getDefaultImageSizes(normalizedWidth)
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
     ref: imageRef,
     src: currentSrc,
     srcSet,
-    sizes: sizes || '100vw',
+    sizes: imageSizes,
     'data-src': src, // 存储原始图片地址
     alt: alt || 'Lazy loaded image',
     onLoad: handleThumbnailLoaded,
     onError: handleImageError,
     className: `${className || ''} lazy-image-placeholder`,
     style,
-    width: width || 'auto',
-    height: height || 'auto',
     onClick,
     // 性能优化属性
     loading: priority ? 'eager' : 'lazy',
+    fetchpriority: priority ? 'high' : undefined,
     decoding: 'async',
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
@@ -191,6 +207,8 @@ export default function LazyImage({
 
   if (id) imgProps.id = id
   if (title) imgProps.title = title
+  if (normalizedWidth !== undefined) imgProps.width = normalizedWidth
+  if (normalizedHeight !== undefined) imgProps.height = normalizedHeight
 
   if (!src) {
     return null
@@ -206,7 +224,7 @@ export default function LazyImage({
           <link
             rel='preload'
             as='image'
-            href={adjustImgSize(src, maxWidth)}
+            href={optimizedImageSrc}
             imageSrcSet={srcSet}
             imageSizes={imgProps.sizes}
           />
@@ -216,31 +234,108 @@ export default function LazyImage({
   )
 }
 
+function getFallbackCandidates(candidates) {
+  return [...new Set(candidates.filter(Boolean))]
+}
+
+function normalizeDimensionAttribute(value) {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return value
+  }
+
+  if (typeof value === 'string' && /^\d+$/.test(value)) {
+    return value
+  }
+
+  return undefined
+}
+
+function getDefaultImageSizes(width) {
+  if (width === undefined) {
+    return '100vw'
+  }
+
+  return `${width}px`
+}
+
 /**
  * 根据窗口尺寸决定压缩图片宽度
  * @param {*} src
  * @param {*} maxWidth
  * @returns
  */
-const adjustImgSize = (src, maxWidth) => {
+export function adjustImgSize(src, maxWidth) {
   if (!src) {
     return null
   }
-  const screenWidth =
-    (typeof window !== 'undefined' && window?.screen?.width) || maxWidth
 
-  // 屏幕尺寸大于默认图片尺寸，没必要再压缩
-  if (screenWidth > maxWidth) {
-    return src
+  const targetWidth = getTargetImageWidth(maxWidth)
+  return replaceImageWidthParam(src, targetWidth)
+}
+
+function normalizeImageWidth(width) {
+  const numericWidth = Number(width)
+  if (Number.isFinite(numericWidth) && numericWidth > 0) {
+    return numericWidth
+  }
+  return 1080
+}
+
+function getTargetImageWidth(maxWidth) {
+  const maxImageWidth = normalizeImageWidth(maxWidth)
+
+  if (typeof window === 'undefined') {
+    return maxImageWidth
   }
 
-  // 正则表达式，用于匹配 URL 中的 width 参数
-  const widthRegex = /width=\d+/
-  // 正则表达式，用于匹配 URL 中的 w 参数
-  const wRegex = /w=\d+/
+  const documentWidth =
+    typeof document !== 'undefined'
+      ? Number(document.documentElement?.clientWidth)
+      : 0
+  const viewportWidth =
+    Number(window.innerWidth) ||
+    documentWidth ||
+    Number(window?.screen?.width) ||
+    maxImageWidth
 
-  // 使用正则表达式替换 width/w 参数
-  return src
-    .replace(widthRegex, `width=${screenWidth}`)
-    .replace(wRegex, `w=${screenWidth}`)
+  return Math.min(Math.ceil(viewportWidth), maxImageWidth)
+}
+
+function replaceImageWidthParam(imageSrc, width) {
+  if (
+    !imageSrc ||
+    (!imageSrc.includes('width=') && !imageSrc.includes('w='))
+  ) {
+    return imageSrc
+  }
+
+  try {
+    const isRelativePath =
+      imageSrc.startsWith('/') && !imageSrc.startsWith('//')
+    const url = new URL(
+      imageSrc,
+      isRelativePath ? 'https://notionnext.local' : undefined
+    )
+    const widthParam = url.searchParams.has('width')
+      ? 'width'
+      : url.searchParams.has('w')
+        ? 'w'
+        : null
+
+    if (!widthParam) {
+      return imageSrc
+    }
+
+    url.searchParams.set(widthParam, String(width))
+
+    if (isRelativePath) {
+      return `${url.pathname}${url.search}${url.hash}`
+    }
+
+    return url.toString()
+  } catch (_) {
+    return imageSrc
+      .replace(/width=\d+/, `width=${width}`)
+      .replace(/w=\d+/, `w=${width}`)
+  }
 }

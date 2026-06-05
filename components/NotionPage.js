@@ -3,6 +3,7 @@ import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import NotionLink from '@/components/NotionLink'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
+import { restoreCompactBlockMapForRender } from '@/lib/db/notion/cleanBlockMapForClient'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
 import { useEffect, useCallback, useMemo } from 'react'
@@ -220,12 +221,13 @@ const NotionPage = ({ post, className }) => {
 export function cleanBlocksForRender(blockMap) {
   const cleanedBlocks = {}
   const removedBlockIds = new Set()
-  const sourceBlocks = blockMap.block || {}
+  const restoredBlockMap = restoreCompactBlockMapForRender(blockMap)
+  const sourceBlocks = restoredBlockMap.block || {}
 
   for (const [id, block] of Object.entries(sourceBlocks)) {
     if (
       !block?.value?.id ||
-      isUnrenderableCollectionView(block.value, blockMap)
+      isUnrenderableCollectionView(block.value, restoredBlockMap)
     ) {
       removedBlockIds.add(id)
       continue
@@ -255,7 +257,7 @@ export function cleanBlocksForRender(blockMap) {
   }
 
   return {
-    ...blockMap,
+    ...restoredBlockMap,
     block: cleanedBlocks
   }
 }

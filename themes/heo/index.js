@@ -1147,20 +1147,25 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
  * @returns
  */
 const LayoutTagIndex = props => {
-  const { tagOptions, allPages } = props
+  const { tagOptions, allPages, tagPreviewPostsByTag } = props
   const { locale } = useGlobal()
   const [selectedTag, setSelectedTag] = useState(
     /** @type {string | null} */ (null)
   )
+  const getPreviewPostsByTag = tagName => {
+    const previewPosts = tagPreviewPostsByTag?.[tagName]
+    if (Array.isArray(previewPosts)) return previewPosts
+
+    return (
+      allPages?.filter(
+        p => p.tags && p.tags.includes(tagName) && p.status === 'Published'
+      ) || []
+    )
+  }
 
   // 获取选中标签的文章
   const selectedPosts = selectedTag
-    ? allPages
-        ?.filter(
-          p =>
-            p.tags && p.tags.includes(selectedTag) && p.status === 'Published'
-        )
-        .slice(0, 8)
+    ? getPreviewPostsByTag(selectedTag).slice(0, 8)
     : []
 
   return (
@@ -1243,12 +1248,7 @@ const LayoutTagIndex = props => {
       {/* 按标签分组的文章列表 */}
       <div id='tag-list' className='space-y-8'>
         {tagOptions?.slice(0, 10).map(tag => {
-          const posts = allPages
-            ?.filter(
-              p =>
-                p.tags && p.tags.includes(tag.name) && p.status === 'Published'
-            )
-            .slice(0, 3)
+          const posts = getPreviewPostsByTag(tag.name).slice(0, 3)
 
           if (!posts || posts.length === 0) return null
 

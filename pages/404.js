@@ -1,6 +1,9 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
+import {
+  cleanPostSummaries,
+  fetchGlobalAllData
+} from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -17,6 +20,11 @@ export async function getStaticProps(req) {
   const { locale } = req
 
   const props = (await fetchGlobalAllData({ from: '404', locale })) || {}
+  props.latestPosts = cleanPostSummaries(props.latestPosts)
+  delete props.allPages
+  delete props.allNavPages
+  delete props.allLinkPages
+
   return { props }
 }
 
