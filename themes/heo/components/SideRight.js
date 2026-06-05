@@ -37,7 +37,7 @@ export default function SideRight(props) {
   return (
     <div
       id='sideRight'
-      className='hidden xl:block w-72 space-y-4 h-full overflow-visible'>
+      className='hidden xl:block w-72 flex-shrink-0 space-y-4 h-full overflow-visible'>
       <div className='pointer-events-auto'>
         <InfoCard {...props} className='w-72' />
       </div>

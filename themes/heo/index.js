@@ -68,7 +68,7 @@ const WWAds = dynamic(() => import('@/components/WWAds'), { ssr: false })
  * @constructor
  */
 const LayoutBase = props => {
-  const { children, slotTop, className } = props
+  const { children, slotTop, className, post } = props
 
   // 全屏模式下的最大宽度
   const { fullWidth, isDarkMode } = useGlobal()
@@ -86,13 +86,12 @@ const LayoutBase = props => {
           <Hero {...props} />
         </>
       ) : null}
-      {fullWidth ? null : <PostHeader {...props} isDarkMode={isDarkMode} />}
+      {post ? <PostHeader {...props} isDarkMode={isDarkMode} /> : null}
     </header>
   )
 
   // 右侧栏 用户信息+标签列表
-  const slotRight =
-    router.route === '/404' || fullWidth ? null : <SideRight {...props} />
+  const slotRight = router.route === '/404' ? null : <SideRight {...props} />
 
   const maxWidth = fullWidth ? 'max-w-[96rem] mx-auto' : 'max-w-[86rem]' // 普通最大宽度是86rem和顶部菜单栏对齐，留空则与窗口对齐
 
@@ -131,7 +130,7 @@ const LayoutBase = props => {
         <div
           id='container-inner'
           className={`${HEO_HERO_BODY_REVERSE ? 'flex-row-reverse' : ''} w-full mx-auto lg:flex justify-center relative z-10`}>
-          <div className={`w-full h-auto ${className || ''}`}>
+          <div className={`min-w-0 w-full h-auto ${className || ''}`}>
             {/* 主区上部嵌入 */}
             {slotTop}
             {children}
@@ -139,7 +138,7 @@ const LayoutBase = props => {
 
           <div className='lg:px-2'></div>
 
-          <div className='hidden 2xl:block h-full'>
+          <div className='hidden xl:block h-full flex-shrink-0'>
             {/* 主区快右侧 */}
             {slotRight}
           </div>
