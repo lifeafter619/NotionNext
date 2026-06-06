@@ -36,9 +36,9 @@ jest.mock('@/lib/config', () => ({
 }))
 
 jest.mock('@/components/LazyImage', () => {
-  return function LazyImage(props) {
+  return function LazyImage({ priority, ...props }) {
     if (!props.src) return null
-    return <img alt={props.alt || 'cover'} {...props} />
+    return <img alt={props.alt || 'cover'} data-priority={priority} {...props} />
   }
 })
 
@@ -124,9 +124,18 @@ describe('heo PostHeader article search', () => {
 
     expect(mockSetOnLoading).not.toHaveBeenCalled()
 
-    jest.advanceTimersByTime(4000)
+    jest.advanceTimersByTime(1600)
 
     expect(mockSetOnLoading).toHaveBeenCalledWith(false)
+  })
+
+  it('marks the article cover as a priority image for faster first paint', () => {
+    render(<PostHeader post={post} siteInfo={{ pageCover: '/cover.jpg' }} />)
+
+    expect(screen.getByAltText('cover')).toHaveAttribute(
+      'data-priority',
+      'true'
+    )
   })
 
   it('coalesces article font size updates into one animation frame', () => {

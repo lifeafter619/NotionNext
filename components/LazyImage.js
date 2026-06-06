@@ -35,15 +35,6 @@ export default function LazyImage({
   const fallbackIndexRef = useRef(0)
   const [currentSrc, setCurrentSrc] = useState(initialImageSrc)
 
-  /**
-   * 占位图加载成功
-   */
-  const handleThumbnailLoaded = () => {
-    if (typeof onLoad === 'function') {
-      // onLoad() // 触发传递的onLoad回调函数
-    }
-  }
-
   const handleImageError = useCallback(() => {
     const fallbackCandidates = getFallbackCandidates([
       fallbackSrc,
@@ -68,41 +59,35 @@ export default function LazyImage({
     }
   }, [defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
 
+  const handleImageLoaded = useCallback(() => {
+    if (currentSrc !== optimizedImageSrc) return
+
+    fallbackIndexRef.current = 0
+    if (typeof onLoad === 'function') {
+      onLoad()
+    }
+    if (imageRef.current) {
+      imageRef.current.classList.remove('lazy-image-placeholder')
+    }
+  }, [currentSrc, onLoad, optimizedImageSrc])
+
   useEffect(() => {
     const adjustedImageSrc = optimizedImageSrc || defaultPlaceholderSrc
     const imageElement = imageRef.current
-    const handleImageLoaded = () => {
-      fallbackIndexRef.current = 0
-      if (typeof onLoad === 'function') {
-        onLoad()
-      }
-      if (imageRef.current) {
-        imageRef.current.classList.remove('lazy-image-placeholder')
-      }
-    }
 
-    // 如果是优先级图片，直接加载
+    fallbackIndexRef.current = 0
+
     if (priority) {
-      const img = new Image()
-      img.src = adjustedImageSrc
-      img.onload = () => {
-        setCurrentSrc(adjustedImageSrc)
-        handleImageLoaded(adjustedImageSrc)
-      }
-      img.onerror = handleImageError
+      setCurrentSrc(adjustedImageSrc)
       return
     }
+
+    setCurrentSrc(placeholderImageSrc)
 
     // 检查浏览器是否支持IntersectionObserver
     if (!window.IntersectionObserver) {
       // 降级处理：直接加载图片
-      const img = new Image()
-      img.src = adjustedImageSrc
-      img.onload = () => {
-        setCurrentSrc(adjustedImageSrc)
-        handleImageLoaded(adjustedImageSrc)
-      }
-      img.onerror = handleImageError
+      setCurrentSrc(adjustedImageSrc)
       return
     }
 
@@ -110,19 +95,7 @@ export default function LazyImage({
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            // 预加载图片
-            const img = new Image()
-            // 设置图片解码优先级
-            if ('decoding' in img) {
-              img.decoding = 'async'
-            }
-            img.src = adjustedImageSrc
-            img.onload = () => {
-              setCurrentSrc(adjustedImageSrc)
-              handleImageLoaded(adjustedImageSrc)
-            }
-            img.onerror = handleImageError
-
+            setCurrentSrc(adjustedImageSrc)
             observer.unobserve(entry.target)
           }
         })
@@ -150,8 +123,7 @@ export default function LazyImage({
     defaultPlaceholderSrc,
     fallbackSrc,
     handleImageError,
-    onLoad,
-    placeholderSrc
+    placeholderImageSrc
   ])
 
   // 构造 srcset 以支持响应式图片加载
@@ -191,7 +163,7 @@ export default function LazyImage({
     sizes: imageSizes,
     'data-src': src, // 存储原始图片地址
     alt: alt || 'Lazy loaded image',
-    onLoad: handleThumbnailLoaded,
+    onLoad: handleImageLoaded,
     onError: handleImageError,
     className: `${className || ''} lazy-image-placeholder`,
     style,

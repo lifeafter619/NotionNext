@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   isBrowser,
   safeLocalStorageGet,
@@ -13,6 +13,8 @@ import {
 const ReadingPositionSaver = ({ postId, enabled = true }) => {
   const [showNotification, setShowNotification] = useState(false)
   const [savedPosition, setSavedPosition] = useState(null)
+  const saveTimerRef = useRef(null)
+  const cancelIdleSaveRef = useRef(null)
 
   // 生成存储键
   const getStorageKey = useCallback(() => {
@@ -26,19 +28,31 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
     const scrollPosition = window.scrollY
     const documentHeight = document.documentElement.scrollHeight
     const viewportHeight = window.innerHeight
+    const scrollableHeight = Math.max(documentHeight - viewportHeight, 1)
 
     // 只有当用户滚动超过100px时才保存
     if (scrollPosition > 100) {
       const data = {
         position: scrollPosition,
-        percentage: Math.round(
-          (scrollPosition / (documentHeight - viewportHeight)) * 100
+        percentage: Math.min(
+          100,
+          Math.max(0, Math.round((scrollPosition / scrollableHeight) * 100))
         ),
         timestamp: Date.now()
       }
       safeLocalStorageSet(getStorageKey(), JSON.stringify(data))
     }
   }, [postId, enabled, getStorageKey])
+
+  const scheduleSavePosition = useCallback(() => {
+    if (saveTimerRef.current) return
+
+    saveTimerRef.current = window.setTimeout(() => {
+      saveTimerRef.current = null
+      cancelIdleSaveRef.current?.()
+      cancelIdleSaveRef.current = scheduleIdleTask(savePosition)
+    }, 1000)
+  }, [savePosition])
 
   // 获取保存的位置
   const getSavedPosition = useCallback(() => {
@@ -64,19 +78,6 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
     return null
   }, [postId, getStorageKey])
 
-  // 滚动到保存的位置
-  const scrollToSavedPosition = useCallback(() => {
-    if (savedPosition) {
-      window.scrollTo({
-        top: savedPosition.position,
-        behavior: 'smooth'
-      })
-      setShowNotification(false)
-      // 清除保存的位置
-      safeLocalStorageRemove(getStorageKey())
-    }
-  }, [savedPosition, getStorageKey])
-
   // 关闭通知
   const dismissNotification = useCallback(() => {
     setShowNotification(false)
@@ -96,10 +97,7 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
       if (position && position.position > 200) {
         setSavedPosition(position)
         // 自动跳转到上次位置
-        window.scrollTo({
-          top: position.position,
-          behavior: 'smooth'
-        })
+        restoreScrollPosition(position.position)
         setShowNotification(true)
         // 清除保存的位置
         safeLocalStorageRemove(getStorageKey())
@@ -113,11 +111,8 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
   useEffect(() => {
     if (!isBrowser || !enabled || !postId) return
 
-    let saveTimer = null
     const handleScroll = () => {
-      // 防抖，避免频繁保存
-      if (saveTimer) clearTimeout(saveTimer)
-      saveTimer = setTimeout(savePosition, 1000)
+      scheduleSavePosition()
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -127,13 +122,28 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
       savePosition()
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('pagehide', handleBeforeUnload)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        savePosition()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('beforeunload', handleBeforeUnload)
-      if (saveTimer) clearTimeout(saveTimer)
+      window.removeEventListener('pagehide', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current)
+        saveTimerRef.current = null
+      }
+      cancelIdleSaveRef.current?.()
+      cancelIdleSaveRef.current = null
     }
-  }, [postId, enabled, savePosition])
+  }, [postId, enabled, savePosition, scheduleSavePosition])
 
   // 自动隐藏通知
   useEffect(() => {
@@ -199,6 +209,40 @@ const ReadingPositionSaver = ({ postId, enabled = true }) => {
       </div>
     </div>
   )
+}
+
+function restoreScrollPosition(position) {
+  if (!isBrowser) return
+
+  const scrollToClampedPosition = () => {
+    const maxScrollTop = Math.max(
+      document.documentElement.scrollHeight - window.innerHeight,
+      0
+    )
+    window.scrollTo({
+      top: Math.min(position, maxScrollTop),
+      behavior: 'auto'
+    })
+  }
+
+  scrollToClampedPosition()
+  if (window.requestAnimationFrame) {
+    window.requestAnimationFrame(scrollToClampedPosition)
+  } else {
+    window.setTimeout(scrollToClampedPosition, 0)
+  }
+}
+
+function scheduleIdleTask(callback) {
+  if (!isBrowser) return () => {}
+
+  if (window.requestIdleCallback) {
+    const taskId = window.requestIdleCallback(callback, { timeout: 1500 })
+    return () => window.cancelIdleCallback?.(taskId)
+  }
+
+  const timeoutId = window.setTimeout(() => callback(), 0)
+  return () => window.clearTimeout(timeoutId)
 }
 
 export default ReadingPositionSaver

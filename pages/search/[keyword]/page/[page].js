@@ -5,6 +5,8 @@ import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
 
+const SEARCH_CONCURRENCY = 4
+
 const Index = props => {
   const { keyword } = props
   props = { ...props, currentSearch: keyword }
@@ -105,6 +107,27 @@ function getTextContent(textArray) {
 const isIterable = obj =>
   obj != null && typeof obj[Symbol.iterator] === 'function'
 
+async function pMapLimit(array, mapper, concurrency = SEARCH_CONCURRENCY) {
+  const list = Array.isArray(array) ? array : []
+  const results = new Array(list.length)
+  const iterator = list.entries()
+  const workerCount = Math.min(concurrency, list.length)
+
+  const workers = Array.from({ length: workerCount }, async () => {
+    for (const [index, item] of iterator) {
+      results[index] = await mapper(item, index)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
+}
+
+function getSearchFieldText(value) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(' ')
+  return value ? String(value) : ''
+}
+
 /**
  * 在内存缓存中进行全文索引
  * @param {*} allPosts
@@ -112,23 +135,31 @@ const isIterable = obj =>
  * @returns
  */
 async function filterByMemCache(allPosts, keyword) {
-  const filterPosts = []
-  if (keyword) {
-    keyword = keyword.trim().toLowerCase()
-  }
-  for (const post of allPosts) {
+  const normalizedKeyword = String(keyword || '')
+    .trim()
+    .toLowerCase()
+  if (!normalizedKeyword) return []
+
+  const filterPosts = await pMapLimit(allPosts, async post => {
+    const nextPost = { ...post, results: [] }
+    const tagContent = getSearchFieldText(post.tags)
+    const categoryContent = getSearchFieldText(post.category)
+    const articleInfo = [
+      post.title,
+      post.summary,
+      tagContent,
+      categoryContent
+    ].join(' ')
+    let hit = articleInfo.toLowerCase().includes(normalizedKeyword)
+
+    if (post.password) {
+      return hit ? nextPost : null
+    }
+
     const cacheKey = 'page_block_' + post.id
     const page = await getDataFromCache(cacheKey, true)
-    const tagContent =
-      post?.tags && Array.isArray(post?.tags) ? post?.tags.join(' ') : ''
-    const categoryContent =
-      post.category && Array.isArray(post.category)
-        ? post.category.join(' ')
-        : ''
-    const articleInfo = post.title + post.summary + tagContent + categoryContent
-    let hit = articleInfo.toLowerCase().indexOf(keyword) > -1
     let indexContent = [post.summary]
-    if (!post.password && page && page.block) {
+    if (page && page.block) {
       const contentIds = Object.keys(page.block)
       contentIds.forEach(id => {
         const properties = page?.block[id]?.value?.properties
@@ -137,32 +168,32 @@ async function filterByMemCache(allPosts, keyword) {
       })
     }
     // console.log('全文搜索缓存', cacheKey, page != null)
-    post.results = []
     let hitCount = 0
     for (const [index, c] of indexContent.entries()) {
       if (!c) {
         continue
       }
-      const hitIndex = c.toLowerCase().indexOf(keyword)
+      const lowerContent = c.toLowerCase()
+      const hitIndex = lowerContent.indexOf(normalizedKeyword)
       if (hitIndex > -1) {
         hit = true
         hitCount += 1
-        post.results.push(c)
+        nextPost.results.push(c)
       } else {
         if (
           hitCount === 0 ||
-          (post.results.length - 1) / hitCount < 3 ||
+          (nextPost.results.length - 1) / hitCount < 3 ||
           index === 0
         ) {
-          post.results.push(c)
+          nextPost.results.push(c)
         }
       }
     }
-    if (hit) {
-      filterPosts.push(post)
-    }
-  }
-  return filterPosts
+
+    return hit ? nextPost : null
+  })
+
+  return filterPosts.filter(Boolean)
 }
 
 export default Index

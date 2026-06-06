@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { LayoutSearch } from '@/themes/heo'
 
 const mockRouterPush = jest.fn()
@@ -94,10 +94,25 @@ jest.mock('@/themes/heo/style', () => ({
   Style: () => null
 }))
 
+const { isAlgoliaSearchEnabled } = require('@/lib/plugins/algoliaConfig')
+const algoliasearch = require('algoliasearch')
+
+function createDeferred() {
+  let resolve
+  let reject
+  const promise = new Promise((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
 describe('heo search result jump navigation', () => {
   beforeEach(() => {
     mockRouterPush.mockClear()
     mockRouterPush.mockResolvedValue(true)
+    isAlgoliaSearchEnabled.mockReturnValue(false)
+    algoliasearch.mockReset()
   })
 
   it('uses client-side navigation when jumping to a search match', async () => {
@@ -129,5 +144,113 @@ describe('heo search result jump navigation', () => {
         '/demo-post?keyword=hello%20%E4%B8%96%E7%95%8C'
       )
     })
+  })
+
+  it('uses an inline status instead of the slow full-page search message while Algolia is pending', async () => {
+    isAlgoliaSearchEnabled.mockReturnValue(true)
+    const pendingSearch = createDeferred()
+    const search = jest.fn(() => pendingSearch.promise)
+    algoliasearch.mockReturnValue({
+      initIndex: () => ({ search })
+    })
+
+    render(
+      <LayoutSearch
+        keyword='slow'
+        posts={[
+          {
+            id: 'post-1',
+            title: 'Fallback post',
+            summary: 'Summary',
+            href: '/fallback-post',
+            slug: 'fallback-post'
+          }
+        ]}
+        postCount={1}
+        siteInfo={{ pageCover: '/cover.jpg' }}
+        categoryOptions={[]}
+        tagOptions={[]}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('status')).toHaveTextContent('正在搜索')
+    })
+    expect(screen.queryByText(/搜索较慢/)).not.toBeInTheDocument()
+  })
+
+  it('does not let stale Algolia responses replace the latest search results', async () => {
+    isAlgoliaSearchEnabled.mockReturnValue(true)
+    const alphaSearch = createDeferred()
+    const betaSearch = createDeferred()
+    const search = jest.fn(keyword => {
+      if (keyword === 'alpha') return alphaSearch.promise
+      return betaSearch.promise
+    })
+    algoliasearch.mockReturnValue({
+      initIndex: () => ({ search })
+    })
+
+    const baseProps = {
+      posts: [],
+      postCount: 0,
+      siteInfo: {},
+      categoryOptions: [],
+      tagOptions: []
+    }
+    const { rerender } = render(<LayoutSearch keyword='alpha' {...baseProps} />)
+
+    await waitFor(() => {
+      expect(search).toHaveBeenCalledWith(
+        'alpha',
+        expect.objectContaining({
+          attributesToSnippet: ['content:150', 'summary:100']
+        })
+      )
+    })
+
+    rerender(<LayoutSearch keyword='beta' {...baseProps} />)
+
+    await waitFor(() => {
+      expect(search).toHaveBeenCalledWith(
+        'beta',
+        expect.objectContaining({
+          attributesToSnippet: ['content:150', 'summary:100']
+        })
+      )
+    })
+
+    await act(async () => {
+      betaSearch.resolve({
+        hits: [
+          {
+            objectID: 'beta-id',
+            slug: 'beta-post',
+            title: 'Beta post',
+            summary: 'Beta summary'
+          }
+        ]
+      })
+      await Promise.resolve()
+    })
+
+    expect(await screen.findByText('Beta post')).toBeInTheDocument()
+
+    await act(async () => {
+      alphaSearch.resolve({
+        hits: [
+          {
+            objectID: 'alpha-id',
+            slug: 'alpha-post',
+            title: 'Alpha post',
+            summary: 'Alpha summary'
+          }
+        ]
+      })
+      await Promise.resolve()
+    })
+
+    expect(screen.queryByText('Alpha post')).not.toBeInTheDocument()
+    expect(screen.getByText('Beta post')).toBeInTheDocument()
   })
 })

@@ -216,6 +216,132 @@ const LayoutPostList = props => {
  * @param {*} props
  * @returns
  */
+const MAX_SEARCH_SNIPPETS = 3
+
+function getSearchText(value) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(' ')
+  return value ? String(value) : ''
+}
+
+function getResultSnippet(results, keyword) {
+  if (!Array.isArray(results) || !keyword) return ''
+  const snippets = results
+    .filter(Boolean)
+    .map(result => String(result))
+    .filter(result => result.toLowerCase().includes(keyword))
+    .slice(0, MAX_SEARCH_SNIPPETS)
+
+  return snippets.join('...')
+}
+
+function getBodySnippet(content, keyword) {
+  const text = getSearchText(content)
+  if (!text || !keyword) return ''
+
+  const lowerText = text.toLowerCase()
+  const indexInText = lowerText.indexOf(keyword)
+  if (indexInText < 0) return ''
+
+  const start = Math.max(0, indexInText - 50)
+  const end = Math.min(text.length, indexInText + 150)
+  return `${start > 0 ? '...' : ''}${text.substring(start, end)}${
+    end < text.length ? '...' : ''
+  }`
+}
+
+function getPostHref(post) {
+  if (post?.href) return post.href
+  if (!post?.slug) return '#'
+  if (post.slug.startsWith('http')) return post.slug
+  return `${siteConfig('SUB_PATH', '')}/${post.slug}`
+}
+
+function appendKeywordToHref(href, keyword) {
+  if (!keyword) return href
+  const separator = href.includes('?') ? '&' : '?'
+  return `${href}${separator}keyword=${encodeURIComponent(keyword)}`
+}
+
+function getSearchResultDisplay(post, currentSearch, isAlgolia) {
+  let displayContent = post.summary
+  let displayTitle = post.title
+  let showJumpButton = false
+  let matchLocation = ''
+
+  if (isAlgolia) {
+    return {
+      displayContent: (
+        <span dangerouslySetInnerHTML={{ __html: post.summary }} />
+      ),
+      displayTitle: <span dangerouslySetInnerHTML={{ __html: post.title }} />,
+      showJumpButton: true,
+      matchLocation: '文章内容'
+    }
+  }
+
+  const keyword = getSearchText(currentSearch).trim().toLowerCase()
+  if (!keyword) {
+    return { displayContent, displayTitle, showJumpButton, matchLocation }
+  }
+
+  const resultSnippet = getResultSnippet(post.results, keyword)
+  if (resultSnippet) {
+    return {
+      displayContent: resultSnippet,
+      displayTitle,
+      showJumpButton: true,
+      matchLocation: '文章内容'
+    }
+  }
+
+  const titleMatch = getSearchText(post.title).toLowerCase().includes(keyword)
+  const summaryMatch = getSearchText(post.summary).toLowerCase().includes(keyword)
+  const bodySnippet = getBodySnippet(post.content, keyword)
+
+  if (bodySnippet) {
+    displayContent = bodySnippet
+    showJumpButton = true
+    matchLocation = '文章内容'
+  } else if (summaryMatch) {
+    matchLocation = '摘要'
+    showJumpButton = true
+  } else if (titleMatch) {
+    matchLocation = '标题'
+    showJumpButton = true
+  }
+
+  return { displayContent, displayTitle, showJumpButton, matchLocation }
+}
+
+const SearchInlineStatus = ({ currentSearch }) => (
+  <div
+    role='status'
+    aria-live='polite'
+    className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-300/70 bg-yellow-50 px-4 py-3 text-sm text-gray-700 dark:border-yellow-500/30 dark:bg-yellow-500/10 dark:text-gray-200'>
+    <span className='h-2 w-2 rounded-full bg-yellow-500 animate-pulse' />
+    <span className='font-medium'>正在搜索</span>
+    {currentSearch && (
+      <span className='min-w-0 truncate text-gray-500 dark:text-gray-400'>
+        {currentSearch}
+      </span>
+    )}
+  </div>
+)
+
+const SearchSkeletonRows = () => (
+  <div aria-hidden='true' className='space-y-4'>
+    {[0, 1, 2].map(index => (
+      <div
+        key={index}
+        className='rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-[#1e1e1e]'>
+        <div className='h-4 w-2/3 rounded bg-gray-200 dark:bg-gray-700' />
+        <div className='mt-3 h-3 w-full rounded bg-gray-100 dark:bg-gray-800' />
+        <div className='mt-2 h-3 w-5/6 rounded bg-gray-100 dark:bg-gray-800' />
+      </div>
+    ))}
+  </div>
+)
+
 const LayoutSearch = props => {
   const { keyword, posts, postCount } = props
   const router = useRouter()
@@ -230,58 +356,66 @@ const LayoutSearch = props => {
   const enableAlgolia = isAlgoliaSearchEnabled(siteConfig)
 
   useEffect(() => {
-    if (enableAlgolia && currentSearch) {
-      setLoading(true)
-      const client = algoliasearch(
-        siteConfig('ALGOLIA_APP_ID'),
-        siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
-      )
-      const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
-      index
-        .search(currentSearch, {
-          attributesToSnippet: ['content:150', 'summary:100'],
-          highlightPreTag: '<span class="text-red-500 font-bold">',
-          highlightPostTag: '</span>'
-        })
-        .then(({ hits }) => {
-          // 去重逻辑：使用 slug 作为唯一标识
-          const uniqueHitsMap = new Map()
-          hits.forEach(hit => {
-            if (!uniqueHitsMap.has(hit.slug)) {
-              uniqueHitsMap.set(hit.slug, hit)
-            }
-          })
-          const uniqueHits = Array.from(uniqueHitsMap.values())
-
-          const mappedHits = uniqueHits.map(hit => ({
-            ...hit,
-            id: hit.objectID,
-            title: hit._highlightResult?.title?.value || hit.title,
-            summary: hit._snippetResult?.content?.value || hit.summary,
-            // Algolia 返回的 content 是截断的，但我们这里主要展示 snippet
-            // 为了兼容 SearchResultCard 的 href 构建
-            slug: hit.slug,
-            href: hit.slug?.startsWith('http')
-              ? hit.slug
-              : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
-            createdTime: hit.createdTime || hit.createdTimestamp
-          }))
-          setAlgoliaResults(mappedHits)
-          setLoading(false)
-        })
-        .catch(err => {
-          console.error('Algolia search failed:', err)
-          setAlgoliaResults(null)
-          setLoading(false)
-        })
-    } else {
+    if (!enableAlgolia || !currentSearch) {
       setAlgoliaResults(null)
+      setLoading(false)
+      return
+    }
+
+    let isActive = true
+    setLoading(true)
+    const client = algoliasearch(
+      siteConfig('ALGOLIA_APP_ID'),
+      siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
+    )
+    const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
+    index
+      .search(currentSearch, {
+        attributesToSnippet: ['content:150', 'summary:100'],
+        highlightPreTag: '<span class="text-red-500 font-bold">',
+        highlightPostTag: '</span>'
+      })
+      .then(({ hits }) => {
+        if (!isActive) return
+        const uniqueHitsMap = new Map()
+        hits.forEach(hit => {
+          if (!uniqueHitsMap.has(hit.slug)) {
+            uniqueHitsMap.set(hit.slug, hit)
+          }
+        })
+        const uniqueHits = Array.from(uniqueHitsMap.values())
+
+        const mappedHits = uniqueHits.map(hit => ({
+          ...hit,
+          id: hit.objectID,
+          title: hit._highlightResult?.title?.value || hit.title,
+          summary: hit._snippetResult?.content?.value || hit.summary,
+          slug: hit.slug,
+          href: hit.slug?.startsWith('http')
+            ? hit.slug
+            : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
+          createdTime: hit.createdTime || hit.createdTimestamp
+        }))
+        setAlgoliaResults(mappedHits)
+      })
+      .catch(err => {
+        if (!isActive) return
+        console.error('Algolia search failed:', err)
+        setAlgoliaResults(null)
+      })
+      .finally(() => {
+        if (isActive) setLoading(false)
+      })
+
+    return () => {
+      isActive = false
     }
   }, [currentSearch, enableAlgolia])
 
   // 优先使用 Algolia 结果，否则使用本地结果
-  const displayPosts = (algoliaResults || posts || []).filter(
-    post => post.slug || post.objectID
+  const displayPosts = useMemo(
+    () => (algoliaResults || posts || []).filter(post => post.slug || post.objectID),
+    [algoliaResults, posts]
   )
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
@@ -299,8 +433,13 @@ const LayoutSearch = props => {
 
   // 本地搜索高亮 (Algolia 自带高亮，不需要这个)
   useEffect(() => {
-    if (currentSearch && !enableAlgolia) {
-      setTimeout(() => {
+    if (!currentSearch || enableAlgolia || !isBrowser) {
+      return
+    }
+
+    let isAborted = false
+    const markResults = () => {
+      if (!isAborted) {
         replaceSearchResult({
           doms: document.getElementsByClassName('replace'),
           search: currentSearch,
@@ -309,25 +448,42 @@ const LayoutSearch = props => {
             className: 'text-red-500 border-b border-dashed'
           }
         })
-      }, 100)
+      }
     }
-  }, [currentSearch, enableAlgolia])
+
+    if (window.requestIdleCallback) {
+      const taskId = window.requestIdleCallback(markResults, { timeout: 600 })
+      return () => {
+        isAborted = true
+        window.cancelIdleCallback(taskId)
+      }
+    }
+
+    const timeoutId = window.setTimeout(markResults, 80)
+    return () => {
+      isAborted = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [currentSearch, enableAlgolia, sortedPosts.length])
+
+  const hasSearch = Boolean(currentSearch)
+  const hasResults = sortedPosts.length > 0
 
   return (
     <div id='search-page-wrapper' className='px-5 md:px-0'>
       <SearchNav {...props} />
       <div className='mt-6'>
-        {currentSearch && (
-          <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-6'>
+        {hasSearch && (
+          <div className='mb-4 rounded-lg border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-[#1e1e1e]'>
             <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
               <div>
                 <h1 className='text-2xl font-bold dark:text-white flex items-center gap-2'>
-                  <i className='fas fa-search text-blue-500'></i>
+                  <i className='fas fa-search text-yellow-500'></i>
                   搜索结果
                 </h1>
                 <p className='text-gray-600 dark:text-gray-400 mt-1'>
                   找到{' '}
-                  <span className='font-bold text-blue-600 dark:text-yellow-500'>
+                  <span className='font-bold text-gray-900 dark:text-yellow-500'>
                     {sortedPosts.length}
                   </span>{' '}
                   篇关于
@@ -348,7 +504,7 @@ const LayoutSearch = props => {
                     onClick={() => setSortOrder('relevance')}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                       sortOrder === 'relevance'
-                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-yellow-500 shadow'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     }`}>
                     <i className='fas fa-star mr-1'></i>相关
@@ -357,7 +513,7 @@ const LayoutSearch = props => {
                     onClick={() => setSortOrder('newest')}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                       sortOrder === 'newest'
-                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-yellow-500 shadow'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     }`}>
                     <i className='fas fa-clock mr-1'></i>最新
@@ -366,7 +522,7 @@ const LayoutSearch = props => {
                     onClick={() => setSortOrder('oldest')}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                       sortOrder === 'oldest'
-                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-yellow-500 shadow'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                     }`}>
                     <i className='fas fa-history mr-1'></i>最早
@@ -379,7 +535,7 @@ const LayoutSearch = props => {
                     onClick={() => setViewMode('list')}
                     className={`p-2 rounded-md transition-all ${
                       viewMode === 'list'
-                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-yellow-500 shadow'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}>
                     <i className='fas fa-list'></i>
@@ -388,7 +544,7 @@ const LayoutSearch = props => {
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded-md transition-all ${
                       viewMode === 'grid'
-                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-yellow-500 shadow'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-yellow-500 shadow'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}>
                     <i className='fas fa-th-large'></i>
@@ -399,39 +555,11 @@ const LayoutSearch = props => {
           </div>
         )}
 
-        {/* 搜索结果列表 - 只有当 loading 为真或有搜索结果，或无结果时才显示内容 */}
-        {(loading ||
-          sortedPosts.length > 0 ||
-          (currentSearch && sortedPosts.length === 0)) && (
-          <div id='posts-wrapper'>
-            {loading ? (
-              <div className='flex flex-col items-center justify-center py-12'>
-                <div className='flex flex-col items-center gap-4 mb-8'>
-                  <i className='fas fa-spinner animate-spin text-4xl text-blue-500'></i>
-                  <p className='text-gray-500 dark:text-gray-400 text-sm animate-pulse'>
-                    搜索较慢，请耐心等待亿下下~
-                  </p>
-                </div>
+        {loading && <SearchInlineStatus currentSearch={currentSearch} />}
 
-                {/* 搜索加载时的推荐文章 */}
-                <div className='w-full max-w-4xl'>
-                  <div className='text-center mb-4 text-gray-400 dark:text-gray-500 text-xs uppercase tracking-wider'>
-                    推荐阅读
-                  </div>
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    {posts.slice(0, 2).map((post, index) => (
-                      <SearchResultCard
-                        key={post.id}
-                        post={post}
-                        index={index}
-                        currentSearch={null}
-                        siteInfo={props.siteInfo}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : sortedPosts.length > 0 ? (
+        {(loading || hasResults || (hasSearch && !hasResults)) && (
+          <div id='posts-wrapper'>
+            {hasResults ? (
               viewMode === 'list' ? (
                 <div className='space-y-4'>
                   {sortedPosts.map((post, index) => (
@@ -459,8 +587,10 @@ const LayoutSearch = props => {
                   ))}
                 </div>
               )
+            ) : loading ? (
+              <SearchSkeletonRows />
             ) : (
-              <div className='text-center py-16 bg-white dark:bg-[#1e1e1e] rounded-2xl'>
+              <div className='text-center py-16 bg-white dark:bg-[#1e1e1e] rounded-lg'>
                 <i className='fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4'></i>
                 <p className='text-xl text-gray-600 dark:text-gray-400'>
                   未找到相关文章
@@ -489,61 +619,14 @@ const SearchResultCard = ({
 }) => {
   const router = useRouter()
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
-
-  let displayContent = post.summary
-  let displayTitle = post.title
-  let showJumpButton = false
-  let matchLocation = '' // 显示匹配位置的提示
-
-  if (isAlgolia) {
-    // Algolia 模式下，content 和 title 已经是带 HTML 的 snippets
-    // 使用 dangerouslySetInnerHTML 渲染
-    displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
-    displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
-    showJumpButton = true
-    matchLocation = '文章内容'
-  } else {
-    // 本地搜索逻辑 - 检查关键词在哪里匹配
-    const keyword = currentSearch?.toLowerCase() || ''
-    if (keyword) {
-      const titleMatch = (post.title || '').toLowerCase().includes(keyword)
-      const summaryMatch = (post.summary || '').toLowerCase().includes(keyword)
-      const contentMatch = (post.content || '').toLowerCase().includes(keyword)
-
-      if (contentMatch) {
-        // 如果在内容中匹配，显示内容片段
-        const text = post.content || ''
-        const indexInText = text.toLowerCase().indexOf(keyword)
-        const start = Math.max(0, indexInText - 50)
-        const end = Math.min(text.length, indexInText + 150)
-        displayContent =
-          (start > 0 ? '...' : '') +
-          text.substring(start, end) +
-          (end < text.length ? '...' : '')
-        showJumpButton = true
-        matchLocation = '文章内容'
-      } else if (summaryMatch) {
-        matchLocation = '摘要'
-        showJumpButton = true
-      } else if (titleMatch) {
-        matchLocation = '标题'
-        showJumpButton = true
-      }
-
-      // 检查 results 字段（某些主题可能使用）
-      if (post.results && post.results.length > 0) {
-        displayContent = post.results.map(r => r).join('...')
-        showJumpButton = true
-        matchLocation = '文章内容'
-      }
-    }
-  }
-
-  const hrefWithKeyword = `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
+  const { displayContent, displayTitle, showJumpButton, matchLocation } =
+    getSearchResultDisplay(post, currentSearch, isAlgolia)
+  const postHref = getPostHref(post)
+  const hrefWithKeyword = appendKeywordToHref(postHref, currentSearch)
 
   return (
-    <SmartLink href={post?.href}>
-      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 p-4 flex gap-4 hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer'>
+    <SmartLink href={postHref}>
+      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex gap-4 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group cursor-pointer'>
         {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
           <div className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
@@ -551,29 +634,27 @@ const SearchResultCard = ({
               priority={index < 3}
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
-              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+              className='max-w-full max-h-full object-contain'
             />
           </div>
         )}
         {/* 文章信息 */}
         <div className='flex-1 flex flex-col justify-between min-w-0'>
           <div>
-            <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
+            <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
               {displayTitle}
             </h3>
             {displayContent && (
-              <div className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
+              <div className='text-gray-600 dark:text-gray-400 text-sm mt-1 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded-md'>
                 {displayContent}
               </div>
             )}
             {showJumpButton && (
               <div
-                className='mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer'
+                className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors cursor-pointer'
                 onClick={e => {
                   e.preventDefault()
                   e.stopPropagation()
-                  // 这里 currentSearch 可能是用户输入的词，也可能是 Algolia 匹配到的词，简单起见用输入词
-                  // 更好的做法是提取 snippet 中的高亮词，但这里保持逻辑简单
                   router.push(hrefWithKeyword)
                 }}>
                 <i className='fas fa-search-location'></i>
@@ -588,7 +669,7 @@ const SearchResultCard = ({
           </div>
           <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
             {post.category && (
-              <span className='px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded'>
+              <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
                 <i className='fas fa-folder mr-1'></i>
                 {post.category}
               </span>
@@ -597,7 +678,7 @@ const SearchResultCard = ({
               post.tags.slice(0, 2).map(tag => (
                 <span
                   key={tag}
-                  className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded'>
+                  className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md'>
                   #{tag}
                 </span>
               ))}
@@ -626,59 +707,16 @@ const SearchResultGridCard = ({
 }) => {
   const router = useRouter()
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
-
-  let displayContent = post.summary
-  let displayTitle = post.title
-  let showJumpButton = false
-  let matchLocation = ''
-
-  if (isAlgolia) {
-    displayContent = <span dangerouslySetInnerHTML={{ __html: post.summary }} />
-    displayTitle = <span dangerouslySetInnerHTML={{ __html: post.title }} />
-    showJumpButton = true
-    matchLocation = '文章内容'
-  } else {
-    const keyword = currentSearch?.toLowerCase() || ''
-    if (keyword) {
-      const titleMatch = (post.title || '').toLowerCase().includes(keyword)
-      const summaryMatch = (post.summary || '').toLowerCase().includes(keyword)
-      const contentMatch = (post.content || '').toLowerCase().includes(keyword)
-
-      if (contentMatch) {
-        const text = post.content || ''
-        const indexInText = text.toLowerCase().indexOf(keyword)
-        const start = Math.max(0, indexInText - 50)
-        const end = Math.min(text.length, indexInText + 150)
-        displayContent =
-          (start > 0 ? '...' : '') +
-          text.substring(start, end) +
-          (end < text.length ? '...' : '')
-        showJumpButton = true
-        matchLocation = '文章内容'
-      } else if (summaryMatch) {
-        matchLocation = '摘要'
-        showJumpButton = true
-      } else if (titleMatch) {
-        matchLocation = '标题'
-        showJumpButton = true
-      }
-
-      if (post.results && post.results.length > 0) {
-        displayContent = post.results.map(r => r).join('...')
-        showJumpButton = true
-        matchLocation = '文章内容'
-      }
-    }
-  }
-
-  // 将搜索词附加到主链接，实现点击卡片任意位置跳转
+  const { displayContent, displayTitle, showJumpButton, matchLocation } =
+    getSearchResultDisplay(post, currentSearch, isAlgolia)
+  const postHref = getPostHref(post)
   const hrefWithFragment = showJumpButton
-    ? `${post.href}?keyword=${encodeURIComponent(currentSearch)}`
-    : post.href
+    ? appendKeywordToHref(postHref, currentSearch)
+    : postHref
 
   return (
     <SmartLink href={hrefWithFragment}>
-      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-blue-500 dark:hover:border-yellow-500 transition-all duration-300 group cursor-pointer h-full flex flex-col'>
+      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group cursor-pointer h-full flex flex-col'>
         {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
           <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
@@ -686,24 +724,24 @@ const SearchResultGridCard = ({
               priority={index < 6}
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
-              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+              className='max-w-full max-h-full object-contain'
             />
           </div>
         )}
         {/* 文章信息 */}
         <div className='p-4 flex-1 flex flex-col justify-between'>
           <div>
-            <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-yellow-500 transition-colors'>
+            <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500 transition-colors'>
               {displayTitle}
             </h3>
             {displayContent && (
-              <div className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded'>
+              <div className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-3 bg-gray-50 dark:bg-gray-800 p-2 rounded-md'>
                 {displayContent}
               </div>
             )}
             {showJumpButton && (
               <div
-                className='mt-2 inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer'
+                className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-2 py-1 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors cursor-pointer'
                 onClick={e => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -721,7 +759,7 @@ const SearchResultGridCard = ({
           </div>
           <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
             {post.category && (
-              <span className='px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded'>
+              <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
                 {post.category}
               </span>
             )}

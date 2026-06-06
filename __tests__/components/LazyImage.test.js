@@ -94,6 +94,20 @@ describe('LazyImage Component', () => {
     }
   })
 
+  it('does not allocate a JavaScript preloader for priority images', () => {
+    const OriginalImage = global.Image
+    const imageConstructor = jest.fn().mockImplementation(() => ({}))
+    global.Image = imageConstructor
+
+    try {
+      render(<LazyImage {...defaultProps} priority />)
+
+      expect(imageConstructor).not.toHaveBeenCalled()
+    } finally {
+      global.Image = OriginalImage
+    }
+  })
+
   it('uses lazy loading by default', () => {
     render(<LazyImage {...defaultProps} />)
 
@@ -113,28 +127,11 @@ describe('LazyImage Component', () => {
 
   it('handles load event', async () => {
     const handleLoad = jest.fn()
-    const OriginalImage = global.Image
-    // jsdom does not finish decoding remote URLs; defer onload until after handlers attach (matches browser ordering).
-    global.Image = class MockImage {
-      constructor() {
-        this.onload = null
-      }
 
-      set src(_val) {
-        queueMicrotask(() => {
-          if (this.onload) this.onload()
-        })
-      }
-    }
+    render(<LazyImage {...defaultProps} priority onLoad={handleLoad} />)
+    fireEvent.load(screen.getByAltText('Test image'))
 
-    try {
-      render(<LazyImage {...defaultProps} priority onLoad={handleLoad} />)
-      await waitFor(() => {
-        expect(handleLoad).toHaveBeenCalled()
-      })
-    } finally {
-      global.Image = OriginalImage
-    }
+    expect(handleLoad).toHaveBeenCalled()
   })
 
   it('handles error gracefully', () => {
@@ -241,6 +238,44 @@ describe('LazyImage Component', () => {
         expect(image).toHaveAttribute('srcset')
       })
       expect(image.getAttribute('srcset')).toContain('320w')
+    } finally {
+      global.Image = OriginalImage
+      global.IntersectionObserver = OriginalIntersectionObserver
+    }
+  })
+
+  it('lets the real img element load lazy images after intersection', async () => {
+    const OriginalImage = global.Image
+    const OriginalIntersectionObserver = global.IntersectionObserver
+    const imageConstructor = jest.fn().mockImplementation(() => ({}))
+
+    global.Image = imageConstructor
+    global.IntersectionObserver = class MockIntersectionObserver {
+      constructor(callback) {
+        this.callback = callback
+      }
+
+      observe(target) {
+        this.callback([{ isIntersecting: true, target }])
+      }
+
+      unobserve() {}
+    }
+
+    try {
+      render(
+        <LazyImage
+          {...defaultProps}
+          src='https://images.unsplash.com/photo.jpg?width=1080&q=80'
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByAltText('Test image').getAttribute('src')).toContain(
+          'width='
+        )
+      })
+      expect(imageConstructor).not.toHaveBeenCalled()
     } finally {
       global.Image = OriginalImage
       global.IntersectionObserver = OriginalIntersectionObserver

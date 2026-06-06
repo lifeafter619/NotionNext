@@ -124,4 +124,32 @@ describe('search index page props', () => {
     expect(fetchNotionPageBlocks).not.toHaveBeenCalled()
     expect(getPageContentText).not.toHaveBeenCalled()
   })
+
+  it('keeps href in the client search payload for result links', async () => {
+    fetchGlobalAllData.mockResolvedValue({
+      NOTION_CONFIG: {},
+      allPages: [
+        {
+          id: 'post-with-href',
+          type: 'Post',
+          status: 'Published',
+          title: 'Searchable post',
+          slug: 'article/searchable-post',
+          href: '/article/searchable-post',
+          summary: 'Public summary',
+          tags: [],
+          category: ''
+        }
+      ]
+    })
+
+    const result = await getStaticProps({ locale: 'zh-CN' })
+
+    expect(result.props.posts[0]).toEqual(
+      expect.objectContaining({
+        slug: 'article/searchable-post',
+        href: '/article/searchable-post'
+      })
+    )
+  })
 })

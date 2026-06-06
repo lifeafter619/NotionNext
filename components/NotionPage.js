@@ -136,15 +136,21 @@ const NotionPage = ({ post, className }) => {
 
   // 页面文章发生变化时会执行的勾子
   useEffect(() => {
+    let cleanupGalleryImg = () => {}
+
     // 相册视图点击禁止跳转，只能放大查看图片
     if (POST_DISABLE_GALLERY_CLICK) {
       // 针对页面中的gallery视图，点击后是放大图片
-      processGalleryImg(openViewer, IMAGE_ZOOM_IN_WIDTH)
+      cleanupGalleryImg = processGalleryImg(openViewer, IMAGE_ZOOM_IN_WIDTH)
     }
 
     // 页内数据库点击禁止跳转，只能查看
     if (POST_DISABLE_DATABASE_CLICK) {
       processDisableDatabaseUrl()
+    }
+
+    return () => {
+      cleanupGalleryImg()
     }
   }, [
     post,
@@ -183,11 +189,15 @@ const NotionPage = ({ post, className }) => {
 
     // 清理定时器，防止组件卸载时执行
     return () => clearTimeout(timer)
-  }, [post])
+  }, [post, SPOILER_TEXT_TAG])
 
-  const cleanBlockMap = post?.blockMap
-    ? cleanBlocksForRender(post.blockMap)
-    : post?.blockMap
+  const cleanBlockMap = useMemo(() => {
+    return post?.blockMap ? cleanBlocksForRender(post.blockMap) : post?.blockMap
+  }, [post?.blockMap])
+
+  const enableReadingPosition = useMemo(() => {
+    return shouldEnableReadingPositionSaver(post, READING_PROGRESS_SAVE)
+  }, [post, READING_PROGRESS_SAVE])
 
   return (
     <>
@@ -213,9 +223,44 @@ const NotionPage = ({ post, className }) => {
         <AdEmbed />
         {hasCode && <PrismMac />}
       </div>
-      <ReadingPositionSaver postId={post?.id} enabled={READING_PROGRESS_SAVE} />
+      <ReadingPositionSaver postId={post?.id} enabled={enableReadingPosition} />
     </>
   )
+}
+
+function shouldEnableReadingPositionSaver(post, enabled) {
+  if (!enabled || !isBrowser || !post?.id) return false
+
+  const currentPath = getNormalizedCurrentPath()
+  const normalizedPostId = String(post.id)
+  const candidates = [
+    post.slug,
+    post.href,
+    normalizedPostId,
+    normalizedPostId.replace(/-/g, '')
+  ]
+    .filter(Boolean)
+    .map(normalizePathCandidate)
+    .filter(Boolean)
+
+  return candidates.some(candidate => currentPath.includes(candidate))
+}
+
+function getNormalizedCurrentPath() {
+  try {
+    return decodeURIComponent(window.location.pathname).toLowerCase()
+  } catch {
+    return window.location.pathname.toLowerCase()
+  }
+}
+
+function normalizePathCandidate(value) {
+  return String(value)
+    .split('?')[0]
+    .split('#')[0]
+    .replace(/^https?:\/\/[^/]+/i, '')
+    .replace(/^\/+|\/+$/g, '')
+    .toLowerCase()
 }
 
 export function cleanBlocksForRender(blockMap) {
@@ -312,32 +357,47 @@ const processDisableDatabaseUrl = () => {
  * gallery视图，点击后是放大图片
  */
 const processGalleryImg = (openViewer, imageZoomWidth) => {
-  setTimeout(() => {
-    if (isBrowser) {
-      const imgList = document?.querySelectorAll(
-        '.notion-collection-card-cover img'
-      )
-      if (imgList) {
-        for (let i = 0; i < imgList.length; i++) {
-          const img = imgList[i]
-          img.style.cursor = 'zoom-in'
-          img.addEventListener('click', e => {
-            e.preventDefault()
-            e.stopPropagation()
-            const src = getImageSrc(img)
-            const highResSrc = compressImage(src, imageZoomWidth)
-            const alt = img.getAttribute('alt') || ''
-            openViewer([{ src, alt, highResSrc }], 0)
-          })
-        }
-      }
+  if (!isBrowser) return () => {}
 
-      const cards = document.getElementsByClassName('notion-collection-card')
-      for (const e of cards) {
-        e.removeAttribute('href')
+  const cleanupListeners = []
+  const timer = setTimeout(() => {
+    const imgList = document?.querySelectorAll(
+      '.notion-collection-card-cover img'
+    )
+    if (imgList) {
+      for (let i = 0; i < imgList.length; i++) {
+        const img = imgList[i]
+        if (img.dataset.notionNextGalleryBound === 'true') continue
+
+        const handleClick = e => {
+          e.preventDefault()
+          e.stopPropagation()
+          const src = getImageSrc(img)
+          const highResSrc = compressImage(src, imageZoomWidth)
+          const alt = img.getAttribute('alt') || ''
+          openViewer([{ src, alt, highResSrc }], 0)
+        }
+
+        img.dataset.notionNextGalleryBound = 'true'
+        img.style.cursor = 'zoom-in'
+        img.addEventListener('click', handleClick)
+        cleanupListeners.push(() => {
+          img.removeEventListener('click', handleClick)
+          delete img.dataset.notionNextGalleryBound
+        })
       }
     }
+
+    const cards = document.getElementsByClassName('notion-collection-card')
+    for (const e of cards) {
+      e.removeAttribute('href')
+    }
   }, 800)
+
+  return () => {
+    clearTimeout(timer)
+    cleanupListeners.forEach(cleanup => cleanup())
+  }
 }
 
 /**

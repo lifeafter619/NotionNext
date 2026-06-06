@@ -43,7 +43,8 @@ jest.mock('@/lib/config', () => ({
   })
 }))
 
-const { fetchGlobalAllData } = require('@/lib/db/SiteDataApi')
+const { fetchGlobalAllData, getPostBlocks } = require('@/lib/db/SiteDataApi')
+const { siteConfig } = require('@/lib/config')
 const { getStaticProps: getIndexStaticProps } = require('@/pages/index')
 const { getStaticProps: getPageStaticProps } = require('@/pages/page/[page]')
 const {
@@ -81,6 +82,15 @@ function mockSiteData() {
   })
 }
 
+function mockDefaultSiteConfig() {
+  siteConfig.mockImplementation((key, fallback) => {
+    if (key === 'POST_LIST_STYLE') return 'page'
+    if (key === 'POSTS_PER_PAGE') return 12
+    if (key === 'POST_LIST_PREVIEW') return false
+    return fallback
+  })
+}
+
 function expectCleanListPost(post) {
   expect(post).toEqual(
     expect.objectContaining({
@@ -98,6 +108,7 @@ function expectCleanListPost(post) {
 describe('list page props', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockDefaultSiteConfig()
     mockSiteData()
   })
 
@@ -116,6 +127,53 @@ describe('list page props', () => {
 
     expectCleanListPost(result.props.posts[0])
     expect(result.props.allPages).toBeUndefined()
+  })
+
+  it('compacts home preview block maps when list previews are enabled', async () => {
+    siteConfig.mockImplementation((key, fallback) => {
+      if (key === 'POST_LIST_STYLE') return 'page'
+      if (key === 'POSTS_PER_PAGE') return 12
+      if (key === 'POST_LIST_PREVIEW') return true
+      if (key === 'POST_PREVIEW_MAX_COUNT') return 1
+      if (key === 'POST_PREVIEW_CONCURRENCY') return 1
+      return fallback
+    })
+    fetchGlobalAllData.mockResolvedValue({
+      NOTION_CONFIG: {},
+      allPages: [
+        {
+          ...sensitivePost,
+          password: '',
+          blockMap: undefined
+        }
+      ],
+      latestPosts: [],
+      postCount: 1
+    })
+    getPostBlocks.mockResolvedValue({
+      block: {
+        block1: {
+          value: {
+            id: 'block1',
+            type: 'text',
+            parent_id: 'post-1',
+            space_id: 'space1',
+            properties: {
+              title: [['Preview']]
+            }
+          }
+        }
+      }
+    })
+
+    const result = await getIndexStaticProps({ locale: 'zh-CN' })
+
+    expect(result.props.posts[0].blockMap.__compact_block_ids).toEqual([
+      'block1'
+    ])
+    expect(JSON.stringify(result.props.posts[0].blockMap)).not.toContain(
+      'space1'
+    )
   })
 
   it('cleans category post list props', async () => {

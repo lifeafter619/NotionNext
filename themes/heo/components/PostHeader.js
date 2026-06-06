@@ -10,6 +10,8 @@ import WavesArea from './WavesArea'
 import { useRouter } from 'next/router'
 import { useEffect, useRef } from 'react'
 
+const COVER_LOAD_TIMEOUT_MS = 1500
+
 /**
  * 文章页头
  * @param {*} param0
@@ -32,7 +34,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
 
     const timer = setTimeout(() => {
       setOnLoading(false)
-    }, 3500)
+    }, COVER_LOAD_TIMEOUT_MS)
 
     return () => clearTimeout(timer)
   }, [headerImage, post, setOnLoading])
@@ -136,6 +138,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           className='coverdiv lg:opacity-50 lg:translate-x-96 lg:rotate-12'>
           <LazyImage
             id='post-cover'
+            priority={true}
             className='w-full h-full object-cover max-h-[50rem] min-w-[50vw] min-h-[20rem]'
             src={headerImage}
             onLoad={handleCoverLoad}

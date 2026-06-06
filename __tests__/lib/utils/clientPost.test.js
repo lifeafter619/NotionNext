@@ -68,14 +68,33 @@ describe('client post data cleaning', () => {
       id: 'post1',
       title: 'Post',
       slug: 'article/post',
-      blockMap: { block: { block1: { value: { id: 'block1' } } } },
+      blockMap: {
+        block: {
+          block1: {
+            value: {
+              id: 'block1',
+              type: 'text',
+              parent_id: 'post1',
+              space_id: 'space1',
+              properties: {
+                title: [['Preview']]
+              }
+            }
+          }
+        }
+      },
       password: 'hashed-password'
     }
 
     const result = cleanPostListItemForClient(post, { keepBlockMap: true })
 
-    expect(result.blockMap).toEqual(post.blockMap)
+    expect(result.blockMap).not.toBe(post.blockMap)
+    expect(result.blockMap.__compact_block_ids).toEqual(['block1'])
+    expect(result.blockMap.__compact_block_types).toEqual(['text'])
+    expect(result.blockMap.__compact_property_keys).toEqual(['title'])
+    expect(JSON.stringify(result.blockMap)).not.toContain('space1')
     expect(result.password).toBeUndefined()
+    expect(post.blockMap.block.block1.value.space_id).toBe('space1')
   })
 
   it('keeps search payload fields only when explicitly requested', () => {

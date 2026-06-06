@@ -10,6 +10,34 @@ import { hasAlgoliaAdminConfig } from '@/lib/plugins/algoliaConfig'
 import { idToUuid } from 'notion-utils'
 import { useMemo } from 'react'
 
+const MAX_SEARCH_SNIPPETS = 3
+
+function normalizeSearchKeyword(keyword) {
+  const value = Array.isArray(keyword) ? keyword.join(' ') : keyword
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+}
+
+function joinSearchField(value) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(' ')
+  return value ? String(value) : ''
+}
+
+function getSearchSnippets(bodyContent, lowerBodyContent, searchKeyword) {
+  const results = []
+  let index = lowerBodyContent.indexOf(searchKeyword)
+
+  while (index > -1 && results.length < MAX_SEARCH_SNIPPETS) {
+    const start = Math.max(0, index - 50)
+    const end = Math.min(bodyContent.length, index + 150)
+    results.push(bodyContent.slice(start, end))
+    index = lowerBodyContent.indexOf(searchKeyword, index + searchKeyword.length)
+  }
+
+  return results
+}
+
 /**
  * 搜索路由
  * 支持搜索标题、摘要、标签、分类以及文章内容
@@ -24,46 +52,37 @@ const Search = props => {
 
   // 使用 useMemo 优化过滤性能，避免每次渲染都重新计算
   const filteredPosts = useMemo(() => {
-    if (!keyword) return []
+    const searchKeyword = normalizeSearchKeyword(keyword)
+    if (!searchKeyword) return []
 
-    const searchKeyword = keyword.toLowerCase()
-    return posts
-      .filter(post => {
-        const tagContent = Array.isArray(post?.tags)
-          ? post?.tags.join(' ')
-          : post?.tags || ''
-        const categoryContent = Array.isArray(post.category)
-          ? post.category.join(' ')
-          : post.category || ''
-        // 搜索标题、摘要、标签、分类
-        const metaContent =
-          (post.title || '') +
-          (post.summary || '') +
-          tagContent +
-          categoryContent
-        // 搜索文章内容（如果有的话）
-        const bodyContent = String(post.content || '')
-        const searchContent = metaContent + ' ' + bodyContent
-        return searchContent.toLowerCase().includes(searchKeyword)
+    return posts.reduce((results, post) => {
+      const metaContent = [
+        post.title,
+        post.summary,
+        joinSearchField(post.tags),
+        joinSearchField(post.category)
+      ].join(' ')
+      const bodyContent = String(post.content || '')
+      const lowerMetaContent = metaContent.toLowerCase()
+      const lowerBodyContent = bodyContent.toLowerCase()
+
+      if (
+        !lowerMetaContent.includes(searchKeyword) &&
+        !lowerBodyContent.includes(searchKeyword)
+      ) {
+        return results
+      }
+
+      results.push({
+        ...post,
+        results: getSearchSnippets(
+          bodyContent,
+          lowerBodyContent,
+          searchKeyword
+        )
       })
-      .map(post => {
-        const newPost = { ...post, results: [] }
-        const bodyContent = String(post.content || '')
-        const _searchKeyword = searchKeyword.toLowerCase()
-        let index = bodyContent.toLowerCase().indexOf(_searchKeyword)
-        let count = 0
-        const MAX_RESULT = 3
-        while (index > -1 && count < MAX_RESULT) {
-          const start = Math.max(0, index - 50)
-          const end = Math.min(bodyContent.length, index + 150)
-          newPost.results.push(bodyContent.slice(start, end))
-          index = bodyContent
-            .toLowerCase()
-            .indexOf(_searchKeyword, index + _searchKeyword.length)
-          count++
-        }
-        return newPost
-      })
+      return results
+    }, [])
   }, [keyword, posts])
 
   const newProps = { ...props, posts: filteredPosts }
@@ -182,6 +201,7 @@ export async function getStaticProps({ locale }) {
       return {
         id: p.id,
         slug: p.slug,
+        href: p.href,
         title: p.title,
         summary: p.summary,
         tags: p.tags,
