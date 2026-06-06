@@ -184,17 +184,20 @@ export default function SearchHighlightNav() {
   const isDragging = useRef(false)
   const dragStartMouseRef = useRef({ x: 0, y: 0 })
   const initialDragPosRef = useRef({ x: 0, y: 0 })
+  const dragHandlersRef = useRef({ mouseMove: null, mouseUp: null })
 
-  const handleMouseDown = e => {
-    isDragging.current = true
-    dragStartMouseRef.current = { x: e.clientX, y: e.clientY }
-    initialDragPosRef.current = { x: position.x, y: position.y }
+  const removeDragListeners = useCallback(() => {
+    const { mouseMove, mouseUp } = dragHandlersRef.current
+    if (mouseMove) {
+      document.removeEventListener('mousemove', mouseMove)
+    }
+    if (mouseUp) {
+      document.removeEventListener('mouseup', mouseUp)
+    }
+    dragHandlersRef.current = { mouseMove: null, mouseUp: null }
+  }, [])
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }
-
-  const handleMouseMove = e => {
+  const handleMouseMove = useCallback(e => {
     if (!isDragging.current) return
     e.preventDefault()
 
@@ -227,13 +230,38 @@ export default function SearchHighlightNav() {
     newY = Math.max(0, Math.min(newY, maxTop))
 
     setPosition({ x: newX, y: newY })
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = false
+    removeDragListeners()
+  }, [removeDragListeners])
+
+  const handleMouseDown = e => {
+    isDragging.current = true
+    dragStartMouseRef.current = { x: e.clientX, y: e.clientY }
+    initialDragPosRef.current = { x: position.x, y: position.y }
+
+    removeDragListeners()
+    dragHandlersRef.current = {
+      mouseMove: handleMouseMove,
+      mouseUp: handleMouseUp
+    }
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
   }
 
-  const handleMouseUp = () => {
-    isDragging.current = false
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', handleMouseUp)
-  }
+  useEffect(() => {
+    if (!isVisible) {
+      removeDragListeners()
+    }
+  }, [isVisible, removeDragListeners])
+
+  useEffect(() => {
+    return () => {
+      removeDragListeners()
+    }
+  }, [removeDragListeners])
 
   // 键盘快捷键支持
   useEffect(() => {

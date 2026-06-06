@@ -8,6 +8,7 @@ import { formatDateFmt } from '@/lib/utils/formatDate'
 import SmartLink from '@/components/SmartLink'
 import WavesArea from './WavesArea'
 import { useRouter } from 'next/router'
+import { useEffect, useRef } from 'react'
 
 /**
  * 文章页头
@@ -17,12 +18,37 @@ import { useRouter } from 'next/router'
 export default function PostHeader({ post, siteInfo, isDarkMode }) {
   const { setOnLoading } = useGlobal()
   const router = useRouter()
+  const headerImage = post?.pageCover ? post.pageCover : siteInfo?.pageCover
+  const pendingFontSizeRef = useRef(null)
+  const fontSizeFrameRef = useRef(null)
+
+  useEffect(() => {
+    if (!post) return
+
+    if (!headerImage) {
+      setOnLoading(false)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setOnLoading(false)
+    }, 3500)
+
+    return () => clearTimeout(timer)
+  }, [headerImage, post, setOnLoading])
+
+  useEffect(() => {
+    return () => {
+      if (fontSizeFrameRef.current) {
+        window.cancelAnimationFrame(fontSizeFrameRef.current)
+      }
+    }
+  }, [])
 
   if (!post) {
     return <></>
   }
-  // 文章头图
-  const headerImage = post?.pageCover ? post.pageCover : siteInfo?.pageCover
+
   const ANALYTICS_BUSUANZI_ENABLE = siteConfig('ANALYTICS_BUSUANZI_ENABLE')
 
   // 封面图加载完成或出错后隐藏加载指示器
@@ -59,6 +85,24 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
       undefined,
       { shallow: true }
     )
+  }
+
+  const updateArticleFontSize = value => {
+    pendingFontSizeRef.current = value
+    if (fontSizeFrameRef.current) return
+
+    fontSizeFrameRef.current = window.requestAnimationFrame(() => {
+      fontSizeFrameRef.current = null
+      const val = pendingFontSizeRef.current
+      const article = document.getElementById('notion-article')
+      if (!article) return
+
+      article.style.fontSize = `${val}px`
+      const notionElements = article.querySelectorAll('.notion')
+      notionElements.forEach(element => {
+        element.style.fontSize = `${val}px`
+      })
+    })
   }
 
   return (
@@ -193,19 +237,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                 step='1'
                 className='w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
                 onChange={e => {
-                  const val = e.target.value
-                  const article = document.getElementById('notion-article')
-                  if (article) {
-                    article.style.fontSize = `${val}px`
-                  }
-                  const notionElements = document.querySelectorAll(
-                    '#notion-article .notion'
-                  )
-                  if (notionElements) {
-                    notionElements.forEach(e => {
-                      e.style.fontSize = `${val}px`
-                    })
-                  }
+                  updateArticleFontSize(e.target.value)
                 }}
               />
               <i className='fa-solid fa-font' />

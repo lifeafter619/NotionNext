@@ -1,5 +1,5 @@
 import { Router } from 'next/router'
-import { useImperativeHandle, useRef } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import SearchInput from './SearchInput'
 const SearchDrawer = ({ cRef, slot }) => {
   const searchDrawer = useRef()
@@ -12,12 +12,17 @@ const SearchDrawer = ({ cRef, slot }) => {
       }
     }
   })
-  const hidden = () => {
+  const hidden = useCallback(() => {
     searchDrawer?.current?.classList?.add('hidden')
-  }
-  Router.events.on('routeChangeComplete', (...args) => {
-    hidden()
-  })
+  }, [])
+
+  useEffect(() => {
+    Router.events.on('routeChangeComplete', hidden)
+    return () => {
+      Router.events.off('routeChangeComplete', hidden)
+    }
+  }, [hidden])
+
   return (
     <div id='search-drawer-wrapper' ref={searchDrawer} className='hidden'>
       <div className='flex-col fixed px-5 w-full left-0 top-14 z-40 justify-center'>

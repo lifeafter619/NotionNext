@@ -93,13 +93,14 @@ github 会临时分配给您一个临时的域名，用于开发调试
 >
 > 您的电脑上需要有一个开发环境NodeJs、以及代码编辑器VSCode，
 
-1.  NodeJS 运行环境
-    <details>
-    <summary>安装步骤</summary>
+##### NodeJS 运行环境
 
-          - windows操作系统下，在官网下载安装最新版的NodeJs即可
+<details>
+<summary>安装步骤</summary>
 
-    [Node.js](https://nodejs.org/zh-cn/#home-downloadhead)
+- windows操作系统下，在官网下载安装最新版的NodeJs即可
+
+[Node.js](https://nodejs.org/zh-cn/#home-downloadhead)
 
 Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
 
@@ -109,7 +110,7 @@ Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
 >
 > 个别小版本若遇构建问题，请以 GitHub 仓库 README 与 Issues 的最新说明为准。
 
-      - 安装成功检验
+- 安装成功检验
 
 安装成功，测试安装是否成功，运行CMD，分别输入node -v 和 npm -v 分别查看node和npm的版本号，如下图所示：
 ![Untitled](/legacy/3aaab0da3bfc8fc2.png)
@@ -125,7 +126,9 @@ Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
 > 文章浏览阅读1.1k次，点赞11次，收藏5次。npm : 无法加载文件 D:\ nodejs\ npm.ps1
 
 </details>
-  1. VsCode 编辑器
+
+##### VSCode 编辑器
+
 <details>
 <summary>安装下载</summary>
 

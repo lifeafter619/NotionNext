@@ -76,8 +76,6 @@ const Collapse = ({
           element.style.height = 'auto'
         }, 400)
     }
-
-    clearTimeout(clearTime)
   }
 
   useEffect(() => {

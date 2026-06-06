@@ -71,7 +71,7 @@ const Catalog = ({
       if (onActiveSectionChange) {
         onActiveSectionChange(currentSectionId)
       }
-      const index = tocIds.indexOf(currentSectionId) || 0
+      const index = Math.max(tocIds.indexOf(currentSectionId), 0)
       if (tRef?.current) {
         // 让当前阅读的目录项居中显示
         const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14

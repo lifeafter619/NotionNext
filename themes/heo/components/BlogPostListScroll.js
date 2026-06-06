@@ -68,14 +68,23 @@ const BlogPostListScroll = ({
 
   // 监听滚动 - 使用 passive 事件监听器提高性能
   useEffect(() => {
+    if (!hasMore) {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+      }
+      return
+    }
+
     window.addEventListener('scroll', scrollTrigger, { passive: true })
     return () => {
       window.removeEventListener('scroll', scrollTrigger)
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
       }
     }
-  }, [scrollTrigger])
+  }, [hasMore, scrollTrigger])
 
   const POST_TWO_COLS = siteConfig('HEO_HOME_POST_TWO_COLS', true, CONFIG)
 

@@ -1,8 +1,6 @@
 import { siteConfig } from '@/lib/config'
-import { isBrowser } from '@/lib/utils'
-import throttle from '@/lib/utils/throttle'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import DarkModeButton from './DarkModeButton'
 import Logo from './Logo'
 import { MenuListTop } from './MenuListTop'
@@ -28,87 +26,61 @@ const Header = props => {
   const slideOverRef = useRef()
   // 缓存 #post-bg 节点的引用，避免每次滚动都重新查询 DOM
   const postBgRef = useRef(null)
+  const prevScrollYRef = useRef(0)
+  const tickingRef = useRef(false)
+  const animationFrameRef = useRef(null)
 
   const toggleMenuOpen = () => {
     slideOverRef?.current?.toggleSlideOvers()
   }
 
-  /**
-   * 根据滚动条，切换导航栏样式
-   * 用 useMemo 持有 throttle 实例，避免每次渲染重建
-   */
-  const scrollTrigger = useMemo(
-    () =>
-      throttle(() => {
-        const scrollS = window.scrollY
-        // 导航栏设置 白色背景
-        if (scrollS <= 1) {
-          setFixedNav(false)
-          setBgWhite(false)
-          setTextWhite(false)
+  const applyScrollState = useCallback(() => {
+    const scrollS = window.scrollY
 
-          // 文章详情页特殊处理
-          if (postBgRef.current) {
-            setFixedNav(true)
-            setTextWhite(true)
-          }
-        } else {
-          // 向下滚动后的导航样式
-          setFixedNav(true)
-          setTextWhite(false)
-          setBgWhite(true)
-        }
-      }, 100),
-    []
-  )
+    if (scrollS <= 1) {
+      setFixedNav(Boolean(postBgRef.current))
+      setBgWhite(false)
+      setTextWhite(Boolean(postBgRef.current))
+    } else {
+      setFixedNav(true)
+      setTextWhite(false)
+      setBgWhite(true)
+    }
+
+    setActiveIndex(scrollS > prevScrollYRef.current ? 1 : 0)
+    prevScrollYRef.current = scrollS
+  }, [])
 
   // 路由变化后重新探测 #post-bg 与初始化导航状态
   useEffect(() => {
     postBgRef.current = document.querySelector('#post-bg')
     setHasPostBg(!!postBgRef.current)
-    scrollTrigger()
-  }, [router.asPath, scrollTrigger])
+    applyScrollState()
+  }, [router.asPath, applyScrollState])
 
-  // 监听滚动
   useEffect(() => {
-    window.addEventListener('scroll', scrollTrigger, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', scrollTrigger)
-      scrollTrigger.cancel()
-    }
-  }, [scrollTrigger])
-
-  // 导航栏根据滚动轮播菜单内容
-  useEffect(() => {
-    let prevScrollY = 0
-    let ticking = false
-
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          if (currentScrollY > prevScrollY) {
-            setActiveIndex(1) // 向下滚动时设置activeIndex为1
-          } else {
-            setActiveIndex(0) // 向上滚动时设置activeIndex为0
-          }
-          prevScrollY = currentScrollY
-          ticking = false
-        })
-        ticking = true
-      }
+      if (tickingRef.current) return
+
+      tickingRef.current = true
+      animationFrameRef.current = window.requestAnimationFrame(() => {
+        applyScrollState()
+        tickingRef.current = false
+        animationFrameRef.current = null
+      })
     }
 
-    if (isBrowser) {
-      window.addEventListener('scroll', handleScroll, { passive: true })
-    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      if (isBrowser) {
-        window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll)
+      if (animationFrameRef.current) {
+        window.cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = null
       }
+      tickingRef.current = false
     }
-  }, [])
+  }, [applyScrollState])
 
   return (
     <>

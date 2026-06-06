@@ -30,6 +30,22 @@ describe('HEO VisitorInfoCard storage handling', () => {
     })
   })
 
+  it('does not refresh the displayed clock every second', () => {
+    const setIntervalSpy = jest
+      .spyOn(global, 'setInterval')
+      .mockImplementation(() => 0)
+
+    const { unmount } = render(<VisitorInfoCard />)
+
+    expect(setIntervalSpy).not.toHaveBeenCalledWith(
+      expect.any(Function),
+      1000
+    )
+
+    unmount()
+    setIntervalSpy.mockRestore()
+  })
+
   afterEach(() => {
     getItem?.mockRestore()
   })

@@ -1,18 +1,43 @@
 import { useState, useEffect } from 'react'
 import Card from './Card'
 
+const MINUTE_MS = 60000
+
+function getGreeting(hours) {
+  if (hours >= 5 && hours < 12) {
+    return '早上好~'
+  }
+  if (hours >= 12 && hours < 14) {
+    return '中午好~'
+  }
+  if (hours >= 14 && hours < 18) {
+    return '下午好~'
+  }
+  if (hours >= 18 && hours < 22) {
+    return '晚上好~'
+  }
+  return '夜深了~'
+}
+
+function getMillisecondsUntilNextMinute() {
+  const now = new Date()
+  const remainingSeconds = 60 - now.getSeconds()
+  return remainingSeconds * 1000 - now.getMilliseconds()
+}
+
 /**
  * 访客信息卡片
  * 显示用户本地时间、IP属地、阅读时间和今日访客数
  * @returns
  */
 export default function VisitorInfoCard() {
-  const [currentTime, setCurrentTime] = useState('')
-  const [greeting, setGreeting] = useState('')
+  const [clockState, setClockState] = useState({
+    currentTime: '',
+    greeting: ''
+  })
   const [location, setLocation] = useState('加载中...')
   const [readingTime, setReadingTime] = useState(0)
   const [todayVisitors, setTodayVisitors] = useState('-')
-  const [startTime] = useState(Date.now())
   const parseStoredMinutes = value => {
     const minutes = parseInt(value || '0', 10)
     return Number.isFinite(minutes) && minutes >= 0 ? minutes : 0
@@ -28,25 +53,30 @@ export default function VisitorInfoCard() {
       // 格式化时间
       const formattedHours = hours.toString().padStart(2, '0')
       const formattedMinutes = minutes.toString().padStart(2, '0')
-      setCurrentTime(`${formattedHours}时${formattedMinutes}分`)
-
-      // 根据时间设置问候语
-      if (hours >= 5 && hours < 12) {
-        setGreeting('早上好~')
-      } else if (hours >= 12 && hours < 14) {
-        setGreeting('中午好~')
-      } else if (hours >= 14 && hours < 18) {
-        setGreeting('下午好~')
-      } else if (hours >= 18 && hours < 22) {
-        setGreeting('晚上好~')
-      } else {
-        setGreeting('夜深了~')
+      const nextClockState = {
+        currentTime: `${formattedHours}时${formattedMinutes}分`,
+        greeting: getGreeting(hours)
       }
+
+      setClockState(prev =>
+        prev.currentTime === nextClockState.currentTime &&
+        prev.greeting === nextClockState.greeting
+          ? prev
+          : nextClockState
+      )
     }
 
     updateTimeAndGreeting()
-    const timer = setInterval(updateTimeAndGreeting, 1000)
-    return () => clearInterval(timer)
+    let intervalTimer = null
+    const minuteTimer = setTimeout(() => {
+      updateTimeAndGreeting()
+      intervalTimer = setInterval(updateTimeAndGreeting, MINUTE_MS)
+    }, getMillisecondsUntilNextMinute())
+
+    return () => {
+      clearTimeout(minuteTimer)
+      clearInterval(intervalTimer)
+    }
   }, [])
 
   // 更新阅读时间 - 记录当天总时间
@@ -200,9 +230,9 @@ export default function VisitorInfoCard() {
           <span className='text-sm'>
             现在是
             <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
-              {currentTime}
+              {clockState.currentTime}
             </span>
-            ，{greeting}
+            ，{clockState.greeting}
           </span>
         </div>
 

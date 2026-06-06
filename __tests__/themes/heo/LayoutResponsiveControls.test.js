@@ -1,7 +1,16 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { LayoutBase } from '@/themes/heo'
 
 let mockFullWidth = true
+let mockSideRightRenderCount = 0
+
+function setViewportWidth(width) {
+  Object.defineProperty(window, 'innerWidth', {
+    configurable: true,
+    writable: true,
+    value: width
+  })
+}
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
@@ -105,6 +114,7 @@ jest.mock('@/themes/heo/components/PostRecommend', () => () => null)
 jest.mock('@/themes/heo/components/SearchNav', () => () => null)
 jest.mock('@/themes/heo/components/SideRight', () => {
   return function SideRight({ post }) {
+    mockSideRightRenderCount += 1
     if (!post) return null
     return <aside data-testid='heo-side-right'>article-toc</aside>
   }
@@ -122,6 +132,8 @@ describe('heo responsive article controls', () => {
 
   beforeEach(() => {
     mockFullWidth = true
+    mockSideRightRenderCount = 0
+    setViewportWidth(1440)
   })
 
   it('keeps the article search header available for full-width posts', () => {
@@ -136,15 +148,30 @@ describe('heo responsive article controls', () => {
     )
   })
 
-  it('keeps the article toc area available for full-width posts', () => {
+  it('keeps the article toc area available for full-width posts', async () => {
     render(
       <LayoutBase post={post}>
         <main>Article body</main>
       </LayoutBase>
     )
 
-    expect(screen.getByTestId('heo-side-right')).toHaveTextContent(
-      'article-toc'
+    await waitFor(() => {
+      expect(screen.getByTestId('heo-side-right')).toHaveTextContent(
+        'article-toc'
+      )
+    })
+  })
+
+  it('does not mount desktop sidebar work on mobile article widths', () => {
+    setViewportWidth(390)
+
+    render(
+      <LayoutBase post={post}>
+        <main>Article body</main>
+      </LayoutBase>
     )
+
+    expect(mockSideRightRenderCount).toBe(0)
+    expect(screen.queryByTestId('heo-side-right')).not.toBeInTheDocument()
   })
 })

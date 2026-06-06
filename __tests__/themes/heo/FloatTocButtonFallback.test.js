@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import FloatTocButton from '@/themes/heo/components/FloatTocButton'
 
 jest.mock('notion-utils', () => ({
@@ -111,5 +111,57 @@ describe('heo FloatTocButton fallback toc', () => {
       expect.any(HTMLElement),
       expect.not.objectContaining({ attributes: true })
     )
+  })
+
+  it('does not build a duplicate fallback toc on desktop while the sidebar toc is present', () => {
+    window.innerWidth = 1440
+    document.body.insertAdjacentHTML('beforeend', '<aside id="sideRight"></aside>')
+
+    render(<FloatTocButton post={{ title: 'Demo article' }} lock={false} />)
+
+    expect(window.MutationObserver).not.toHaveBeenCalled()
+  })
+
+  it('cleans up desktop drag listeners when unmounted during a drag', async () => {
+    window.innerWidth = 1440
+    const addEventListenerSpy = jest.spyOn(window, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener')
+
+    const { unmount } = render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('float-toc-button')).toBeInTheDocument()
+    })
+
+    fireEvent.mouseDown(
+      document.getElementById('float-toc-button').firstElementChild,
+      {
+        clientX: 120,
+        clientY: 160
+      }
+    )
+
+    const mouseMoveHandler = addEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'mousemove'
+    )?.[1]
+    const mouseUpHandler = addEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'mouseup'
+    )?.[1]
+
+    unmount()
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'mousemove',
+      mouseMoveHandler
+    )
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpHandler)
   })
 })

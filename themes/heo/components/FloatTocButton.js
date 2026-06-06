@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Catalog from './Catalog'
 import throttle from '@/lib/utils/throttle'
@@ -32,19 +32,40 @@ export default function FloatTocButton(props) {
   // 桌面端拖拽状态
   const [desktopPos, setDesktopPos] = useState({ x: 20, y: 300 })
   const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
+  const [isDesktopViewport, setIsDesktopViewport] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth >= 1280
+  )
 
   useEffect(() => {
     setDesktopPos(prev => ({ ...prev, y: window.innerHeight / 2 - 100 }))
+  }, [])
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsDesktopViewport(window.innerWidth >= 1280)
+    }
+
+    syncViewport()
+    window.addEventListener('resize', syncViewport)
+    return () => {
+      window.removeEventListener('resize', syncViewport)
+    }
   }, [])
 
   // Use Refs for drag calculations to avoid stale closures in event listeners
   const dragStartMouseRef = useRef({ x: 0, y: 0 })
   const initialDragPosRef = useRef({ x: 0, y: 0 })
   const isMouseDownRef = useRef(false)
+  const isDraggingDesktopRef = useRef(false)
+  const desktopDragHandlersRef = useRef({ mouseMove: null, mouseUp: null })
 
   const { post, lock } = props
   const hasServerToc = Array.isArray(post?.toc) && post.toc.length > 0
-  const toc = useArticleToc(post?.toc, Boolean(post) && !lock)
+  const shouldBuildFallbackToc =
+    Boolean(post) &&
+    !lock &&
+    (hasServerToc || !isDesktopViewport || showOnDesktop)
+  const toc = useArticleToc(post?.toc, shouldBuildFallbackToc)
 
   const toggleToc = () => {
     // 如果正在拖拽，不触发点击
@@ -94,17 +115,28 @@ export default function FloatTocButton(props) {
     })
   }
 
+  const clearDesktopDragListeners = useCallback(() => {
+    const { mouseMove, mouseUp } = desktopDragHandlersRef.current
+    if (mouseMove) {
+      window.removeEventListener('mousemove', mouseMove)
+    }
+    if (mouseUp) {
+      window.removeEventListener('mouseup', mouseUp)
+    }
+    desktopDragHandlersRef.current = { mouseMove: null, mouseUp: null }
+  }, [])
+
   // 桌面端拖拽逻辑
-  // 注意：事件处理函数定义在 useEffect 外部，且使用了 Ref，所以不需要作为依赖项
-  const handleDesktopMouseMove = e => {
+  const handleDesktopMouseMove = useCallback(e => {
     if (!isMouseDownRef.current) return
 
     const deltaX = dragStartMouseRef.current.x - e.clientX // 向左移动，right增加
     const deltaY = dragStartMouseRef.current.y - e.clientY // 向上移动，bottom增加
 
     // 移动距离检查
-    if (!isDraggingDesktop) {
+    if (!isDraggingDesktopRef.current) {
       if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) return
+      isDraggingDesktopRef.current = true
       setIsDraggingDesktop(true)
     }
 
@@ -125,24 +157,29 @@ export default function FloatTocButton(props) {
     newBottom = Math.max(0, Math.min(newBottom, maxBottom))
 
     setDesktopPos({ x: newRight, y: newBottom })
-  }
+  }, [])
 
-  const handleDesktopMouseUp = e => {
+  const handleDesktopMouseUp = useCallback(() => {
     isMouseDownRef.current = false
-    window.removeEventListener('mousemove', handleDesktopMouseMove)
-    window.removeEventListener('mouseup', handleDesktopMouseUp)
+    clearDesktopDragListeners()
 
     // 延迟一点设置 dragging 为 false，防止触发 click 事件
     setTimeout(() => {
+      isDraggingDesktopRef.current = false
       setIsDraggingDesktop(false)
     }, 0)
-  }
+  }, [clearDesktopDragListeners])
 
   const handleDesktopMouseDown = e => {
+    clearDesktopDragListeners()
     isMouseDownRef.current = true
     dragStartMouseRef.current = { x: e.clientX, y: e.clientY }
     initialDragPosRef.current = { x: desktopPos.x, y: desktopPos.y }
 
+    desktopDragHandlersRef.current = {
+      mouseMove: handleDesktopMouseMove,
+      mouseUp: handleDesktopMouseUp
+    }
     window.addEventListener('mousemove', handleDesktopMouseMove)
     window.addEventListener('mouseup', handleDesktopMouseUp)
   }
@@ -174,41 +211,22 @@ export default function FloatTocButton(props) {
     setTouchStartHeight(null)
   }
 
-  // 移动端抽屉（及桌面端模拟移动端抽屉时）的鼠标拖动调整高度逻辑
-  const handleDrawerMouseDown = e => {
-    e.stopPropagation()
-    setTouchStartY(e.clientY)
-    const currentHeight = document.getElementById('toc-drawer').clientHeight
-    setTouchStartHeight(currentHeight)
-
-    // 添加全局鼠标事件监听
-    window.addEventListener('mousemove', handleDrawerMouseMove)
-    window.addEventListener('mouseup', handleDrawerMouseUp)
-  }
-
-  const handleDrawerMouseMove = e => {
-    e.preventDefault()
-    // 这里需要使用 useRef 或者直接访问 state (注意闭包问题)
-    // 由于 handleDrawerMouseMove 是定义在组件内的闭包，且 touchStartY 是 state
-    // 在 useEffect 绑定的监听器中，state 可能是旧的。
-    // 因此推荐使用 Ref 来保存拖动状态，或者直接在组件内如果不通过 addEventListener 绑定
-  }
   // 重新设计: 使用 Ref 来存储 startY 和 startHeight 以避免闭包陷阱
   const drawerDragRef = useRef({ startY: 0, startHeight: 0, isDragging: false })
+  const drawerDragHandlersRef = useRef({ mouseMove: null, mouseUp: null })
 
-  const handleDrawerMouseDownV2 = e => {
-    e.stopPropagation()
-    const currentHeight = document.getElementById('toc-drawer').clientHeight
-    drawerDragRef.current = {
-      startY: e.clientY,
-      startHeight: currentHeight,
-      isDragging: true
+  const clearDrawerDragListeners = useCallback(() => {
+    const { mouseMove, mouseUp } = drawerDragHandlersRef.current
+    if (mouseMove) {
+      window.removeEventListener('mousemove', mouseMove)
     }
-    window.addEventListener('mousemove', handleDrawerMouseMoveV2)
-    window.addEventListener('mouseup', handleDrawerMouseUpV2)
-  }
+    if (mouseUp) {
+      window.removeEventListener('mouseup', mouseUp)
+    }
+    drawerDragHandlersRef.current = { mouseMove: null, mouseUp: null }
+  }, [])
 
-  const handleDrawerMouseMoveV2 = e => {
+  const handleDrawerMouseMoveV2 = useCallback(e => {
     if (!drawerDragRef.current.isDragging) return
     e.preventDefault()
     const deltaY = drawerDragRef.current.startY - e.clientY
@@ -217,13 +235,38 @@ export default function FloatTocButton(props) {
     if (vh >= 25 && vh <= 90) {
       setDrawerHeight(`${vh}vh`)
     }
+  }, [])
+
+  const handleDrawerMouseUpV2 = useCallback(() => {
+    drawerDragRef.current.isDragging = false
+    clearDrawerDragListeners()
+  }, [clearDrawerDragListeners])
+
+  const handleDrawerMouseDownV2 = e => {
+    e.stopPropagation()
+    const currentHeight = document.getElementById('toc-drawer').clientHeight
+    clearDrawerDragListeners()
+    drawerDragRef.current = {
+      startY: e.clientY,
+      startHeight: currentHeight,
+      isDragging: true
+    }
+    drawerDragHandlersRef.current = {
+      mouseMove: handleDrawerMouseMoveV2,
+      mouseUp: handleDrawerMouseUpV2
+    }
+    window.addEventListener('mousemove', handleDrawerMouseMoveV2)
+    window.addEventListener('mouseup', handleDrawerMouseUpV2)
   }
 
-  const handleDrawerMouseUpV2 = () => {
-    drawerDragRef.current.isDragging = false
-    window.removeEventListener('mousemove', handleDrawerMouseMoveV2)
-    window.removeEventListener('mouseup', handleDrawerMouseUpV2)
-  }
+  useEffect(() => {
+    return () => {
+      isMouseDownRef.current = false
+      drawerDragRef.current.isDragging = false
+      clearDesktopDragListeners()
+      clearDrawerDragListeners()
+    }
+  }, [clearDesktopDragListeners, clearDrawerDragListeners])
 
   // 监听滚动，使用 IntersectionObserver 替代 scroll 事件以优化性能
   useEffect(() => {
@@ -233,12 +276,7 @@ export default function FloatTocButton(props) {
     }
 
     const sideRight = document.getElementById('sideRight')
-    if (
-      !sideRight ||
-      (sideRight &&
-        (sideRight.offsetParent === null ||
-          window.getComputedStyle(sideRight).display === 'none'))
-    ) {
+    if (!sideRight || window.getComputedStyle(sideRight).display === 'none') {
       setShowOnDesktop(true)
       return
     }

@@ -73,6 +73,24 @@ const LayoutBase = props => {
   // 全屏模式下的最大宽度
   const { fullWidth, isDarkMode } = useGlobal()
   const router = useRouter()
+  const [showSideRight, setShowSideRight] = useState(false)
+
+  useEffect(() => {
+    if (router.route === '/404') {
+      setShowSideRight(false)
+      return
+    }
+
+    const syncSideRightVisibility = () => {
+      setShowSideRight(window.innerWidth >= 1280)
+    }
+
+    syncSideRightVisibility()
+    window.addEventListener('resize', syncSideRightVisibility)
+    return () => {
+      window.removeEventListener('resize', syncSideRightVisibility)
+    }
+  }, [router.route])
 
   const headerSlot = (
     <header>
@@ -91,7 +109,8 @@ const LayoutBase = props => {
   )
 
   // 右侧栏 用户信息+标签列表
-  const slotRight = router.route === '/404' ? null : <SideRight {...props} />
+  const slotRight =
+    router.route === '/404' || !showSideRight ? null : <SideRight {...props} />
 
   const maxWidth = fullWidth ? 'max-w-[96rem] mx-auto' : 'max-w-[86rem]' // 普通最大宽度是86rem和顶部菜单栏对齐，留空则与窗口对齐
 

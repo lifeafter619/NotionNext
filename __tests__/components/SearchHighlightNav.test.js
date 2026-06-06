@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import SearchHighlightNav from '@/components/SearchHighlightNav'
 
 const mockReplaceSearchResult = jest.fn()
@@ -97,5 +97,37 @@ describe('SearchHighlightNav', () => {
 
     expect(screen.getByText('内容定位')).toBeInTheDocument()
     expect(screen.getByText('1')).toBeInTheDocument()
+  })
+
+  it('cleans up drag listeners when unmounted during a drag', async () => {
+    const addEventListenerSpy = jest.spyOn(document, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(document, 'removeEventListener')
+
+    const { unmount } = render(<SearchHighlightNav />)
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+
+    fireEvent.mouseDown(screen.getByText('内容定位'), {
+      clientX: 120,
+      clientY: 160
+    })
+
+    const mouseMoveHandler = addEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'mousemove'
+    )?.[1]
+    const mouseUpHandler = addEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'mouseup'
+    )?.[1]
+
+    unmount()
+
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'mousemove',
+      mouseMoveHandler
+    )
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpHandler)
   })
 })
