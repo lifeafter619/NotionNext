@@ -18,7 +18,7 @@ import TagGroups from './TagGroups'
  * 移动端的菜单在这里
  */
 export default function SlideOver(props) {
-  const { cRef, tagOptions } = props
+  const { cRef, tagOptions, openSignal = 0 } = props
   const [open, setOpen] = useState(false)
   const { locale } = useGlobal()
   const router = useRouter()
@@ -33,7 +33,7 @@ export default function SlideOver(props) {
    * 开关侧拉抽屉
    */
   const toggleSlideOvers = () => {
-    setOpen(!open)
+    setOpen(currentOpen => !currentOpen)
   }
 
   /**
@@ -41,7 +41,13 @@ export default function SlideOver(props) {
    */
   useEffect(() => {
     setOpen(false)
-  }, [router])
+  }, [router.asPath])
+
+  useEffect(() => {
+    if (openSignal > 0) {
+      setOpen(true)
+    }
+  }, [openSignal])
 
   return (
     <Transition.Root show={open} as={Fragment}>

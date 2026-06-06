@@ -6,8 +6,6 @@
  *  2. 更多说明参考此[文档](https://docs.tangly1024.com/article/notionnext-heo)
  */
 
-import { AdSlot } from '@/components/GoogleAdsense'
-import { HashTag } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import LoadingCover from '@/components/LoadingCover'
 import replaceSearchResult from '@/components/Mark'
@@ -16,8 +14,6 @@ import { useGlobal } from '@/lib/global'
 import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
-import algoliasearch from 'algoliasearch'
-import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
@@ -25,7 +21,6 @@ import dynamic from 'next/dynamic'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
 import BlogPostListScroll from './components/BlogPostListScroll'
-import BlogPostCard from './components/BlogPostCard'
 import CategoryBar from './components/CategoryBar'
 import FloatTocButton from './components/FloatTocButton'
 import Footer from './components/Footer'
@@ -37,7 +32,6 @@ import PostHeader from './components/PostHeader'
 import { PostLock } from './components/PostLock'
 import SearchNav from './components/SearchNav'
 import SearchHighlightNav from '@/components/SearchHighlightNav'
-import SideRight from './components/SideRight'
 import CONFIG from './config'
 import { Style } from './style'
 import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
@@ -60,6 +54,16 @@ const AISummary = dynamic(() => import('@/components/AISummary'), {
   ssr: false
 })
 const WWAds = dynamic(() => import('@/components/WWAds'), { ssr: false })
+const SideRight = dynamic(() => import('./components/SideRight'), {
+  ssr: false
+})
+const AdSlot = dynamic(
+  () => import('@/components/GoogleAdsense').then(module => module.AdSlot),
+  { ssr: false }
+)
+const Transition = dynamic(
+  () => import('@headlessui/react').then(module => module.Transition)
+)
 
 /**
  * 基础布局 采用上中下布局，移动端使用顶部侧边导航栏
@@ -364,18 +368,23 @@ const LayoutSearch = props => {
 
     let isActive = true
     setLoading(true)
-    const client = algoliasearch(
-      siteConfig('ALGOLIA_APP_ID'),
-      siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
-    )
-    const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
-    index
-      .search(currentSearch, {
-        attributesToSnippet: ['content:150', 'summary:100'],
-        highlightPreTag: '<span class="text-red-500 font-bold">',
-        highlightPostTag: '</span>'
-      })
-      .then(({ hits }) => {
+    const runAlgoliaSearch = async () => {
+      try {
+        const algoliaModule = await import('algoliasearch')
+        if (!isActive) return
+
+        const createAlgoliaClient = algoliaModule.default || algoliaModule
+        const client = createAlgoliaClient(
+          siteConfig('ALGOLIA_APP_ID'),
+          siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
+        )
+        const index = client.initIndex(siteConfig('ALGOLIA_INDEX'))
+        const { hits } = await index.search(currentSearch, {
+          attributesToSnippet: ['content:150', 'summary:100'],
+          highlightPreTag: '<span class="text-red-500 font-bold">',
+          highlightPostTag: '</span>'
+        })
+
         if (!isActive) return
         const uniqueHitsMap = new Map()
         hits.forEach(hit => {
@@ -397,15 +406,15 @@ const LayoutSearch = props => {
           createdTime: hit.createdTime || hit.createdTimestamp
         }))
         setAlgoliaResults(mappedHits)
-      })
-      .catch(err => {
+      } catch (err) {
         if (!isActive) return
         console.error('Algolia search failed:', err)
         setAlgoliaResults(null)
-      })
-      .finally(() => {
+      } finally {
         if (isActive) setLoading(false)
-      })
+      }
+    }
+    runAlgoliaSearch()
 
     return () => {
       isActive = false

@@ -7,7 +7,9 @@ import { MenuListTop } from './MenuListTop'
 import RandomPostButton from './RandomPostButton'
 import ReadingProgress from './ReadingProgress'
 import SearchButton from './SearchButton'
-import SlideOver from './SlideOver'
+import dynamic from 'next/dynamic'
+
+const SlideOver = dynamic(() => import('./SlideOver'), { ssr: false })
 
 /**
  * 页头：顶部导航
@@ -21,6 +23,8 @@ const Header = props => {
   const [activeIndex, setActiveIndex] = useState(0)
   // 是否存在文章页背景图（仅客户端检测）
   const [hasPostBg, setHasPostBg] = useState(false)
+  const [showSlideOver, setShowSlideOver] = useState(false)
+  const [slideOverOpenSignal, setSlideOverOpenSignal] = useState(0)
 
   const router = useRouter()
   const slideOverRef = useRef()
@@ -31,7 +35,12 @@ const Header = props => {
   const animationFrameRef = useRef(null)
 
   const toggleMenuOpen = () => {
-    slideOverRef?.current?.toggleSlideOvers()
+    if (slideOverRef?.current?.toggleSlideOvers) {
+      slideOverRef.current.toggleSlideOvers()
+      return
+    }
+    setShowSlideOver(true)
+    setSlideOverOpenSignal(signal => signal + 1)
   }
 
   const applyScrollState = useCallback(() => {
@@ -167,7 +176,13 @@ const Header = props => {
           </div>
 
           {/* 右边侧拉抽屉 */}
-          <SlideOver cRef={slideOverRef} {...props} />
+          {showSlideOver && (
+            <SlideOver
+              cRef={slideOverRef}
+              openSignal={slideOverOpenSignal}
+              {...props}
+            />
+          )}
         </div>
       </nav>
     </>

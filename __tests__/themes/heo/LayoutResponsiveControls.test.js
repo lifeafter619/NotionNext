@@ -1,7 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import { LayoutBase } from '@/themes/heo'
 
 let mockFullWidth = true
+let mockAlgoliaModuleLoadCount = 0
+let mockGoogleAdsenseModuleLoadCount = 0
+let mockHeadlessUiModuleLoadCount = 0
+let mockSideRightModuleLoadCount = 0
 let mockSideRightRenderCount = 0
 
 function setViewportWidth(width) {
@@ -26,6 +29,24 @@ jest.mock('next/router', () => ({
     }
   })
 }))
+
+jest.mock('next/dynamic', () => {
+  const React = require('react')
+  return loader => {
+    function DynamicComponent(props) {
+      const source = loader.toString()
+      if (!source.includes('SideRight')) {
+        return null
+      }
+      const mod = require('@/themes/heo/components/SideRight')
+      const LoadedComponent = mod.default || mod
+      return React.createElement(LoadedComponent, props)
+    }
+    DynamicComponent.displayName = 'LoadableComponent'
+    DynamicComponent.preload = jest.fn()
+    return DynamicComponent
+  }
+})
 
 jest.mock('@/lib/global', () => ({
   useGlobal: () => ({
@@ -60,10 +81,22 @@ jest.mock('@/lib/plugins/algoliaConfig', () => ({
   isAlgoliaSearchEnabled: jest.fn(() => false)
 }))
 
-jest.mock('algoliasearch', () => jest.fn())
-jest.mock('@/components/GoogleAdsense', () => ({
-  AdSlot: () => null
-}))
+jest.mock('algoliasearch', () => {
+  mockAlgoliaModuleLoadCount += 1
+  return jest.fn()
+})
+jest.mock('@/components/GoogleAdsense', () => {
+  mockGoogleAdsenseModuleLoadCount += 1
+  return {
+    AdSlot: () => null
+  }
+})
+jest.mock('@headlessui/react', () => {
+  mockHeadlessUiModuleLoadCount += 1
+  return {
+    Transition: ({ show, children }) => (show ? <>{children}</> : null)
+  }
+})
 jest.mock('@/components/HeroIcons', () => ({
   HashTag: () => null
 }))
@@ -113,15 +146,23 @@ jest.mock('@/themes/heo/components/PostCopyright', () => () => null)
 jest.mock('@/themes/heo/components/PostRecommend', () => () => null)
 jest.mock('@/themes/heo/components/SearchNav', () => () => null)
 jest.mock('@/themes/heo/components/SideRight', () => {
-  return function SideRight({ post }) {
-    mockSideRightRenderCount += 1
-    if (!post) return null
-    return <aside data-testid='heo-side-right'>article-toc</aside>
+  mockSideRightModuleLoadCount += 1
+  return {
+    __esModule: true,
+    default: function SideRight({ post }) {
+      mockSideRightRenderCount += 1
+      if (!post) return null
+      return <aside data-testid='heo-side-right'>article-toc</aside>
+    }
   }
 })
 jest.mock('@/themes/heo/style', () => ({
   Style: () => null
 }))
+
+function getLayoutBase() {
+  return require('@/themes/heo').LayoutBase
+}
 
 describe('heo responsive article controls', () => {
   const post = {
@@ -132,11 +173,49 @@ describe('heo responsive article controls', () => {
 
   beforeEach(() => {
     mockFullWidth = true
+    mockAlgoliaModuleLoadCount = 0
+    mockGoogleAdsenseModuleLoadCount = 0
+    mockHeadlessUiModuleLoadCount = 0
+    mockSideRightModuleLoadCount = 0
     mockSideRightRenderCount = 0
     setViewportWidth(1440)
   })
 
+  it('does not load Headless UI when only importing heo layouts', () => {
+    jest.isolateModules(() => {
+      require('@/themes/heo')
+    })
+
+    expect(mockHeadlessUiModuleLoadCount).toBe(0)
+  })
+
+  it('does not load the Google Adsense module when only importing heo layouts', () => {
+    jest.isolateModules(() => {
+      require('@/themes/heo')
+    })
+
+    expect(mockGoogleAdsenseModuleLoadCount).toBe(0)
+  })
+
+  it('does not load the Algolia client when only importing heo layouts', () => {
+    jest.isolateModules(() => {
+      require('@/themes/heo')
+    })
+
+    expect(mockAlgoliaModuleLoadCount).toBe(0)
+  })
+
+  it('does not load the desktop sidebar module when only importing heo layouts', () => {
+    jest.isolateModules(() => {
+      require('@/themes/heo')
+    })
+
+    expect(mockSideRightModuleLoadCount).toBe(0)
+  })
+
   it('keeps the article search header available for full-width posts', () => {
+    const LayoutBase = getLayoutBase()
+
     render(
       <LayoutBase post={post}>
         <main>Article body</main>
@@ -149,6 +228,8 @@ describe('heo responsive article controls', () => {
   })
 
   it('keeps the article toc area available for full-width posts', async () => {
+    const LayoutBase = getLayoutBase()
+
     render(
       <LayoutBase post={post}>
         <main>Article body</main>
@@ -164,6 +245,7 @@ describe('heo responsive article controls', () => {
 
   it('does not mount desktop sidebar work on mobile article widths', () => {
     setViewportWidth(390)
+    const LayoutBase = getLayoutBase()
 
     render(
       <LayoutBase post={post}>
@@ -171,6 +253,7 @@ describe('heo responsive article controls', () => {
       </LayoutBase>
     )
 
+    expect(mockSideRightModuleLoadCount).toBe(0)
     expect(mockSideRightRenderCount).toBe(0)
     expect(screen.queryByTestId('heo-side-right')).not.toBeInTheDocument()
   })
