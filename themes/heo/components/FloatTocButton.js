@@ -5,6 +5,40 @@ import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useArticleToc } from './useArticleToc'
 
+const DESKTOP_TOC_BREAKPOINT = 1280
+const DESKTOP_ZOOM_MIN_VIEWPORT = 720
+
+function hasDesktopPointer() {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
+    return false
+  }
+
+  return window.matchMedia('(hover: hover) and (pointer: fine)').matches
+}
+
+function getAvailableScreenWidth() {
+  if (typeof window === 'undefined') return 0
+
+  return Math.max(window.screen?.width || 0, window.outerWidth || 0)
+}
+
+function shouldUseDesktopTocMode() {
+  if (typeof window === 'undefined') return false
+
+  if (window.innerWidth >= DESKTOP_TOC_BREAKPOINT) {
+    return true
+  }
+
+  return (
+    window.innerWidth >= DESKTOP_ZOOM_MIN_VIEWPORT &&
+    getAvailableScreenWidth() >= DESKTOP_TOC_BREAKPOINT &&
+    hasDesktopPointer()
+  )
+}
+
 /**
  * 悬浮目录按钮
  * 移动端始终显示，桌面端滚动超过右侧边栏目录时显示
@@ -32,8 +66,8 @@ export default function FloatTocButton(props) {
   // 桌面端拖拽状态
   const [desktopPos, setDesktopPos] = useState({ x: 20, y: 300 })
   const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
-  const [isDesktopViewport, setIsDesktopViewport] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth >= 1280
+  const [isDesktopTocMode, setIsDesktopTocMode] = useState(() =>
+    shouldUseDesktopTocMode()
   )
 
   useEffect(() => {
@@ -42,7 +76,7 @@ export default function FloatTocButton(props) {
 
   useEffect(() => {
     const syncViewport = () => {
-      setIsDesktopViewport(window.innerWidth >= 1280)
+      setIsDesktopTocMode(shouldUseDesktopTocMode())
     }
 
     syncViewport()
@@ -64,7 +98,7 @@ export default function FloatTocButton(props) {
   const shouldBuildFallbackToc =
     Boolean(post) &&
     !lock &&
-    (hasServerToc || !isDesktopViewport || showOnDesktop)
+    (hasServerToc || !isDesktopTocMode || showOnDesktop)
   const toc = useArticleToc(post?.toc, shouldBuildFallbackToc)
 
   const toggleToc = () => {
@@ -270,7 +304,7 @@ export default function FloatTocButton(props) {
 
   // 监听滚动，使用 IntersectionObserver 替代 scroll 事件以优化性能
   useEffect(() => {
-    if (window.innerWidth < 1280) {
+    if (!isDesktopTocMode) {
       setShowOnDesktop(false)
       return
     }
@@ -304,64 +338,71 @@ export default function FloatTocButton(props) {
     return () => {
       observer.disconnect()
     }
-  }, [])
+  }, [isDesktopTocMode])
 
   // 当目录隐藏且滚动回右侧栏范围时，关闭目录弹窗
   useEffect(() => {
-    if (window.innerWidth >= 1280 && !showOnDesktop && tocVisible) {
+    if (isDesktopTocMode && !showOnDesktop && tocVisible) {
       changeTocVisible(false)
     }
-  }, [showOnDesktop, tocVisible])
+  }, [isDesktopTocMode, showOnDesktop, tocVisible])
 
   useEffect(() => {
-    if (window.innerWidth >= 1280 && toc.length > 0 && !hasServerToc) {
+    if (isDesktopTocMode && toc.length > 0 && !hasServerToc) {
       setShowOnDesktop(true)
     }
-  }, [toc.length, hasServerToc])
+  }, [isDesktopTocMode, toc.length, hasServerToc])
 
   if (!post || lock || toc.length < 1) {
     return <></>
   }
 
+  const showMobileControls = !isDesktopTocMode
+  const showDesktopFloatingToc = isDesktopTocMode && showOnDesktop
+
   return (
     <>
       {/* 移动端始终显示 */}
-      <div
-        style={{
-          right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
-          bottom: buttonPos.y !== null ? buttonPos.y + 'px' : undefined
-        }}
-        className={`fixed bottom-24 sm:bottom-28 z-50 right-4 ${showOnDesktop ? 'xl:hidden' : ''}`}
-        onTouchStart={handleButtonTouchStart}
-        onTouchMove={handleButtonTouchMove}>
-        {/* 按钮 */}
+      {showMobileControls && (
         <div
-          onClick={toggleToc}
-          className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
-          <button
-            id='toc-button'
-            className={
-              'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
-            }
-          />
-          {isExpandedButton && (
-            <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>
-          )}
+          style={{
+            right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
+            bottom: buttonPos.y !== null ? buttonPos.y + 'px' : undefined
+          }}
+          className='fixed bottom-24 sm:bottom-28 z-50 right-4'
+          onTouchStart={handleButtonTouchStart}
+          onTouchMove={handleButtonTouchMove}>
+          {/* 按钮 */}
+          <div
+            onClick={toggleToc}
+            className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+            <button
+              id='toc-button'
+              className={
+                'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
+              }
+            />
+            {isExpandedButton && (
+              <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
-      <div
-        className={`fixed z-50 right-4 ${showOnDesktop ? 'xl:hidden' : ''}`}
-        style={{
-          right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
-          bottom: buttonPos.y !== null ? buttonPos.y - 60 + 'px' : '5rem'
-        }}>
-        <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
-      </div>
+      {showMobileControls && (
+        <div
+          className='fixed z-50 right-4'
+          style={{
+            right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
+            bottom: buttonPos.y !== null ? buttonPos.y - 60 + 'px' : '5rem'
+          }}>
+          <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
+        </div>
+      )}
 
       {/* 目录弹窗 - 底部抽屉样式，打开时再挂载目录内容 */}
-      {tocVisible && (
+      {showMobileControls && tocVisible && (
         <div className='fixed inset-0 z-[60] visible'>
           <div
             className='absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-100'
@@ -404,10 +445,10 @@ export default function FloatTocButton(props) {
       )}
 
       {/* 桌面端：滚动超过右侧边栏目录后显示悬浮目录框 */}
-      {showOnDesktop && (
+      {showDesktopFloatingToc && (
         <div
           id='float-toc-button'
-          className='hidden xl:block fixed z-50'
+          className='fixed z-50'
           style={{ right: `${desktopPos.x}px`, bottom: `${desktopPos.y}px` }}>
           <div
             className='w-72 flex flex-col gap-3 select-none'
@@ -430,20 +471,19 @@ export default function FloatTocButton(props) {
                 className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
                 {tocVisible && (
                   <div className='block dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]'>
-                  <Catalog
-                    toc={toc}
-                    onActiveSectionChange={setActiveSectionId}
-                    forceSpy={true}
-                  />
+                    <Catalog
+                      toc={toc}
+                      onActiveSectionChange={setActiveSectionId}
+                      forceSpy={true}
+                    />
                   </div>
                 )}
 
                 {!tocVisible && (
                   <div className='h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500'>
                     {(activeSectionId &&
-                      toc.find(
-                        t => uuidToId(t.id || '') === activeSectionId
-                      )?.text) ||
+                      toc.find(t => uuidToId(t.id || '') === activeSectionId)
+                        ?.text) ||
                       '目录'}
                   </div>
                 )}

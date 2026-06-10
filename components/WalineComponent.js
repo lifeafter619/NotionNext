@@ -1,4 +1,4 @@
-import { createRef, useEffect } from 'react'
+import { createRef, useEffect, useState } from 'react'
 import { init } from '@waline/client'
 import { useRouter } from 'next/router'
 import '@waline/client/style'
@@ -14,6 +14,7 @@ let waline = null
 const WalineComponent = props => {
   const containerRef = createRef()
   const router = useRouter()
+  const [loadError, setLoadError] = useState(false)
 
   const updateWaline = url => {
     if (url !== path && waline) {
@@ -67,65 +68,237 @@ const WalineComponent = props => {
   }
 
   useEffect(() => {
-    if (!waline) {
-      waline = init({
-        ...props,
-        el: containerRef.current,
-        serverURL: siteConfig('COMMENT_WALINE_SERVER_URL'),
-        lang: siteConfig('LANG'),
-        locale,
-        reaction: true,
-        dark: 'html.dark',
-        emoji: [
-          '//cdn.jsdelivr.net/npm/sticker-heo@2022.7.5/Sticker-100/',
-          '//npm.elemecdn.com/@waline/emojis@1.2.0/qq',
-          '//npm.elemecdn.com/@waline/emojis@1.2.0/tieba',
-          '//npm.elemecdn.com/@waline/emojis@1.2.0/weibo',
-          '//npm.elemecdn.com/@waline/emojis@1.2.0/bilibili',
-          '//file.66619.eu.org/beluga-emoji',
-          '//file.66619.eu.org/ikun-emoji'
-        ]
-      })
-    }
+    let observer = null
+    let routeListenerRegistered = false
+    let cancelled = false
 
-    // 跳转评论
-    router.events.on('routeChangeComplete', updateWaline)
-    const anchor = window.location.hash
-    if (anchor) {
-      // 选择需要观察变动的节点
-      const targetNode = document.getElementsByClassName('wl-cards')[0]
-
-      // 当观察到变动时执行的回调函数
-      const mutationCallback = mutations => {
-        for (const mutation of mutations) {
-          const type = mutation.type
-          if (type === 'childList') {
-            const anchorElement = document.getElementById(anchor.substring(1))
-            if (anchorElement && anchorElement.className === 'wl-item') {
-              anchorElement.scrollIntoView({ block: 'end', behavior: 'smooth' })
-              setTimeout(() => {
-                anchorElement.classList.add('animate__animated')
-                anchorElement.classList.add('animate__bounceInRight')
-                observer.disconnect()
-              }, 300)
-            }
-          }
-        }
-      }
-
-      // 观察子节点 变化
-      const observer = new MutationObserver(mutationCallback)
-      observer.observe(targetNode, { childList: true })
-    }
-
-    return () => {
+    const clearWaline = () => {
       if (waline) {
         waline.destroy()
         waline = null
       }
-      router.events.off('routeChangeComplete', updateWaline)
+    }
+
+    const getLoadErrorMessage = event => {
+      if (typeof event?.reason === 'string') {
+        return event.reason
+      }
+
+      return (
+        event?.reason?.message || event?.error?.message || event?.message || ''
+      )
+    }
+
+    const getLoadErrorSource = event => {
+      return [
+        event?.reason?.stack,
+        event?.error?.stack,
+        event?.filename,
+        event?.reason?.fileName,
+        event?.error?.fileName
+      ]
+        .filter(Boolean)
+        .join('\n')
+        .toLowerCase()
+    }
+
+    const handleWalineLoadError = (event, options = {}) => {
+      const { force = false } = options
+      const message = getLoadErrorMessage(event)
+
+      if (!message.includes('Failed to fetch')) {
+        return
+      }
+
+      if (!force && !getLoadErrorSource(event).includes('@waline/client')) {
+        return
+      }
+
+      event?.preventDefault?.()
+      event?.stopImmediatePropagation?.()
+      cancelled = true
+      clearWaline()
+      setLoadError(true)
+    }
+
+    window.addEventListener('unhandledrejection', handleWalineLoadError, true)
+    window.addEventListener('error', handleWalineLoadError, true)
+
+    const serverURL = siteConfig('COMMENT_WALINE_SERVER_URL')
+    const originalFetch =
+      typeof window.fetch === 'function' ? window.fetch : null
+    let guardedFetch = null
+
+    const isWalineRequest = input => {
+      if (!serverURL) return false
+
+      try {
+        const requestUrl = typeof input === 'string' ? input : input?.url
+        if (!requestUrl) return false
+
+        const requestOrigin = new URL(requestUrl, window.location.href).origin
+        const serverOrigin = new URL(serverURL, window.location.href).origin
+        return requestOrigin === serverOrigin
+      } catch (error) {
+        return false
+      }
+    }
+
+    const createFailedWalineResponse = () => {
+      const body = JSON.stringify({
+        errno: 1,
+        errmsg: 'Failed to fetch'
+      })
+
+      if (typeof Response === 'function') {
+        return new Response(body, {
+          status: 503,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+      }
+
+      return {
+        ok: false,
+        status: 503,
+        json: async () => JSON.parse(body),
+        text: async () => body
+      }
+    }
+
+    if (originalFetch && serverURL) {
+      guardedFetch = async (...args) => {
+        try {
+          return await originalFetch(...args)
+        } catch (error) {
+          if (isWalineRequest(args[0])) {
+            handleWalineLoadError(
+              {
+                reason: error,
+                preventDefault: () => {},
+                stopImmediatePropagation: () => {}
+              },
+              { force: true }
+            )
+            return createFailedWalineResponse()
+          }
+          throw error
+        }
+      }
+
+      window.fetch = guardedFetch
+    }
+
+    const mountWaline = () => {
+      if (!waline) {
+        setLoadError(false)
+        waline = init({
+          ...props,
+          el: containerRef.current,
+          serverURL,
+          lang: siteConfig('LANG'),
+          locale,
+          reaction: true,
+          dark: 'html.dark',
+          emoji: [
+            '//cdn.jsdelivr.net/npm/sticker-heo@2022.7.5/Sticker-100/',
+            '//npm.elemecdn.com/@waline/emojis@1.2.0/qq',
+            '//npm.elemecdn.com/@waline/emojis@1.2.0/tieba',
+            '//npm.elemecdn.com/@waline/emojis@1.2.0/weibo',
+            '//npm.elemecdn.com/@waline/emojis@1.2.0/bilibili',
+            '//file.66619.eu.org/beluga-emoji',
+            '//file.66619.eu.org/ikun-emoji'
+          ]
+        })
+      }
+
+      // 跳转评论
+      router.events.on('routeChangeComplete', updateWaline)
+      routeListenerRegistered = true
+      const anchor = window.location.hash
+      if (anchor) {
+        // 选择需要观察变动的节点
+        const targetNode = document.getElementsByClassName('wl-cards')[0]
+
+        if (targetNode && typeof MutationObserver === 'function') {
+          // 当观察到变动时执行的回调函数
+          const mutationCallback = mutations => {
+            for (const mutation of mutations) {
+              const type = mutation.type
+              if (type === 'childList') {
+                const anchorElement = document.getElementById(
+                  anchor.substring(1)
+                )
+                if (anchorElement && anchorElement.className === 'wl-item') {
+                  anchorElement.scrollIntoView({
+                    block: 'end',
+                    behavior: 'smooth'
+                  })
+                  setTimeout(() => {
+                    anchorElement.classList.add('animate__animated')
+                    anchorElement.classList.add('animate__bounceInRight')
+                    observer?.disconnect()
+                  }, 300)
+                }
+              }
+            }
+          }
+
+          // 观察子节点 变化
+          observer = new MutationObserver(mutationCallback)
+          observer.observe(targetNode, { childList: true })
+        }
+      }
+    }
+
+    const startWaline = async () => {
+      try {
+        if (serverURL && typeof fetch === 'function') {
+          const response = await fetch(serverURL, { cache: 'no-store' })
+          if (response && 'ok' in response && !response.ok) {
+            throw new Error(`Waline server responded with ${response.status}`)
+          }
+        }
+        if (!cancelled) {
+          mountWaline()
+        }
+      } catch (error) {
+        if (!cancelled) {
+          waline = null
+          setLoadError(true)
+        }
+      }
+    }
+
+    startWaline()
+
+    return () => {
+      cancelled = true
+      observer?.disconnect()
+      clearWaline()
+      window.removeEventListener(
+        'unhandledrejection',
+        handleWalineLoadError,
+        true
+      )
+      window.removeEventListener('error', handleWalineLoadError, true)
+      if (guardedFetch && window.fetch === guardedFetch) {
+        window.fetch = originalFetch
+      }
+      if (routeListenerRegistered) {
+        router.events.off('routeChangeComplete', updateWaline)
+      }
     }
   }, [])
+
+  if (loadError) {
+    return (
+      <div className='text-sm text-gray-500 dark:text-gray-400'>
+        评论服务暂时不可用，请稍后再试。
+      </div>
+    )
+  }
 
   return <div ref={containerRef} />
 }

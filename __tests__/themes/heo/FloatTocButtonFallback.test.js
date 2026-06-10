@@ -16,6 +16,8 @@ jest.mock('@/lib/global', () => ({
 }))
 
 describe('heo FloatTocButton fallback toc', () => {
+  const defaultMatchMedia = window.matchMedia
+
   beforeEach(() => {
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
@@ -27,6 +29,20 @@ describe('heo FloatTocButton fallback toc', () => {
       writable: true,
       value: 844
     })
+    Object.defineProperty(window, 'devicePixelRatio', {
+      configurable: true,
+      writable: true,
+      value: 1
+    })
+    Object.defineProperty(window, 'screen', {
+      configurable: true,
+      writable: true,
+      value: {
+        width: 390,
+        height: 844
+      }
+    })
+    window.matchMedia = defaultMatchMedia
     window.IntersectionObserver = jest.fn(() => ({
       observe: jest.fn(),
       disconnect: jest.fn()
@@ -77,7 +93,10 @@ describe('heo FloatTocButton fallback toc', () => {
 
   it('keeps a floating toc entry available on desktop width', async () => {
     window.innerWidth = 1440
-    document.body.insertAdjacentHTML('beforeend', '<aside id="sideRight"></aside>')
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"></aside>'
+    )
 
     render(
       <FloatTocButton
@@ -90,7 +109,8 @@ describe('heo FloatTocButton fallback toc', () => {
     )
 
     await waitFor(() => {
-      const tocButtonWrapper = document.querySelector('#toc-button')?.parentElement
+      const tocButtonWrapper =
+        document.querySelector('#toc-button')?.parentElement
       const desktopToc = document.getElementById('float-toc-button')
       expect(
         Boolean(desktopToc) ||
@@ -115,11 +135,55 @@ describe('heo FloatTocButton fallback toc', () => {
 
   it('does not build a duplicate fallback toc on desktop while the sidebar toc is present', () => {
     window.innerWidth = 1440
-    document.body.insertAdjacentHTML('beforeend', '<aside id="sideRight"></aside>')
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"></aside>'
+    )
 
     render(<FloatTocButton post={{ title: 'Demo article' }} lock={false} />)
 
     expect(window.MutationObserver).not.toHaveBeenCalled()
+  })
+
+  it('uses the desktop floating toc at high browser zoom on desktop screens', async () => {
+    window.innerWidth = 960
+    window.innerHeight = 900
+    window.devicePixelRatio = 2
+    Object.defineProperty(window, 'screen', {
+      configurable: true,
+      writable: true,
+      value: {
+        width: 1920,
+        height: 1080
+      }
+    })
+    window.matchMedia = jest.fn().mockImplementation(query => ({
+      matches:
+        query.includes('hover: hover') || query.includes('pointer: fine'),
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('float-toc-button')).toBeInTheDocument()
+    })
+
+    expect(document.getElementById('toc-button')).not.toBeInTheDocument()
   })
 
   it('cleans up desktop drag listeners when unmounted during a drag', async () => {
@@ -162,6 +226,9 @@ describe('heo FloatTocButton fallback toc', () => {
       'mousemove',
       mouseMoveHandler
     )
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpHandler)
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'mouseup',
+      mouseUpHandler
+    )
   })
 })
