@@ -1,7 +1,11 @@
 import { defineConfig } from 'vitepress'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { getThemeSidebarItems } from '../scripts/lib/builtin-themes.mjs'
 
 const themeDocLinks = getThemeSidebarItems()
+const projectRoot = fileURLToPath(new URL('../', import.meta.url))
 
 const giscusEnabled = process.env.VITE_GISCUS_ENABLED !== 'false'
 const giscusRepoId = process.env.VITE_GISCUS_REPO_ID || ''
@@ -12,6 +16,80 @@ const giscusCategoryId = process.env.VITE_GISCUS_CATEGORY_ID || ''
  * 根目录 README 仍作为 GitHub 目录说明，不进入 VitePress。
  */
 const srcExclude = ['**/README.md', '**/README.en.md']
+
+function getMarkdownTitle(filePath: string) {
+  const content = readFileSync(filePath, 'utf8')
+  const title = content.match(/^#\s+(.+)$/m)?.[1]?.trim()
+  return title || filePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || filePath
+}
+
+function getLastUpdatedAt(filePath: string) {
+  try {
+    const timestamp = execFileSync('git', ['log', '-1', '--format=%ct', '--', filePath], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim()
+
+    if (timestamp) {
+      return Number(timestamp) * 1000
+    }
+  } catch {
+    // Fall back to filesystem time when git history is unavailable in a deploy checkout.
+  }
+
+  return statSync(filePath).mtimeMs
+}
+
+function toDocLink(repoPath: string) {
+  let link = `/${repoPath.replace(/^docs\//, '').replace(/\.md$/, '')}`
+
+  if (link.endsWith('/index')) {
+    link = link.slice(0, -'/index'.length) || '/'
+  }
+
+  return link
+}
+
+function getUpdatedDocs() {
+  const trackedDocs = execFileSync('git', ['ls-files', 'docs'], {
+    cwd: projectRoot,
+    encoding: 'utf8'
+  })
+    .split(/\r?\n/)
+    .filter((repoPath) => {
+      return (
+        repoPath.endsWith('.md') &&
+        !repoPath.endsWith('/README.md') &&
+        !repoPath.endsWith('/README.en.md') &&
+        !repoPath.includes('/public/')
+      )
+    })
+
+  return trackedDocs
+    .map((repoPath) => {
+      const filePath = fileURLToPath(new URL(`../${repoPath}`, import.meta.url))
+
+      if (!existsSync(filePath)) {
+        return null
+      }
+
+      return {
+        link: toDocLink(repoPath),
+        title: getMarkdownTitle(filePath),
+        updatedAt: Math.floor(getLastUpdatedAt(filePath)),
+        isIndex: repoPath.endsWith('/index.md')
+      }
+    })
+    .filter(
+      (item): item is { link: string; title: string; updatedAt: number; isIndex: boolean } =>
+        Boolean(item)
+    )
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+}
+
+const updatedDocs = getUpdatedDocs()
+const recentUpdatedDocs = updatedDocs.filter((doc) => !doc.isIndex).slice(0, 5)
 
 export default defineConfig({
   title: 'NotionNext 使用说明',
@@ -41,11 +119,18 @@ export default defineConfig({
   },
   themeConfig: {
     logo: '/brand/notionnext-logo.png',
+    updatedDocs,
+    recentUpdatedDocs,
     nav: [
       {
         text: '开始搭建',
         link: '/user-guide/start-here',
         activeMatch: '/user-guide/'
+      },
+      {
+        text: '更新日志',
+        link: '/user-guide/changelog/latest',
+        activeMatch: '/user-guide/changelog/'
       },
       {
         text: '主题',
@@ -80,6 +165,16 @@ export default defineConfig({
             { text: '配置站点', link: '/user-guide/config-site' },
             { text: '菜单 Menu', link: '/user-guide/menu-secondary' },
             { text: '升级', link: '/user-guide/update' }
+          ]
+        },
+        {
+          text: '更新日志',
+          items: [
+            { text: '最新版本', link: '/user-guide/changelog/latest' },
+            { text: 'V4 历史', link: '/user-guide/changelog/v4-history' },
+            { text: 'V3 历史', link: '/user-guide/changelog/v3-history' },
+            { text: 'V2 历史', link: '/user-guide/changelog/v2-history' },
+            { text: 'V1 历史', link: '/user-guide/changelog/v1-history' }
           ]
         },
         {
@@ -375,17 +470,6 @@ export default defineConfig({
             { text: '迁移索引', link: '/user-guide/ARTICLE_INDEX' }
           ]
         },
-        {
-          text: '更新日志',
-          collapsed: true,
-          items: [
-            { text: '最新版本', link: '/user-guide/changelog/latest' },
-            { text: 'V4 历史', link: '/user-guide/changelog/v4-history' },
-            { text: 'V3 历史', link: '/user-guide/changelog/v3-history' },
-            { text: 'V2 历史', link: '/user-guide/changelog/v2-history' },
-            { text: 'V1 历史', link: '/user-guide/changelog/v1-history' }
-          ]
-        }
       ],
       '/developer/': [
         {

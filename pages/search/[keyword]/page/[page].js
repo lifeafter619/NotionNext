@@ -4,6 +4,7 @@ import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
+import { getPageBlockCacheKey } from '@/lib/db/notion/getPostBlocks'
 
 const SEARCH_CONCURRENCY = 4
 
@@ -156,7 +157,7 @@ async function filterByMemCache(allPosts, keyword) {
       return hit ? nextPost : null
     }
 
-    const cacheKey = 'page_block_' + post.id
+    const cacheKey = getPageBlockCacheKey(post.id, post.lastEditedDate)
     const page = await getDataFromCache(cacheKey, true)
     let indexContent = [post.summary]
     if (page && page.block) {
@@ -179,14 +180,12 @@ async function filterByMemCache(allPosts, keyword) {
         hit = true
         hitCount += 1
         nextPost.results.push(c)
-      } else {
-        if (
-          hitCount === 0 ||
-          (nextPost.results.length - 1) / hitCount < 3 ||
-          index === 0
-        ) {
-          nextPost.results.push(c)
-        }
+      } else if (
+        hitCount === 0 ||
+        (nextPost.results.length - 1) / hitCount < 3 ||
+        index === 0
+      ) {
+        nextPost.results.push(c)
       }
     }
 

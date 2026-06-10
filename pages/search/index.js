@@ -157,7 +157,9 @@ export async function getStaticProps({ locale }) {
       // 尝试获取全文内容
       if (!newPost.content && !newPost.blockMap?.rawText) {
         try {
-          const blockMap = await getPage(post.id, 'search-index')
+          const blockMap = await getPage(post.id, 'search-index', {
+            cacheVersion: post.lastEditedDate
+          })
           // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
           const pId = idToUuid(post.id)
           let contentIds = []
@@ -166,7 +168,7 @@ export async function getStaticProps({ locale }) {
           } else if (blockMap?.block) {
             // 兼容id不一致的情况
             const blockId = Object.keys(blockMap.block).find(
-              id => blockMap.block[id].value.type === 'page'
+              id => blockMap.block[id]?.value?.type === 'page'
             )
             if (blockId) {
               contentIds = blockMap.block[blockId].value.content

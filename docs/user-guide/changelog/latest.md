@@ -1,41 +1,53 @@
 # 最新版本与更新日志
 
-> 当前主线：**4.10.0**（见根目录 `package.json`）
+> 当前主线：**4.10.2**（见根目录 `package.json`）
 
-## 4.10.0 发布要点
+## 4.10.2 发布要点
 
-本版本是一次以「多主题站点性能」为核心的较大版本更新。目标是在保留现有主题视觉、站点配置和插件能力的前提下，减少浏览器首屏负担，降低高频滚动场景的主线程压力，并把页面数据体积纳入可验收的性能预算。
+本版本重点提升静态导出与 Cloudflare Pages 等平台的构建效率，并修复 Giscus 登录回跳后仍提示登录的问题。
 
-### 性能优化
+### 构建性能优化
 
-- 首页和列表页默认只向浏览器发送文章卡片所需的摘要字段，避免把完整 Notion 页面对象序列化进 `__NEXT_DATA__`。
-- 文章页保留渲染所需 `blockMap`，同时清理 Notion 内部版本、权限、空间、编辑时间等客户端不需要的元数据。
-- `latestPosts`、上一篇/下一篇、推荐文章等数据统一走轻量摘要结构，减少主题切换、列表渲染和 hydration 阶段的 JSON 解析成本。
-- `type=notice` 公告内容会清理无关 block 与 collection 数据，但仍保留 NotionPage 渲染和内部链接转换所需结构。
-- 新增 `yarn perf:page-data`，可在 `yarn build` 后扫描 `.next/server/pages/*.json` 并生成 `.perf/page-data-budget.json`，用于检查页面数据是否超过默认 128KB 预算。
+- 新增 Notion 页面正文的版本化构建缓存：正文缓存键会带上文章 `lastEditedDate`，未更新过的文章在下一次构建中可直接复用上次缓存。
+- 构建开始时仍会重新拉取 Notion 数据库索引，确保新文章、隐藏文章、删除文章、slug 与更新时间可以及时生效。
+- 构建清理策略改为只清理数据库索引、静态路径与当前构建 session 等临时缓存，默认保留版本化 `page_block` 正文缓存。
+- `prefetchAllBlockMaps` 会优先检查版本化正文缓存；缓存命中时不再请求 Notion 页面正文。
+- 单篇文章页、公告页和全文搜索读取正文缓存时统一使用版本化缓存键，避免预热缓存和页面渲染缓存不一致。
+- 新增 `NOTION_BUILD_CACHE_PURGE_DATA=true`，需要彻底清理构建缓存时可手动开启。
 
-### 多主题体验
+### Giscus 评论修复
 
-- 批量优化主题目录、进度条、返回顶部、浮动按钮等滚动监听，使用 `passive: true` 和 `requestAnimationFrame` 降低滚动时的同步阻塞。
-- Next 与 Endspace 主题合并重复滚动管线，减少同一页面内多个组件重复计算阅读进度和目录激活状态。
-- Typography 搜索高亮改为按需加载和空闲时执行，避免首页、文章页提前加载搜索高亮逻辑。
-- 全局外部插件、站点自定义 CSS/JS 和 `GLOBAL_JS` 改为浏览器副作用阶段执行，降低服务端渲染和初始渲染阶段的副作用风险。
+- 修复 Giscus OAuth 回跳后 `?giscus=...` 参数被页面容器过早清理的问题。
+- 现在 Giscus 脚本会先消费 OAuth 回调 token 并写入 `localStorage`，再清理地址栏参数，避免登录后仍显示“登录后可以评论”。
 
-### 修复与回归保护
+### 同期主线修复
 
-- 保留并验证 `allLinkPages` 链接解析逻辑，避免公告栏 `type=notice` 中指向 `type=Page` 的 Notion 内链再次退化为 raw Notion page id 并产生 404。
-- 新增 `convertInnerUrl` 回归测试，覆盖公告内容中 raw Notion page id 通过 `allLinkPages` 转为站内 Page 链接的路径。
-- 保持 `allNavPages` 仍为 post-only，避免影响主题文章导航、随机文章和推荐文章等既有用法。
+本轮 4.10.2 发布窗口也同步记录了 4.10.1 之后主线上的多项修复：
 
-### 验收结果
+- 修复嵌入式 Notion collection view 数据未过滤导致页面数据膨胀、无关集合记录泄露到页面 props 的问题。
+- 修复 Notion 新结构中 `sync_block` 的 `content` ID 数组解析问题，避免同步块内容缺失。
+- 修复没有 `properties.title` 的 quote block 渲染异常，提升 Notion 块结构兼容性。
+- 修复数据库页面解析中视图筛选条件因短 ID / UUID 格式不一致而失效的问题。
+- 修复 Fuwari 主题首次渲染时主题色相未立即应用的问题，避免初屏色彩与配置不一致。
+- 修复 Magzine 主题推荐标签默认值处理，避免未配置推荐标签时推荐逻辑异常。
 
-- `yarn -s type-check`：通过。
-- `yarn -s build`：通过。
-- `yarn -s perf:page-data`：通过，构建后真实页面 `overBudgetPages: 0`。
-- 首页 page-data 从约 291KB 降至约 37KB；开发态浏览器烟测中首页 `__NEXT_DATA__` 约 34.5KB。
-- `/article/guide?theme=endspace` 浏览器烟测通过，控制台无新增错误。
+### 适用场景
 
-> 说明：当前工作区直接运行 Jest 仍会被既有 `canvas.node` 原生绑定缺失问题阻塞；新增回归测试文件本身已通过 ESLint，并用运行态脚本验证了核心链接映射逻辑。
+- Cloudflare Pages、Netlify、Vercel 或自托管 CI 中使用 `yarn build` / `yarn export`。
+- 文章数量较多，但每次发布只修改少量 Notion 页面。
+- 构建日志里频繁出现大量 `from:prefetch` / `getPage` 请求，或者部署时间主要消耗在 Notion 页面正文拉取。
+
+### 使用说明
+
+- Cloudflare Pages 请确保 Build cache 已开启，平台才能在下一次构建恢复 `.next/cache`。
+- 正常情况下无需设置新环境变量。
+- 如果怀疑构建缓存损坏，临时设置 `NOTION_BUILD_CACHE_PURGE_DATA=true` 后重新部署一次即可清空持久正文缓存。
+
+### 验证
+
+- `npx eslint lib\db\notion\getPostBlocks.js lib\build\prefetch.js lib\db\SiteDataApi.js pages\search\[keyword]\index.js pages\search\[keyword]\page\[page].js next.config.js`：通过。
+- `node -e "require('./next.config.js')"`：通过。
+- `git diff --check`：通过。
 
 ## 如何升级
 

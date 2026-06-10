@@ -109,7 +109,13 @@ const preBuild = (function () {
   const sessionFile = path.join(notionCacheRoot, 'build-session.json')
   const sessionId = `${process.env.npm_lifecycle_event}-${Date.now()}-${process.pid}`
 
-  fs.rmSync(dataDir, { recursive: true, force: true })
+  if (process.env.NOTION_BUILD_CACHE_PURGE_DATA === 'true') {
+    fs.rmSync(dataDir, { recursive: true, force: true })
+    console.log('Purged persistent Notion data cache')
+  } else {
+    pruneTransientNotionDataCache(dataDir)
+    console.log('Preserved versioned Notion page block cache')
+  }
   fs.rmSync(prefetchDir, { recursive: true, force: true })
   fs.mkdirSync(notionCacheRoot, { recursive: true })
   fs.writeFileSync(
@@ -127,6 +133,38 @@ const preBuild = (function () {
   )
   console.log('Prepared Notion build session', sessionId)
 })()
+
+function isVersionedPageBlockCacheKey(key) {
+  return /^page_block_.+_\d{10,}$/.test(String(key || ''))
+}
+
+function pruneTransientNotionDataCache(dataDir) {
+  if (!fs.existsSync(dataDir)) {
+    return
+  }
+
+  let removed = 0
+  let kept = 0
+  for (const name of fs.readdirSync(dataDir)) {
+    if (!name.endsWith('.json')) continue
+
+    const file = path.join(dataDir, name)
+    try {
+      const entry = JSON.parse(fs.readFileSync(file, 'utf8'))
+      if (isVersionedPageBlockCacheKey(entry?.key)) {
+        kept++
+        continue
+      }
+    } catch {}
+
+    fs.rmSync(file, { force: true })
+    removed++
+  }
+
+  console.log(
+    `Pruned transient Notion cache entries: removed=${removed} kept=${kept}`
+  )
+}
 
 /**
  * @type {import('next').NextConfig}

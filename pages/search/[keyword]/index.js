@@ -4,7 +4,10 @@ import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 import { getPageContentText } from '@/lib/db/notion/getPageContentText'
-import { fetchNotionPageBlocks as getPage } from '@/lib/db/notion/getPostBlocks'
+import {
+  fetchNotionPageBlocks as getPage,
+  getPageBlockCacheKey
+} from '@/lib/db/notion/getPostBlocks'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { idToUuid } from 'notion-utils'
 
@@ -132,21 +135,24 @@ async function filterByMemCache(allPosts, keyword) {
     let hit = articleInfo.toLowerCase().includes(normalizedKeyword)
 
     if (post.password) {
-      return hit ? nextPost : null
+      return hit ? { ...nextPost, content: null, blockMap: undefined } : null
     }
 
-    const cacheKey = 'page_block_' + post.id
+    const cacheKey = getPageBlockCacheKey(post.id, post.lastEditedDate)
     let page = await getDataFromCache(cacheKey, true)
     if (!page) {
-      page = await getPage(post.id, 'search-index')
+      page = await getPage(post.id, 'search-index', {
+        cacheVersion: post.lastEditedDate
+      })
     }
+
     const pId = idToUuid(post.id)
     if (page?.block?.[pId]?.value?.content) {
       nextPost.content = page.block[pId].value.content
     } else if (page?.block) {
       // 兼容id不一致的情况
       const blockId = Object.keys(page.block).find(
-        id => page.block[id].value.type === 'page'
+        id => page.block[id]?.value?.type === 'page'
       )
       if (blockId) {
         nextPost.content = page.block[blockId].value.content

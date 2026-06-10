@@ -11,7 +11,10 @@ jest.mock('@/lib/cache/cache_manager', () => ({
 }))
 
 jest.mock('@/lib/db/notion/getPostBlocks', () => ({
-  fetchNotionPageBlocks: jest.fn(async () => ({ block: {} }))
+  fetchNotionPageBlocks: jest.fn(async () => ({ block: {} })),
+  getPageBlockCacheKey: jest.fn((id, cacheVersion) =>
+    cacheVersion ? `page_block_${id}_${cacheVersion}` : `page_block_${id}`
+  )
 }))
 
 jest.mock('@/lib/db/notion/getPageContentText', () => ({
