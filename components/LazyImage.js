@@ -2,6 +2,19 @@ import { siteConfig } from '@/lib/config'
 import Head from 'next/head'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+const getImageTargetWidth = (width, maxWidth) => {
+  const parsedWidth = Number(width)
+  const parsedMaxWidth = Number(maxWidth)
+
+  if (Number.isFinite(parsedWidth) && parsedWidth > 0) {
+    return Number.isFinite(parsedMaxWidth) && parsedMaxWidth > 0
+      ? Math.min(parsedWidth, parsedMaxWidth)
+      : parsedWidth
+  }
+
+  return maxWidth
+}
+
 /**
  * 图片懒加载
  * @param {*} param0
@@ -25,9 +38,10 @@ export default function LazyImage({
   sizes
 }) {
   const maxWidth = siteConfig('IMAGE_COMPRESS_WIDTH')
+  const targetImageWidth = getImageTargetWidth(width, maxWidth)
   const defaultPlaceholderSrc = siteConfig('IMG_LAZY_LOAD_PLACEHOLDER')
   const placeholderImageSrc = placeholderSrc || defaultPlaceholderSrc
-  const optimizedImageSrc = adjustImgSize(src, maxWidth) || src
+  const optimizedImageSrc = adjustImgSize(src, targetImageWidth) || src
   const initialImageSrc = priority
     ? optimizedImageSrc || placeholderImageSrc
     : placeholderImageSrc
@@ -85,7 +99,7 @@ export default function LazyImage({
     setCurrentSrc(placeholderImageSrc)
 
     // 检查浏览器是否支持IntersectionObserver
-    if (!window.IntersectionObserver) {
+    if (typeof window !== 'undefined' && !window.IntersectionObserver) {
       // 降级处理：直接加载图片
       setCurrentSrc(adjustedImageSrc)
       return
@@ -116,12 +130,9 @@ export default function LazyImage({
       }
     }
   }, [
-    maxWidth,
     optimizedImageSrc,
-    src,
     priority,
     defaultPlaceholderSrc,
-    fallbackSrc,
     handleImageError,
     placeholderImageSrc
   ])
@@ -199,6 +210,7 @@ export default function LazyImage({
             href={optimizedImageSrc}
             imageSrcSet={srcSet}
             imageSizes={imgProps.sizes}
+            fetchpriority='high'
           />
         </Head>
       )}
@@ -241,7 +253,7 @@ export function adjustImgSize(src, maxWidth) {
     return null
   }
 
-  const targetWidth = getTargetImageWidth(maxWidth)
+  const targetWidth = getViewportTargetWidth(maxWidth)
   return replaceImageWidthParam(src, targetWidth)
 }
 
@@ -253,7 +265,7 @@ function normalizeImageWidth(width) {
   return 1080
 }
 
-function getTargetImageWidth(maxWidth) {
+function getViewportTargetWidth(maxWidth) {
   const maxImageWidth = normalizeImageWidth(maxWidth)
 
   if (typeof window === 'undefined') {

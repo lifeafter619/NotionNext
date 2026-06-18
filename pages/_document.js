@@ -2,6 +2,21 @@
 import BLOG from '@/blog.config'
 import Document, { Head, Html, Main, NextScript } from 'next/document'
 
+const fontAwesomeLoadScript = BLOG.FONT_AWESOME
+  ? `
+(function() {
+  var link = document.getElementById('font-awesome-css');
+  if (!link) return;
+  var enable = function() { link.media = 'all'; };
+  if (link.sheet) {
+    enable();
+  } else {
+    link.addEventListener('load', enable, { once: true });
+  }
+})()
+`
+  : ''
+
 // 预先设置深色模式的脚本内容
 export const darkModeScript = `
 (function() {
@@ -71,6 +86,18 @@ class MyDocument extends Document {
             href='https://npm.elemecdn.com'
             crossOrigin='anonymous'
           />
+          {BLOG.FONT_AWESOME && (
+            <>
+              <link
+                rel='preconnect'
+                href='https://cdnjs.cloudflare.com'
+                crossOrigin='anonymous'
+              />
+              <link rel='dns-prefetch' href='//cdnjs.cloudflare.com' />
+            </>
+          )}
+          <link rel='preconnect' href='https://images.unsplash.com' />
+          <link rel='dns-prefetch' href='//images.unsplash.com' />
 
           {/* 预加载字体样式表 */}
           {fontUrls
@@ -107,11 +134,30 @@ class MyDocument extends Document {
                 crossOrigin='anonymous'
               />
               <link
+                id='font-awesome-css'
                 rel='stylesheet'
                 href={BLOG.FONT_AWESOME}
+                media='print'
                 crossOrigin='anonymous'
                 referrerPolicy='no-referrer'
               />
+              <style
+                dangerouslySetInnerHTML={{
+                  __html:
+                    '@font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:900;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/webfonts/fa-solid-900.woff2") format("woff2")}@font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/webfonts/fa-regular-400.woff2") format("woff2")}@font-face{font-family:"Font Awesome 6 Brands";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/webfonts/fa-brands-400.woff2") format("woff2")}.fa,.fas,.far,.fab,.fa-solid,.fa-regular,.fa-brands{display:inline-block;min-width:1em;text-align:center}'
+                }}
+              />
+              <script
+                dangerouslySetInnerHTML={{ __html: fontAwesomeLoadScript }}
+              />
+              <noscript>
+                <link
+                  rel='stylesheet'
+                  href={BLOG.FONT_AWESOME}
+                  crossOrigin='anonymous'
+                  referrerPolicy='no-referrer'
+                />
+              </noscript>
             </>
           )}
 
