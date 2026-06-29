@@ -35,6 +35,25 @@
 >
 > NotionNext如何配置Algolia
 
+
+## ⚠️ Cloudflare Pages 构建镜像 V1 弃用通知
+
+> **🚨 重要：V1 构建镜像将于 2026 年 9 月 15 日弃用**
+>
+> 如果你正在使用 Cloudflare Pages 的 **V1 构建镜像**（旧版环境），你的项目将在 2026 年 9 月 15 日被自动迁移到 V3。
+> 建议你提前手动升级，以避免自动迁移可能带来的构建问题。
+>
+> **V3 构建镜像的核心变化：**
+> - Node.js 默认版本从 12.18.0 升级到 **22.16.0**
+> - Yarn 默认版本从 1.22.4 升级到 **4.9.1**（Berry）
+> - npm 默认版本从 6.14.4 升级到 **10.9.2**
+> - Ubuntu 从 18.04 升级到 **22.04.2**
+>
+> **关键注意事项：** V3 默认使用 Yarn 4.x（Berry），不再兼容 Yarn 1.x 格式的 `yarn.lock` 文件。
+> 必须设置 `YARN_VERSION=1.22.22` 环境变量以保持兼容。
+>
+> 详情参见下方 [V3 构建镜像迁移指南](#v3-构建镜像迁移指南)。
+
 ## 开始
 
 访问CloudFlarePage
@@ -76,13 +95,30 @@ yarn export
 - 输出根目录 `out`
   ![Untitled](/legacy/010491fba650a2e6.png)
 
+### 构建镜像版本选择
+
+Cloudflare Pages 提供 V1、V2、V3 三个版本的构建镜像。**V1 将于 2026-09-15 弃用**，建议现在切换到 V3。
+
+在项目 Dashboard 中操作：**Settings** > **Build** > **Build image version** > 为 **Production** 和 **Preview** 环境都选择 **v3**。
+
 ### 环境变量
+
+在项目 **Settings** > **Environment variables** 中添加以下变量，同时应用到 Production 和 Preview 环境：
+
+| 变量名 | 值 | 说明 |
+|--------|-----|------|
+| `NODE_VERSION` | `20` | Node.js 版本（V3 默认 22，项目使用 20） |
+| `YARN_VERSION` | `1.22.22` | **必需**：V3 默认 Yarn 4.x，必须指定 Yarn 1.x |
+| `BUILD_MODE` | `true` | 启用构建模式 |
+| `EXPORT` | `true` | 启用静态导出 |
+
+> **🔑 `YARN_VERSION` 是最关键的变量**：V3 默认使用 Yarn 4.9.1（Berry），无法读取本项目 Yarn 1.x 格式的 `yarn.lock`，必须设置此变量。
+
+V3 还支持通过文件检测 Node.js 版本（`.nvmrc` 和 `.node-version`），本项目已包含这两个文件作为双保险。
 
 配置效果如下
 
 ![image.png](/legacy/ff8e259828f3e6cf.png)
-
-配置说明，新版本的NotionNext中，NODE_VERSION要更新为`**20**`版本。
 
 最后点击保存并部署即可。
 
@@ -92,6 +128,62 @@ yarn export
 
 ![Untitled](/legacy/2283354350ed2532.png)
 
+
+## V3 构建镜像迁移指南
+
+### 构建镜像版本对比
+
+| 组件 | V1（旧版，即将弃用） | V2 | V3（推荐） |
+|------|---------------------|-----|-----------|
+| Node.js | 12.18.0 | 18.20.8 | **22.16.0** |
+| Yarn | 1.22.4 | 4.1.1 | **4.9.1** |
+| npm | 6.14.4 | 9.6.6 | **10.9.2** |
+| Ubuntu | 18.04 | 22.04.2 | **22.04.2** |
+| 弃用日期 | **2026-09-15** | 2027-02-23 | N/A（最新） |
+
+### V3 迁移步骤
+
+1. 进入 [Cloudflare Dashboard](https://dash.cloudflare.com/) > **Workers & Pages** > 选择你的 Pages 项目
+2. 前往 **Settings** > **Build** > **Build image version**
+3. 为 **Production** 和 **Preview** 环境都选择 **v3**
+4. 在 **Settings** > **Environment variables** 中添加 `YARN_VERSION` = `1.22.22`
+5. 确保 `NODE_VERSION` 设置为 `20`（或依赖 `.nvmrc` / `.node-version` 文件自动检测）
+6. 保存设置，触发一次新的部署验证构建成功
+
+### V3 重要限制
+
+V3 构建镜像与 V1/V2 有以下行为差异，需要注意：
+
+- **不读取 `package.json` 的 `engines` 字段**：Node.js 和包管理器版本不会从 `engines` 中检测
+- **不检测 `yarn.lock` 文件版本**：不会根据 lockfile 格式自动选择 Yarn 版本
+- **不检测 `pnpm-lock.yaml` 文件版本**：需要手动设置 `PNPM_VERSION`
+- **不支持 Node.js 版本代号**：如 `hydrogen`、`lts/hydrogen`，必须使用数字版本号
+- **不支持 pipenv 和 Pipfile**
+
+### V3 完整配置清单
+
+| 配置项 | 类型 | 值 | 说明 |
+|--------|------|-----|------|
+| Build command | 构建设置 | `yarn export` | 静态导出命令 |
+| Output directory | 构建设置 | `out` | 静态文件输出目录 |
+| Build image version | 构建设置 | **v3** | 生产和预览环境都选 v3 |
+| `NODE_VERSION` | 环境变量 | `20` | Node.js 20.x |
+| `YARN_VERSION` | 环境变量 | `1.22.22` | **必需** — 保持 Yarn Classic |
+| `BUILD_MODE` | 环境变量 | `true` | 构建模式 |
+| `EXPORT` | 环境变量 | `true` | 静态导出模式 |
+| `.nvmrc` | 项目文件 | `20.18.0` | Node 版本文件（V3 支持） |
+| `.node-version` | 项目文件 | `20.18.0` | Node 版本文件（V3 支持） |
+
+### 版本固定最佳实践
+
+> **💡 最佳实践**
+>
+> 为避免 V3 构建镜像的自动软件更新导致构建失败，建议：
+> 1. 通过环境变量固定关键工具的版本（如 `YARN_VERSION`、`NODE_VERSION`）
+> 2. 关注 [Cloudflare Changelog](https://developers.cloudflare.com/changelog/) 了解预装软件的更新计划
+> 3. 主要版本更新前会提前 3 个月通知，minor 更新可能无通知
+> 4. 在 Preview 环境先验证新配置，再应用到 Production
+
 ## FAQ
 
 部署失败？如果你的构建日志中出现：
@@ -100,7 +192,11 @@ yarn export
 YN0070: Migrating from Yarn 1; automatically enabling the compatibility node-modules linker 👍
 ```
 
-可能是Cloudflare升级环境导致不兼容，解决方法：**降级为旧版构建环境，然后点击重试**
+或类似 Yarn 版本不兼容的错误，说明你正在使用 V3 构建镜像但未配置 `YARN_VERSION`。
+
+解决方法：**按照上方 [V3 构建镜像迁移指南](#v3-构建镜像迁移指南) 配置环境变量，而不是降级到旧版环境**。
+
+如果已正确配置 `YARN_VERSION=1.22.22` 仍有问题，可临时降级为旧版构建环境：
 
 ![Untitled](/legacy/8094169b65d52e78.png)
 

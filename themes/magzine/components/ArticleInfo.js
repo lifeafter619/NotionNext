@@ -46,6 +46,8 @@ export default function ArticleInfo(props) {
           <LazyImage
             alt={post?.title}
             src={post?.pageCover}
+            width={1200}
+            height={675}
             className='object-cover max-h-[60vh] w-full'
           />
         </div>

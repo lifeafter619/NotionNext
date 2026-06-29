@@ -478,6 +478,7 @@ export default defineConfig({
           items: [
             { text: '开发文档首页', link: '/developer/' },
             { text: '快速上手', link: '/developer/GETTING_STARTED' },
+            { text: '愿景与路线图', link: '/developer/VISION_ROADMAP' },
             { text: '架构总览', link: '/developer/ARCHITECTURE' },
             { text: '目录与模块', link: '/developer/PROJECT_STRUCTURE' },
             { text: '配置体系', link: '/developer/CONFIGURATION' },
@@ -495,6 +496,7 @@ export default defineConfig({
             { text: '维护者手册', link: '/developer/MAINTAINER_RUNBOOK.zh-CN' },
             { text: '版本更新说明', link: '/developer/UPDATE' },
             { text: '社区路线图', link: '/developer/COMMUNITY_SITE_ROADMAP' },
+            { text: '5.0 愿景与参与方向', link: '/developer/VISION_ROADMAP' },
             { text: 'RFC', link: '/developer/rfc/' }
           ]
         },

@@ -48,6 +48,7 @@ export default function LazyImage({
   const imageRef = useRef(null)
   const fallbackIndexRef = useRef(0)
   const [currentSrc, setCurrentSrc] = useState(initialImageSrc)
+  const [imageLoaded, setImageLoaded] = useState(Boolean(priority && src))
 
   const handleImageError = useCallback(() => {
     const fallbackCandidates = getFallbackCandidates([
@@ -66,6 +67,7 @@ export default function LazyImage({
         imageRef.current.src = nextFallbackSrc
         setCurrentSrc(nextFallbackSrc)
       }
+      setImageLoaded(true)
       imageRef.current.classList.remove('lazy-image-placeholder')
     }
     if (typeof onError === 'function') {
@@ -80,6 +82,7 @@ export default function LazyImage({
     if (typeof onLoad === 'function') {
       onLoad()
     }
+    setImageLoaded(true)
     if (imageRef.current) {
       imageRef.current.classList.remove('lazy-image-placeholder')
     }
@@ -93,10 +96,12 @@ export default function LazyImage({
 
     if (priority) {
       setCurrentSrc(adjustedImageSrc)
+      setImageLoaded(Boolean(adjustedImageSrc))
       return
     }
 
     setCurrentSrc(placeholderImageSrc)
+    setImageLoaded(false)
 
     // 检查浏览器是否支持IntersectionObserver
     if (typeof window !== 'undefined' && !window.IntersectionObserver) {
@@ -176,7 +181,7 @@ export default function LazyImage({
     alt: alt || 'Lazy loaded image',
     onLoad: handleImageLoaded,
     onError: handleImageError,
-    className: `${className || ''} lazy-image-placeholder`,
+    className: `${className || ''}${imageLoaded ? '' : ' lazy-image-placeholder'}`,
     style,
     onClick,
     // 性能优化属性

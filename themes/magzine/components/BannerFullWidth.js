@@ -19,6 +19,8 @@ export default function BannerFullWidth() {
       <LazyImage
         alt={siteInfo?.title}
         src={siteInfo?.pageCover}
+        width={1200}
+        height={384}
         className={`banner-cover w-full lg:h-96 object-cover object-center `}
       />
 

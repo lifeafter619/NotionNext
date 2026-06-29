@@ -137,14 +137,15 @@ yarn dev
 
 NotionNext 主仓库由 GitHub 组织 [notionnext-org](https://github.com/notionnext-org) 维护。欢迎提交问题、补充文档、贡献主题、修复代码或参与讨论。
 
-| 内容     | 链接                                                                           |
-| -------- | ------------------------------------------------------------------------------ |
-| 参与社区 | [community-participate.md](./docs/user-guide/community-participate.md)         |
-| 贡献指南 | [CONTRIBUTING.zh-CN.md](./CONTRIBUTING.zh-CN.md)                               |
-| 项目治理 | [GOVERNANCE.zh-CN.md](./GOVERNANCE.zh-CN.md)                                   |
-| 维护者   | [MAINTAINERS.md](./MAINTAINERS.md)                                             |
-| 行为准则 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)                                     |
-| 讨论区   | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
+| 内容             | 链接                                                                           |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 参与社区         | [community-participate.md](./docs/user-guide/community-participate.md)         |
+| 5.0 愿景与路线图 | [VISION_ROADMAP.md](./docs/developer/VISION_ROADMAP.md)                        |
+| 贡献指南         | [CONTRIBUTING.zh-CN.md](./CONTRIBUTING.zh-CN.md)                               |
+| 项目治理         | [GOVERNANCE.zh-CN.md](./GOVERNANCE.zh-CN.md)                                   |
+| 维护者           | [MAINTAINERS.md](./MAINTAINERS.md)                                             |
+| 行为准则         | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)                                     |
+| 讨论区           | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
 
 如果你在仓库转让前已克隆旧地址，建议更新远程仓库：
 
