@@ -46,10 +46,11 @@ function shouldUseDesktopTocMode() {
 export default function FloatTocButton(props) {
   const [tocVisible, changeTocVisible] = useState(false)
   const [showOnDesktop, setShowOnDesktop] = useState(false)
+  const [showMobileActions, setShowMobileActions] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState(null)
 
   // 移动端按钮展开状态
-  const [isExpandedButton, setIsExpandedButton] = useState(true)
+  const [isExpandedButton, setIsExpandedButton] = useState(false)
   // 移动端按钮位置偏移 {x: right, y: bottom}
   const [buttonPos, setButtonPos] = useState(
     /** @type {{x: number | null, y: number | null}} */ ({
@@ -86,6 +87,33 @@ export default function FloatTocButton(props) {
     }
   }, [])
 
+  useEffect(() => {
+    if (isDesktopTocMode) {
+      setShowMobileActions(false)
+      return
+    }
+
+    let frameId = null
+    const syncMobileActions = () => {
+      frameId = null
+      const hasPostHero = Boolean(document.getElementById('post-bg'))
+      setShowMobileActions(!hasPostHero || window.scrollY > 280)
+    }
+    const handleScroll = () => {
+      if (frameId) return
+      frameId = window.requestAnimationFrame(syncMobileActions)
+    }
+
+    syncMobileActions()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (frameId) {
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+  }, [isDesktopTocMode])
+
   // Use Refs for drag calculations to avoid stale closures in event listeners
   const dragStartMouseRef = useRef({ x: 0, y: 0 })
   const initialDragPosRef = useRef({ x: 0, y: 0 })
@@ -107,7 +135,7 @@ export default function FloatTocButton(props) {
     changeTocVisible(!tocVisible)
   }
 
-  // 初始加载6秒后收缩移动端按钮
+  // 初始加载后确保移动端按钮保持紧凑，避免遮挡正文。
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsExpandedButton(false)
@@ -363,13 +391,13 @@ export default function FloatTocButton(props) {
   return (
     <>
       {/* 移动端始终显示 */}
-      {showMobileControls && (
+      {showMobileControls && showMobileActions && (
         <div
           style={{
             right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
             bottom: buttonPos.y !== null ? buttonPos.y + 'px' : undefined
           }}
-          className='fixed bottom-24 sm:bottom-28 z-50 right-4'
+          className='fixed bottom-36 sm:bottom-40 z-50 right-4'
           onTouchStart={handleButtonTouchStart}
           onTouchMove={handleButtonTouchMove}>
           {/* 按钮 */}
@@ -378,10 +406,13 @@ export default function FloatTocButton(props) {
             className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
             <button
               id='toc-button'
+              type='button'
+              aria-label='打开目录导航'
               className={
                 'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
-              }
-            />
+              }>
+              <span className='sr-only'>目录导航</span>
+            </button>
             {isExpandedButton && (
               <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>
             )}
@@ -390,12 +421,15 @@ export default function FloatTocButton(props) {
       )}
 
       {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
-      {showMobileControls && (
+      {showMobileControls && showMobileActions && (
         <div
           className='fixed z-50 right-4'
           style={{
             right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
-            bottom: buttonPos.y !== null ? buttonPos.y - 60 + 'px' : '5rem'
+            bottom:
+              buttonPos.y !== null
+                ? Math.max(16, buttonPos.y - 60) + 'px'
+                : 'calc(5rem + env(safe-area-inset-bottom))'
           }}>
           <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
         </div>
@@ -427,7 +461,8 @@ export default function FloatTocButton(props) {
               </div>
               <button
                 onClick={toggleToc}
-                className='p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'>
+                className='w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'
+                aria-label='关闭目录导航'>
                 <i className='fas fa-times' />
               </button>
             </div>
@@ -645,6 +680,8 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
         onClick={handleJump}
         className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none cursor-pointer`}>
         <button
+          type='button'
+          aria-label='跳转评论'
           className={
             'fas fa-comments cursor-pointer w-7 h-7 flex items-center justify-center shrink-0'
           }

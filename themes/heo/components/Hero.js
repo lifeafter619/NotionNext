@@ -25,7 +25,7 @@ const Hero = props => {
         id='hero'
         style={{ zIndex: 1 }}
         className={`${HEO_HERO_REVERSE ? 'xl:flex-row-reverse' : ''}
-           recent-post-top rounded-[12px] 2xl:px-5 recent-top-post-group max-w-[86rem] overflow-x-scroll w-full mx-auto flex-row flex-nowrap flex relative`}>
+           recent-post-top rounded-[12px] 2xl:px-5 recent-top-post-group max-w-[86rem] overflow-hidden w-full mx-auto flex-row flex-nowrap flex relative`}>
         {/* 左侧banner组 */}
         <BannerGroup {...props} />
 
@@ -48,7 +48,7 @@ function BannerGroup(props) {
     // 左侧英雄区
     <div
       id='bannerGroup'
-      className='flex flex-col justify-between flex-1 mr-2 max-w-[42rem]'>
+      className='flex flex-col justify-between flex-none xl:flex-1 mr-2 max-w-[42rem] snap-start'>
       {/* 动图 */}
       <Banner {...props} />
       {/* 导航分类 */}
@@ -232,17 +232,18 @@ function TopGroup(props) {
     <div
       id='hero-right-wrapper'
       onMouseLeave={handleMouseLeave}
-      className='flex-1 relative w-full'>
+      className='flex-1 min-w-0 relative snap-start'>
       {/* 置顶推荐文章 */}
       <div
         id='top-group'
-        className='w-full flex space-x-3 xl:space-x-0 xl:grid xl:grid-cols-3 xl:gap-3 xl:h-[342px]'>
+        className='w-full flex space-x-3 xl:space-x-0 xl:grid xl:grid-cols-3 xl:gap-3 xl:h-[342px] overflow-x-auto xl:overflow-visible snap-x snap-mandatory pb-1 xl:pb-0'>
         {topPosts?.map((p, index) => {
           return (
             <SmartLink
               href={`${siteConfig('SUB_PATH', '')}/${p?.slug}`}
-              key={index}>
-              <div className='cursor-pointer h-[164px] group relative flex flex-col w-52 xl:w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
+              key={index}
+              className='block shrink-0 w-full min-w-full sm:w-52 sm:min-w-[13rem] xl:min-w-0 xl:w-full snap-start'>
+              <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 <LazyImage
                   priority={index === 0 && p?.pageCoverThumbnail}
                   className='h-24 object-cover'

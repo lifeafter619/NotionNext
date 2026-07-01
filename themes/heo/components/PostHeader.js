@@ -110,7 +110,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
   return (
     <div
       id='post-bg'
-      className='md:mb-0 -mb-5 w-full h-[30rem] relative md:flex-shrink-0 overflow-hidden bg-cover bg-center bg-no-repeat z-10'
+      className='md:mb-0 -mb-5 w-full h-[32rem] sm:h-[30rem] relative md:flex-shrink-0 overflow-hidden bg-cover bg-center bg-no-repeat z-10'
       style={{
         '--heo-post-bg-accent': isDarkMode ? '#CA8A04' : '#0060e0'
       }}>
@@ -149,7 +149,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
         {/* 文章文字描述 */}
         <div
           id='post-info'
-          className='absolute top-48 z-10 flex flex-col space-y-4 lg:-mt-12 w-full max-w-[86rem] px-5'>
+          className='absolute top-40 sm:top-48 z-10 flex flex-col space-y-4 lg:-mt-12 w-full max-w-[86rem] px-5'>
           {/* 分类+标签 */}
           <div className='flex justify-center md:justify-start items-center gap-4'>
             {post.category && (
@@ -187,7 +187,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           </div>
 
           {/* 文章Title */}
-          <div className='max-w-5xl font-bold text-3xl lg:text-5xl md:leading-snug shadow-text-md flex  justify-center md:justify-start text-white'>
+          <div className='max-w-5xl mx-auto md:mx-0 font-bold text-2xl sm:text-3xl lg:text-5xl leading-tight md:leading-snug shadow-text-md flex justify-center md:justify-start text-center md:text-left text-white break-words'>
             {siteConfig('POST_TITLE_ICON') && (
               <NotionIcon icon={post.pageIcon} />
             )}
@@ -195,9 +195,9 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           </div>
 
           {/* 标题底部补充信息 */}
-          <section className='flex-wrap dark:text-gray-200 text-opacity-70 shadow-text-md flex text-sm  justify-center md:justify-start mt-4 text-white font-light leading-8'>
-            <div className='flex justify-center '>
-              <div className='mr-2'>
+          <section className='flex flex-wrap items-center gap-x-3 gap-y-2 dark:text-gray-200 text-opacity-70 shadow-text-md text-sm justify-center md:justify-start mt-4 text-white font-light leading-7'>
+            <div className='flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2 min-w-0'>
+              <div className='whitespace-nowrap'>
                 <WordCount
                   wordCount={post.wordCount}
                   readTime={post.readTime}
@@ -208,14 +208,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   <SmartLink
                     href={`/archive#${formatDateFmt(post?.publishDate, 'yyyy-MM')}`}
                     passHref
-                    className='pl-1 mr-2 cursor-pointer hover:underline'>
+                    className='cursor-pointer hover:underline whitespace-nowrap'>
                     <i className='fa-regular fa-calendar'></i>{' '}
                     {post?.publishDay}
                   </SmartLink>
                 </>
               )}
 
-              <div className='pl-1 mr-2'>
+              <div className='whitespace-nowrap'>
                 <i className='fa-regular fa-calendar-check'></i>{' '}
                 {post.lastEditedDay}
               </div>
@@ -223,14 +223,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
 
             {/* 阅读统计 */}
             {ANALYTICS_BUSUANZI_ENABLE && (
-              <div className='busuanzi_container_page_pv font-light mr-2'>
+              <div className='busuanzi_container_page_pv font-light whitespace-nowrap'>
                 <i className='fa-solid fa-fire-flame-curved'></i>{' '}
                 <span className='mr-2 busuanzi_value_page_pv' />
               </div>
             )}
 
             {/* 字体大小调节 */}
-            <div className='flex items-center gap-2 pl-1 mr-2'>
+            <div className='flex items-center justify-center gap-2 w-full sm:w-auto'>
               <i className='fa-solid fa-font text-xs' />
               <input
                 type='range'
@@ -247,12 +247,12 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             </div>
 
             {/* 文章内搜索框 */}
-            <div className='flex items-center pl-1 mr-2'>
+            <div className='flex items-center justify-center w-full sm:w-auto'>
               <div className='relative group'>
                 <input
                   type='text'
                   placeholder='在文中搜索...'
-                  className='w-24 focus:w-40 transition-all duration-300 px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none'
+                  className='w-36 sm:w-32 focus:w-44 max-w-[calc(100vw-3rem)] transition-all duration-300 px-3 py-2 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none text-gray-900 dark:text-gray-100'
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       searchInArticle(e.target.value)
@@ -260,7 +260,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                   }}
                 />
                 <i
-                  className='fa-solid fa-magnifying-glass absolute right-2 top-1.5 text-gray-400 text-xs cursor-pointer'
+                  className='fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-gray-400 text-xs cursor-pointer'
                   onClick={e => {
                     const input = e.target.previousElementSibling
                     searchInArticle(input.value)

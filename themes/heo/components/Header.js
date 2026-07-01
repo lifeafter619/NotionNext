@@ -135,7 +135,7 @@ const Header = props => {
             ${fixedNav ? 'fixed' : 'relative bg-transparent'} 
             ${textWhite ? 'text-white ' : 'text-black dark:text-white'}  
             ${navBgWhite ? 'bg-white dark:bg-[#18171d] shadow' : 'bg-transparent'}`}>
-        <div className='flex h-full mx-auto justify-between items-center max-w-[86rem] px-6'>
+        <div className='flex h-full mx-auto justify-between items-center max-w-[86rem] px-4 sm:px-6 gap-3'>
           {/* 左侧logo */}
           <Logo {...props} />
 
@@ -157,7 +157,7 @@ const Header = props => {
           </div>
 
           {/* 右侧固定 */}
-          <div className='flex flex-shrink-0 justify-end items-center w-48'>
+          <div className='flex flex-shrink-0 justify-end items-center w-auto lg:w-48 gap-1'>
             <RandomPostButton {...props} />
             <SearchButton {...props} />
             {!JSON.parse(siteConfig('THEME_SWITCH')) && (
@@ -170,7 +170,16 @@ const Header = props => {
             {/* 移动端菜单按钮 */}
             <div
               onClick={toggleMenuOpen}
-              className='flex lg:hidden w-8 justify-center items-center h-8 cursor-pointer'>
+              className='flex lg:hidden w-11 justify-center items-center h-11 cursor-pointer rounded-full hover:bg-black hover:bg-opacity-10 transition-colors'
+              role='button'
+              aria-label='打开菜单'
+              tabIndex={0}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  toggleMenuOpen()
+                }
+              }}>
               <i className='fas fa-bars' />
             </div>
           </div>
