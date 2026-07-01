@@ -262,7 +262,7 @@ BEI_AN_GONGAN: '' , // 添加公安备案 京公网安备 xxxxx号
 设置在列表页是否展示文章内容，还是只是展示标题和摘要。
 
 ```JavaScript
-POST_LIST_STYLE: 'page', // ['page','scroll] 文章列表样式:页码分页、单页滚动加载
+POST_LIST_STYLE: 'page', // ['page','scroll'] 文章列表样式:页码分页、单页滚动加载
 POST_LIST_PREVIEW: process.env.NEXT_PUBLIC_POST_PREVIEW || 'false', //  是否在列表加载文章预览
 POSTS_PER_PAGE: 12, // post counts per page
 ```

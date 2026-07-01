@@ -20,6 +20,7 @@ const SideBar = props => {
             src={siteInfo?.icon}
             className='cursor-pointer rounded-full'
             width={80}
+            height={80}
             alt={siteConfig('AUTHOR')}
           />
           <div className='text-white text-xl my-1'>{siteConfig('TITLE')}</div>

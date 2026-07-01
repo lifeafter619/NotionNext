@@ -177,6 +177,61 @@ describe('Notion data format compatibility', () => {
     expect(pageIds).not.toContain('hidden_page')
   })
 
+  it('extracts page ids from reducerResults collection group data', () => {
+    const pageIds = getAllPageIds(
+      {
+        collection_1: {
+          view_1: {
+            reducerResults: {
+              collection_group_results: {
+                blockIds: ['page_1', 'page_2']
+              }
+            }
+          }
+        }
+      },
+      'collection_1',
+      {},
+      ['view_1'],
+      {}
+    )
+
+    expect(pageIds).toEqual(['page_1', 'page_2'])
+  })
+
+  it('does not merge reducerResults when collection group results are explicitly empty', () => {
+    const pageIds = getAllPageIds(
+      {
+        collection_1: {
+          view_1: {
+            collection_group_results: {
+              blockIds: []
+            },
+            reducerResults: {
+              collection_group_results: {
+                blockIds: ['filtered_out_page']
+              }
+            }
+          }
+        }
+      },
+      'collection_1',
+      {
+        view_1: {
+          value: {
+            value: {
+              page_sort: ['filtered_out_page']
+            }
+          }
+        }
+      },
+      ['view_1'],
+      {}
+    )
+
+    expect(pageIds).toEqual([])
+  })
+
   it('does not fall back to page_sort when the selected view query is empty', () => {
     const pageIds = getAllPageIds(
       {
@@ -359,6 +414,287 @@ describe('Notion data format compatibility', () => {
     expect(blockMap.collection_view.view_1.value.value.page_sort).toEqual([
       'published_page'
     ])
+  })
+
+  it('matches multi-select contains filters when values are comma-separated', () => {
+    const blockMap = {
+      block: {
+        tech_page: {
+          value: {
+            id: 'tech_page',
+            type: 'page',
+            properties: {
+              tags: [['Tech,Life']]
+            }
+          }
+        },
+        life_page: {
+          value: {
+            id: 'life_page',
+            type: 'page',
+            properties: {
+              tags: [['Life']]
+            }
+          }
+        }
+      },
+      collection: {
+        collection_1: {
+          value: {
+            schema: {
+              tags: { name: 'Tags', type: 'multi_select' }
+            }
+          }
+        }
+      },
+      collection_view: {
+        view_1: {
+          value: {
+            value: {
+              id: 'view_1',
+              page_sort: ['tech_page', 'life_page'],
+              format: {
+                collection_pointer: { id: 'collection_1' },
+                property_filters: [
+                  {
+                    filter: {
+                      property: 'tags',
+                      filter: {
+                        operator: 'multi_select_contains',
+                        value: { type: 'exact', value: 'Tech' }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      collection_query: {
+        collection_1: {
+          view_1: {
+            collection_group_results: {
+              blockIds: ['tech_page', 'life_page']
+            }
+          }
+        }
+      }
+    }
+
+    filterCollectionViewData(blockMap)
+
+    expect(
+      blockMap.collection_query.collection_1.view_1.collection_group_results
+        .blockIds
+    ).toEqual(['tech_page'])
+    expect(blockMap.collection_view.view_1.value.value.page_sort).toEqual([
+      'tech_page'
+    ])
+  })
+
+  it('matches multi-select does-not-contain filters when values are comma-separated', () => {
+    const blockMap = {
+      block: {
+        tech_page: {
+          value: {
+            id: 'tech_page',
+            type: 'page',
+            properties: {
+              tags: [['Tech,Life']]
+            }
+          }
+        },
+        life_page: {
+          value: {
+            id: 'life_page',
+            type: 'page',
+            properties: {
+              tags: [['Life']]
+            }
+          }
+        }
+      },
+      collection: {
+        collection_1: {
+          value: {
+            schema: {
+              tags: { name: 'Tags', type: 'multi_select' }
+            }
+          }
+        }
+      },
+      collection_view: {
+        view_1: {
+          value: {
+            value: {
+              id: 'view_1',
+              page_sort: ['tech_page', 'life_page'],
+              format: {
+                collection_pointer: { id: 'collection_1' },
+                property_filters: [
+                  {
+                    filter: {
+                      property: 'tags',
+                      filter: {
+                        operator: 'multi_select_does_not_contain',
+                        value: { type: 'exact', value: 'Tech' }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      collection_query: {
+        collection_1: {
+          view_1: {
+            collection_group_results: {
+              blockIds: ['tech_page', 'life_page']
+            }
+          }
+        }
+      }
+    }
+
+    filterCollectionViewData(blockMap)
+
+    expect(
+      blockMap.collection_query.collection_1.view_1.collection_group_results
+        .blockIds
+    ).toEqual(['life_page'])
+    expect(blockMap.collection_view.view_1.value.value.page_sort).toEqual([
+      'life_page'
+    ])
+  })
+
+  it('normalizes reducerResults collection group data for gallery rendering', () => {
+    const blockMap = {
+      block: {
+        page_1: {
+          value: {
+            id: 'page_1',
+            type: 'page',
+            properties: {
+              title: [['Gallery item']]
+            }
+          }
+        }
+      },
+      collection: {
+        collection_1: {
+          value: {
+            schema: {
+              title: { name: 'title', type: 'title' }
+            }
+          }
+        }
+      },
+      collection_view: {
+        view_1: {
+          value: {
+            value: {
+              id: 'view_1',
+              type: 'gallery',
+              format: {
+                collection_pointer: { id: 'collection_1' },
+                gallery_cover: { type: 'page_content' }
+              }
+            }
+          }
+        }
+      },
+      collection_query: {
+        collection_1: {
+          view_1: {
+            reducerResults: {
+              collection_group_results: {
+                blockIds: ['page_1'],
+                hasMore: false,
+                type: 'results'
+              }
+            }
+          }
+        }
+      }
+    }
+
+    filterCollectionViewData(blockMap)
+
+    expect(
+      blockMap.collection_query.collection_1.view_1.collection_group_results
+        .blockIds
+    ).toEqual(['page_1'])
+  })
+
+  it('does not replace existing collection group results with reducerResults', () => {
+    const blockMap = {
+      block: {
+        visible_page: {
+          value: {
+            id: 'visible_page',
+            type: 'page',
+            properties: {
+              title: [['Visible']]
+            }
+          }
+        },
+        reducer_only_page: {
+          value: {
+            id: 'reducer_only_page',
+            type: 'page',
+            properties: {
+              title: [['Reducer only']]
+            }
+          }
+        }
+      },
+      collection: {
+        collection_1: {
+          value: {
+            schema: {
+              title: { name: 'title', type: 'title' }
+            }
+          }
+        }
+      },
+      collection_view: {
+        view_1: {
+          value: {
+            value: {
+              id: 'view_1',
+              type: 'gallery',
+              format: {
+                collection_pointer: { id: 'collection_1' }
+              }
+            }
+          }
+        }
+      },
+      collection_query: {
+        collection_1: {
+          view_1: {
+            collection_group_results: {
+              blockIds: ['visible_page']
+            },
+            reducerResults: {
+              collection_group_results: {
+                blockIds: ['reducer_only_page']
+              }
+            }
+          }
+        }
+      }
+    }
+
+    filterCollectionViewData(blockMap)
+
+    expect(
+      blockMap.collection_query.collection_1.view_1.collection_group_results
+        .blockIds
+    ).toEqual(['visible_page'])
   })
 
   it('matches localized Notion status values through status groups', () => {

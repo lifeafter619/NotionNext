@@ -225,6 +225,8 @@ const ThemeSwitch = () => {
                         src={meta.coverWebp || meta.coverPng}
                         fallbackSrc={meta.coverPng}
                         alt={`${meta.name} preview`}
+                        width={320}
+                        height={180}
                         className='w-full cursor-pointer rounded-xl object-cover shadow-inner transition duration-300 hover:scale-[1.02]'
                       />
                       {active && (

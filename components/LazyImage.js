@@ -35,7 +35,8 @@ export default function LazyImage({
   onError,
   onClick,
   style,
-  sizes
+  sizes,
+  loading
 }) {
   const maxWidth = siteConfig('IMAGE_COMPRESS_WIDTH')
   const targetImageWidth = getImageTargetWidth(width, maxWidth)
@@ -182,10 +183,14 @@ export default function LazyImage({
     onLoad: handleImageLoaded,
     onError: handleImageError,
     className: `${className || ''}${imageLoaded ? '' : ' lazy-image-placeholder'}`,
-    style,
+    style: {
+      aspectRatio: width && height ? `${width} / ${height}` : undefined,
+      containIntrinsicSize: width || height ? undefined : '300px 200px',
+      ...style
+    },
     onClick,
     // 性能优化属性
-    loading: priority ? 'eager' : 'lazy',
+    loading: priority ? 'eager' : loading || 'lazy',
     fetchpriority: priority ? 'high' : undefined,
     decoding: 'async',
     // 现代图片格式支持

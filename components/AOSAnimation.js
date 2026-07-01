@@ -18,7 +18,13 @@ export default function AOSAnimation() {
 
     let cancelled = false
     const cancelTask = scheduleIdleTask(async () => {
-      if (cancelled || !document.querySelector('[data-aos]')) return
+      if (
+        cancelled ||
+        !document.querySelector('[data-aos]') ||
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      ) {
+        return
+      }
 
       await Promise.all([
         loadExternalResource('/js/aos.js', 'js'),
@@ -27,7 +33,12 @@ export default function AOSAnimation() {
 
       if (!cancelled && window.AOS) {
         if (!aosInitialized) {
-          window.AOS.init()
+          window.AOS.init({
+            disableMutationObserver: true,
+            debounceDelay: 100,
+            throttleDelay: 120,
+            once: true
+          })
           aosInitialized = true
         } else if (window.AOS.refreshHard) {
           window.AOS.refreshHard()
@@ -46,10 +57,10 @@ export default function AOSAnimation() {
 
 function scheduleIdleTask(callback) {
   if (window.requestIdleCallback) {
-    const taskId = window.requestIdleCallback(callback, { timeout: 1500 })
+    const taskId = window.requestIdleCallback(callback, { timeout: 3000 })
     return () => window.cancelIdleCallback?.(taskId)
   }
 
-  const timeoutId = window.setTimeout(() => callback(), 0)
+  const timeoutId = window.setTimeout(() => callback(), 2000)
   return () => window.clearTimeout(timeoutId)
 }

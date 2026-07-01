@@ -43,6 +43,7 @@ export default function ArticleInfo(props) {
               src={siteInfo?.icon}
               className='rounded-full cursor-pointer'
               width={22}
+              height={22}
               alt={siteConfig('AUTHOR')}
             />
 

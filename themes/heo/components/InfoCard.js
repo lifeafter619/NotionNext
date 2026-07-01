@@ -65,6 +65,7 @@ export function InfoCard(props) {
             src={siteInfo?.icon}
             className='rounded-full'
             width={isSlugPage ? 100 : 28}
+            height={isSlugPage ? 100 : 28}
             alt={siteConfig('AUTHOR')}
           />
         </div>

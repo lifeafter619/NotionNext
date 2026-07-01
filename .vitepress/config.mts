@@ -479,6 +479,7 @@ export default defineConfig({
             { text: '开发文档首页', link: '/developer/' },
             { text: '快速上手', link: '/developer/GETTING_STARTED' },
             { text: '愿景与路线图', link: '/developer/VISION_ROADMAP' },
+            { text: '开放生态长期计划', link: '/developer/LONG_TERM_PLAN' },
             { text: '架构总览', link: '/developer/ARCHITECTURE' },
             { text: '目录与模块', link: '/developer/PROJECT_STRUCTURE' },
             { text: '配置体系', link: '/developer/CONFIGURATION' },

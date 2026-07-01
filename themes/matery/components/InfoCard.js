@@ -19,6 +19,7 @@ export function InfoCard(props) {
           src={siteInfo?.icon}
           className='rounded-full'
           width={120}
+          height={120}
           alt={siteConfig('AUTHOR')}
         />
       </div>
