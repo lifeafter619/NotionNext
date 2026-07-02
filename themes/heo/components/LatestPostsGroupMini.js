@@ -33,9 +33,8 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
       </div>
       {latestPosts.map((post, index) => {
         const selected = currentPath === `${SUB_PATH}/${post.slug}`
-        const headerImage = post?.pageCoverThumbnail
-          ? post.pageCoverThumbnail
-          : siteInfo?.pageCover
+        const headerImage =
+          post?.pageCoverThumbnail || post?.pageCover || siteInfo?.pageCover
 
         return (
           <SmartLink

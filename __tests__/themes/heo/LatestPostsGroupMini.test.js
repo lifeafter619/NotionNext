@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import LatestPostsGroupMini from '@/themes/heo/components/LatestPostsGroupMini'
 
 jest.mock('@/lib/config', () => ({
@@ -48,6 +48,29 @@ jest.mock('@/components/SmartLink', () => {
 })
 
 describe('heo LatestPostsGroupMini', () => {
+  it('uses the post cover when the thumbnail cover is missing', () => {
+    render(
+      <LatestPostsGroupMini
+        siteInfo={{ pageCover: '/site-cover.jpg' }}
+        latestPosts={[
+          {
+            id: 'post-1',
+            title: 'Post with cover',
+            href: '/article/post-with-cover',
+            slug: 'post-with-cover',
+            pageCover: '/article-cover.jpg',
+            lastEditedDay: '2026-07-03'
+          }
+        ]}
+      />
+    )
+
+    expect(screen.getByAltText('cover')).toHaveAttribute(
+      'src',
+      '/article-cover.jpg'
+    )
+  })
+
   it('uses stable keys when latest post data has no id', () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')

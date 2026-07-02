@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react'
 
 const QrCode = dynamic(() => import('@/components/QrCode'), { ssr: false })
 const BASE_BUTTON_CLASS =
-  'cursor-pointer rounded-full mx-1 w-8 h-8 flex items-center justify-center text-white'
+  'cursor-pointer rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center text-white'
 
 const SHARE_ICON_CLASS = {
   facebook: 'fab fa-facebook-f',
@@ -219,13 +219,13 @@ const ShareButtons = ({ post }) => {
             return (
               <button
                 key={singleService}
-                className='cursor-pointer bg-blue-600 text-white rounded-full mx-1'>
+                className='cursor-pointer bg-blue-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'>
                 <a
                   target='_blank'
                   rel='noreferrer'
                   aria-label='Share by QQ'
                   href={`http://connect.qq.com/widget/shareqq/index.html?url=${shareUrl}&sharesource=qzone&title=${title}&desc=${body}`}>
-                  <i className='fab fa-qq w-8' />
+                  <i className='fab fa-qq' />
                 </a>
               </button>
             )
@@ -236,9 +236,9 @@ const ShareButtons = ({ post }) => {
                 onMouseLeave={closePopover}
                 aria-label={singleService}
                 key={singleService}
-                className='cursor-pointer bg-green-600 text-white rounded-full mx-1'>
+                className='cursor-pointer bg-green-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'>
                 <div id='wechat-button'>
-                  <i className='fab fa-weixin w-8' />
+                  <i className='fab fa-weixin' />
                 </div>
                 <div className='absolute'>
                   <div
@@ -263,9 +263,9 @@ const ShareButtons = ({ post }) => {
                 aria-label={singleService}
                 key={singleService}
                 onClick={copyUrl}
-                className='cursor-pointer bg-yellow-500 text-white rounded-full mx-1'>
+                className='cursor-pointer bg-yellow-500 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'>
                 <div alt={locale.COMMON.URL_COPIED}>
-                  <i className='fas fa-link w-8' />
+                  <i className='fas fa-link' />
                 </div>
               </button>
             )
@@ -277,9 +277,9 @@ const ShareButtons = ({ post }) => {
                 onClick={() =>
                   openRedirectShare('https://link.csdn.net/?target=')
                 }
-                className='cursor-pointer rounded-full mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500'>
+                className='cursor-pointer rounded-full mx-1 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500'>
                 <div
-                  className='w-8 h-8 rounded-full items-center justify-center'
+                  className='w-8 h-8 rounded-full flex items-center justify-center'
                   style={{ backgroundColor: '#ff6a00' }}>
                   <Image
                     src='/svg/csdn.svg'
@@ -301,7 +301,7 @@ const ShareButtons = ({ post }) => {
                 onClick={() =>
                   openRedirectShare('https://link.juejin.cn/?target=')
                 }
-                className='cursor-pointer rounded-full mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'>
+                className='cursor-pointer rounded-full mx-1 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'>
                 <div
                   className='w-8 h-8 rounded-full flex items-center justify-center'
                   style={{ backgroundColor: '#5dade2' }}>

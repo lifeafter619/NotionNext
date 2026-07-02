@@ -78,6 +78,7 @@
 | `UMAMI_HOST` / `UMAMI_ID`                      | Umami             |
 | `CLARITY_ID`                                   | Microsoft Clarity |
 | `ANALYTICS_VERCEL`                             | Vercel Analytics  |
+| `ANALYTICS_VERCEL_SPEED_INSIGHTS`              | Vercel Speed Insights |
 | `ANALYTICS_BUSUANZI_ENABLE`                    | 不蒜子阅读量      |
 | `MATOMO_*`                                     | Matomo            |
 | `SEO_GOOGLE_SITE_VERIFICATION` / `SEO_BAIDU_*` | 站长验证          |

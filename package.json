@@ -5,7 +5,7 @@
   "homepage": "https://github.com/tangly1024/NotionNext.git",
   "license": "MIT",
   "engines": {
-    "node": ">=20 <25"
+    "node": ">=20.19.0 <25"
   },
   "repository": {
     "type": "git",
@@ -75,6 +75,7 @@
     "@tabler/icons-react": "^3.36.1",
     "@vercel/analytics": "^1.6.1",
     "@vercel/functions": "^3.6.2",
+    "@vercel/speed-insights": "2.0.0",
     "algoliasearch": "^4.25.2",
     "axios": "^1.17.0",
     "critters": "^0.0.23",
