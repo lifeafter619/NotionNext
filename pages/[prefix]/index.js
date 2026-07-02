@@ -114,7 +114,7 @@ Slug.propTypes = {
     content: PropTypes.array,
     toc: PropTypes.array,
     blockMap: PropTypes.shape({
-      block: PropTypes.object
+      block: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
     })
   }),
   NOTION_CONFIG: PropTypes.object

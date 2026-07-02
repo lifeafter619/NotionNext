@@ -91,6 +91,30 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(document.querySelectorAll('.catalog-item')).toHaveLength(0)
   })
 
+  it('unmounts mobile floating action buttons while the toc drawer is open', async () => {
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-button')).toBeInTheDocument()
+    })
+
+    fireEvent.click(document.getElementById('toc-button'))
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-drawer')).toBeInTheDocument()
+    })
+    expect(document.getElementById('toc-button')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('跳转评论')).not.toBeInTheDocument()
+  })
+
   it('keeps a floating toc entry available on desktop width', async () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(
@@ -117,6 +141,61 @@ describe('heo FloatTocButton fallback toc', () => {
           !tocButtonWrapper?.parentElement?.className.includes('xl:hidden')
       ).toBe(true)
     })
+  })
+
+  it('does not show the desktop floating toc while the sidebar catalog is visible', async () => {
+    window.innerWidth = 1440
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"><div id="sideRightCatalog"></div></aside>'
+    )
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(element => {
+        callback([
+          {
+            isIntersecting: element.id === 'sideRightCatalog',
+            boundingClientRect: {
+              top: element.id === 'sideRightCatalog' ? 120 : -120
+            }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(window.IntersectionObserver).toHaveBeenCalled()
+    })
+
+    expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
+  })
+
+  it('waits for the desktop sidebar catalog before showing a fallback floating toc', async () => {
+    window.innerWidth = 1440
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await new Promise(resolve => setTimeout(resolve, 25))
+
+    expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
   })
 
   it('does not observe article attribute churn when building fallback toc', async () => {

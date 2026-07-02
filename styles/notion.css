@@ -2480,7 +2480,9 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 /* 表格 - 现代化圆角 */
 .notion-simple-table {
   border-radius: var(--notion-rounded-radius) !important;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--fg-color-1);
 }
 
@@ -2601,10 +2603,15 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 
 /* 数据库视图 - 现代化 */
 .notion-table,
-.notion-board,
+.notion-board {
+  border-radius: var(--notion-rounded-radius);
+  overflow: auto hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 .notion-gallery {
   border-radius: var(--notion-rounded-radius);
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* 代码块容器 - 现代化 */

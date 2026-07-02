@@ -50,9 +50,11 @@ export default function SideRight(props) {
 
         {/* 文章页显示目录（上锁文章不显示） */}
         {!lock && post && toc.length > 0 && (
-          <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
-            <Catalog toc={toc} />
-          </Card>
+          <div id='sideRightCatalog'>
+            <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
+              <Catalog toc={toc} />
+            </Card>
+          </div>
         )}
 
         {/* 联系交流群 */}

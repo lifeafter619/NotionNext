@@ -227,7 +227,9 @@ const Catalog = ({
 
 const JumpToCommentButton = ({ onJump }) => {
   const handleJumpClick = () => {
-    const commentNode = document.getElementById('comment')
+    const commentNode =
+      document.getElementById('post-comments') ||
+      document.getElementById('comment')
     if (commentNode) {
       const headerHeight = 80 // approximate header height
       const elementPosition =

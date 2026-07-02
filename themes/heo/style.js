@@ -31,6 +31,33 @@ const Style = () => {
         white-space: nowrap;
       }
 
+      #theme-heo #notion-article {
+        overflow: visible;
+      }
+
+      #theme-heo #notion-article .notion-text,
+      #theme-heo #notion-article .notion-h,
+      #theme-heo #notion-article .notion-list,
+      #theme-heo #notion-article .notion-quote,
+      #theme-heo #notion-article .notion-callout,
+      #theme-heo #notion-article .notion-toggle,
+      #theme-heo #notion-article .notion-table-of-contents,
+      #theme-heo #notion-article .notion-bookmark,
+      #theme-heo #notion-article .notion-page-link {
+        max-width: min(100%, 820px);
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+
+      #theme-heo #notion-article .notion-asset-wrapper,
+      #theme-heo #notion-article .notion-code,
+      #theme-heo #notion-article .notion-table,
+      #theme-heo #notion-article .notion-board,
+      #theme-heo #notion-article .notion-gallery,
+      #theme-heo #notion-article .notion-simple-table {
+        max-width: 100%;
+      }
+
       .today-card-cover {
       }
 

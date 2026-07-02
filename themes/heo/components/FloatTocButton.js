@@ -337,34 +337,54 @@ export default function FloatTocButton(props) {
       return
     }
 
-    const sideRight = document.getElementById('sideRight')
-    if (!sideRight || window.getComputedStyle(sideRight).display === 'none') {
-      setShowOnDesktop(true)
-      return
+    let observer = null
+    let retryTimer = null
+    let retryCount = 0
+
+    const observeSidebarCatalog = () => {
+      const sideRight = document.getElementById('sideRight')
+      const sideRightCatalog = document.getElementById('sideRightCatalog')
+
+      if (sideRight && window.getComputedStyle(sideRight).display === 'none') {
+        setShowOnDesktop(true)
+        return
+      }
+
+      if (!sideRightCatalog) {
+        setShowOnDesktop(retryCount >= 6)
+        retryCount += 1
+        retryTimer = window.setTimeout(
+          observeSidebarCatalog,
+          retryCount > 30 ? 500 : 100
+        )
+        return
+      }
+
+      setShowOnDesktop(false)
+      observer = new IntersectionObserver(
+        entries => {
+          entries.forEach(entry => {
+            setShowOnDesktop(
+              !entry.isIntersecting && entry.boundingClientRect.top < 0
+            )
+          })
+        },
+        {
+          threshold: 0,
+          rootMargin: '-80px 0px 0px 0px'
+        }
+      )
+
+      observer.observe(sideRightCatalog)
     }
 
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) {
-            if (entry.boundingClientRect.top < 0) {
-              setShowOnDesktop(true)
-            }
-          } else {
-            setShowOnDesktop(false)
-          }
-        })
-      },
-      {
-        threshold: 0,
-        rootMargin: '-80px 0px 0px 0px'
-      }
-    )
-
-    observer.observe(sideRight)
+    observeSidebarCatalog()
 
     return () => {
-      observer.disconnect()
+      observer?.disconnect()
+      if (retryTimer) {
+        window.clearTimeout(retryTimer)
+      }
     }
   }, [isDesktopTocMode])
 
@@ -391,7 +411,7 @@ export default function FloatTocButton(props) {
   return (
     <>
       {/* 移动端始终显示 */}
-      {showMobileControls && showMobileActions && (
+      {showMobileControls && showMobileActions && !tocVisible && (
         <div
           style={{
             right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
@@ -421,7 +441,7 @@ export default function FloatTocButton(props) {
       )}
 
       {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
-      {showMobileControls && showMobileActions && (
+      {showMobileControls && showMobileActions && !tocVisible && (
         <div
           className='fixed z-50 right-4'
           style={{

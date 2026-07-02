@@ -134,6 +134,25 @@ const NotionPage = ({ post, className }) => {
     autoScrollToHash()
   }, [])
 
+  useEffect(() => {
+    if (!isBrowser) return
+
+    const article = document.getElementById('notion-article')
+    if (!article) return
+
+    const handleArticleImageError = event => {
+      const target = event.target
+      if (target?.tagName === 'IMG') {
+        retryImageWithProxyFallback(target)
+      }
+    }
+
+    article.addEventListener('error', handleArticleImageError, true)
+    return () => {
+      article.removeEventListener('error', handleArticleImageError, true)
+    }
+  }, [post])
+
   // 页面文章发生变化时会执行的勾子
   useEffect(() => {
     let cleanupGalleryImg = () => {}
@@ -427,6 +446,51 @@ const autoScrollToHash = () => {
 const mapPageUrl = id => {
   // return 'https://www.notion.so/' + id.replace(/-/g, '')
   return '/' + id.replace(/-/g, '')
+}
+
+export function retryImageWithProxyFallback(img) {
+  const source = getImageSrc(img)
+  if (
+    !source ||
+    img?.dataset?.notionNextProxyRetried === 'true' ||
+    !isProxiableNotionImageSource(source)
+  ) {
+    return false
+  }
+
+  img.dataset.notionNextProxyRetried = 'true'
+  img.removeAttribute('srcset')
+  img.setAttribute('src', `/api/proxy-image?url=${encodeURIComponent(source)}`)
+  return true
+}
+
+const PROXIABLE_NOTION_IMAGE_DOMAINS = [
+  'notion.so',
+  'notionusercontent.com',
+  'file.notion.so',
+  'file.notion.com',
+  's3-us-west-2.amazonaws.com',
+  's3.us-west-2.amazonaws.com',
+  'images.unsplash.com',
+  'prod-files-secure.s3.us-west-2.amazonaws.com',
+  'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
+  'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
+  'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
+]
+
+function isProxiableNotionImageSource(source) {
+  try {
+    const url = new URL(source, 'https://notionnext.local')
+    if (url.protocol !== 'https:') return false
+    if (url.pathname === '/api/proxy-image') return false
+
+    const hostname = url.hostname.toLowerCase()
+    return PROXIABLE_NOTION_IMAGE_DOMAINS.some(
+      domain => hostname === domain || hostname.endsWith(`.${domain}`)
+    )
+  } catch {
+    return false
+  }
 }
 
 // 代码

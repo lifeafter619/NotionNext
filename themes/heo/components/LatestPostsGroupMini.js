@@ -5,6 +5,12 @@ import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
 
+const getLatestPostKey = (post, index) => {
+  if (post?.id) return post.id
+  const fallback = post?.slug || post?.href || post?.title || 'latest-post'
+  return `${fallback}-${index}`
+}
+
 /**
  * 最新文章列表
  * @param posts 所有文章数据
@@ -25,7 +31,7 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
           {locale.COMMON.LATEST_POSTS}
         </div>
       </div>
-      {latestPosts.map(post => {
+      {latestPosts.map((post, index) => {
         const selected = currentPath === `${SUB_PATH}/${post.slug}`
         const headerImage = post?.pageCoverThumbnail
           ? post.pageCoverThumbnail
@@ -33,7 +39,7 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
 
         return (
           <SmartLink
-            key={post.id}
+            key={getLatestPostKey(post, index)}
             title={post.title}
             href={post?.href}
             passHref

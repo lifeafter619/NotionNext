@@ -38,10 +38,16 @@ export default async function handler(req, res) {
     // Notion images are usually hosted on notion.so, aws s3, or unsplash
     const ALLOWED_DOMAINS = [
       'notion.so',
+      'notionusercontent.com',
       'file.notion.so',
+      'file.notion.com',
+      's3-us-west-2.amazonaws.com',
       's3.us-west-2.amazonaws.com',
       'images.unsplash.com',
-      'prod-files-secure.s3.us-west-2.amazonaws.com'
+      'prod-files-secure.s3.us-west-2.amazonaws.com',
+      'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
+      'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
+      'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
     ]
 
     // Check if the hostname ends with any of the allowed domains

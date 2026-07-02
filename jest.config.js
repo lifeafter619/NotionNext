@@ -40,6 +40,7 @@ const customJestConfig = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/out/',
+    '<rootDir>/output/',
     '<rootDir>/.vercel/'
   ],
 
