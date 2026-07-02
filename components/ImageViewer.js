@@ -11,6 +11,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
 
   // 翻转状态
   const [flipX, setFlipX] = useState(false)
@@ -40,10 +41,24 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const initialScaleRef = useRef(1)
   const imgRef = useRef(null)
   const thumbnailScrollRef = useRef(null)
+  const imageLoadIdRef = useRef(0)
 
   useEffect(() => {
     setMounted(true)
     return () => setMounted(false)
+  }, [])
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setIsMobileViewport(
+        window.innerWidth < 640 ||
+          /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      )
+    }
+
+    updateViewport()
+    window.addEventListener('resize', updateViewport)
+    return () => window.removeEventListener('resize', updateViewport)
   }, [])
 
   // 重置状态
@@ -69,22 +84,37 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   // 初始化图片：优先显示缩略图，后台加载高清图
   useEffect(() => {
     if (isOpen && src) {
+      const loadId = imageLoadIdRef.current + 1
+      imageLoadIdRef.current = loadId
+      const hasDistinctHighRes = Boolean(highResSrc && highResSrc !== src)
+
       // 重置状态
       setDisplaySrc(src)
-      setIsHighResLoaded(false)
+      setIsHighResLoaded(!hasDistinctHighRes)
       // 重置变换状态
       resetState()
 
       // 如果有高清图，尝试加载
-      if (highResSrc && highResSrc !== src) {
+      if (hasDistinctHighRes) {
+        let cancelled = false
         const img = new Image()
-        img.src = highResSrc
         img.onload = () => {
           // 只有当查看器仍然打开且src匹配时才更新
-          if (isOpen) {
+          if (!cancelled && isOpen && imageLoadIdRef.current === loadId) {
             setDisplaySrc(highResSrc)
             setIsHighResLoaded(true)
           }
+        }
+        img.onerror = () => {
+          if (!cancelled && imageLoadIdRef.current === loadId) {
+            setDisplaySrc(src)
+            setIsHighResLoaded(true)
+          }
+        }
+        img.src = highResSrc
+
+        return () => {
+          cancelled = true
         }
       }
     }
@@ -573,7 +603,8 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
       {/* 控制栏 */}
       <div
-        className='absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 rounded-full px-4 py-2 backdrop-blur-sm z-50'
+        data-testid='image-viewer-toolbar'
+        className='absolute bottom-8 left-1/2 -translate-x-1/2 flex w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-wrap items-center justify-center gap-1 rounded-2xl bg-black/70 px-3 py-2 backdrop-blur-sm z-50 sm:w-auto sm:gap-2 sm:rounded-full sm:px-4'
         onClick={e => e.stopPropagation()} // 防止点击控制栏关闭
       >
         {/* 图片索引指示器 */}
@@ -601,7 +632,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
                 </svg>
               </button>
             </div>
-            <div className='w-px h-6 bg-gray-500' />
+            <div className='hidden sm:block w-px h-6 bg-gray-500' />
           </>
         )}
 
@@ -663,7 +694,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
         </button>
 
         {/* 分隔线 */}
-        <div className='w-px h-6 bg-gray-500' />
+        <div className='hidden sm:block w-px h-6 bg-gray-500' />
 
         {/* 逆时针旋转 */}
         <button
@@ -755,7 +786,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
         </button>
 
         {/* 分隔线 */}
-        <div className='w-px h-6 bg-gray-500' />
+        <div className='hidden sm:block w-px h-6 bg-gray-500' />
 
         {/* 重置 */}
         <button
@@ -800,9 +831,12 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
       {/* 快捷键提示 - Keyboard shortcuts hint */}
       <div
-        className='absolute bottom-2 left-1/2 -translate-x-1/2 text-gray-400 text-xs z-50 select-none'
+        data-testid='image-viewer-hint'
+        className='absolute bottom-1 left-1/2 w-full max-w-[calc(100vw-1rem)] -translate-x-1/2 px-4 text-center text-gray-400 text-xs leading-relaxed z-50 select-none sm:bottom-2'
         onClick={e => e.stopPropagation()}>
-        ESC 关闭 | ← → 切换 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动
+        {isMobileViewport
+          ? '双指缩放 | 拖拽移动 | 点击空白关闭'
+          : 'ESC 关闭 | ← → 切换 | +/- 缩放 | R/L 旋转 | 0 重置 | 滚轮缩放 | 拖拽移动'}
       </div>
     </div>
   )

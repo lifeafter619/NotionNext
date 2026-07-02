@@ -1,5 +1,19 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor
+} from '@testing-library/react'
 import ImageViewer from '@/components/ImageViewer'
+
+jest.mock('react-dom', () => {
+  const actual = jest.requireActual('react-dom')
+  return {
+    ...actual,
+    createPortal: node => node
+  }
+})
 
 describe('ImageViewer Component', () => {
   const defaultProps = {
@@ -9,16 +23,24 @@ describe('ImageViewer Component', () => {
     onClose: jest.fn()
   }
 
+  let imageInstances
+  let OriginalImage
+
   beforeEach(() => {
     jest.clearAllMocks()
-    // Mock createPortal
-    jest
-      .spyOn(require('react-dom'), 'createPortal')
-      .mockImplementation(element => element)
+    imageInstances = []
+    OriginalImage = global.Image
+
+    global.Image = class {
+      constructor() {
+        imageInstances.push(this)
+      }
+    }
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    global.Image = OriginalImage
+    window.innerWidth = 1024
   })
 
   it('renders when isOpen is true', () => {
@@ -148,5 +170,101 @@ describe('ImageViewer Component', () => {
     unmount()
 
     expect(errorSpy).not.toHaveBeenCalled()
+  })
+
+  it('removes the low-res blur when the high-res image cannot load', async () => {
+    render(
+      <ImageViewer
+        isOpen
+        images={[
+          {
+            src: '/low-res.jpg',
+            highResSrc: '/high-res.jpg',
+            alt: 'Preview image'
+          }
+        ]}
+        currentIndex={0}
+        onClose={jest.fn()}
+      />
+    )
+
+    const image = screen.getByAltText('Preview image')
+    expect(image).toHaveClass('blur-[1px]')
+
+    act(() => {
+      imageInstances[0].onerror?.()
+    })
+
+    await waitFor(() => {
+      expect(image).not.toHaveClass('blur-[1px]')
+    })
+    expect(image).toHaveAttribute('src', '/low-res.jpg')
+  })
+
+  it('does not blur images when there is no separate high-res source', () => {
+    render(
+      <ImageViewer
+        isOpen
+        images={[
+          {
+            src: '/already-best.jpg',
+            highResSrc: '/already-best.jpg',
+            alt: 'Best available image'
+          }
+        ]}
+        currentIndex={0}
+        onClose={jest.fn()}
+      />
+    )
+
+    expect(screen.getByAltText('Best available image')).not.toHaveClass(
+      'blur-[1px]'
+    )
+  })
+
+  it('uses a mobile hint without desktop-only controls', () => {
+    window.innerWidth = 375
+    window.dispatchEvent(new Event('resize'))
+
+    render(
+      <ImageViewer
+        isOpen
+        images={[
+          {
+            src: '/mobile.jpg',
+            highResSrc: '/mobile.jpg',
+            alt: 'Mobile image'
+          }
+        ]}
+        currentIndex={0}
+        onClose={jest.fn()}
+      />
+    )
+
+    const hint = screen.getByTestId('image-viewer-hint')
+    expect(hint).toHaveTextContent('双指缩放')
+    expect(hint).not.toHaveTextContent('ESC')
+    expect(hint).not.toHaveTextContent('滚轮')
+  })
+
+  it('allows the toolbar to wrap inside the viewport', () => {
+    render(
+      <ImageViewer
+        isOpen
+        images={[
+          {
+            src: '/toolbar.jpg',
+            highResSrc: '/toolbar.jpg',
+            alt: 'Toolbar image'
+          }
+        ]}
+        currentIndex={0}
+        onClose={jest.fn()}
+      />
+    )
+
+    expect(screen.getByTestId('image-viewer-toolbar')).toHaveClass(
+      'flex-wrap'
+    )
   })
 })
