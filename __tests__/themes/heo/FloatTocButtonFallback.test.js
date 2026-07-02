@@ -115,6 +115,30 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(screen.queryByLabelText('跳转评论')).not.toBeInTheDocument()
   })
 
+  it('opens the mobile toc drawer at a larger default height', async () => {
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-button')).toBeInTheDocument()
+    })
+
+    fireEvent.click(document.getElementById('toc-button'))
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-drawer')).toHaveStyle({
+        height: '44vh'
+      })
+    })
+  })
+
   it('keeps a floating toc entry available on desktop width', async () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(
@@ -178,6 +202,41 @@ describe('heo FloatTocButton fallback toc', () => {
     })
 
     expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
+  })
+
+  it('shows the desktop floating toc when the sidebar catalog is outside the viewport', async () => {
+    window.innerWidth = 1440
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"><div id="sideRightCatalog"></div></aside>'
+    )
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(element => {
+        callback([
+          {
+            isIntersecting: false,
+            boundingClientRect: {
+              top: element.id === 'sideRightCatalog' ? 900 : 0
+            }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('float-toc-button')).toBeInTheDocument()
+    })
   })
 
   it('waits for the desktop sidebar catalog before showing a fallback floating toc', async () => {

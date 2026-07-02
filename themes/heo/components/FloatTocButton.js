@@ -7,6 +7,9 @@ import { useArticleToc } from './useArticleToc'
 
 const DESKTOP_TOC_BREAKPOINT = 1280
 const DESKTOP_ZOOM_MIN_VIEWPORT = 720
+const MOBILE_DRAWER_DEFAULT_HEIGHT_VH = 44
+const MOBILE_DRAWER_MIN_HEIGHT_VH = 40
+const MOBILE_DRAWER_MAX_HEIGHT_VH = 90
 
 function hasDesktopPointer() {
   if (
@@ -59,7 +62,9 @@ export default function FloatTocButton(props) {
     })
   )
   // 移动端抽屉高度
-  const [drawerHeight, setDrawerHeight] = useState('30vh')
+  const [drawerHeight, setDrawerHeight] = useState(
+    `${MOBILE_DRAWER_DEFAULT_HEIGHT_VH}vh`
+  )
   const [touchStartY, setTouchStartY] = useState(null)
   const [touchStartHeight, setTouchStartHeight] = useState(null)
   const [touchStartButton, setTouchStartButton] = useState({ x: 0, y: 0 })
@@ -263,7 +268,10 @@ export default function FloatTocButton(props) {
     const deltaY = touchStartY - touch.clientY
     const newHeight = touchStartHeight + deltaY
     const vh = (newHeight / window.innerHeight) * 100
-    if (vh >= 25 && vh <= 90) {
+    if (
+      vh >= MOBILE_DRAWER_MIN_HEIGHT_VH &&
+      vh <= MOBILE_DRAWER_MAX_HEIGHT_VH
+    ) {
       setDrawerHeight(`${vh}vh`)
     }
   }
@@ -294,7 +302,10 @@ export default function FloatTocButton(props) {
     const deltaY = drawerDragRef.current.startY - e.clientY
     const newHeight = drawerDragRef.current.startHeight + deltaY
     const vh = (newHeight / window.innerHeight) * 100
-    if (vh >= 25 && vh <= 90) {
+    if (
+      vh >= MOBILE_DRAWER_MIN_HEIGHT_VH &&
+      vh <= MOBILE_DRAWER_MAX_HEIGHT_VH
+    ) {
       setDrawerHeight(`${vh}vh`)
     }
   }, [])
@@ -364,9 +375,7 @@ export default function FloatTocButton(props) {
       observer = new IntersectionObserver(
         entries => {
           entries.forEach(entry => {
-            setShowOnDesktop(
-              !entry.isIntersecting && entry.boundingClientRect.top < 0
-            )
+            setShowOnDesktop(!entry.isIntersecting)
           })
         },
         {
