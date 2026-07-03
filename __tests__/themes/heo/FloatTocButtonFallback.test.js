@@ -160,7 +160,7 @@ describe('heo FloatTocButton fallback toc', () => {
 
     await waitFor(() => {
       expect(document.getElementById('toc-drawer')).toHaveStyle({
-        height: '44vh'
+        height: '58vh'
       })
     })
   })
@@ -197,15 +197,16 @@ describe('heo FloatTocButton fallback toc', () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(
       'beforeend',
-      '<aside id="sideRight"><div id="sideRightCatalog"></div></aside>'
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div><div id="sideRightLatest"></div></div></aside>'
     )
     window.IntersectionObserver = jest.fn(callback => ({
       observe: jest.fn(element => {
         callback([
           {
-            isIntersecting: element.id === 'sideRightCatalog',
+            isIntersecting: element.id === 'sideRightSticky',
             boundingClientRect: {
-              top: element.id === 'sideRightCatalog' ? 120 : -120
+              top: element.id === 'sideRightSticky' ? 120 : -120,
+              bottom: element.id === 'sideRightSticky' ? 720 : -80
             }
           }
         ])
@@ -230,11 +231,11 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
   })
 
-  it('shows the desktop floating toc when the sidebar catalog is outside the viewport', async () => {
+  it('does not show the desktop floating toc while later sidebar blocks are still visible', async () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(
       'beforeend',
-      '<aside id="sideRight"><div id="sideRightCatalog"></div></aside>'
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div><div id="sideRightLatest"></div></div></aside>'
     )
     window.IntersectionObserver = jest.fn(callback => ({
       observe: jest.fn(element => {
@@ -242,7 +243,46 @@ describe('heo FloatTocButton fallback toc', () => {
           {
             isIntersecting: false,
             boundingClientRect: {
-              top: element.id === 'sideRightCatalog' ? 900 : 0
+              top: -240,
+              bottom: 320
+            }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(window.IntersectionObserver).toHaveBeenCalled()
+    })
+
+    expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
+  })
+
+  it('shows the desktop floating toc when the whole sidebar area is above the viewport', async () => {
+    window.innerWidth = 1440
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div><div id="sideRightLatest"></div></div></aside>'
+    )
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(() => {
+        callback([
+          {
+            isIntersecting: false,
+            boundingClientRect: {
+              top: -620,
+              bottom: 40
             }
           }
         ])

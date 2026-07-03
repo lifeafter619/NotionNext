@@ -66,6 +66,23 @@ describe('heo post cover fallback', () => {
     expect(post.pageCoverThumbnail).toBeUndefined()
   })
 
+  it('uses the card flex space for the default mobile cover layout', () => {
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { getByAltText } = render(
+      <BlogPostCard index={0} post={post} siteInfo={siteInfo} />
+    )
+
+    const coverWrapper = getByAltText('Post title').parentElement
+
+    expect(coverWrapper).toHaveClass('flex-1')
+    expect(coverWrapper).toHaveClass('min-h-0')
+    expect(coverWrapper).toHaveClass('md:flex-none')
+  })
+
   it('does not mutate a post when BlogPostArchive uses the site default cover', () => {
     const post = createPost()
 

@@ -7,7 +7,7 @@ import { useArticleToc } from './useArticleToc'
 
 const DESKTOP_TOC_BREAKPOINT = 1280
 const DESKTOP_ZOOM_MIN_VIEWPORT = 720
-const MOBILE_DRAWER_DEFAULT_HEIGHT_VH = 44
+const MOBILE_DRAWER_DEFAULT_HEIGHT_VH = 58
 const MOBILE_DRAWER_MIN_HEIGHT_VH = 40
 const MOBILE_DRAWER_MAX_HEIGHT_VH = 90
 const MOBILE_ACTION_BUTTON_SIZE = 44
@@ -382,14 +382,16 @@ export default function FloatTocButton(props) {
 
     const observeSidebarCatalog = () => {
       const sideRight = document.getElementById('sideRight')
-      const sideRightCatalog = document.getElementById('sideRightCatalog')
+      const sideRightFloatingBoundary =
+        document.getElementById('sideRightSticky') ||
+        document.getElementById('sideRightCatalog')
 
       if (sideRight && window.getComputedStyle(sideRight).display === 'none') {
         setShowOnDesktop(true)
         return
       }
 
-      if (!sideRightCatalog) {
+      if (!sideRightFloatingBoundary) {
         setShowOnDesktop(retryCount >= 6)
         retryCount += 1
         retryTimer = window.setTimeout(
@@ -403,7 +405,8 @@ export default function FloatTocButton(props) {
       observer = new IntersectionObserver(
         entries => {
           entries.forEach(entry => {
-            setShowOnDesktop(!entry.isIntersecting)
+            const entryBottom = entry.boundingClientRect?.bottom || 0
+            setShowOnDesktop(!entry.isIntersecting && entryBottom <= 80)
           })
         },
         {
@@ -412,7 +415,7 @@ export default function FloatTocButton(props) {
         }
       )
 
-      observer.observe(sideRightCatalog)
+      observer.observe(sideRightFloatingBoundary)
     }
 
     observeSidebarCatalog()

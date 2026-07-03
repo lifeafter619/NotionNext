@@ -47,6 +47,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             <div
               className={
                 (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +
+                (isDefaultStyle ? ' flex-1 min-h-0 md:flex-none' : '') +
                 ' w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
               }>
               <LazyImage
@@ -60,7 +61,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
                 }
                 src={pageCoverThumbnail}
                 alt={post?.title}
-                className='h-full w-full object-cover group-hover:scale-105 group-hover:brightness-75 transition-all duration-500 ease-in-out' //宽高都调整为自适应,保证封面居中
+                className='h-full w-full object-cover object-center group-hover:scale-105 group-hover:brightness-75 transition-all duration-500 ease-in-out' //宽高都调整为自适应,保证封面居中
               />
             </div>
           </SmartLink>

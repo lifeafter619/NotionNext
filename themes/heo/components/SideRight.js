@@ -44,7 +44,7 @@ export default function SideRight(props) {
         <InfoCard {...props} className='w-72' />
       </div>
 
-      <div className='sticky top-20 space-y-4'>
+      <div id='sideRightSticky' className='sticky top-20 space-y-4'>
         {/* 访客信息卡片 */}
         <VisitorInfoCard />
 
