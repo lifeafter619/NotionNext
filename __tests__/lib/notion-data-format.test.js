@@ -1053,6 +1053,13 @@ describe('Notion data format compatibility', () => {
   })
 
   it('downgrades newer heading block types for older renderers', () => {
+    expect(normalizeNotionBlockType('paragraph')).toBe('text')
+    expect(normalizeNotionBlockType('bulleted_list_item')).toBe(
+      'bulleted_list'
+    )
+    expect(normalizeNotionBlockType('numbered_list_item')).toBe(
+      'numbered_list'
+    )
     expect(normalizeNotionBlockType('heading_1')).toBe('header')
     expect(normalizeNotionBlockType('heading_2')).toBe('sub_header')
     expect(normalizeNotionBlockType('heading_3')).toBe('sub_sub_header')

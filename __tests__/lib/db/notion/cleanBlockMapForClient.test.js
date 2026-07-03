@@ -215,6 +215,141 @@ describe('cleanBlockMapForClient', () => {
     })
   })
 
+  it('normalizes nested automation records for Notion button rendering', () => {
+    const blockMap = {
+      block: {
+        button1: {
+          value: {
+            id: 'button1',
+            type: 'button',
+            format: {
+              automation_id: 'automation1',
+              block_color: 'blue_background'
+            }
+          }
+        }
+      },
+      automation: {
+        automation1: {
+          spaceId: 'space1',
+          value: {
+            role: 'reader',
+            value: {
+              id: 'automation1',
+              action_ids: ['action1'],
+              properties: {
+                name: 'Open docs'
+              }
+            }
+          }
+        }
+      },
+      automation_action: {
+        action1: {
+          value: {
+            role: 'reader',
+            value: {
+              id: 'action1',
+              type: 'open_page',
+              config: {
+                target: {
+                  type: 'url',
+                  url: 'https://example.com/docs'
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const result = cleanBlockMapForClient(blockMap)
+
+    expect(result.automation.automation1.value).toEqual({
+      id: 'automation1',
+      action_ids: ['action1'],
+      properties: {
+        name: 'Open docs'
+      }
+    })
+    expect(result.automation_action.action1.value).toEqual({
+      id: 'action1',
+      type: 'open_page',
+      config: {
+        target: {
+          type: 'url',
+          url: 'https://example.com/docs'
+        }
+      }
+    })
+  })
+
+  it('normalizes nested collection records for renderer compatibility', () => {
+    const blockMap = {
+      block: {
+        collectionBlock: {
+          value: {
+            id: 'collectionBlock',
+            type: 'collection_view',
+            collection_id: 'collection1',
+            view_ids: ['view1']
+          }
+        }
+      },
+      collection: {
+        collection1: {
+          spaceId: 'space1',
+          value: {
+            role: 'reader',
+            value: {
+              id: 'collection1',
+              schema: {
+                title: { name: 'Name', type: 'title' }
+              },
+              version: 12,
+              space_id: 'space1'
+            }
+          }
+        }
+      },
+      collection_view: {
+        view1: {
+          value: {
+            role: 'reader',
+            value: {
+              id: 'view1',
+              type: 'table',
+              version: 3,
+              space_id: 'space1'
+            }
+          }
+        }
+      },
+      collection_query: {
+        collection1: {
+          view1: {
+            collection_group_results: {
+              blockIds: []
+            }
+          }
+        }
+      }
+    }
+
+    const result = cleanBlockMapForClient(blockMap)
+
+    expect(result.collection.collection1.value).toEqual({
+      id: 'collection1',
+      schema: {
+        title: { name: 'Name', type: 'title' }
+      }
+    })
+    expect(result.collection_view.view1.value).toEqual({
+      id: 'view1',
+      type: 'table'
+    })
+  })
+
   it('drops image and page signed URLs that the client can derive from block data', () => {
     const blockMap = {
       block: {

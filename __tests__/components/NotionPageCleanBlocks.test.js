@@ -41,6 +41,67 @@ describe('cleanBlocksForRender', () => {
     expect(cleaned.block.page.value.content).toEqual(['text'])
   })
 
+  it('keeps collection view blocks when a later view is renderable', () => {
+    const blockMap = {
+      block: {
+        page: {
+          value: {
+            id: 'page',
+            type: 'page',
+            content: ['collection']
+          }
+        },
+        collection: {
+          value: {
+            id: 'collection',
+            type: 'collection_view',
+            view_ids: ['missing_view', 'valid_view'],
+            collection_id: 'collection1'
+          }
+        }
+      },
+      collection: {
+        collection1: {
+          value: {
+            id: 'collection1',
+            schema: {}
+          }
+        }
+      },
+      collection_view: {
+        valid_view: {
+          value: {
+            id: 'valid_view',
+            type: 'table',
+            format: {
+              collection_pointer: {
+                id: 'collection1'
+              }
+            }
+          }
+        }
+      },
+      collection_query: {
+        collection1: {
+          valid_view: {
+            collection_group_results: {
+              blockIds: []
+            }
+          }
+        }
+      }
+    }
+
+    const cleaned = cleanBlocksForRender(blockMap)
+
+    expect(cleaned.block.collection).toBeDefined()
+    expect(cleaned.block.collection.value.view_ids).toEqual([
+      'valid_view',
+      'missing_view'
+    ])
+    expect(cleaned.block.page.value.content).toEqual(['collection'])
+  })
+
   it('restores compact block maps before filtering render blocks', () => {
     const blockMap = {
       block: {

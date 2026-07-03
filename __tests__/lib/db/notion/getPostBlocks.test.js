@@ -153,4 +153,114 @@ describe('formatNotionBlock', () => {
 
     expect(formatted['github-repo'].value.format.domain).toBe('github.com')
   })
+
+  it('normalizes official synced block references for react-notion-x', () => {
+    const formatted = formatNotionBlock({
+      'synced-ref': {
+        value: {
+          id: 'synced-ref',
+          type: 'synced_block',
+          parent_id: 'page',
+          synced_block: {
+            synced_from: {
+              type: 'block_id',
+              block_id: 'source-block'
+            }
+          }
+        }
+      }
+    })
+
+    expect(formatted['synced-ref'].value.type).toBe('transclusion_reference')
+    expect(
+      formatted['synced-ref'].value.format.transclusion_reference_pointer
+    ).toEqual({
+      id: 'source-block',
+      table: 'block'
+    })
+    expect(formatted['synced-ref'].value.synced_block).toBeUndefined()
+  })
+
+  it('normalizes official rich text block payloads for react-notion-x', () => {
+    const formatted = formatNotionBlock({
+      paragraph: {
+        value: {
+          id: 'paragraph',
+          type: 'paragraph',
+          parent_id: 'page',
+          paragraph: {
+            rich_text: [
+              {
+                plain_text: 'Hello ',
+                annotations: { bold: true }
+              },
+              {
+                plain_text: 'docs',
+                href: 'https://example.com',
+                annotations: {}
+              }
+            ],
+            color: 'blue_background'
+          }
+        }
+      },
+      todo: {
+        value: {
+          id: 'todo',
+          type: 'to_do',
+          parent_id: 'page',
+          to_do: {
+            rich_text: [{ plain_text: 'Ship it', annotations: {} }],
+            checked: true
+          }
+        }
+      },
+      code: {
+        value: {
+          id: 'code',
+          type: 'code',
+          parent_id: 'page',
+          code: {
+            rich_text: [{ plain_text: 'console.log(1)', annotations: {} }],
+            language: 'JavaScript'
+          }
+        }
+      },
+      heading: {
+        value: {
+          id: 'heading',
+          type: 'heading_1',
+          parent_id: 'page',
+          heading_1: {
+            rich_text: [{ plain_text: 'Toggle heading', annotations: {} }],
+            is_toggleable: true
+          }
+        }
+      }
+    })
+
+    expect(formatted.paragraph.value.type).toBe('text')
+    expect(formatted.paragraph.value.properties.title).toEqual([
+      ['Hello ', [['b']]],
+      ['docs', [['a', 'https://example.com']]]
+    ])
+    expect(formatted.paragraph.value.format.block_color).toBe(
+      'blue_background'
+    )
+    expect(formatted.paragraph.value.paragraph).toBeUndefined()
+
+    expect(formatted.todo.value.properties.checked).toEqual([['Yes']])
+    expect(formatted.todo.value.properties.title).toEqual([['Ship it']])
+
+    expect(formatted.code.value.properties.language).toEqual([['JavaScript']])
+    expect(formatted.code.value.properties.title).toEqual([
+      ['console.log(1)']
+    ])
+
+    expect(formatted.heading.value.type).toBe('header')
+    expect(formatted.heading.value.format.toggleable).toBe(true)
+    expect(formatted.heading.value.properties.title).toEqual([
+      ['Toggle heading']
+    ])
+  })
 })

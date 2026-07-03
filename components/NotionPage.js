@@ -290,15 +290,16 @@ export function cleanBlocksForRender(blockMap) {
   const sourceBlocks = restoredBlockMap.block || {}
 
   for (const [id, block] of Object.entries(sourceBlocks)) {
+    const normalizedBlock = normalizeRenderableBlock(block, restoredBlockMap)
     if (
-      !block?.value?.id ||
-      isUnrenderableCollectionView(block.value, restoredBlockMap)
+      !normalizedBlock?.value?.id ||
+      isUnrenderableCollectionView(normalizedBlock.value, restoredBlockMap)
     ) {
       removedBlockIds.add(id)
       continue
     }
 
-    cleanedBlocks[id] = { ...block }
+    cleanedBlocks[id] = normalizedBlock
   }
 
   for (const [id, block] of Object.entries(cleanedBlocks)) {
@@ -327,19 +328,48 @@ export function cleanBlocksForRender(blockMap) {
   }
 }
 
+function normalizeRenderableBlock(block, blockMap) {
+  if (block?.value?.type !== 'collection_view') return { ...block }
+
+  const renderableViewId = findRenderableCollectionViewId(block.value, blockMap)
+  if (!renderableViewId || block.value.view_ids?.[0] === renderableViewId) {
+    return { ...block }
+  }
+
+  return {
+    ...block,
+    value: {
+      ...block.value,
+      view_ids: [
+        renderableViewId,
+        ...block.value.view_ids.filter(viewId => viewId !== renderableViewId)
+      ]
+    }
+  }
+}
+
 function isUnrenderableCollectionView(blockValue, blockMap) {
   if (blockValue?.type !== 'collection_view') return false
 
-  const collectionViewId = blockValue.view_ids?.[0]
-  if (!collectionViewId) return true
+  return !findRenderableCollectionViewId(blockValue, blockMap)
+}
 
-  const collectionId = getCollectionId(blockValue, blockMap, collectionViewId)
-  if (!collectionId) return true
+function findRenderableCollectionViewId(blockValue, blockMap) {
+  const viewIds = Array.isArray(blockValue.view_ids) ? blockValue.view_ids : []
 
-  return !(
-    getNotionValue(blockMap.collection?.[collectionId]) &&
-    getNotionValue(blockMap.collection_view?.[collectionViewId]) &&
-    blockMap.collection_query?.[collectionId]?.[collectionViewId]
+  return (
+    viewIds.find(viewId => {
+      if (!viewId) return false
+
+      const collectionId = getCollectionId(blockValue, blockMap, viewId)
+      if (!collectionId) return false
+
+      return (
+        getNotionValue(blockMap.collection?.[collectionId]) &&
+        getNotionValue(blockMap.collection_view?.[viewId]) &&
+        blockMap.collection_query?.[collectionId]?.[viewId]
+      )
+    }) || null
   )
 }
 
