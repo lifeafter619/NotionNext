@@ -61,8 +61,8 @@ const AdSlot = dynamic(
   () => import('@/components/GoogleAdsense').then(module => module.AdSlot),
   { ssr: false }
 )
-const Transition = dynamic(
-  () => import('@headlessui/react').then(module => module.Transition)
+const Transition = dynamic(() =>
+  import('@headlessui/react').then(module => module.Transition)
 )
 
 /**
@@ -299,7 +299,9 @@ function getSearchResultDisplay(post, currentSearch, isAlgolia) {
   }
 
   const titleMatch = getSearchText(post.title).toLowerCase().includes(keyword)
-  const summaryMatch = getSearchText(post.summary).toLowerCase().includes(keyword)
+  const summaryMatch = getSearchText(post.summary)
+    .toLowerCase()
+    .includes(keyword)
   const bodySnippet = getBodySnippet(post.content, keyword)
 
   if (bodySnippet) {
@@ -423,7 +425,10 @@ const LayoutSearch = props => {
 
   // 优先使用 Algolia 结果，否则使用本地结果
   const displayPosts = useMemo(
-    () => (algoliaResults || posts || []).filter(post => post.slug || post.objectID),
+    () =>
+      (algoliaResults || posts || []).filter(
+        post => post.slug || post.objectID
+      ),
     [algoliaResults, posts]
   )
 
@@ -640,7 +645,10 @@ const SearchResultCard = ({
         {showCover && (
           <div className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
-              priority={index < 3}
+              priority={index === 0}
+              width={180}
+              height={126}
+              sizes='(min-width: 720px) 10rem, 8rem'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
               className='max-w-full max-h-full object-contain'
@@ -730,7 +738,10 @@ const SearchResultGridCard = ({
         {showCover && (
           <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
-              priority={index < 6}
+              priority={index === 0}
+              width={360}
+              height={160}
+              sizes='(min-width: 720px) 33vw, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
               className='max-w-full max-h-full object-contain'
@@ -1020,6 +1031,10 @@ const Layout404 = props => {
               {/* 左侧动图 */}
               <LazyImage
                 className='error-img h-60 md:h-full p-4'
+                width={360}
+                height={260}
+                sizes='(min-width: 720px) 360px, 80vw'
+                alt='404'
                 src={
                   'https://bu.dusays.com/2023/03/03/6401a7906aa4a.gif'
                 }></LazyImage>
@@ -1165,6 +1180,9 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
           <div className='w-full md:w-48 h-32 md:h-36 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
               priority={index === 0}
+              width={240}
+              height={144}
+              sizes='(min-width: 720px) 12rem, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
               className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
@@ -1376,6 +1394,9 @@ const TagPostCard = ({ post, index, siteInfo }) => {
           <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
             <LazyImage
               priority={index === 0}
+              width={360}
+              height={160}
+              sizes='(min-width: 720px) 33vw, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={post?.title}
               className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'

@@ -191,7 +191,7 @@ export default function LazyImage({
     onClick,
     // 性能优化属性
     loading: priority ? 'eager' : loading || 'lazy',
-    fetchpriority: priority ? 'high' : undefined,
+    fetchPriority: priority ? 'high' : undefined,
     decoding: 'async',
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
@@ -220,7 +220,7 @@ export default function LazyImage({
             href={optimizedImageSrc}
             imageSrcSet={srcSet}
             imageSizes={imgProps.sizes}
-            fetchpriority='high'
+            fetchPriority='high'
           />
         </Head>
       )}
@@ -296,10 +296,7 @@ function getViewportTargetWidth(maxWidth) {
 }
 
 function replaceImageWidthParam(imageSrc, width) {
-  if (
-    !imageSrc ||
-    (!imageSrc.includes('width=') && !imageSrc.includes('w='))
-  ) {
+  if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
     return imageSrc
   }
 

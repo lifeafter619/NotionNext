@@ -29,6 +29,7 @@ const SideBar = props => {
               className='rounded-full'
               width={80}
               height={80}
+              sizes='80px'
               alt={siteConfig('AUTHOR')}
             />
           </div>

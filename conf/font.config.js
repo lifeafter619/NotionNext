@@ -2,22 +2,51 @@
  * 网站字体相关配置
  *
  */
+const parseList = value => {
+  if (!value) return []
+  if (Array.isArray(value)) return value.filter(Boolean)
+
+  const text = String(value).trim()
+  if (!text) return []
+
+  if (text.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(text)
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : []
+    } catch (_) {}
+  }
+
+  return text
+    .split(',')
+    .map(url => url.trim())
+    .filter(Boolean)
+}
+
+const parseBoolean = (value, fallback) => {
+  if (value === undefined || value === null || value === '') return fallback
+  if (typeof value === 'boolean') return value
+  return String(value).toLowerCase() === 'true'
+}
+
+const defaultFontUrls = [
+  'https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css'
+]
+const customFontUrls =
+  process.env.NEXT_PUBLIC_FONT_URLS || process.env.NEXT_PUBLIC_FONT_URL
+
 module.exports = {
   // START ************网站字体*****************
   // ['font-serif','font-sans'] 两种可选，分别是衬线和无衬线: 参考 https://www.jianshu.com/p/55e410bd2115
   // 后面空格隔开的font-light的字体粗细，留空是默认粗细；参考 https://www.tailwindcss.cn/docs/font-weight
   FONT_STYLE: process.env.NEXT_PUBLIC_FONT_STYLE || 'font-sans font-light',
-  // 字体CSS 例如 https://npm.elemecdn.com/lxgw-wenkai-webfont@1.6.0/style.css
-  FONT_URL: [
-    'https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css',
-    'https://fonts.googleapis.com/css?family=Bitter&display=swap',
-    'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300&display=swap',
-    'https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300&display=swap'
-  ],
+  // 字体CSS 例如 https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css
+  // 默认保留霞鹜文楷；不再默认加载额外 Google Fonts，避免首屏多字体并发阻塞。
+  // 如需自定义 Web Font，在 Vercel 设置 NEXT_PUBLIC_FONT_URLS，多个 URL 用英文逗号分隔，也支持 JSON 数组。
+  FONT_URL: customFontUrls ? parseList(customFontUrls) : defaultFontUrls,
 
   // 字体优化配置
   FONT_DISPLAY: process.env.NEXT_PUBLIC_FONT_DISPLAY || 'swap',
-  FONT_PRELOAD: process.env.NEXT_PUBLIC_FONT_PRELOAD || true,
+  FONT_PRELOAD: parseBoolean(process.env.NEXT_PUBLIC_FONT_PRELOAD, true),
   FONT_SUBSET: process.env.NEXT_PUBLIC_FONT_SUBSET || 'chinese-simplified',
   // 无衬线字体 例如'"LXGW WenKai"'
   FONT_SANS: [

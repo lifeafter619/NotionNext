@@ -51,6 +51,13 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
               }>
               <LazyImage
                 priority={index === 0 && pageCoverThumbnail}
+                width={POST_TWO_COLS ? 620 : 460}
+                height={POST_TWO_COLS ? 220 : 208}
+                sizes={
+                  POST_TWO_COLS
+                    ? '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'
+                    : '(min-width: 720px) 42vw, 100vw'
+                }
                 src={pageCoverThumbnail}
                 alt={post?.title}
                 className='h-full w-full object-cover group-hover:scale-105 group-hover:brightness-75 transition-all duration-500 ease-in-out' //宽高都调整为自适应,保证封面居中

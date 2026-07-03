@@ -223,7 +223,7 @@ const nextConfig = {
     // 图片加载器优化
     loader: 'default',
     // 图片缓存优化
-    minimumCacheTTL: 60 * 60 * 24 * 7, // 7天
+    minimumCacheTTL: 60 * 60 * 24 * 31, // 31天
     // 危险的允许SVG
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;"
@@ -304,16 +304,33 @@ const nextConfig = {
   headers: process.env.EXPORT
     ? undefined
     : () => {
+        const immutableCacheHeader = {
+          key: 'Cache-Control',
+          value: 'public, max-age=31536000, immutable'
+        }
+        const immutableStaticSources = [
+          '/vendor/fontawesome/:path*',
+          '/images/heo/:path*',
+          '/images/themes-preview/:path*',
+          '/fonts/:path*',
+          '/webfonts/:path*',
+          '/svg/:path*'
+        ]
+
         return [
           {
-            source: '/vendor/fontawesome/:path*',
+            source: '/images/:path*',
             headers: [
               {
                 key: 'Cache-Control',
-                value: 'public, max-age=31536000, immutable'
+                value: 'public, max-age=604800, stale-while-revalidate=86400'
               }
             ]
           },
+          ...immutableStaticSources.map(source => ({
+            source,
+            headers: [immutableCacheHeader]
+          })),
           {
             source: '/:path*{/}?',
             headers: [

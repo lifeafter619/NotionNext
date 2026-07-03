@@ -136,8 +136,11 @@ const TagsGroupBar = memo(function TagsGroupBar() {
                   'tags-group-icon w-28 h-28 rounded-3xl flex items-center justify-center text-white text-lg font-bold shadow-md'
                 }>
                 <LazyImage
-                  priority={true}
+                  width={80}
+                  height={80}
+                  sizes='80px'
                   src={g.img_1}
+                  alt={g.title_1}
                   title={g.title_1}
                   className='w-2/3 hidden xl:block'
                 />
@@ -148,8 +151,11 @@ const TagsGroupBar = memo(function TagsGroupBar() {
                   'tags-group-icon  mt-5 w-28 h-28 rounded-3xl flex items-center justify-center text-white text-lg font-bold shadow-md'
                 }>
                 <LazyImage
-                  priority={true}
+                  width={80}
+                  height={80}
+                  sizes='80px'
                   src={g.img_2}
+                  alt={g.title_2}
                   title={g.title_2}
                   className='w-2/3 hidden xl:block'
                 />
@@ -246,6 +252,9 @@ function TopGroup(props) {
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 <LazyImage
                   priority={index === 0 && p?.pageCoverThumbnail}
+                  width={420}
+                  height={160}
+                  sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, 100vw'
                   className='h-24 object-cover'
                   alt={p?.title}
                   src={p?.pageCoverThumbnail || siteInfo?.pageCover}
@@ -412,6 +421,9 @@ function TodayCard({ cRef, siteInfo }) {
         {/* 封面图 */}
         <LazyImage
           priority={true}
+          width={900}
+          height={342}
+          sizes='(min-width: 1280px) 44rem, 100vw'
           src={siteInfo?.pageCover}
           id='today-card-cover'
           alt='Today Card Cover'

@@ -12,6 +12,7 @@ const Logo = props => {
           src={siteInfo?.icon}
           width={24}
           height={24}
+          sizes='24px'
           alt={siteConfig('AUTHOR')}
           className='mr-4 hidden md:block'
         />

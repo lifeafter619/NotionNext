@@ -139,6 +139,9 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           <LazyImage
             id='post-cover'
             priority={true}
+            width={1600}
+            height={900}
+            sizes='100vw'
             className='w-full h-full object-cover max-h-[50rem] min-w-[50vw] min-h-[20rem]'
             src={headerImage}
             onLoad={handleCoverLoad}

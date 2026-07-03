@@ -31,6 +31,10 @@ const LatestPostsGroup = ({ latestPosts, siteInfo }) => {
             <div className='w-full h-24 md:h-60 overflow-hidden relative rounded-lg mb-2 pointer-events-none'>
               <LazyImage
                 src={`${headerImage}`}
+                alt={post.title}
+                width={360}
+                height={240}
+                sizes='(min-width: 720px) 20rem, 50vw'
                 className='object-cover w-full h-full'
               />
             </div>

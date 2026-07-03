@@ -207,6 +207,9 @@ export default function PostAdjacent({ prev, next }) {
                 <LazyImage
                   src={next.pageCoverThumbnail}
                   alt={next.title}
+                  width={320}
+                  height={128}
+                  sizes='320px'
                   className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                 />
                 <div className='absolute inset-0 bg-gradient-to-t dark:from-black/60 from-transparent pointer-events-none'></div>

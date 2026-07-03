@@ -46,6 +46,10 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
             <div className='w-20 h-14 overflow-hidden relative pointer-events-none'>
               <LazyImage
                 src={`${headerImage}`}
+                alt={post.title}
+                width={80}
+                height={56}
+                sizes='80px'
                 className='object-cover w-full h-full rounded-lg'
               />
             </div>

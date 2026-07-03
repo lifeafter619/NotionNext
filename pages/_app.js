@@ -66,7 +66,9 @@ const MyApp = ({ Component, pageProps }) => {
   useAdjustStyle()
 
   const route = useRouter()
-  const queryTheme = getQueryParam(route.asPath, 'theme')
+  const queryTheme = BLOG.THEME_LOCKED
+    ? null
+    : getQueryParam(route.asPath, 'theme')
   const notionTheme = pageProps?.NOTION_CONFIG?.THEME
   const configTheme = BLOG.THEME
   const theme = useMemo(() => {

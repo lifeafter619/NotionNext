@@ -1,6 +1,12 @@
 /**
  * 性能优化配置
  */
+const parseBoolean = (value, fallback) => {
+  if (value === undefined || value === null || value === '') return fallback
+  if (typeof value === 'boolean') return value
+  return String(value).toLowerCase() === 'true'
+}
+
 module.exports = {
   // 预加载配置
   PRELOAD_CRITICAL_RESOURCES:
@@ -13,6 +19,7 @@ module.exports = {
   // 代码分割配置
   ENABLE_CODE_SPLITTING: process.env.NEXT_PUBLIC_ENABLE_CODE_SPLITTING || true,
   CHUNK_SIZE_LIMIT: process.env.NEXT_PUBLIC_CHUNK_SIZE_LIMIT || 244000, // 244KB
+  THEME_LOCKED: parseBoolean(process.env.NEXT_PUBLIC_THEME_LOCKED, false), // 固定生产主题，关闭 ?theme= 动态切换
 
   // 缓存配置
   BROWSER_CACHE_TTL: process.env.NEXT_PUBLIC_BROWSER_CACHE_TTL || 86400, // 24小时

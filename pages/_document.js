@@ -1,9 +1,22 @@
 import BLOG from '@/blog.config'
 import Document, { Head, Html, Main, NextScript } from 'next/document'
 
-const isLocalFontAwesome = BLOG.FONT_AWESOME?.startsWith(
-  '/vendor/fontawesome/'
-)
+const isLocalFontAwesome = BLOG.FONT_AWESOME?.startsWith('/vendor/fontawesome/')
+
+const normalizeResourceList = value => {
+  if (!value) return []
+  if (Array.isArray(value)) return value.filter(Boolean)
+  return [value].filter(Boolean)
+}
+
+const getUrlOrigin = value => {
+  if (!value || String(value).startsWith('/')) return null
+  try {
+    return new URL(value).origin
+  } catch (_) {
+    return null
+  }
+}
 
 // 预先设置深色模式的脚本内容
 export const darkModeScript = `
@@ -40,7 +53,14 @@ export const darkModeScript = `
 `
 
 // 获取字体URL列表
-const fontUrls = BLOG.FONT_URL || []
+const fontUrls = normalizeResourceList(BLOG.FONT_URL)
+const resourceOrigins = [
+  'https://images.unsplash.com',
+  ...fontUrls.map(getUrlOrigin),
+  getUrlOrigin(BLOG.FONT_AWESOME),
+  getUrlOrigin(BLOG.BLOG_FAVICON)
+].filter(Boolean)
+const preconnectOrigins = [...new Set(resourceOrigins)]
 
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
@@ -52,61 +72,38 @@ class MyDocument extends Document {
     return (
       <Html lang={BLOG.LANG}>
         <Head>
-          <link rel='preconnect' href='https://images.unsplash.com' />
+          {preconnectOrigins.map(origin => (
+            <link key={`preconnect-${origin}`} rel='preconnect' href={origin} />
+          ))}
           <link rel='dns-prefetch' href='//images.unsplash.com' />
 
           {/* 预加载字体样式表 */}
-          {fontUrls
-            .filter(url => url)
-            .map((url, index) => (
+          {BLOG.FONT_PRELOAD &&
+            fontUrls.map((url, index) => (
               <link
                 key={`preload-font-${index}`}
                 rel='preload'
                 href={url}
                 as='style'
-                crossOrigin='anonymous'
               />
             ))}
 
           {/* 加载字体样式表 */}
-          {fontUrls
-            .filter(url => url)
-            .map((url, index) => (
-              <link
-                key={`font-${index}`}
-                rel='stylesheet'
-                href={url}
-                crossOrigin='anonymous'
-              />
-            ))}
+          {fontUrls.map((url, index) => (
+            <link key={`font-${index}`} rel='stylesheet' href={url} />
+          ))}
 
           {/* 预加载 Font Awesome */}
           {BLOG.FONT_AWESOME && (
             <>
               {isLocalFontAwesome && (
-                <>
-                  <link
-                    rel='preload'
-                    href='/vendor/fontawesome/webfonts/fa-solid-900.woff2'
-                    as='font'
-                    type='font/woff2'
-                    crossOrigin='anonymous'
-                  />
-                  <link
-                    rel='preload'
-                    href='/vendor/fontawesome/webfonts/fa-regular-400.woff2'
-                    as='font'
-                    type='font/woff2'
-                    crossOrigin='anonymous'
-                  />
-                  <link
-                    rel='preload'
-                    href='/vendor/fontawesome/webfonts/fa-brands-400.woff2'
-                    as='font'
-                    type='font/woff2'
-                    crossOrigin='anonymous'
-                  />
-                </>
+                <link
+                  rel='preload'
+                  href='/vendor/fontawesome/webfonts/fa-solid-900.woff2'
+                  as='font'
+                  type='font/woff2'
+                  crossOrigin='anonymous'
+                />
               )}
               <style
                 dangerouslySetInnerHTML={{

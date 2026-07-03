@@ -48,6 +48,10 @@ const BlogPostArchive = ({ posts = [], archiveTitle, siteInfo }) => {
                     <SmartLink href={post?.href} passHref legacyBehavior>
                       <LazyImage
                         className={'rounded-xl bg-center bg-cover w-40 h-24'}
+                        width={160}
+                        height={96}
+                        sizes='160px'
+                        alt={post.title}
                         src={pageCoverThumbnail}
                       />
                     </SmartLink>
