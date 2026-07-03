@@ -115,6 +115,32 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(screen.queryByLabelText('跳转评论')).not.toBeInTheDocument()
   })
 
+  it('stacks the mobile toc and comment buttons in one fixed control group', async () => {
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-button')).toBeInTheDocument()
+    })
+
+    const tocButton = document.getElementById('toc-button')
+    const commentButton = screen.getByLabelText('跳转评论')
+    const tocFixedGroup = tocButton.closest('.fixed')
+    const commentFixedGroup = commentButton.closest('.fixed')
+
+    expect(tocFixedGroup).toBe(commentFixedGroup)
+    expect(tocFixedGroup).toHaveClass('flex')
+    expect(tocFixedGroup).toHaveClass('flex-col')
+    expect(tocFixedGroup).toHaveClass('gap-3')
+  })
+
   it('opens the mobile toc drawer at a larger default height', async () => {
     render(
       <FloatTocButton

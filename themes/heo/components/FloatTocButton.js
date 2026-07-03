@@ -10,6 +10,11 @@ const DESKTOP_ZOOM_MIN_VIEWPORT = 720
 const MOBILE_DRAWER_DEFAULT_HEIGHT_VH = 44
 const MOBILE_DRAWER_MIN_HEIGHT_VH = 40
 const MOBILE_DRAWER_MAX_HEIGHT_VH = 90
+const MOBILE_ACTION_BUTTON_SIZE = 44
+const MOBILE_ACTION_GAP = 12
+const MOBILE_ACTION_DEFAULT_RIGHT = 16
+const MOBILE_ACTION_DEFAULT_BOTTOM = 80
+const MOBILE_ACTION_SCREEN_MARGIN = 16
 
 function hasDesktopPointer() {
   if (
@@ -155,8 +160,10 @@ export default function FloatTocButton(props) {
     setTouchStartButton({
       x: touch.clientX,
       y: touch.clientY,
-      initialRight: buttonPos.x || 0,
-      initialBottom: buttonPos.y || 320
+      initialRight:
+        buttonPos.x !== null ? buttonPos.x : MOBILE_ACTION_DEFAULT_RIGHT,
+      initialBottom:
+        buttonPos.y !== null ? buttonPos.y : MOBILE_ACTION_DEFAULT_BOTTOM
     })
   }
 
@@ -170,11 +177,32 @@ export default function FloatTocButton(props) {
     let newRight = touchStartButton.initialRight + deltaX
     let newBottom = touchStartButton.initialBottom + deltaY
 
-    const maxRight = window.innerWidth - 44
-    const maxBottom = window.innerHeight - 44
+    const mobileActionGroup = document.getElementById(
+      'heo-mobile-floating-actions'
+    )
+    const groupWidth =
+      mobileActionGroup?.offsetWidth || MOBILE_ACTION_BUTTON_SIZE
+    const groupHeight =
+      mobileActionGroup?.offsetHeight ||
+      MOBILE_ACTION_BUTTON_SIZE * 2 + MOBILE_ACTION_GAP
 
-    newRight = Math.max(0, Math.min(newRight, maxRight))
-    newBottom = Math.max(0, Math.min(newBottom, maxBottom))
+    const maxRight = Math.max(
+      MOBILE_ACTION_SCREEN_MARGIN,
+      window.innerWidth - groupWidth - MOBILE_ACTION_SCREEN_MARGIN
+    )
+    const maxBottom = Math.max(
+      MOBILE_ACTION_SCREEN_MARGIN,
+      window.innerHeight - groupHeight - MOBILE_ACTION_SCREEN_MARGIN
+    )
+
+    newRight = Math.max(
+      MOBILE_ACTION_SCREEN_MARGIN,
+      Math.min(newRight, maxRight)
+    )
+    newBottom = Math.max(
+      MOBILE_ACTION_SCREEN_MARGIN,
+      Math.min(newBottom, maxBottom)
+    )
 
     setButtonPos({
       x: newRight,
@@ -416,17 +444,22 @@ export default function FloatTocButton(props) {
 
   const showMobileControls = !isDesktopTocMode
   const showDesktopFloatingToc = isDesktopTocMode && showOnDesktop
+  const mobileActionStyle = {
+    right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
+    bottom:
+      buttonPos.y !== null
+        ? buttonPos.y + 'px'
+        : 'calc(5rem + env(safe-area-inset-bottom))'
+  }
 
   return (
     <>
       {/* 移动端始终显示 */}
       {showMobileControls && showMobileActions && !tocVisible && (
         <div
-          style={{
-            right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
-            bottom: buttonPos.y !== null ? buttonPos.y + 'px' : undefined
-          }}
-          className='fixed bottom-36 sm:bottom-40 z-50 right-4'
+          id='heo-mobile-floating-actions'
+          style={mobileActionStyle}
+          className='fixed bottom-20 z-50 right-4 flex flex-col gap-3 items-end'
           onTouchStart={handleButtonTouchStart}
           onTouchMove={handleButtonTouchMove}>
           {/* 按钮 */}
@@ -446,20 +479,6 @@ export default function FloatTocButton(props) {
               <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>
             )}
           </div>
-        </div>
-      )}
-
-      {/* 移动端跳转评论按钮 - 位于浮动目录按钮下方 */}
-      {showMobileControls && showMobileActions && !tocVisible && (
-        <div
-          className='fixed z-50 right-4'
-          style={{
-            right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
-            bottom:
-              buttonPos.y !== null
-                ? Math.max(16, buttonPos.y - 60) + 'px'
-                : 'calc(5rem + env(safe-area-inset-bottom))'
-          }}>
           <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
         </div>
       )}
