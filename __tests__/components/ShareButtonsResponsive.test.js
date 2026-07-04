@@ -42,4 +42,31 @@ describe('ShareButtons responsive layout', () => {
       expect(button).toHaveClass('flex-shrink-0')
     })
   })
+
+  it('centers icon glyphs inside the circular share buttons', () => {
+    const { container } = render(
+      <ShareButtons
+        post={{
+          title: 'Post',
+          summary: 'Summary',
+          tags: []
+        }}
+      />
+    )
+
+    const fontAwesomeIcons = Array.from(container.querySelectorAll('i'))
+
+    expect(fontAwesomeIcons.length).toBeGreaterThan(0)
+    fontAwesomeIcons.forEach(icon => {
+      expect(icon).toHaveClass('!inline-flex')
+      expect(icon).toHaveClass('!h-4')
+      expect(icon).toHaveClass('!w-4')
+      expect(icon).toHaveClass('items-center')
+      expect(icon).toHaveClass('justify-center')
+      expect(icon).toHaveClass('leading-none')
+    })
+
+    const csdnIcon = container.querySelector('img[alt="CSDN"]')
+    expect(csdnIcon).not.toHaveStyle({ transform: 'translateY(3px)' })
+  })
 })

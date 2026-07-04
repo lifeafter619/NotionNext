@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 /**
  * 此处样式只对当前主题生效
  * 此处不支持tailwindCSS的 @apply 语法
@@ -44,9 +43,10 @@ const Style = () => {
       #theme-heo #notion-article .notion-table-of-contents,
       #theme-heo #notion-article .notion-bookmark,
       #theme-heo #notion-article .notion-page-link {
-        max-width: min(100%, 820px);
-        margin-left: auto !important;
-        margin-right: auto !important;
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
       }
 
       #theme-heo #notion-article .notion-asset-wrapper,
