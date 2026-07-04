@@ -3,6 +3,55 @@ import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { getHeoCommentScrollTop } from './commentScroll'
+
+const CATALOG_SCROLL_OFFSET = 80
+
+function getCatalogHeadingNode(id) {
+  if (typeof document === 'undefined') {
+    return null
+  }
+
+  const nodeById = document.getElementById(id)
+  if (nodeById) {
+    return nodeById
+  }
+
+  return Array.from(document.getElementsByClassName('notion-h')).find(
+    section => section.getAttribute('data-id') === id
+  )
+}
+
+function getCatalogHeadingScrollTop(id) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const targetNode = getCatalogHeadingNode(id)
+  if (!targetNode) {
+    return null
+  }
+
+  const top =
+    targetNode.getBoundingClientRect().top +
+    window.scrollY -
+    CATALOG_SCROLL_OFFSET
+
+  return Math.max(0, top)
+}
+
+function updateCatalogHash(id) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const hash = `#${id}`
+  if (window.location.hash === hash) {
+    return
+  }
+
+  window.history.pushState(window.history.state, '', hash)
+}
 
 /**
  * 目录导航组件
@@ -132,19 +181,11 @@ const Catalog = ({
                 key={id}
                 href={`#${id}`}
                 onClick={e => {
-                  // 记录当前位置用于返回
-                  const currentY = window.scrollY
-                  setToastState({
-                    show: true,
-                    message: '已跳转至：\n' + tocItem.text,
-                    savedScrollY: currentY
-                  })
-                  // 3秒后自动关闭
-                  setTimeout(() => {
-                    setToastState(prev => ({ ...prev, show: false }))
-                  }, 3000)
-
-                  if (onItemClick) onItemClick(e)
+                  e.preventDefault()
+                  const targetScrollY = getCatalogHeadingScrollTop(id)
+                  handleJump(tocItem.text, targetScrollY)
+                  setActiveSection(id)
+                  updateCatalogHash(id)
                 }}
                 className={`notion-table-of-contents-item duration-300 transform dark:text-gray-200
             notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item
@@ -227,20 +268,11 @@ const Catalog = ({
 
 const JumpToCommentButton = ({ onJump }) => {
   const handleJumpClick = () => {
-    const commentNode =
-      document.getElementById('post-comments') ||
-      document.getElementById('comment')
-    if (commentNode) {
-      const headerHeight = 80 // approximate header height
-      const elementPosition =
-        commentNode.getBoundingClientRect().top + window.scrollY
-      const offsetPosition = elementPosition - headerHeight
-
-      // 调用父组件的跳转处理，传入目标位置
+    const offsetPosition = getHeoCommentScrollTop()
+    if (offsetPosition !== null) {
       if (onJump) {
         onJump('评论区', offsetPosition)
       } else {
-        // Fallback if no onJump (shouldn't happen in new structure)
         window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
       }
     }

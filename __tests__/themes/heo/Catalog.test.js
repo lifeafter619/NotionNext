@@ -24,6 +24,11 @@ describe('heo Catalog', () => {
       configurable: true,
       value: scrollToMock
     })
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 0
+    })
+    window.history.replaceState(null, '', '/')
     document.body.innerHTML =
       '<article id="notion-article"><h2 class="notion-h" data-id="missing">Missing heading</h2></article>'
   })
@@ -46,15 +51,67 @@ describe('heo Catalog', () => {
     expect(scrollToMock.mock.calls[0][0].top).toBeGreaterThanOrEqual(0)
   })
 
-  it('jumps to the heo comments wrapper from the catalog comment action', async () => {
+  it('jumps a catalog item to its heading with the heo nav offset', async () => {
+    window.scrollTo = jest.fn()
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 120
+    })
+    document.body.innerHTML =
+      '<article id="notion-article"><h2 id="known" class="notion-h" data-id="known">Known heading</h2></article>'
+    document.getElementById('known').getBoundingClientRect = () => ({
+      top: 640,
+      bottom: 700,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: 60
+    })
+
+    render(
+      <Catalog
+        forceSpy
+        toc={[
+          {
+            id: 'known',
+            text: 'Known heading',
+            indentLevel: 0
+          }
+        ]}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('link', { name: 'Known heading' }))
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 680,
+      behavior: 'smooth'
+    })
+    expect(window.location.hash).toBe('#known')
+
+    fireEvent.click(screen.getByText('回到原位置'))
+    await waitFor(() => {
+      expect(screen.queryByText('回到原位置')).not.toBeInTheDocument()
+    })
+  })
+
+  it('jumps to the heo comment anchor from the catalog comment action', async () => {
     window.scrollTo = jest.fn()
     document.body.insertAdjacentHTML(
       'beforeend',
-      '<div id="post-comments">Comments</div>'
+      '<div id="post-comments"><div id="comment">Comments</div></div>'
     )
     document.getElementById('post-comments').getBoundingClientRect = () => ({
       top: 640,
       bottom: 760,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: 120
+    })
+    document.getElementById('comment').getBoundingClientRect = () => ({
+      top: 720,
+      bottom: 840,
       left: 0,
       right: 320,
       width: 320,
@@ -77,7 +134,7 @@ describe('heo Catalog', () => {
     fireEvent.click(screen.getByText('跳转到评论区'))
 
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 560,
+      top: 640,
       behavior: 'smooth'
     })
 

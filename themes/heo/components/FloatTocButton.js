@@ -4,6 +4,7 @@ import Catalog from './Catalog'
 import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useArticleToc } from './useArticleToc'
+import { scrollToHeoComment } from './commentScroll'
 
 const DESKTOP_TOC_BREAKPOINT = 1280
 const DESKTOP_ZOOM_MIN_VIEWPORT = 720
@@ -598,24 +599,9 @@ const JumpToCommentButtonDesktop = () => {
   const handleJump = e => {
     e.stopPropagation()
     setSavedScrollY(window.scrollY)
-    const commentNode = document.getElementById('post-comments')
-    if (commentNode) {
-      const headerHeight = 80
-      const elementPosition =
-        commentNode.getBoundingClientRect().top + window.scrollY
-      const offsetPosition = elementPosition - headerHeight
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
+    if (scrollToHeoComment()) {
       setTimeout(() => {
-        const elementPosition2 =
-          commentNode.getBoundingClientRect().top + window.scrollY
-        const offsetPosition2 = elementPosition2 - headerHeight
-        window.scrollTo({
-          top: offsetPosition2,
-          behavior: 'smooth'
-        })
+        scrollToHeoComment()
       }, 500)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
@@ -695,25 +681,9 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
 
   const handleJump = () => {
     setSavedScrollY(window.scrollY)
-    const commentNode = document.getElementById('post-comments')
-    if (commentNode) {
-      const headerHeight = 80 // approximate header height
-      const elementPosition =
-        commentNode.getBoundingClientRect().top + window.scrollY
-      const offsetPosition = elementPosition - headerHeight
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
+    if (scrollToHeoComment()) {
       setTimeout(() => {
-        const elementPosition2 =
-          commentNode.getBoundingClientRect().top + window.scrollY
-        const offsetPosition2 = elementPosition2 - headerHeight
-        window.scrollTo({
-          top: offsetPosition2,
-          behavior: 'smooth'
-        })
+        scrollToHeoComment()
       }, 500)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)

@@ -1,5 +1,6 @@
 import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
+import { scrollToHeoComment } from './commentScroll'
 
 /**
  * 跳转到评论区
@@ -12,17 +13,9 @@ const JumpToCommentButton = () => {
   }
 
   function navToComment() {
-    const commentElement = document.getElementById('post-comments')
-    if (commentElement) {
-      // 这里的 80 是顶部导航栏的高度，可以根据实际情况调整
-      const top =
-        commentElement.getBoundingClientRect().top + window.scrollY - 80
-      window.scrollTo({ top, behavior: 'smooth' })
+    if (scrollToHeoComment()) {
       setTimeout(() => {
-        // 延时再滚一次，防止懒加载导致的定位偏差
-        const top2 =
-          commentElement.getBoundingClientRect().top + window.scrollY - 80
-        window.scrollTo({ top: top2, behavior: 'smooth' })
+        scrollToHeoComment()
       }, 500)
     }
   }

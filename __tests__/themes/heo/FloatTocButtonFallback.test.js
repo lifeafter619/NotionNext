@@ -141,6 +141,121 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(tocFixedGroup).toHaveClass('gap-3')
   })
 
+  it('jumps the mobile comment button to the heo comment anchor', async () => {
+    window.scrollTo = jest.fn()
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<div id="post-comments"><div id="comment">Comments</div></div>'
+    )
+    document.getElementById('post-comments').getBoundingClientRect = () => ({
+      top: 640,
+      bottom: 760,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: 120
+    })
+    document.getElementById('comment').getBoundingClientRect = () => ({
+      top: 720,
+      bottom: 840,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: 120
+    })
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('跳转评论')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByLabelText('跳转评论'))
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 640,
+      behavior: 'smooth'
+    })
+
+    fireEvent.click(screen.getByText('回到原位置'))
+    await waitFor(() => {
+      expect(screen.queryByText('回到原位置')).not.toBeInTheDocument()
+    })
+  })
+
+  it('jumps the desktop comment button to the heo comment anchor', async () => {
+    window.innerWidth = 1440
+    window.scrollTo = jest.fn()
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div></div></aside><div id="post-comments"><div id="comment">Comments</div></div>'
+    )
+    document.getElementById('post-comments').getBoundingClientRect = () => ({
+      top: 640,
+      bottom: 760,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: 120
+    })
+    document.getElementById('comment').getBoundingClientRect = () => ({
+      top: 720,
+      bottom: 840,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: 120
+    })
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(() => {
+        callback([
+          {
+            isIntersecting: false,
+            boundingClientRect: {
+              top: -620,
+              bottom: 40
+            }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('float-toc-button')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByText('跳转评论'))
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 640,
+      behavior: 'smooth'
+    })
+
+    fireEvent.click(screen.getByText('回到原位置'))
+    await waitFor(() => {
+      expect(screen.queryByText('回到原位置')).not.toBeInTheDocument()
+    })
+  })
+
   it('opens the mobile toc drawer at a larger default height', async () => {
     render(
       <FloatTocButton
