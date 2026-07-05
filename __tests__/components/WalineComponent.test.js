@@ -124,4 +124,26 @@ describe('WalineComponent', () => {
       await screen.findByText('评论服务暂时不可用，请稍后再试。')
     ).toBeInTheDocument()
   })
+
+  it('injects a scoped layout guard for nested Waline replies', async () => {
+    fetch.mockResolvedValue({ ok: true })
+    init.mockReturnValue({
+      update: jest.fn(),
+      destroy: jest.fn()
+    })
+
+    render(<WalineComponent />)
+
+    await waitFor(() => {
+      expect(init).toHaveBeenCalled()
+    })
+
+    const styleText = Array.from(document.querySelectorAll('style'))
+      .map(style => style.textContent)
+      .join('\n')
+
+    expect(styleText).toContain('#waline-comment')
+    expect(styleText).toContain('.wl-reply .wl-item')
+    expect(styleText).toContain('grid-template-columns')
+  })
 })

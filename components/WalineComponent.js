@@ -300,7 +300,43 @@ const WalineComponent = props => {
     )
   }
 
-  return <div ref={containerRef} />
+  return (
+    <>
+      <style>{`
+        #waline-comment :where(.wl-card-item, .wl-item) {
+          align-items: flex-start;
+          box-sizing: border-box;
+          width: 100%;
+        }
+
+        #waline-comment .wl-cards .wl-card-item,
+        #waline-comment .wl-reply .wl-item {
+          display: grid;
+          grid-template-columns: max-content minmax(0, 1fr);
+          column-gap: 0.75em;
+        }
+
+        #waline-comment .wl-card,
+        #waline-comment .wl-content {
+          min-width: 0;
+        }
+
+        #waline-comment .wl-card {
+          width: auto;
+        }
+
+        #waline-comment .wl-cards .wl-user {
+          margin-inline-end: 0;
+        }
+
+        #waline-comment .wl-card .wl-quote {
+          margin-top: 0.75em;
+          padding-inline-start: 0.75em;
+        }
+      `}</style>
+      <div id='waline-comment' ref={containerRef} />
+    </>
+  )
 }
 
 export default WalineComponent

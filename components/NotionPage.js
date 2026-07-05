@@ -4,6 +4,11 @@ import NotionLink from '@/components/NotionLink'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
 import { restoreCompactBlockMapForRender } from '@/lib/db/notion/cleanBlockMapForClient'
+import NotionButton from '@/components/NotionButton'
+import {
+  bindNotionHashScrollHandler,
+  scrollToNotionHeading
+} from '@/lib/utils/notionHashScroll'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
 import { useEffect, useCallback, useMemo } from 'react'
@@ -135,6 +140,10 @@ const NotionPage = ({ post, className }) => {
   }, [])
 
   useEffect(() => {
+    return bindNotionHashScrollHandler()
+  }, [post])
+
+  useEffect(() => {
     if (!isBrowser) return
 
     const article = document.getElementById('notion-article')
@@ -229,6 +238,7 @@ const NotionPage = ({ post, className }) => {
           mapPageUrl={mapPageUrl}
           mapImageUrl={mapImgUrl}
           components={{
+            Button: NotionButton,
             Code,
             Collection,
             Equation,
@@ -459,11 +469,7 @@ const autoScrollToHash = () => {
     const hash = window?.location?.hash
     const needToJumpToTitle = hash && hash.length > 0
     if (needToJumpToTitle) {
-      console.log('jump to hash', hash)
-      const tocNode = document.getElementById(hash.substring(1))
-      if (tocNode && tocNode?.className?.indexOf('notion') > -1) {
-        tocNode.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      }
+      scrollToNotionHeading(hash)
     }
   }, 180)
 }
