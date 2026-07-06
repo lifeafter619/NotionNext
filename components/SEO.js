@@ -293,7 +293,7 @@ const generateStructuredData = (meta, siteInfo, url, image, author) => {
  */
 const getSEOMeta = (props, router, locale) => {
   const { post, siteInfo, tag, category, page } = props
-  const keyword = router?.query?.s
+  const keyword = router?.query?.keyword || router?.query?.s
 
   const TITLE = siteConfig('TITLE')
   switch (router.route) {

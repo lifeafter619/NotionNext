@@ -18,6 +18,15 @@ const getUrlOrigin = value => {
   }
 }
 
+const darkTime = Array.isArray(BLOG.APPEARANCE_DARK_TIME)
+  ? BLOG.APPEARANCE_DARK_TIME
+  : null
+const darkTimeStart = Number(darkTime?.[0])
+const darkTimeEnd = Number(darkTime?.[1])
+const hasDarkTime = Boolean(
+  darkTime && Number.isFinite(darkTimeStart) && Number.isFinite(darkTimeEnd)
+)
+
 // 预先设置深色模式的脚本内容
 export const darkModeScript = `
 (function() {
@@ -40,10 +49,12 @@ export const darkModeScript = `
       // 检查是否在深色模式时间范围内
       const date = new Date()
       const hours = date.getHours()
-      const darkTimeStart = ${BLOG.APPEARANCE_DARK_TIME ? BLOG.APPEARANCE_DARK_TIME[0] : 18}
-      const darkTimeEnd = ${BLOG.APPEARANCE_DARK_TIME ? BLOG.APPEARANCE_DARK_TIME[1] : 6}
+      const useDarkTime = ${Boolean(hasDarkTime)}
+      const darkTimeStart = ${hasDarkTime ? darkTimeStart : 'null'}
+      const darkTimeEnd = ${hasDarkTime ? darkTimeEnd : 'null'}
       
-      shouldBeDark = prefersDark || (hours >= darkTimeStart || hours < darkTimeEnd)
+      shouldBeDark =
+        prefersDark || (useDarkTime && (hours >= darkTimeStart || hours < darkTimeEnd))
     }
   }
   

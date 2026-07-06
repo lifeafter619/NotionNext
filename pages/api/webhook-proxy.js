@@ -1,5 +1,7 @@
 import net from 'net'
 import * as dns from 'dns'
+import http from 'http'
+import https from 'https'
 
 const REQUEST_TIMEOUT_MS = 10000
 const BLOCKED_HEADER_NAMES = new Set([
@@ -61,15 +63,12 @@ export default async function handler(req, res) {
     })
   }
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
-
   try {
-    const response = await fetch(targetUrl.toString(), {
-      method: 'POST',
+    const response = await postWebhookRequest({
+      targetUrl,
+      resolvedAddress: validation.address,
       headers: sanitizeHeaders(headers),
-      body: JSON.stringify(payload),
-      signal: controller.signal
+      body: JSON.stringify(payload)
     })
 
     return res.status(response.ok ? 200 : 502).json({
@@ -83,9 +82,49 @@ export default async function handler(req, res) {
       success: false,
       error: 'Webhook request failed'
     })
-  } finally {
-    clearTimeout(timeout)
   }
+}
+
+function postWebhookRequest({ targetUrl, resolvedAddress, headers, body }) {
+  return new Promise((resolve, reject) => {
+    const isHttps = targetUrl.protocol === 'https:'
+    const transport = isHttps ? https : http
+    const hostname = normalizeHostname(targetUrl.hostname)
+    const request = transport.request(
+      {
+        protocol: targetUrl.protocol,
+        hostname: resolvedAddress,
+        port: targetUrl.port || (isHttps ? 443 : 80),
+        method: 'POST',
+        path: `${targetUrl.pathname}${targetUrl.search}`,
+        headers: {
+          ...headers,
+          Host: targetUrl.host,
+          'Content-Length': Buffer.byteLength(body)
+        },
+        servername: isHttps && !net.isIP(hostname) ? hostname : undefined,
+        timeout: REQUEST_TIMEOUT_MS
+      },
+      upstreamResponse => {
+        upstreamResponse.resume()
+        upstreamResponse.on('end', () => {
+          const status = upstreamResponse.statusCode || 0
+          resolve({
+            ok: status >= 200 && status < 300,
+            status,
+            statusText: upstreamResponse.statusMessage || ''
+          })
+        })
+      }
+    )
+
+    request.on('timeout', () => {
+      request.destroy(new Error('Webhook request timed out'))
+    })
+    request.on('error', reject)
+    request.write(body)
+    request.end()
+  })
 }
 
 async function validateWebhookUrl(targetUrl) {
@@ -107,7 +146,7 @@ async function validateWebhookUrl(targetUrl) {
   }
 
   if (net.isIP(hostname)) {
-    return { ok: true }
+    return { ok: true, address: hostname }
   }
 
   let addresses
@@ -129,7 +168,7 @@ async function validateWebhookUrl(targetUrl) {
     return { ok: false, error: 'Private webhook addresses are not allowed' }
   }
 
-  return { ok: true }
+  return { ok: true, address: addresses[0].address }
 }
 
 function sanitizeHeaders(headers) {

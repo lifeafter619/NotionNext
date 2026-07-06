@@ -1,3 +1,4 @@
+import BLOG from '@/blog.config'
 import { cleanCache } from '@/lib/cache/local_file_cache'
 
 /**
@@ -12,8 +13,17 @@ export default function handler(req, res) {
       .json({ status: 'error', message: 'Method not allowed' })
   }
 
-  const token = process.env.CACHE_REVALIDATION_TOKEN
-  if (token && req.headers.authorization !== `Bearer ${token}`) {
+  const token =
+    process.env.CACHE_REVALIDATION_TOKEN ||
+    process.env.REVALIDATION_TOKEN ||
+    BLOG.REVALIDATION_TOKEN
+  if (!token) {
+    return res.status(503).json({
+      status: 'error',
+      message: 'Cache revalidation token is not configured'
+    })
+  }
+  if (req.headers.authorization !== `Bearer ${token}`) {
     return res.status(401).json({ status: 'error', message: 'Unauthorized' })
   }
 

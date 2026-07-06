@@ -278,12 +278,18 @@ export function isPreferDark() {
     const prefersDarkMode = window.matchMedia(
       '(prefers-color-scheme: dark)'
     ).matches
-    return (
-      prefersDarkMode ||
-      (BLOG.APPEARANCE_DARK_TIME &&
-        (date.getHours() >= BLOG.APPEARANCE_DARK_TIME[0] ||
-          date.getHours() < BLOG.APPEARANCE_DARK_TIME[1]))
-    )
+    const darkTime = Array.isArray(BLOG.APPEARANCE_DARK_TIME)
+      ? BLOG.APPEARANCE_DARK_TIME
+      : null
+    const darkTimeStart = Number(darkTime?.[0])
+    const darkTimeEnd = Number(darkTime?.[1])
+    const isDarkTime =
+      darkTime &&
+      Number.isFinite(darkTimeStart) &&
+      Number.isFinite(darkTimeEnd) &&
+      (date.getHours() >= darkTimeStart || date.getHours() < darkTimeEnd)
+
+    return prefersDarkMode || Boolean(isDarkTime)
   }
   return false
 }
