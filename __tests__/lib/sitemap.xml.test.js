@@ -28,14 +28,17 @@ describe('generateSitemapXml', () => {
       allPages: [
         {
           slug: '/hello-world',
+          status: 'Published',
           publishDay: '2026-02-20'
         },
         {
           slug: 'https://external.com/landing',
+          status: 'Published',
           publishDay: '2026-02-20'
         },
         {
           slug: 'https://example.com/internal/page',
+          status: 'Published',
           publishDay: 'invalid-date'
         }
       ]
