@@ -1,4 +1,8 @@
 import { useGlobal } from '@/lib/global'
+import {
+  expandClosedToggleAncestors,
+  findNotionHeadingById
+} from '@/lib/utils/notionHashScroll'
 import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,14 +16,7 @@ function getCatalogHeadingNode(id) {
     return null
   }
 
-  const nodeById = document.getElementById(id)
-  if (nodeById) {
-    return nodeById
-  }
-
-  return Array.from(document.getElementsByClassName('notion-h')).find(
-    section => section.getAttribute('data-id') === id
-  )
+  return findNotionHeadingById(id)
 }
 
 function getCatalogHeadingScrollTop(id) {
@@ -31,6 +28,8 @@ function getCatalogHeadingScrollTop(id) {
   if (!targetNode) {
     return null
   }
+
+  expandClosedToggleAncestors(targetNode)
 
   const top =
     targetNode.getBoundingClientRect().top +

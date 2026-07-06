@@ -95,6 +95,63 @@ describe('heo Catalog', () => {
     })
   })
 
+  it('opens collapsed Notion toggle ancestors before measuring a catalog heading', () => {
+    window.scrollTo = jest.fn()
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 120
+    })
+    document.body.innerHTML = `
+      <article id="notion-article">
+        <details class="notion-toggle">
+          <summary>
+            <h2 class="notion-h notion-h2" data-id="parent">
+              <span><div id="parent" class="notion-header-anchor"></div></span>
+            </h2>
+          </summary>
+          <div>
+            <h3 class="notion-h notion-h3" data-id="child">
+              <span><div id="child" class="notion-header-anchor"></div></span>
+            </h3>
+          </div>
+        </details>
+      </article>
+    `
+    const details = document.querySelector('details')
+    const heading = document.querySelector('[data-id="child"]')
+    heading.getBoundingClientRect = () => ({
+      top: details.open ? 640 : 0,
+      bottom: details.open ? 700 : 0,
+      left: 0,
+      right: 320,
+      width: 320,
+      height: details.open ? 60 : 0
+    })
+
+    render(
+      <Catalog
+        forceSpy
+        toc={[
+          {
+            id: 'child',
+            text: 'Child heading',
+            indentLevel: 1
+          }
+        ]}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('link', { name: 'Child heading' }))
+    fireEvent.click(screen.getAllByRole('button')[1])
+
+    expect(details.open).toBe(true)
+    expect(window.scrollTo).toHaveBeenNthCalledWith(1, {
+      top: 680,
+      behavior: 'smooth'
+    })
+    expect(window.location.hash).toBe('#child')
+  })
+
   it('jumps to the heo comment anchor from the catalog comment action', async () => {
     window.scrollTo = jest.fn()
     document.body.insertAdjacentHTML(
