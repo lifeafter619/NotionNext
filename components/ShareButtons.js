@@ -186,7 +186,8 @@ const ShareButtons = ({ post }) => {
         aria-label={service}
         key={service}
         onClick={() => openShareWindow(shareLink)}
-        className={`${BASE_BUTTON_CLASS} ${bgClass}`}>
+        className={`${BASE_BUTTON_CLASS} ${bgClass}`}
+        title={service}>
         <i className={`${iconClass} ${SHARE_ICON_LAYOUT_CLASS} text-sm`} />
       </button>
     )
@@ -226,7 +227,8 @@ const ShareButtons = ({ post }) => {
             return (
               <button
                 key={singleService}
-                className='cursor-pointer bg-blue-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'>
+                className='cursor-pointer bg-blue-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'
+                title={singleService}>
                 <a
                   target='_blank'
                   rel='noreferrer'
@@ -244,7 +246,8 @@ const ShareButtons = ({ post }) => {
                 onMouseLeave={closePopover}
                 aria-label={singleService}
                 key={singleService}
-                className='cursor-pointer bg-green-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'>
+                className='cursor-pointer bg-green-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'
+                title={singleService}>
                 <div id='wechat-button' className={SHARE_ICON_WRAPPER_CLASS}>
                   <i className={`fab fa-weixin ${SHARE_ICON_LAYOUT_CLASS}`} />
                 </div>
@@ -271,7 +274,8 @@ const ShareButtons = ({ post }) => {
                 aria-label={singleService}
                 key={singleService}
                 onClick={copyUrl}
-                className='cursor-pointer bg-yellow-500 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'>
+                className='cursor-pointer bg-yellow-500 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'
+                title={singleService}>
                 <div
                   alt={locale.COMMON.URL_COPIED}
                   className={SHARE_ICON_WRAPPER_CLASS}>
@@ -288,7 +292,8 @@ const ShareButtons = ({ post }) => {
                   openRedirectShare('https://link.csdn.net/?target=')
                 }
                 className={`${IMAGE_SHARE_BUTTON_CLASS} focus-visible:ring-red-500`}
-                style={{ backgroundColor: '#ff6a00' }}>
+                style={{ backgroundColor: '#ff6a00' }}
+                title={singleService}>
                 <Image
                   src='/svg/csdn.svg'
                   alt='CSDN'
@@ -308,7 +313,8 @@ const ShareButtons = ({ post }) => {
                   openRedirectShare('https://link.juejin.cn/?target=')
                 }
                 className={`${IMAGE_SHARE_BUTTON_CLASS} focus-visible:ring-blue-500`}
-                style={{ backgroundColor: '#5dade2' }}>
+                style={{ backgroundColor: '#5dade2' }}
+                title={singleService}>
                 <Image
                   src='/svg/juejin.svg'
                   alt='掘金'

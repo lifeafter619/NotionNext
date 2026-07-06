@@ -1,6 +1,35 @@
 # 最新版本与更新日志
 
-> 当前主线：**4.10.3**（见根目录 `package.json`）
+> 当前主线：**4.10.4**（见根目录 `package.json`）
+
+## 4.10.4 发布要点
+
+本版本补齐 Notion 2026 年新增 HTML Block 的渲染支持，让 Notion AI 生成或用户上传的 `.html` 小工具可以在 NotionNext 文章中直接展示。
+
+### Notion HTML Block
+
+- 支持 Notion HTML Block 在 API 中返回的 `embed + html_artifact` 数据结构。
+- 为 HTML artifact 附件补齐 Notion signed URL，并保留原始 `attachment:` source，避免被 URL 清理逻辑误替换。
+- 由于 Notion HTML 附件会返回 `Content-Disposition: attachment` 和严格 CSP，本版本会在服务端读取 HTML 内容，再通过 sandbox iframe 的 `srcDoc` 渲染。
+- HTML Block 运行在 iframe 隔离环境中，不直接注入站点正文 DOM，降低对主题样式和站点脚本的影响。
+- 限制单个 HTML artifact 最大 512KB，避免把过大的 HTML 文件塞入页面数据。
+
+### 适用场景
+
+- Notion AI 生成的房贷计算器、ROI 计算器、互动表单、轻量图表等前端小工具。
+- 用户上传单文件 HTML artifact，并希望在文章正文中内嵌展示。
+- 普通外部网页 Embed 仍按原有 iframe 方式渲染。
+
+### 升级说明
+
+- 正常升级无需新增环境变量。
+- 修改 Notion HTML Block 内容后，如本地预览仍显示旧内容，可清理 NotionNext 缓存或关闭开发缓存后重新访问。
+
+### 验证
+
+- `yarn lint --file components/NotionPage.js --file lib/db/notion/getPostBlocks.js`：通过（保留原有 hook dependency warning）。
+- `node -e "const p=require('./package.json'); if (p.version !== '4.10.4') process.exit(1)"`：通过。
+- `yarn docs:site:build`：通过。
 
 ## 4.10.3 发布要点
 

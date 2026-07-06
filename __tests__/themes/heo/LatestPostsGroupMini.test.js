@@ -65,7 +65,7 @@ describe('heo LatestPostsGroupMini', () => {
       />
     )
 
-    expect(screen.getByAltText('cover')).toHaveAttribute(
+    expect(screen.getByAltText('Post with cover')).toHaveAttribute(
       'src',
       '/article-cover.jpg'
     )

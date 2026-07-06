@@ -10,6 +10,9 @@ jest.mock('@/lib/cache/cache_manager', () => ({
 }))
 
 jest.mock('p-limit', () => () => fn => fn())
+jest.mock('notion-utils', () => ({
+  getBlockValue: jest.fn(entry => entry?.value?.value || entry?.value || entry)
+}))
 
 import { formatNotionBlock } from '@/lib/db/notion/getPostBlocks'
 import {

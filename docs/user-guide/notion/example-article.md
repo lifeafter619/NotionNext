@@ -253,6 +253,17 @@ tailwindcss.pdf
 
 /user-guide/intro
 
+### Notion HTML Block
+
+Notion 2026 年新增的 HTML Block 可以在 Notion 中通过 Notion AI 生成交互式小工具，也可以上传 `.html` 文件。NotionNext 会将这种 `html_artifact` 以 sandbox iframe 渲染，适合房贷计算器、ROI 计算器、互动表单、轻量图表等只依赖前端 HTML/CSS/JavaScript 的内容。
+
+使用建议：
+
+- 在 Notion 页面中插入 HTML Block，使用 Notion AI 生成，或上传一个 `.html` 文件。
+- HTML Block 会被隔离在 iframe 中运行，不会直接注入站点正文 DOM。
+- 适合无后端的小工具；需要数据库、登录态、支付等能力时，仍应做成独立应用后再用普通 Embed 嵌入。
+- 为避免页面数据过大，单个 HTML artifact 建议控制在 512KB 以内。
+
 ### 5.代办
 
 家庭
