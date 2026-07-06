@@ -1,5 +1,4 @@
 import { useGlobal } from '@/lib/global'
-import { useEffect, useState } from 'react'
 
 /**
  * 文章波浪动画
@@ -7,35 +6,9 @@ import { useEffect, useState } from 'react'
 export default function WavesArea() {
   const { isDarkMode } = useGlobal()
   const color = isDarkMode ? '#18171d' : '#f7f9fe'
-  const [showWave, setShowWave] = useState(true)
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 800) {
-        setShowWave(false)
-      } else {
-        setShowWave(true)
-      }
-    }
-
-    // Initial check
-    handleResize()
-
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize)
-
-    // Cleanup event listener on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-
-  if (!showWave) {
-    return null
-  }
 
   return (
-    <section className='main-hero-waves-area waves-area w-full absolute left-0 z-10 bottom-0'>
+    <section className='main-hero-waves-area waves-area hidden min-[800px]:block w-full absolute left-0 z-10 bottom-0'>
       <svg
         className='waves-svg w-full h-[60px]'
         xmlns='http://www.w3.org/2000/svg'

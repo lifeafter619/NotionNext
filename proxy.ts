@@ -26,6 +26,51 @@ const isTenantAdminRoute = createRouteMatcher([
   '/admin/(.*)/domain'
 ])
 
+const PUBLIC_PAGE_CACHE_CONTROL =
+  'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800'
+
+const NON_PUBLIC_PAGE_ROOTS = new Set([
+  'api',
+  'trpc',
+  '_next',
+  'auth',
+  'sign-in',
+  'sign-up',
+  'dashboard',
+  'admin',
+  'user'
+])
+
+function getRouteRoot(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean)
+  if (segments.length === 0) return ''
+  const firstSegment = segments[0] || ''
+  if (NON_PUBLIC_PAGE_ROOTS.has(firstSegment)) return firstSegment
+  return segments[1] || firstSegment
+}
+
+function shouldCachePublicPage(req: NextRequest) {
+  const method = req.method.toUpperCase()
+  if (method !== 'GET' && method !== 'HEAD') return false
+
+  if (NON_PUBLIC_PAGE_ROOTS.has(getRouteRoot(req.nextUrl.pathname))) return false
+
+  if (req.headers.get('authorization')) return false
+
+  const cookie = req.headers.get('cookie') || ''
+  return (
+    !cookie.includes('__prerender_bypass') &&
+    !cookie.includes('__next_preview_data')
+  )
+}
+
+function withPublicPageCache(req: NextRequest, response: NextResponse) {
+  if (shouldCachePublicPage(req)) {
+    response.headers.set('Cache-Control', PUBLIC_PAGE_CACHE_CONTROL)
+  }
+  return response
+}
+
 /**
  * 没有配置权限相关功能的返回
  * @param req
@@ -57,7 +102,7 @@ const noAuthProxy = async (req: NextRequest) => {
       return NextResponse.redirect(redirectToUrl, 308)
     }
   }
-  return NextResponse.next()
+  return withPublicPageCache(req, NextResponse.next())
 }
 /**
  * 鉴权代理
@@ -83,7 +128,7 @@ const authProxy = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
       }
 
       // 默认继续处理请求
-      return NextResponse.next()
+      return withPublicPageCache(req, NextResponse.next())
     })
   : noAuthProxy
 

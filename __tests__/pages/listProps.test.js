@@ -36,6 +36,7 @@ jest.mock('p-limit', () => jest.fn(() => fn => fn()))
 
 jest.mock('@/lib/config', () => ({
   siteConfig: jest.fn((key, fallback) => {
+    if (key === 'THEME') return 'heo'
     if (key === 'POST_LIST_STYLE') return 'page'
     if (key === 'POSTS_PER_PAGE') return 12
     if (key === 'POST_LIST_PREVIEW') return false
@@ -84,6 +85,7 @@ function mockSiteData() {
 
 function mockDefaultSiteConfig() {
   siteConfig.mockImplementation((key, fallback) => {
+    if (key === 'THEME') return 'heo'
     if (key === 'POST_LIST_STYLE') return 'page'
     if (key === 'POSTS_PER_PAGE') return 12
     if (key === 'POST_LIST_PREVIEW') return false
@@ -119,6 +121,51 @@ describe('list page props', () => {
     expect(result.props.allPages).toBeUndefined()
   })
 
+  it('slims heo home page navigation props', async () => {
+    fetchGlobalAllData.mockResolvedValue({
+      NOTION_CONFIG: {},
+      allPages: [sensitivePost],
+      allNavPages: [
+        {
+          ...sensitivePost,
+          password: 'hidden',
+          content: ['server-only'],
+          ext: { unused: true },
+          toc: [{ id: 'toc' }]
+        }
+      ],
+      latestPosts: [
+        {
+          ...sensitivePost,
+          lastEditedDay: '2026-07-06',
+          password: 'hidden',
+          content: ['server-only']
+        }
+      ],
+      postCount: 1
+    })
+
+    const result = await getIndexStaticProps({ locale: 'zh-CN' })
+
+    expect(result.props.allNavPages[0]).toEqual({
+      title: 'Visible post',
+      slug: 'article/visible',
+      href: '/article/visible',
+      tags: ['tag-a']
+    })
+    expect(result.props.latestPosts[0]).toEqual(
+      expect.objectContaining({
+        id: 'post-1',
+        title: 'Visible post',
+        slug: 'article/visible',
+        href: '/article/visible',
+        lastEditedDay: '2026-07-06'
+      })
+    )
+    expect(result.props.latestPosts[0].password).toBeUndefined()
+    expect(result.props.latestPosts[0].content).toBeUndefined()
+  })
+
   it('cleans numbered page post list props', async () => {
     const result = await getPageStaticProps({
       params: { page: '1' },
@@ -131,6 +178,7 @@ describe('list page props', () => {
 
   it('compacts home preview block maps when list previews are enabled', async () => {
     siteConfig.mockImplementation((key, fallback) => {
+      if (key === 'THEME') return 'heo'
       if (key === 'POST_LIST_STYLE') return 'page'
       if (key === 'POSTS_PER_PAGE') return 12
       if (key === 'POST_LIST_PREVIEW') return true

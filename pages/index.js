@@ -22,6 +22,68 @@ const Index = props => {
   return <DynamicLayout theme={theme} layoutName='LayoutIndex' {...props} />
 }
 
+const HEO_HOME_POST_FIELDS = [
+  'id',
+  'title',
+  'slug',
+  'href',
+  'summary',
+  'category',
+  'tagItems',
+  'pageIcon',
+  'pageCover',
+  'pageCoverThumbnail',
+  'blockMap'
+]
+
+const HEO_HOME_NAV_FIELDS = [
+  'title',
+  'slug',
+  'href',
+  'tags',
+  'lastEditedDate',
+  'pageCoverThumbnail'
+]
+
+const HEO_HOME_LATEST_FIELDS = [
+  'id',
+  'title',
+  'slug',
+  'href',
+  'pageCover',
+  'pageCoverThumbnail',
+  'lastEditedDay'
+]
+
+function pickDefinedFields(source, fields) {
+  if (!source || typeof source !== 'object') return source
+
+  const result = {}
+  fields.forEach(field => {
+    if (source[field] !== undefined) {
+      result[field] = source[field]
+    }
+  })
+  return result
+}
+
+function pickDefinedFieldsFromList(items, fields) {
+  if (!Array.isArray(items)) return items || []
+  return items.map(item => pickDefinedFields(item, fields))
+}
+
+function slimHeoIndexProps(props) {
+  props.posts = pickDefinedFieldsFromList(props.posts, HEO_HOME_POST_FIELDS)
+  props.allNavPages = pickDefinedFieldsFromList(
+    props.allNavPages,
+    HEO_HOME_NAV_FIELDS
+  )
+  props.latestPosts = pickDefinedFieldsFromList(
+    props.latestPosts,
+    HEO_HOME_LATEST_FIELDS
+  )
+}
+
 /**
  * SSG 获取数据
  * @returns
@@ -130,6 +192,10 @@ export async function getStaticProps(req) {
     keepBlockMap: POST_LIST_PREVIEW
   })
   props.latestPosts = cleanPostListForClient(props.latestPosts)
+  const theme = siteConfig('THEME', BLOG.THEME, props?.NOTION_CONFIG)
+  if (theme === 'heo') {
+    slimHeoIndexProps(props)
+  }
   delete props.allPages
 
   return {

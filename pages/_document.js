@@ -55,6 +55,7 @@ export const darkModeScript = `
 // 获取字体URL列表
 const fontUrls = normalizeResourceList(BLOG.FONT_URL)
 const resourceOrigins = [
+  getUrlOrigin(BLOG.NOTION_HOST),
   'https://images.unsplash.com',
   ...fontUrls.map(getUrlOrigin),
   getUrlOrigin(BLOG.FONT_AWESOME),

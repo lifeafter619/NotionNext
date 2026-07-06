@@ -243,6 +243,21 @@ describe('heo responsive article controls', () => {
     })
   })
 
+  it('reserves desktop sidebar width before sidebar work mounts', () => {
+    const LayoutBase = getLayoutBase()
+
+    render(
+      <LayoutBase post={post}>
+        <main>Article body</main>
+      </LayoutBase>
+    )
+
+    expect(document.getElementById('sideRightSlot')).toHaveClass('w-72')
+    expect(document.getElementById('sideRightSlot')).toHaveClass(
+      'flex-shrink-0'
+    )
+  })
+
   it('does not mount desktop sidebar work on mobile article widths', () => {
     setViewportWidth(390)
     const LayoutBase = getLayoutBase()

@@ -161,7 +161,9 @@ const LayoutBase = props => {
 
           <div className='lg:px-2'></div>
 
-          <div className='hidden xl:block h-full flex-shrink-0'>
+          <div
+            id='sideRightSlot'
+            className='hidden xl:block h-full w-72 flex-shrink-0'>
             {/* 主区快右侧 */}
             {slotRight}
           </div>
