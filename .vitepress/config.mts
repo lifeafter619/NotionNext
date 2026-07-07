@@ -296,6 +296,10 @@ export default defineConfig({
               link: '/user-guide/config/notion-next-custom-properties'
             },
             {
+              text: '文章复制权限',
+              link: '/user-guide/config/copy-permission'
+            },
+            {
               text: '多语言站点',
               link: '/user-guide/config/notion-next-mulity-languages'
             },

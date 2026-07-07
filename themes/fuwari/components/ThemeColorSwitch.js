@@ -24,12 +24,18 @@ function hslToHex(h, s, l) {
   return `#${f(0)}${f(8)}${f(4)}`
 }
 
+export function getInitialHue(storedHue, defaultHue, fixed) {
+  if (fixed || !storedHue) return defaultHue
+  return normalizeHue(storedHue, defaultHue)
+}
+
 const ThemeColorSwitch = ({ panelRef, visible = true, onColorChange }) => {
   const enabled = siteConfig('FUWARI_WIDGET_THEME_COLOR_SWITCHER', true, CONFIG)
   const defaultHue = normalizeHue(
     siteConfig('FUWARI_THEME_COLOR_HUE', 250, CONFIG),
     250
   )
+  const fixed = siteConfig('FUWARI_THEME_COLOR_FIXED', false, CONFIG)
   const [hue, setHue] = useState(defaultHue)
   const color = useMemo(() => hslToHex(hue, 85, 62), [hue])
 
@@ -52,10 +58,10 @@ const ThemeColorSwitch = ({ panelRef, visible = true, onColorChange }) => {
     try {
       stored = localStorage.getItem(STORAGE_HUE_KEY)
     } catch {}
-    const initialHue = normalizeHue(stored, defaultHue)
+    const initialHue = getInitialHue(stored, defaultHue, fixed)
     setHue(initialHue)
     applyColor(hslToHex(initialHue, 85, 62), initialHue)
-  }, [applyColor, defaultHue])
+  }, [applyColor, defaultHue, fixed])
 
   const handleSelect = nextHue => {
     const normalizedHue = normalizeHue(nextHue, defaultHue)

@@ -262,7 +262,7 @@ const LayoutSlug = props => {
 
                     {/* 文章底部区域  */}
                     <section>
-                      <div className='py-2 flex justify-end'>
+                      <div className='py-2 flex justify-end flex-nowrap overflow-x-auto scroll-hidden gap-x-3'>
                         {siteConfig('MAGZINE_POST_DETAIL_TAG') &&
                           post?.tagItems?.map(tag => (
                             <TagItemMini key={tag.name} tag={tag} />

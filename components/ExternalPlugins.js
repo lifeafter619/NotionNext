@@ -13,6 +13,7 @@ import WebWhiz from './Webwhiz'
 import { useGlobal } from '@/lib/global'
 import IconFont from './IconFont'
 import Script from 'next/script'
+import { getPageCanCopy } from '@/lib/utils/copyPermission'
 
 /**
  * 各种插件脚本
@@ -64,6 +65,7 @@ const ExternalPlugin = props => {
     NOTION_CONFIG
   )
   const CAN_COPY = siteConfig('CAN_COPY', null, NOTION_CONFIG)
+  const canCopy = getPageCanCopy(CAN_COPY, props?.post)
   const WEB_WHIZ_ENABLED = siteConfig('WEB_WHIZ_ENABLED', null, NOTION_CONFIG)
   const AD_WWADS_BLOCK_DETECT = siteConfig(
     'AD_WWADS_BLOCK_DETECT',
@@ -273,8 +275,10 @@ const ExternalPlugin = props => {
       {COMMENT_TWIKOO_COUNT_ENABLE && <TwikooCommentCounter {...props} />}
       {RIBBON && <Ribbon />}
       {DIFY_CHATBOT_ENABLED && <DifyChatbot />}
-      {CUSTOM_RIGHT_CLICK_CONTEXT_MENU && <CustomContextMenu {...props} />}
-      {!CAN_COPY && <DisableCopy />}
+      {CUSTOM_RIGHT_CLICK_CONTEXT_MENU && (
+        <CustomContextMenu {...props} canCopy={canCopy} />
+      )}
+      {!canCopy && <DisableCopy />}
       {WEB_WHIZ_ENABLED && <WebWhiz />}
       {AD_WWADS_BLOCK_DETECT && <AdBlockDetect />}
       {TIANLI_KEY && <TianliGPT />}
