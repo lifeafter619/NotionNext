@@ -44,17 +44,13 @@ describe('magzine PostListRecommend', () => {
   it('uses the theme default recommend tag instead of falling back to latest posts', () => {
     setupThemeConfig({})
 
-    const latestPosts = [
-      { id: 'latest', title: 'Latest post', tags: ['随笔'] }
-    ]
+    const latestPosts = [{ id: 'latest', title: 'Latest post', tags: ['随笔'] }]
     const allNavPages = [
       { id: 'latest', title: 'Latest post', tags: ['随笔'] },
       { id: 'recommended', title: 'Recommended post', tags: ['推荐'] }
     ]
 
-    expect(getTopPosts({ latestPosts, allNavPages })).toEqual([
-      allNavPages[1]
-    ])
+    expect(getTopPosts({ latestPosts, allNavPages })).toEqual([allNavPages[1]])
   })
 
   it('falls back to latest posts only when the recommend tag is intentionally blank', () => {
@@ -62,9 +58,7 @@ describe('magzine PostListRecommend', () => {
       MAGZINE_RECOMMEND_POST_TAG: ''
     })
 
-    const latestPosts = [
-      { id: 'latest', title: 'Latest post', tags: ['随笔'] }
-    ]
+    const latestPosts = [{ id: 'latest', title: 'Latest post', tags: ['随笔'] }]
 
     expect(getTopPosts({ latestPosts, allNavPages: [] })).toBe(latestPosts)
   })

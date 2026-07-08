@@ -1,7 +1,10 @@
 import DefaultTheme from 'vitepress/theme'
 import { useData, useRoute } from 'vitepress'
 import { onMounted, watch } from 'vue'
-import type { DefaultTheme as DefaultThemeConfig, EnhanceAppContext } from 'vitepress'
+import type {
+  DefaultTheme as DefaultThemeConfig,
+  EnhanceAppContext
+} from 'vitepress'
 import Layout from './Layout.vue'
 import { cjkTokenize } from '../search-tokenize'
 import { syncUnreadUpdates, type RecentUpdatedDoc } from './unread-updates'
@@ -22,11 +25,17 @@ export default {
     const route = useRoute()
     const { theme } = useData()
     const getUpdatedDocs = () =>
-      ((theme.value as DefaultThemeConfig.Config & { updatedDocs?: RecentUpdatedDoc[] })
-        .updatedDocs || [])
+      (
+        theme.value as DefaultThemeConfig.Config & {
+          updatedDocs?: RecentUpdatedDoc[]
+        }
+      ).updatedDocs || []
     const getRecentDocs = () =>
-      ((theme.value as DefaultThemeConfig.Config & { recentUpdatedDocs?: RecentUpdatedDoc[] })
-        .recentUpdatedDocs || [])
+      (
+        theme.value as DefaultThemeConfig.Config & {
+          recentUpdatedDocs?: RecentUpdatedDoc[]
+        }
+      ).recentUpdatedDocs || []
 
     onMounted(() => {
       void syncUnreadUpdates(getUpdatedDocs(), getRecentDocs(), route.path)
@@ -34,7 +43,7 @@ export default {
 
     watch(
       () => route.path,
-      (path) => {
+      path => {
         void syncUnreadUpdates(getUpdatedDocs(), getRecentDocs(), path)
       }
     )

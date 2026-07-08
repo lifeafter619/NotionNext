@@ -163,7 +163,9 @@ async function validateWebhookUrl(targetUrl) {
     return { ok: false, error: 'Unable to resolve webhook host' }
   }
 
-  const hasBlockedAddress = addresses.some(({ address }) => isBlockedIp(address))
+  const hasBlockedAddress = addresses.some(({ address }) =>
+    isBlockedIp(address)
+  )
   if (hasBlockedAddress) {
     return { ok: false, error: 'Private webhook addresses are not allowed' }
   }

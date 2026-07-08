@@ -53,7 +53,8 @@ function shouldCachePublicPage(req: NextRequest) {
   const method = req.method.toUpperCase()
   if (method !== 'GET' && method !== 'HEAD') return false
 
-  if (NON_PUBLIC_PAGE_ROOTS.has(getRouteRoot(req.nextUrl.pathname))) return false
+  if (NON_PUBLIC_PAGE_ROOTS.has(getRouteRoot(req.nextUrl.pathname)))
+    return false
 
   if (req.headers.get('authorization')) return false
 

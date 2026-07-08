@@ -1,9 +1,6 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import {
-  cleanPostSummaries,
-  fetchGlobalAllData
-} from '@/lib/db/SiteDataApi'
+import { cleanPostSummaries, fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 
 /**

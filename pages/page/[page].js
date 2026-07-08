@@ -44,7 +44,7 @@ export async function getStaticProps({ params: { page }, locale }) {
     props?.NOTION_CONFIG
   )
 
-  const allPosts = allPages?.filter(
+  const allPosts = (allPages || []).filter(
     page => page.type === 'Post' && page.status === 'Published'
   )
   const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', 12, props?.NOTION_CONFIG)

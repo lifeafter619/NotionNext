@@ -1,4 +1,5 @@
 import {
+  blockMapHasCode,
   compactBlockMapForClient,
   cleanBlockMapForClient,
   cleanPostForClient,
@@ -529,5 +530,31 @@ describe('cleanBlockMapForClient', () => {
     expect(restored.__compact_property_keys).toBeUndefined()
     expect(restored.block.page1.value).toEqual(blockMap.block.page1.value)
     expect(restored.block.child1.value).toEqual(blockMap.block.child1.value)
+  })
+
+  it('detects code blocks in regular and compact block maps', () => {
+    const blockMap = {
+      block: {
+        page1: {
+          value: {
+            id: 'page1',
+            type: 'page',
+            content: ['code1']
+          }
+        },
+        code1: {
+          value: {
+            id: 'code1',
+            type: 'code',
+            parent_id: 'page1'
+          }
+        }
+      }
+    }
+
+    expect(blockMapHasCode(blockMap)).toBe(true)
+
+    const compact = compactBlockMapForClient(blockMap)
+    expect(blockMapHasCode(compact)).toBe(true)
   })
 })

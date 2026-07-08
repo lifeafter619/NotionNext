@@ -19,9 +19,13 @@ async function resetMotion() {
   }
 
   await nextTick()
-  await new Promise((resolve) => window.requestAnimationFrame(() => resolve(undefined)))
+  await new Promise(resolve =>
+    window.requestAnimationFrame(() => resolve(undefined))
+  )
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reduceMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches
   if (reduceMotion) {
     return
   }
@@ -40,7 +44,7 @@ async function resetMotion() {
       '.VPHomeHero .tagline',
       '.VPHomeHero .actions',
       '.VPHomeHero .image'
-    ].filter((selector) => document.querySelector(selector))
+    ].filter(selector => document.querySelector(selector))
 
     gsap
       .timeline({ defaults: { ease: 'power3.out' } })

@@ -32,7 +32,10 @@ function getSearchSnippets(bodyContent, lowerBodyContent, searchKeyword) {
     const start = Math.max(0, index - 50)
     const end = Math.min(bodyContent.length, index + 150)
     results.push(bodyContent.slice(start, end))
-    index = lowerBodyContent.indexOf(searchKeyword, index + searchKeyword.length)
+    index = lowerBodyContent.indexOf(
+      searchKeyword,
+      index + searchKeyword.length
+    )
   }
 
   return results
@@ -75,11 +78,7 @@ const Search = props => {
 
       results.push({
         ...post,
-        results: getSearchSnippets(
-          bodyContent,
-          lowerBodyContent,
-          searchKeyword
-        )
+        results: getSearchSnippets(bodyContent, lowerBodyContent, searchKeyword)
       })
       return results
     }, [])

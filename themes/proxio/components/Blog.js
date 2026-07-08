@@ -38,8 +38,7 @@ export const Blog = ({ posts }) => {
           {/* 区块标题文字 */}
           <div
             className='-mx-4 flex flex-wrap justify-center wow fadeInUp'
-            data-wow-delay='.2s'
-          >
+            data-wow-delay='.2s'>
             <div className='w-full px-4 py-4'>
               <div className='mx-auto max-w-[485px] text-center space-y-4'>
                 <span className='px-3 py-0.5 rounded-2xl mb-2 dark:bg-dark-1 border border-gray-200 dark:border-[#333333] dark:text-white'>
@@ -71,8 +70,7 @@ export const Blog = ({ posts }) => {
                 <div key={index} className='w-full px-4'>
                   <div
                     className='wow fadeInUp group mb-10 relative overflow-hidden blog'
-                    data-wow-delay='.1s'
-                  >
+                    data-wow-delay='.1s'>
                     <div className='relative rounded-xl border overflow-hidden shadow-md dark:border-gray-700 dark:bg-gray-800'>
                       <SmartLink href={item?.href} className='block'>
                         {item.pageCoverThumbnail && (
@@ -97,8 +95,7 @@ export const Blog = ({ posts }) => {
                             shouldShowCover
                               ? 'opacity-0 group-hover:opacity-100'
                               : ''
-                          }`}
-                        >
+                          }`}>
                           {!coverImg && (
                             <p className='max-w-[370px] text-base text-body-color dark:text-dark-6 flex items-center justify-center duration-200 group-hover:text-white '>
                               {item.summary}
@@ -119,8 +116,7 @@ export const Blog = ({ posts }) => {
                       <h3>
                         <SmartLink
                           href={item?.href}
-                          className='mb-4 inline-block text-xl font-semibold text-dark hover:text-primary dark:text-white dark:hover:text-primary sm:text-2xl lg:text-xl xl:text-2xl'
-                        >
+                          className='mb-4 inline-block text-xl font-semibold text-dark hover:text-primary dark:text-white dark:hover:text-primary sm:text-2xl lg:text-xl xl:text-2xl'>
                           {item.title}
                         </SmartLink>
                       </h3>

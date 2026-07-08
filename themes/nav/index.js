@@ -20,15 +20,20 @@ import CONFIG from './config'
 import { Style } from './style'
 
 const WWAds = dynamic(() => import('@/components/WWAds'), { ssr: false })
-const AdSlot = dynamic(() => import('@/components/GoogleAdsense').then(mod => mod.AdSlot), {
-  ssr: false
-})
+const AdSlot = dynamic(
+  () => import('@/components/GoogleAdsense').then(mod => mod.AdSlot),
+  {
+    ssr: false
+  }
+)
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const Live2D = dynamic(() => import('@/components/Live2D'), { ssr: false })
 const NotionPage = dynamic(() => import('@/components/NotionPage'), {
   ssr: true
 })
-const Announcement = dynamic(() => import('./components/Announcement'), { ssr: true })
+const Announcement = dynamic(() => import('./components/Announcement'), {
+  ssr: true
+})
 const BlogArchiveItem = dynamic(() => import('./components/BlogArchiveItem'), {
   ssr: true
 })
@@ -50,10 +55,15 @@ const JumpToTopButton = dynamic(() => import('./components/JumpToTopButton'), {
   ssr: false
 })
 const LogoBar = dynamic(() => import('./components/LogoBar'), { ssr: true })
-const MenuItem = dynamic(() => import('./components/MenuItem').then(mod => mod.MenuItem), {
+const MenuItem = dynamic(
+  () => import('./components/MenuItem').then(mod => mod.MenuItem),
+  {
+    ssr: true
+  }
+)
+const PageNavDrawer = dynamic(() => import('./components/PageNavDrawer'), {
   ssr: true
 })
-const PageNavDrawer = dynamic(() => import('./components/PageNavDrawer'), { ssr: true })
 const TagItemMini = dynamic(() => import('./components/TagItemMini'), {
   ssr: true
 })

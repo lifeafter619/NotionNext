@@ -128,6 +128,9 @@ describe('SearchHighlightNav', () => {
       'mousemove',
       mouseMoveHandler
     )
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('mouseup', mouseUpHandler)
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'mouseup',
+      mouseUpHandler
+    )
   })
 })

@@ -1,4 +1,4 @@
-import { createRef, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { init } from '@waline/client'
 import { useRouter } from 'next/router'
 import '@waline/client/style'
@@ -12,7 +12,9 @@ let waline = null
  * @returns
  */
 const WalineComponent = props => {
-  const containerRef = createRef()
+  // createRef 每次渲染都会生成新 ref，异步 init 期间一旦重渲染就会拿到 null 容器，
+  // 导致评论区静默空白；必须用 useRef 保持稳定
+  const containerRef = useRef(null)
   const router = useRouter()
   const [loadError, setLoadError] = useState(false)
 

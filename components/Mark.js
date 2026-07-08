@@ -67,7 +67,9 @@ function markTextNode(node, regex, target) {
     if (!matchText) break
 
     if (match.index > lastIndex) {
-      fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)))
+      fragment.appendChild(
+        document.createTextNode(text.slice(lastIndex, match.index))
+      )
     }
 
     const element = document.createElement(target.element || 'span')

@@ -100,7 +100,10 @@ const Header = ({ locale, customNav, customMenu, searchModal }) => {
             customMenu={customMenu}
           />
         </div>
-        <ThemeColorSwitch panelRef={panelRef} visible={showPalette && !paletteFixed} />
+        <ThemeColorSwitch
+          panelRef={panelRef}
+          visible={showPalette && !paletteFixed}
+        />
       </div>
     </header>
   )

@@ -20,16 +20,22 @@ const srcExclude = ['**/README.md', '**/README.en.md']
 function getMarkdownTitle(filePath: string) {
   const content = readFileSync(filePath, 'utf8')
   const title = content.match(/^#\s+(.+)$/m)?.[1]?.trim()
-  return title || filePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || filePath
+  return (
+    title || filePath.split(/[\\/]/).pop()?.replace(/\.md$/, '') || filePath
+  )
 }
 
 function getLastUpdatedAt(filePath: string) {
   try {
-    const timestamp = execFileSync('git', ['log', '-1', '--format=%ct', '--', filePath], {
-      cwd: projectRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore']
-    }).trim()
+    const timestamp = execFileSync(
+      'git',
+      ['log', '-1', '--format=%ct', '--', filePath],
+      {
+        cwd: projectRoot,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore']
+      }
+    ).trim()
 
     if (timestamp) {
       return Number(timestamp) * 1000
@@ -57,7 +63,7 @@ function getUpdatedDocs() {
     encoding: 'utf8'
   })
     .split(/\r?\n/)
-    .filter((repoPath) => {
+    .filter(repoPath => {
       return (
         repoPath.endsWith('.md') &&
         !repoPath.endsWith('/README.md') &&
@@ -67,7 +73,7 @@ function getUpdatedDocs() {
     })
 
   return trackedDocs
-    .map((repoPath) => {
+    .map(repoPath => {
       const filePath = fileURLToPath(new URL(`../${repoPath}`, import.meta.url))
 
       if (!existsSync(filePath)) {
@@ -82,14 +88,20 @@ function getUpdatedDocs() {
       }
     })
     .filter(
-      (item): item is { link: string; title: string; updatedAt: number; isIndex: boolean } =>
-        Boolean(item)
+      (
+        item
+      ): item is {
+        link: string
+        title: string
+        updatedAt: number
+        isIndex: boolean
+      } => Boolean(item)
     )
     .sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
 const updatedDocs = getUpdatedDocs()
-const recentUpdatedDocs = updatedDocs.filter((doc) => !doc.isIndex).slice(0, 5)
+const recentUpdatedDocs = updatedDocs.filter(doc => !doc.isIndex).slice(0, 5)
 
 export default defineConfig({
   title: 'NotionNext 使用说明',
@@ -228,7 +240,10 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'Notion 数据库', link: '/user-guide/notion-database' },
-            { text: '社区站数据库模板', link: '/user-guide/notion/community-site-template' },
+            {
+              text: '社区站数据库模板',
+              link: '/user-guide/notion/community-site-template'
+            },
             { text: '排版示例', link: '/user-guide/notion/example-article' },
             { text: '备份 Notion', link: '/user-guide/notion/notion-backup' },
             { text: 'Notion 模板', link: '/user-guide/notion/notion-template' },
@@ -478,7 +493,7 @@ export default defineConfig({
             { text: '维护工作流', link: '/user-guide/MAINTENANCE_WORKFLOW' },
             { text: '迁移索引', link: '/user-guide/ARTICLE_INDEX' }
           ]
-        },
+        }
       ],
       '/developer/': [
         {

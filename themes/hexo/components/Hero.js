@@ -22,8 +22,10 @@ const Hero = props => {
   }
 
   const GREETING_WORDS = siteConfig('GREETING_WORDS').split(',')
-  const GREETING_WORDS_TYPE_SPEED = Number(siteConfig('GREETING_WORDS_TYPE_SPEED')) || 200
-  const GREETING_WORDS_BACK_SPEED = Number(siteConfig('GREETING_WORDS_BACK_SPEED')) || 100
+  const GREETING_WORDS_TYPE_SPEED =
+    Number(siteConfig('GREETING_WORDS_TYPE_SPEED')) || 200
+  const GREETING_WORDS_BACK_SPEED =
+    Number(siteConfig('GREETING_WORDS_BACK_SPEED')) || 100
   useEffect(() => {
     updateHeaderHeight()
 

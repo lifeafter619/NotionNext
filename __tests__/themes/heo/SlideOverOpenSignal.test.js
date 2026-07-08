@@ -77,7 +77,9 @@ jest.mock('@/themes/heo/components/TagGroups', () => {
 
 describe('heo SlideOver open signal', () => {
   it('opens on first mount when the header click increments openSignal', async () => {
-    render(<SlideOver cRef={{ current: null }} openSignal={1} tagOptions={[]} />)
+    render(
+      <SlideOver cRef={{ current: null }} openSignal={1} tagOptions={[]} />
+    )
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()

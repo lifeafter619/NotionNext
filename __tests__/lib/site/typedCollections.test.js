@@ -33,6 +33,10 @@ describe('typedCollections', () => {
       'member-1',
       'post-1'
     ])
-    expect(input.map(page => page.id)).toEqual(['member-1', 'event-1', 'post-1'])
+    expect(input.map(page => page.id)).toEqual([
+      'member-1',
+      'event-1',
+      'post-1'
+    ])
   })
 })

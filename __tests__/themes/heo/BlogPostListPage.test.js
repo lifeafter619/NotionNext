@@ -45,10 +45,9 @@ describe('heo BlogPostListPage', () => {
 
     render(<BlogPostListPage posts={posts} postCount={posts.length} />)
 
-    expect(screen.getAllByTestId('post-card').map(node => node.textContent)).toEqual([
-      '0:Post 1',
-      '1:Post 2'
-    ])
+    expect(
+      screen.getAllByTestId('post-card').map(node => node.textContent)
+    ).toEqual(['0:Post 1', '1:Post 2'])
     expect(posts.indexOf).not.toHaveBeenCalled()
   })
 })

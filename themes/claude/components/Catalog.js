@@ -194,7 +194,9 @@ const Catalog = ({ post }) => {
     const content = document.querySelector('#container-inner')
     if (!content) return
 
-    content.addEventListener('scroll', actionSectionScrollSpy, { passive: true })
+    content.addEventListener('scroll', actionSectionScrollSpy, {
+      passive: true
+    })
     setTimeout(() => actionSectionScrollSpy(), 300)
 
     return () => {

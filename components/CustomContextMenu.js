@@ -21,9 +21,7 @@ export default function CustomContextMenu(props) {
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
 
-  const allNavPages = Array.isArray(props?.allNavPages)
-    ? props.allNavPages
-    : []
+  const allNavPages = Array.isArray(props?.allNavPages) ? props.allNavPages : []
   const router = useRouter()
   /**
    * 随机跳转文章

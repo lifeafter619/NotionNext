@@ -24,10 +24,15 @@ const FeaturesBlocks = dynamic(() => import('./components/FeaturesBlocks'), {
 const Testimonials = dynamic(() => import('./components/Testimonials'), {
   ssr: true
 })
-const Pricing = dynamic(() => import('./components/Pricing').then(mod => mod.Pricing), {
+const Pricing = dynamic(
+  () => import('./components/Pricing').then(mod => mod.Pricing),
+  {
+    ssr: true
+  }
+)
+const Newsletter = dynamic(() => import('./components/Newsletter'), {
   ssr: true
 })
-const Newsletter = dynamic(() => import('./components/Newsletter'), { ssr: true })
 const Footer = dynamic(() => import('./components/Footer'), { ssr: true })
 
 /**

@@ -1,10 +1,4 @@
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor
-} from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import ImageViewer from '@/components/ImageViewer'
 
 jest.mock('react-dom', () => {
@@ -263,8 +257,6 @@ describe('ImageViewer Component', () => {
       />
     )
 
-    expect(screen.getByTestId('image-viewer-toolbar')).toHaveClass(
-      'flex-wrap'
-    )
+    expect(screen.getByTestId('image-viewer-toolbar')).toHaveClass('flex-wrap')
   })
 })

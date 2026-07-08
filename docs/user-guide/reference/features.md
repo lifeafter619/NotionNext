@@ -4,24 +4,24 @@
 
 ## 站点基础（blog.config.js）
 
-| 键 / 变量                    | 说明                                           |
-| ---------------------------- | ---------------------------------------------- |
-| `THEME`                      | 主题 ID = `themes/` 下文件夹名                 |
-| `LANG`                       | 默认语言 `zh-CN`、`en-US` 等                   |
-| `AUTHOR` / `BIO` / `LINK`    | 作者、简介、站点 URL（影响分享、RSS、Sitemap） |
-| `KEYWORDS`                   | SEO 关键词                                     |
-| `APPEARANCE`                 | `light` / `dark` / `auto`                      |
-| `APPEARANCE_DARK_TIME`       | 自动夜间时段，如 `[18, 6]`                     |
-| `NEXT_REVALIDATE_SECOND`     | ISR 缓存秒数，越大越省 Vercel 额度             |
-| `PSEUDO_STATIC`              | URL 以 `.html` 结尾                            |
-| `ENABLE_RSS`                 | RSS 生成                                       |
-| `CUSTOM_MENU`                | 使用 Menu/SubMenu 导航                         |
+| 键 / 变量                    | 说明                                                             |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `THEME`                      | 主题 ID = `themes/` 下文件夹名                                   |
+| `LANG`                       | 默认语言 `zh-CN`、`en-US` 等                                     |
+| `AUTHOR` / `BIO` / `LINK`    | 作者、简介、站点 URL（影响分享、RSS、Sitemap）                   |
+| `KEYWORDS`                   | SEO 关键词                                                       |
+| `APPEARANCE`                 | `light` / `dark` / `auto`                                        |
+| `APPEARANCE_DARK_TIME`       | 自动夜间时段，如 `[18, 6]`                                       |
+| `NEXT_REVALIDATE_SECOND`     | ISR 缓存秒数，越大越省 Vercel 额度                               |
+| `PSEUDO_STATIC`              | URL 以 `.html` 结尾                                              |
+| `ENABLE_RSS`                 | RSS 生成                                                         |
+| `CUSTOM_MENU`                | 使用 Menu/SubMenu 导航                                           |
 | `CAN_COPY`                   | 是否允许复制正文；文章可用 `CAN_COPY` 或 `ext.CAN_COPY` 单独覆盖 |
-| `GREETING_WORDS`             | 欢迎语打字（部分主题）                         |
-| `LAYOUT_SIDEBAR_REVERSE`     | 侧栏左右反转（hexo/next 等）                   |
-| `UUID_REDIRECT`              | UUID 重定向到 slug                             |
-| `CUSTOM_EXTERNAL_JS` / `CSS` | 外链脚本样式                                   |
-| `BEI_AN` / `BEI_AN_GONGAN`   | 备案号                                         |
+| `GREETING_WORDS`             | 欢迎语打字（部分主题）                                           |
+| `LAYOUT_SIDEBAR_REVERSE`     | 侧栏左右反转（hexo/next 等）                                     |
+| `UUID_REDIRECT`              | UUID 重定向到 slug                                               |
+| `CUSTOM_EXTERNAL_JS` / `CSS` | 外链脚本样式                                                     |
+| `BEI_AN` / `BEI_AN_GONGAN`   | 备案号                                                           |
 
 ## 文章与列表（conf/post.config.js）
 
@@ -68,20 +68,20 @@
 
 ## 统计（conf/analytics.config.js）
 
-| 键                                             | 说明              |
-| ---------------------------------------------- | ----------------- |
-| `ANALYTICS_GOOGLE_ID`                          | GA4               |
-| `ANALYTICS_BAIDU_ID`                           | 百度统计          |
-| `ANALYTICS_CNZZ_ID`                            | 友盟/CNZZ         |
-| `ANALYTICS_51LA_ID` / `ANALYTICS_51LA_CK`      | 51LA              |
-| `ANALYTICS_ACKEE_*`                            | 自托管 Ackee      |
-| `UMAMI_HOST` / `UMAMI_ID`                      | Umami             |
-| `CLARITY_ID`                                   | Microsoft Clarity |
-| `ANALYTICS_VERCEL`                             | Vercel Analytics  |
+| 键                                             | 说明                  |
+| ---------------------------------------------- | --------------------- |
+| `ANALYTICS_GOOGLE_ID`                          | GA4                   |
+| `ANALYTICS_BAIDU_ID`                           | 百度统计              |
+| `ANALYTICS_CNZZ_ID`                            | 友盟/CNZZ             |
+| `ANALYTICS_51LA_ID` / `ANALYTICS_51LA_CK`      | 51LA                  |
+| `ANALYTICS_ACKEE_*`                            | 自托管 Ackee          |
+| `UMAMI_HOST` / `UMAMI_ID`                      | Umami                 |
+| `CLARITY_ID`                                   | Microsoft Clarity     |
+| `ANALYTICS_VERCEL`                             | Vercel Analytics      |
 | `ANALYTICS_VERCEL_SPEED_INSIGHTS`              | Vercel Speed Insights |
-| `ANALYTICS_BUSUANZI_ENABLE`                    | 不蒜子阅读量      |
-| `MATOMO_*`                                     | Matomo            |
-| `SEO_GOOGLE_SITE_VERIFICATION` / `SEO_BAIDU_*` | 站长验证          |
+| `ANALYTICS_BUSUANZI_ENABLE`                    | 不蒜子阅读量          |
+| `MATOMO_*`                                     | Matomo                |
+| `SEO_GOOGLE_SITE_VERIFICATION` / `SEO_BAIDU_*` | 站长验证              |
 
 ## 挂件与聊天（conf/widget.config.js）
 

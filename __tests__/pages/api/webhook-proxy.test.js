@@ -143,7 +143,10 @@ describe('/api/webhook-proxy', () => {
     lookup.mockResolvedValue([{ address: '10.0.0.12', family: 4 }])
     const res = createResponse()
 
-    await handler(createRequest({ url: 'https://hooks.example.com/webhook' }), res)
+    await handler(
+      createRequest({ url: 'https://hooks.example.com/webhook' }),
+      res
+    )
 
     expect(res.status).toHaveBeenCalledWith(400)
     expect(httpsRequest).not.toHaveBeenCalled()

@@ -193,8 +193,10 @@ const ShareButtons = ({ post }) => {
     )
   }
   useEffect(() => {
+    // heo 等主题的布局组件在客户端导航时不会重新挂载，
+    // 必须跟随路由更新分享地址，否则分享出去的是上一篇文章的链接
     setShareUrl(stripTransientQueryParamsFromUrl(window.location.href))
-  }, [])
+  }, [router.asPath])
 
   return (
     <>

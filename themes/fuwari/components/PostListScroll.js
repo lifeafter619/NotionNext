@@ -7,7 +7,10 @@ const PostListScroll = ({ posts = [] }) => {
   const { locale, NOTION_CONFIG } = useGlobal()
   const [page, setPage] = useState(1)
   const loadingRef = useRef(null)
-  const POSTS_PER_PAGE = parseInt(siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG), 10)
+  const POSTS_PER_PAGE = parseInt(
+    siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG),
+    10
+  )
   const hasMore = page * POSTS_PER_PAGE < posts.length
   const postsToShow = posts.slice(0, page * POSTS_PER_PAGE)
 
@@ -32,7 +35,9 @@ const PostListScroll = ({ posts = [] }) => {
         type='button'
         onClick={loadMore}
         className='fuwari-card mt-4 w-full p-4 text-center text-sm text-[var(--fuwari-muted)] hover:text-[var(--fuwari-primary)]'>
-        {hasMore ? locale?.COMMON?.MORE || 'More' : locale?.COMMON?.NO_MORE || 'No more'}
+        {hasMore
+          ? locale?.COMMON?.MORE || 'More'
+          : locale?.COMMON?.NO_MORE || 'No more'}
       </button>
     </>
   )

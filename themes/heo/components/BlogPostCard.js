@@ -82,7 +82,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
                 className={`flex mb-1 items-center ${showPreview ? 'justify-center' : 'justify-start'} hidden md:block flex-wrap dark:text-gray-300 text-gray-600 hover:text-indigo-700 dark:hover:text-yellow-500`}>
                 <SmartLink
                   passHref
-                  href={`/category/${post.category}`}
+                  href={`/category/${encodeURIComponent(post.category)}`}
                   className='cursor-pointer text-xs font-normal menu-link '>
                   {post.category}
                 </SmartLink>

@@ -162,6 +162,16 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
     const handleKeyDown = e => {
       if (!isOpen) return
 
+      // 查看器工具栏包含缩放数字输入框，输入时不能触发快捷键（如 0 重置、r 旋转）
+      if (
+        e.target instanceof Element &&
+        (e.target.tagName === 'INPUT' ||
+          e.target.tagName === 'TEXTAREA' ||
+          e.target.isContentEditable)
+      ) {
+        return
+      }
+
       switch (e.key) {
         case 'Escape':
           onClose()

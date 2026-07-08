@@ -10,9 +10,10 @@ const reportDir = path.join(root, '.perf', 'theme-audit')
 const rawDir = path.join(reportDir, 'raw')
 const docsPerfDir = path.join(root, 'docs', 'performance')
 const lighthouseBin = (() => {
-  const cmdBin = process.platform === 'win32'
-    ? path.join(root, 'node_modules', '.bin', 'lighthouse.cmd')
-    : path.join(root, 'node_modules', '.bin', 'lighthouse')
+  const cmdBin =
+    process.platform === 'win32'
+      ? path.join(root, 'node_modules', '.bin', 'lighthouse.cmd')
+      : path.join(root, 'node_modules', '.bin', 'lighthouse')
   if (fs.existsSync(cmdBin)) return cmdBin
 
   const cliJs = path.join(root, 'node_modules', 'lighthouse', 'cli', 'cli.js')

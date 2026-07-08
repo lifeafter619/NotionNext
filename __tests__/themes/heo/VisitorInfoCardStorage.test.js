@@ -37,10 +37,7 @@ describe('HEO VisitorInfoCard storage handling', () => {
 
     const { unmount } = render(<VisitorInfoCard />)
 
-    expect(setIntervalSpy).not.toHaveBeenCalledWith(
-      expect.any(Function),
-      1000
-    )
+    expect(setIntervalSpy).not.toHaveBeenCalledWith(expect.any(Function), 1000)
 
     unmount()
     setIntervalSpy.mockRestore()

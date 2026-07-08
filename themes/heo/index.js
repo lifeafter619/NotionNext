@@ -10,6 +10,7 @@ import LazyImage from '@/components/LazyImage'
 import LoadingCover from '@/components/LoadingCover'
 import replaceSearchResult from '@/components/Mark'
 import { siteConfig } from '@/lib/config'
+import { blockMapHasCode } from '@/lib/db/notion/cleanBlockMapForClient'
 import { useGlobal } from '@/lib/global'
 import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
@@ -480,7 +481,8 @@ const LayoutSearch = props => {
       isAborted = true
       window.clearTimeout(timeoutId)
     }
-  }, [currentSearch, enableAlgolia, sortedPosts.length])
+    // 切换视图（list/grid）或排序会重建/重排结果卡片，需要重新执行关键词高亮
+  }, [currentSearch, enableAlgolia, sortedPosts, viewMode])
 
   const hasSearch = Boolean(currentSearch)
   const hasResults = sortedPosts.length > 0
@@ -831,13 +833,11 @@ const LayoutArchive = props => {
 const LayoutSlug = props => {
   const { post, lock, validPassword } = props
   const { locale, fullWidth } = useGlobal()
-  const [hasCode, setHasCode] = useState(false)
   const [showRecommended, setShowRecommended] = useState(false)
 
-  useEffect(() => {
-    const hasCode = document.querySelectorAll('[class^="language-"]').length > 0
-    setHasCode(hasCode)
-  }, [])
+  // 从 blockMap 判断是否包含代码块（兼容压缩数据），随文章切换即时更新，
+  // 避免客户端导航后沿用上一篇文章的宽度布局
+  const hasCode = useMemo(() => blockMapHasCode(post?.blockMap), [post])
 
   const commentEnable =
     siteConfig('COMMENT_TWIKOO_ENV_ID') ||
@@ -1095,7 +1095,7 @@ const LayoutCategoryIndex = props => {
         {categoryOptions?.map(category => (
           <SmartLink
             key={category.name}
-            href={`/category/${category.name}`}
+            href={`/category/${encodeURIComponent(category.name)}`}
             className='p-4 bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-purple-500 hover:shadow-lg transition-all duration-300 group'>
             <div className='flex flex-col items-center text-center'>
               <div className='w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform'>
@@ -1143,7 +1143,7 @@ const LayoutCategoryIndex = props => {
                   </div>
                 </div>
                 <SmartLink
-                  href={`/category/${category.name}`}
+                  href={`/category/${encodeURIComponent(category.name)}`}
                   className='px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
                   查看全部 <i className='fas fa-arrow-right text-xs' />
                 </SmartLink>
@@ -1312,7 +1312,7 @@ const LayoutTagIndex = props => {
               的相关文章
             </h2>
             <SmartLink
-              href={'/tag/' + selectedTag}
+              href={'/tag/' + encodeURIComponent(selectedTag)}
               className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
               查看全部 <i className='fas fa-arrow-right text-xs' />
             </SmartLink>
@@ -1357,7 +1357,7 @@ const LayoutTagIndex = props => {
                   </div>
                 </div>
                 <SmartLink
-                  href={`/tag/${tag.name}`}
+                  href={`/tag/${encodeURIComponent(tag.name)}`}
                   className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
                   查看全部 <i className='fas fa-arrow-right text-xs' />
                 </SmartLink>

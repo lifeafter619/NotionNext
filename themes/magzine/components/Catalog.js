@@ -21,7 +21,9 @@ const Catalog = ({ post, toc, className }) => {
   useEffect(() => {
     if (toc && toc.length > 1) {
       actionSectionScrollSpy()
-      window.addEventListener('scroll', actionSectionScrollSpy, { passive: true })
+      window.addEventListener('scroll', actionSectionScrollSpy, {
+        passive: true
+      })
     }
     return () => {
       window.removeEventListener('scroll', actionSectionScrollSpy)

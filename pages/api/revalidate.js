@@ -63,7 +63,13 @@ export default async function handler(req, res) {
       })
     }
 
-    // 批量刷新
+    // 批量刷新；paths 必须是数组（字符串会被 for...of 逐字符迭代）
+    if (paths !== undefined && !Array.isArray(paths)) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Invalid body: "paths" must be an array of strings'
+      })
+    }
     const targetPaths = paths || (path ? [path] : ['/'])
     const results = []
 

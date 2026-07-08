@@ -107,8 +107,7 @@ const LayoutBase = props => {
             <div
               id='main'
               role='main'
-              className='flex-grow min-h-[60vh] bg-[#f6f6f1] dark:bg-black'
-            >
+              className='flex-grow min-h-[60vh] bg-[#f6f6f1] dark:bg-black'>
               {children}
             </div>
 

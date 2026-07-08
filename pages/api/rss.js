@@ -1,6 +1,6 @@
 import BLOG from '@/blog.config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
-import { generateRss, shouldGenerateRssForLocale } from '@/lib/utils/rss'
+import { buildRssPostLink, getPublicRssPosts } from '@/lib/utils/rssApi'
 import { Feed } from 'feed'
 
 /**
@@ -45,16 +45,7 @@ async function generateRssContent() {
   }
 
   const { siteInfo, allPages, NOTION_CONFIG } = props
-
-  // Filter published posts only
-  const latestPosts = allPages
-    .filter(p => p.type === 'Post' && p.status === 'Published')
-    .sort((a, b) => {
-      const dateA = new Date(a.publishDay || a.publishDate || 0)
-      const dateB = new Date(b.publishDay || b.publishDate || 0)
-      return dateB - dateA
-    })
-    .slice(0, 20)
+  const latestPosts = getPublicRssPosts(allPages)
 
   if (latestPosts.length === 0) {
     return null
@@ -62,7 +53,7 @@ async function generateRssContent() {
 
   const TITLE = siteInfo?.title || BLOG.AUTHOR
   const DESCRIPTION = siteInfo?.description || BLOG.BIO
-  const LINK = siteInfo?.link || BLOG.LINK
+  const LINK = String(siteInfo?.link || BLOG.LINK || '').replace(/\/+$/, '')
   const AUTHOR = NOTION_CONFIG?.AUTHOR || BLOG.AUTHOR
   const LANG = NOTION_CONFIG?.LANG || BLOG.LANG
   const year = new Date().getFullYear()
@@ -83,7 +74,7 @@ async function generateRssContent() {
   for (const post of latestPosts) {
     feed.addItem({
       title: post.title,
-      link: `${LINK}/${post.slug}`,
+      link: buildRssPostLink(LINK, post.slug),
       description: post.summary || '',
       date: new Date(post?.publishDay || post?.publishDate || Date.now())
     })

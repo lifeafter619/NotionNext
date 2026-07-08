@@ -58,7 +58,10 @@ export default function SearchHighlightNav() {
 
     window.addEventListener('notionnext:article-search', handleArticleSearch)
     return () => {
-      window.removeEventListener('notionnext:article-search', handleArticleSearch)
+      window.removeEventListener(
+        'notionnext:article-search',
+        handleArticleSearch
+      )
     }
   }, [])
 
@@ -267,7 +270,16 @@ export default function SearchHighlightNav() {
   useEffect(() => {
     if (!isVisible) return
 
+    const isEditableTarget = target =>
+      target instanceof Element &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable)
+
     const handleKeyDown = e => {
+      // 输入框（评论、面板内数字输入等）中的按键不能被快捷键拦截
+      if (isEditableTarget(e.target)) return
       if (e.key === 'Escape') {
         handleClose()
       } else if (e.key === 'ArrowDown' || e.key === 'n') {

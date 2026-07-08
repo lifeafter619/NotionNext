@@ -125,7 +125,9 @@ const LayoutBase = props => {
 
         {siteConfig('SIMPLE_TOP_BAR', null, CONFIG) && <TopBar {...props} />}
 
-        <div className='flex flex-1 overflow-hidden' style={{ height: '100vh' }}>
+        <div
+          className='flex flex-1 overflow-hidden'
+          style={{ height: '100vh' }}>
           {/* ====== LEFT SIDEBAR — 导航栏 (桌面端) ====== */}
           {/* 使用 SidebarContent (React.memo) 避免客户端导航时重新加载侧边栏 */}
           <div

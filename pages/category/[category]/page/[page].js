@@ -15,13 +15,13 @@ export default function Category(props) {
   return <DynamicLayout theme={theme} layoutName='LayoutPostList' {...props} />
 }
 
-export async function getStaticProps({ params: { category, page } }) {
+export async function getStaticProps({ params: { category, page }, locale }) {
   const from = 'category-page-props'
-  let props = await fetchGlobalAllData({ from })
+  let props = await fetchGlobalAllData({ from, locale })
 
-  // 过滤状态类型
-  props.posts = props.allPages
-    ?.filter(page => page.type === 'Post' && page.status === 'Published')
+  // 过滤状态类型；Notion 拉取异常时 allPages 可能缺失，兜底为空列表避免构建崩溃
+  props.posts = (props.allPages || [])
+    .filter(page => page.type === 'Post' && page.status === 'Published')
     .filter(post => post && post.category && post.category.includes(category))
   // 处理文章页数
   props.postCount = props.posts.length
@@ -58,11 +58,13 @@ export async function getStaticPaths() {
     }
   )
   const paths = []
+  // 与 index.js 的守卫保持一致：categoryOptions 可能是非数组（旧缓存/异常数据）
+  const categories = Array.isArray(categoryOptions) ? categoryOptions : []
 
-  categoryOptions?.forEach(category => {
+  categories.forEach(category => {
     // 过滤状态类型
-    const categoryPosts = allPages
-      ?.filter(page => page.type === 'Post' && page.status === 'Published')
+    const categoryPosts = (allPages || [])
+      .filter(page => page.type === 'Post' && page.status === 'Published')
       .filter(
         post => post && post.category && post.category.includes(category.name)
       )

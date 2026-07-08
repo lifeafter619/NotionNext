@@ -64,7 +64,9 @@ describe('replaceSearchResult', () => {
     })
 
     expect(document.querySelectorAll('.search-highlight')).toHaveLength(1)
-    expect(document.querySelector('.search-highlight')).toHaveTextContent('hello')
+    expect(document.querySelector('.search-highlight')).toHaveTextContent(
+      'hello'
+    )
     warnSpy.mockRestore()
   })
 })

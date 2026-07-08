@@ -247,18 +247,14 @@ describe('formatNotionBlock', () => {
       ['Hello ', [['b']]],
       ['docs', [['a', 'https://example.com']]]
     ])
-    expect(formatted.paragraph.value.format.block_color).toBe(
-      'blue_background'
-    )
+    expect(formatted.paragraph.value.format.block_color).toBe('blue_background')
     expect(formatted.paragraph.value.paragraph).toBeUndefined()
 
     expect(formatted.todo.value.properties.checked).toEqual([['Yes']])
     expect(formatted.todo.value.properties.title).toEqual([['Ship it']])
 
     expect(formatted.code.value.properties.language).toEqual([['JavaScript']])
-    expect(formatted.code.value.properties.title).toEqual([
-      ['console.log(1)']
-    ])
+    expect(formatted.code.value.properties.title).toEqual([['console.log(1)']])
 
     expect(formatted.heading.value.type).toBe('header')
     expect(formatted.heading.value.format.toggleable).toBe(true)

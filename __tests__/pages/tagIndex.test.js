@@ -11,10 +11,7 @@ jest.mock('@/lib/config', () => ({
 }))
 
 const { fetchGlobalAllData } = require('@/lib/db/SiteDataApi')
-const {
-  getStaticProps,
-  getTagPreviewPostsByTag
-} = require('@/pages/tag')
+const { getStaticProps, getTagPreviewPostsByTag } = require('@/pages/tag')
 
 describe('tag index page props', () => {
   beforeEach(() => {

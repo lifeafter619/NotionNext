@@ -41,7 +41,7 @@ function getReadTime(link: string) {
 
 function markCurrentPageRead(items: RecentUpdatedDoc[], currentPath: string) {
   const current = normalizePath(currentPath)
-  const item = items.find((doc) => normalizePath(doc.link) === current)
+  const item = items.find(doc => normalizePath(doc.link) === current)
   const now = String(Date.now())
 
   window.localStorage.setItem(readKey(current), now)
@@ -54,18 +54,22 @@ function markCurrentPageRead(items: RecentUpdatedDoc[], currentPath: string) {
 }
 
 function getUnreadItems(items: RecentUpdatedDoc[]) {
-  return items.filter((item) => item.updatedAt > getReadTime(item.link))
+  return items.filter(item => item.updatedAt > getReadTime(item.link))
 }
 
 function clearUnreadMarkers() {
-  document.querySelectorAll('.nn-unread-dot').forEach((element) => {
+  document.querySelectorAll('.nn-unread-dot').forEach(element => {
     element.remove()
   })
 
   document
     .querySelectorAll('.nn-unread-leaf, .nn-has-unread, .nn-has-visible-unread')
-    .forEach((element) => {
-      element.classList.remove('nn-unread-leaf', 'nn-has-unread', 'nn-has-visible-unread')
+    .forEach(element => {
+      element.classList.remove(
+        'nn-unread-leaf',
+        'nn-has-unread',
+        'nn-has-visible-unread'
+      )
     })
 }
 
@@ -75,7 +79,9 @@ function appendUnreadDot(element: Element, isParentDot = false) {
   }
 
   const dot = document.createElement('span')
-  dot.className = isParentDot ? 'nn-unread-dot nn-parent-unread-dot' : 'nn-unread-dot'
+  dot.className = isParentDot
+    ? 'nn-unread-dot nn-parent-unread-dot'
+    : 'nn-unread-dot'
   dot.setAttribute('aria-hidden', 'true')
   element.appendChild(dot)
 }
@@ -113,8 +119,10 @@ function markSidebarParents(anchor: Element) {
 
 function getSidebarLinks() {
   const sidebars = document.querySelectorAll(SIDEBAR_SELECTOR)
-  return Array.from(sidebars).flatMap((sidebar) =>
-    Array.from(sidebar.querySelectorAll<HTMLAnchorElement>(SIDEBAR_LINK_SELECTOR))
+  return Array.from(sidebars).flatMap(sidebar =>
+    Array.from(
+      sidebar.querySelectorAll<HTMLAnchorElement>(SIDEBAR_LINK_SELECTOR)
+    )
   )
 }
 
@@ -123,9 +131,9 @@ function applyUnreadMarkers(items: RecentUpdatedDoc[]) {
   clearUnreadMarkers()
 
   const unreadItems = getUnreadItems(items)
-  const unreadLinks = new Set(unreadItems.map((item) => normalizePath(item.link)))
+  const unreadLinks = new Set(unreadItems.map(item => normalizePath(item.link)))
 
-  getSidebarLinks().forEach((anchor) => {
+  getSidebarLinks().forEach(anchor => {
     const href = normalizePath(anchor.getAttribute('href') || '')
 
     if (!unreadLinks.has(href)) {
@@ -143,7 +151,7 @@ function applyUnreadMarkers(items: RecentUpdatedDoc[]) {
 }
 
 function scheduleUnreadMarkers(items: RecentUpdatedDoc[]) {
-  RETRY_DELAYS.forEach((delay) => {
+  RETRY_DELAYS.forEach(delay => {
     window.setTimeout(() => applyUnreadMarkers(items), delay)
   })
 }
@@ -166,7 +174,11 @@ function observeSidebar(items: RecentUpdatedDoc[]) {
     window.clearTimeout(observerTimer)
     observerTimer = window.setTimeout(() => applyUnreadMarkers(items), 50)
   })
-  sidebarObserver.observe(sidebar, { childList: true, subtree: true, attributes: true })
+  sidebarObserver.observe(sidebar, {
+    childList: true,
+    subtree: true,
+    attributes: true
+  })
 }
 
 export async function syncUnreadUpdates(

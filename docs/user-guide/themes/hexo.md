@@ -36,37 +36,37 @@
 
 ### 主要配置项
 
-| 配置键                               | 说明         |
-| ------------------------------------ | ------------ |
-| `HEXO_HOME_BANNER_ENABLE`            | 见 config.js |
-| `HEXO_HOME_BANNER_GREETINGS`         | 见 config.js |
-| `HEXO_HOME_NAV_BUTTONS`              | 见 config.js |
-| `HEXO_HOME_NAV_BACKGROUND_IMG_FIXED` | 见 config.js |
-| `HEXO_SHOW_START_READING`            | 见 config.js |
-| `HEXO_MENU_INDEX`                    | 见 config.js |
-| `HEXO_MENU_CATEGORY`                 | 见 config.js |
-| `HEXO_MENU_TAG`                      | 见 config.js |
-| `HEXO_MENU_ARCHIVE`                  | 见 config.js |
-| `HEXO_MENU_SEARCH`                   | 见 config.js |
-| `HEXO_MENU_RANDOM`                   | 见 config.js |
-| `HEXO_POST_LIST_COVER`               | 见 config.js |
-| `HEXO_POST_LIST_COVER_HOVER_ENLARGE` | 见 config.js |
-| `HEXO_POST_LIST_COVER_DEFAULT`       | 见 config.js |
-| `HEXO_POST_LIST_SUMMARY`             | 见 config.js |
-| `HEXO_POST_LIST_PREVIEW`             | 见 config.js |
-| `HEXO_POST_LIST_IMG_CROSSOVER`       | 见 config.js |
-| `HEXO_ARTICLE_ADJACENT`              | 见 config.js |
+| 配置键                               | 说明                                                                         |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| `HEXO_HOME_BANNER_ENABLE`            | 见 config.js                                                                 |
+| `HEXO_HOME_BANNER_GREETINGS`         | 见 config.js                                                                 |
+| `HEXO_HOME_NAV_BUTTONS`              | 见 config.js                                                                 |
+| `HEXO_HOME_NAV_BACKGROUND_IMG_FIXED` | 见 config.js                                                                 |
+| `HEXO_SHOW_START_READING`            | 见 config.js                                                                 |
+| `HEXO_MENU_INDEX`                    | 见 config.js                                                                 |
+| `HEXO_MENU_CATEGORY`                 | 见 config.js                                                                 |
+| `HEXO_MENU_TAG`                      | 见 config.js                                                                 |
+| `HEXO_MENU_ARCHIVE`                  | 见 config.js                                                                 |
+| `HEXO_MENU_SEARCH`                   | 见 config.js                                                                 |
+| `HEXO_MENU_RANDOM`                   | 见 config.js                                                                 |
+| `HEXO_POST_LIST_COVER`               | 见 config.js                                                                 |
+| `HEXO_POST_LIST_COVER_HOVER_ENLARGE` | 见 config.js                                                                 |
+| `HEXO_POST_LIST_COVER_DEFAULT`       | 见 config.js                                                                 |
+| `HEXO_POST_LIST_SUMMARY`             | 见 config.js                                                                 |
+| `HEXO_POST_LIST_PREVIEW`             | 见 config.js                                                                 |
+| `HEXO_POST_LIST_IMG_CROSSOVER`       | 见 config.js                                                                 |
+| `HEXO_ARTICLE_ADJACENT`              | 见 config.js                                                                 |
 | `HEXO_ARTICLE_COPYRIGHT`             | 支持 `true` 全部显示、`false` 全部关闭、`custom` 仅填写 `copyright` 时显示。 |
-| `HEXO_ARTICLE_NOT_BY_AI`             | 见 config.js |
-| `HEXO_ARTICLE_RECOMMEND`             | 见 config.js |
-| `HEXO_WIDGET_LATEST_POSTS`           | 见 config.js |
-| `HEXO_WIDGET_ANALYTICS`              | 见 config.js |
-| `HEXO_WIDGET_TO_TOP`                 | 见 config.js |
-| `HEXO_WIDGET_TO_COMMENT`             | 见 config.js |
-| `HEXO_WIDGET_DARK_MODE`              | 见 config.js |
-| `HEXO_WIDGET_TOC`                    | 见 config.js |
-| `HEXO_THEME_COLOR`                   | 见 config.js |
-| `HEXO_ARTICLE_ROUTE_LOADING`         | 见 config.js |
+| `HEXO_ARTICLE_NOT_BY_AI`             | 见 config.js                                                                 |
+| `HEXO_ARTICLE_RECOMMEND`             | 见 config.js                                                                 |
+| `HEXO_WIDGET_LATEST_POSTS`           | 见 config.js                                                                 |
+| `HEXO_WIDGET_ANALYTICS`              | 见 config.js                                                                 |
+| `HEXO_WIDGET_TO_TOP`                 | 见 config.js                                                                 |
+| `HEXO_WIDGET_TO_COMMENT`             | 见 config.js                                                                 |
+| `HEXO_WIDGET_DARK_MODE`              | 见 config.js                                                                 |
+| `HEXO_WIDGET_TOC`                    | 见 config.js                                                                 |
+| `HEXO_THEME_COLOR`                   | 见 config.js                                                                 |
+| `HEXO_ARTICLE_ROUTE_LOADING`         | 见 config.js                                                                 |
 
 <!-- /theme-config-table -->
 

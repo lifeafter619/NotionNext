@@ -97,7 +97,9 @@ describe('heo LatestPostsGroupMini', () => {
     )
 
     const keyWarnings = consoleErrorSpy.mock.calls.filter(call =>
-      String(call[0]).includes('Each child in a list should have a unique "key"')
+      String(call[0]).includes(
+        'Each child in a list should have a unique "key"'
+      )
     )
     expect(keyWarnings).toHaveLength(0)
   })

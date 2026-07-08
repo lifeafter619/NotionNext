@@ -158,7 +158,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             {post.category && (
               <>
                 <SmartLink
-                  href={`/category/${post.category}`}
+                  href={`/category/${encodeURIComponent(post.category)}`}
                   className='mr-4'
                   passHref
                   legacyBehavior>

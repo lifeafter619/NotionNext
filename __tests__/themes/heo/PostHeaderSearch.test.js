@@ -38,7 +38,9 @@ jest.mock('@/lib/config', () => ({
 jest.mock('@/components/LazyImage', () => {
   return function LazyImage({ priority, ...props }) {
     if (!props.src) return null
-    return <img alt={props.alt || 'cover'} data-priority={priority} {...props} />
+    return (
+      <img alt={props.alt || 'cover'} data-priority={priority} {...props} />
+    )
   }
 })
 

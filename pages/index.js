@@ -123,7 +123,7 @@ export async function getStaticProps(req) {
     false,
     props?.NOTION_CONFIG
   )
-  props.posts = props.allPages?.filter(
+  props.posts = (props.allPages || []).filter(
     page => page.type === 'Post' && page.status === 'Published'
   )
 

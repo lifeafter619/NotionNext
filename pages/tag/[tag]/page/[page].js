@@ -12,9 +12,9 @@ const Tag = props => {
 export async function getStaticProps({ params: { tag, page }, locale }) {
   const from = 'tag-page-props'
   const props = await fetchGlobalAllData({ from, locale })
-  // 过滤状态、标签
-  props.posts = props.allPages
-    ?.filter(page => page.type === 'Post' && page.status === 'Published')
+  // 过滤状态、标签；Notion 拉取异常时 allPages 可能缺失，兜底为空列表避免构建崩溃
+  props.posts = (props.allPages || [])
+    .filter(page => page.type === 'Post' && page.status === 'Published')
     .filter(post => post && post?.tags && post?.tags.includes(tag))
   // 处理文章数
   props.postCount = props.posts.length
@@ -47,10 +47,12 @@ export async function getStaticPaths() {
     from
   })
   const paths = []
-  tagOptions?.forEach(tag => {
+  // 与 index.js 的守卫保持一致：tagOptions 可能是非数组（旧缓存/异常数据）
+  const tags = Array.isArray(tagOptions) ? tagOptions : []
+  tags.forEach(tag => {
     // 过滤状态类型
-    const tagPosts = allPages
-      ?.filter(page => page.type === 'Post' && page.status === 'Published')
+    const tagPosts = (allPages || [])
+      .filter(page => page.type === 'Post' && page.status === 'Published')
       .filter(post => post && post?.tags && post?.tags.includes(tag.name))
     // 处理文章页数
     const postCount = tagPosts.length

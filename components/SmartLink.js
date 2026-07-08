@@ -26,6 +26,11 @@ const filterLinkProps = props => {
   return rest
 }
 
+// 允许跨页面保留的查询参数白名单：主题预览与语言切换。
+// 不能透传全部参数——否则搜索的 ?keyword=、文章解锁的 ?password=、
+// utm 等一次性参数会被复制到页面上所有内链并无限传播
+const PERSISTED_QUERY_KEYS = ['theme', 'locale', 'lang', 'lite']
+
 const SmartLink = ({ href, children, ...rest }) => {
   const LINK = siteConfig('LINK')
 
@@ -49,8 +54,9 @@ const SmartLink = ({ href, children, ...rest }) => {
     const queryString = window.location.search?.slice(1) || ''
     const params = new URLSearchParams(queryString)
     const preserved = {}
-    for (const [key, value] of params.entries()) {
-      if (value !== '') preserved[key] = value
+    for (const key of PERSISTED_QUERY_KEYS) {
+      const value = params.get(key)
+      if (value !== null && value !== '') preserved[key] = value
     }
     return preserved
   }

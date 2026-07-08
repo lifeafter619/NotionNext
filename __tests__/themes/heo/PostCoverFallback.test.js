@@ -87,11 +87,7 @@ describe('heo post cover fallback', () => {
     const post = createPost()
 
     render(
-      <BlogPostArchive
-        archiveTitle='2026'
-        posts={[post]}
-        siteInfo={siteInfo}
-      />
+      <BlogPostArchive archiveTitle='2026' posts={[post]} siteInfo={siteInfo} />
     )
 
     expect(post.pageCoverThumbnail).toBeUndefined()

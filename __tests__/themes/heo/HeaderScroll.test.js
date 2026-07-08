@@ -75,9 +75,9 @@ describe('heo Header scroll handling', () => {
 
     const { unmount } = render(<Header />)
 
-    expect(addSpy.mock.calls.filter(([event]) => event === 'scroll')).toHaveLength(
-      1
-    )
+    expect(
+      addSpy.mock.calls.filter(([event]) => event === 'scroll')
+    ).toHaveLength(1)
 
     unmount()
 

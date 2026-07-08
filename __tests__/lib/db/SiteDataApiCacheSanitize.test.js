@@ -222,11 +222,14 @@ describe('fetchGlobalAllData cache sanitization', () => {
           href: '/article/post'
         })
       )
-      expect(post.password).toBeUndefined()
       expect(post.content).toBeUndefined()
       expect(post.toc).toBeUndefined()
       expect(post.blockMap).toBeUndefined()
     }
+    // allPages 保留 password 摘要供文章详情页的锁定/解锁与加密文章过滤使用
+    expect(result.allPages[0].password).toBe('hashed-password')
+    // latestPosts 会下发到客户端，必须去除 password
+    expect(result.latestPosts[0].password).toBeUndefined()
 
     expect(result.allNavPages[0]).toEqual(
       expect.objectContaining({

@@ -3,7 +3,10 @@ import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import NotionLink from '@/components/NotionLink'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
 import { useImageViewerContext } from '@/lib/ImageViewerContext'
-import { restoreCompactBlockMapForRender } from '@/lib/db/notion/cleanBlockMapForClient'
+import {
+  blockMapHasCode,
+  restoreCompactBlockMapForRender
+} from '@/lib/db/notion/cleanBlockMapForClient'
 import NotionButton from '@/components/NotionButton'
 import {
   bindNotionHashScrollHandler,
@@ -39,10 +42,9 @@ const NotionPage = ({ post, className }) => {
 
   // 检查是否包含代码块，优化PrismMac加载
   const hasCode = useMemo(() => {
-    // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象
-    const blockMap = post?.blockMap?.block || post?.block
-    if (!blockMap) return false
-    return Object.values(blockMap).some(block => block.value?.type === 'code')
+    // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象；
+    // blockMapHasCode 内部兼容压缩（compact）后的 blockMap（详情页数据均已压缩）
+    return blockMapHasCode(post?.blockMap || post)
   }, [post])
 
   // 处理图片点击事件
@@ -434,7 +436,9 @@ const NotionEmbed = ({ block }) => {
           scrolling='auto'
           allowFullScreen={!isHtmlArtifact}
           sandbox={
-            isHtmlArtifact ? 'allow-scripts allow-forms allow-popups' : undefined
+            isHtmlArtifact
+              ? 'allow-scripts allow-forms allow-popups'
+              : undefined
           }
         />
       </div>

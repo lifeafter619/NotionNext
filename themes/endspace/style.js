@@ -105,7 +105,10 @@ export const Style = () => {
           sans-serif;
         overflow-x: hidden;
         /* Custom Tech Cursor - Sharp Spearhead with Heavy Shadow */
-        cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M6 6 L16 32 L20 22 L30 18 L6 6 Z' fill='%23000000' opacity='0.3'/%3E%3Cpath d='M2 2 L12 28 L16 18 L26 14 L2 2 Z' fill='%2318181b' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E") 2 2, auto;
+        cursor:
+          url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M6 6 L16 32 L20 22 L30 18 L6 6 Z' fill='%23000000' opacity='0.3'/%3E%3Cpath d='M2 2 L12 28 L16 18 L26 14 L2 2 Z' fill='%2318181b' stroke='%23ffffff' stroke-width='1.5'/%3E%3C/svg%3E")
+            2 2,
+          auto;
       }
 
       #theme-endspace a,
@@ -113,7 +116,10 @@ export const Style = () => {
       #theme-endspace [role='button'],
       #theme-endspace .cursor-pointer {
         /* Pointer Cursor - Target Reticle Style */
-        cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M6 6 L16 32 L20 22 L30 18 L6 6 Z' fill='%23000000' opacity='0.3'/%3E%3Cpath d='M2 2 L12 28 L16 18 L26 14 L2 2 Z' fill='%2362F0F5' stroke='%23000000' stroke-width='1.5'/%3E%3Ccircle cx='24' cy='24' r='4' fill='none' stroke='%2362F0F5' stroke-width='2'/%3E%3C/svg%3E") 2 2, pointer;
+        cursor:
+          url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M6 6 L16 32 L20 22 L30 18 L6 6 Z' fill='%23000000' opacity='0.3'/%3E%3Cpath d='M2 2 L12 28 L16 18 L26 14 L2 2 Z' fill='%2362F0F5' stroke='%23000000' stroke-width='1.5'/%3E%3Ccircle cx='24' cy='24' r='4' fill='none' stroke='%2362F0F5' stroke-width='2'/%3E%3C/svg%3E")
+            2 2,
+          pointer;
       }
 
       /* Technical Grid Background */

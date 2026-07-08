@@ -44,8 +44,7 @@ export default function ArticleCopyright({ post }) {
           <strong className='mr-2'>{locale.COMMON.URL}:</strong>
           <a
             className='whitespace-normal break-words hover:underline'
-            href={path}
-          >
+            href={path}>
             {path}
           </a>
         </li>
