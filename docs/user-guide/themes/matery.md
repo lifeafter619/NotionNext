@@ -51,7 +51,7 @@ Material 卡片封面列表
 | `MATERY_POST_LIST_SUMMARY`             | 见 config.js |
 | `MATERY_POST_LIST_PREVIEW`             | 见 config.js |
 | `MATERY_ARTICLE_ADJACENT`              | 见 config.js |
-| `MATERY_ARTICLE_COPYRIGHT`             | 见 config.js |
+| `MATERY_ARTICLE_COPYRIGHT`             | 支持 `true` 全部显示、`false` 全部关闭、`custom` 仅填写 `copyright` 时显示。 |
 | `MATERY_ARTICLE_NOT_BY_AI`             | 见 config.js |
 | `MATERY_ARTICLE_RECOMMEND`             | 见 config.js |
 | `MATERY_WIDGET_LATEST_POSTS`           | 见 config.js |

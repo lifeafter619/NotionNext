@@ -62,6 +62,9 @@ export async function getStaticProps({ params: { tag }, locale }) {
  * @param tags
  */
 function getTagNames(tags) {
+  if (!Array.isArray(tags)) {
+    return []
+  }
   const tagNames = []
   tags.forEach(tag => {
     tagNames.push(tag.name)
@@ -75,8 +78,8 @@ export async function getStaticPaths() {
   const tagNames = getTagNames(tagOptions)
 
   return {
-    paths: Object.keys(tagNames).map(index => ({
-      params: { tag: tagNames[index] }
+    paths: tagNames.map(tag => ({
+      params: { tag }
     })),
     fallback: true
   }

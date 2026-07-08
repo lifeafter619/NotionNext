@@ -1,12 +1,13 @@
 import SmartLink from '@/components/SmartLink'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { resolveArticleCopyrightText } from '@/lib/utils/articleCopyright'
 import {
   stripTransientQueryParamsFromAsPath,
   stripTransientQueryParamsFromUrl
 } from '@/lib/utils/stripTransientUrlParams'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import CONFIG from '../config'
 
 const ArticleCopyright = ({ post }) => {
@@ -29,10 +30,11 @@ const ArticleCopyright = ({ post }) => {
     setFullUrl(`${base}${path}`)
   }, [post?.href, post?.slug, router?.asPath])
 
-  const licenseText = useMemo(
-    () => locale?.COMMON?.COPYRIGHT_NOTICE || 'CC BY-NC-SA 4.0（除非特别声明）',
-    [locale]
-  )
+  const licenseText = resolveArticleCopyrightText({
+    post,
+    locale,
+    mode: siteConfig('FUWARI_ARTICLE_COPYRIGHT', true, CONFIG)
+  })
 
   const handleCopy = async () => {
     if (!fullUrl || typeof navigator === 'undefined' || !navigator.clipboard)
@@ -46,8 +48,7 @@ const ArticleCopyright = ({ post }) => {
     }
   }
 
-  if (!siteConfig('FUWARI_ARTICLE_COPYRIGHT', true, CONFIG) || !post)
-    return null
+  if (!post || !licenseText) return null
 
   const authorName = (siteConfig('AUTHOR') || '').trim() || siteConfig('TITLE')
   const profileHref = siteConfig('FUWARI_PROFILE_PATH', '/about', CONFIG)
@@ -56,7 +57,7 @@ const ArticleCopyright = ({ post }) => {
     <section className='mt-6 fuwari-card p-4 text-sm text-[var(--fuwari-muted)] leading-7'>
       <div>
         <span className='font-semibold mr-2'>
-          {locale?.COMMON?.AUTHOR || '作者'}:
+          {locale?.COMMON?.AUTHOR || 'Author'}:
         </span>
         <SmartLink href={profileHref} className='fuwari-link'>
           {authorName}
@@ -64,7 +65,7 @@ const ArticleCopyright = ({ post }) => {
       </div>
       <div className='mt-1'>
         <span className='font-semibold mr-2'>
-          {locale?.COMMON?.URL || '永久链接'}:
+          {locale?.COMMON?.URL || 'URL'}:
         </span>
         <a href={fullUrl} className='break-all hover:underline'>
           {fullUrl || post?.href || post?.slug}
@@ -72,7 +73,7 @@ const ArticleCopyright = ({ post }) => {
       </div>
       <div className='mt-1'>
         <span className='font-semibold mr-2'>
-          {locale?.COMMON?.COPYRIGHT || '版权'}:
+          {locale?.COMMON?.COPYRIGHT || 'Copyright'}:
         </span>
         {licenseText}
       </div>
@@ -85,8 +86,8 @@ const ArticleCopyright = ({ post }) => {
           className='fuwari-copy-btn'>
           <i className='far fa-copy mr-1' />
           {copied
-            ? locale?.COMMON?.COPIED || '已复制'
-            : locale?.COMMON?.COPY_URL || '复制链接'}
+            ? locale?.COMMON?.COPIED || 'Copied'
+            : locale?.COMMON?.COPY_URL || 'Copy URL'}
         </button>
       </div>
     </section>

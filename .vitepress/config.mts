@@ -300,6 +300,10 @@ export default defineConfig({
               link: '/user-guide/config/copy-permission'
             },
             {
+              text: '文章版权声明',
+              link: '/user-guide/config/article-copyright'
+            },
+            {
               text: '多语言站点',
               link: '/user-guide/config/notion-next-mulity-languages'
             },

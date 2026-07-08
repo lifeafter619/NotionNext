@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
 import NotByAI from '@/components/NotByAI'
+import { resolveArticleCopyrightText } from '@/lib/utils/articleCopyright'
 import {
   stripTransientQueryParamsFromAsPath,
   stripTransientQueryParamsFromUrl
@@ -20,8 +21,13 @@ export default function ArticleCopyright({ post }) {
   }, [router.asPath])
 
   const { locale } = useGlobal()
+  const copyrightText = resolveArticleCopyrightText({
+    post,
+    locale,
+    mode: siteConfig('MATERY_ARTICLE_COPYRIGHT', null, CONFIG)
+  })
 
-  if (!siteConfig('MATERY_ARTICLE_COPYRIGHT', null, CONFIG)) {
+  if (!copyrightText) {
     return <></>
   }
 
@@ -42,7 +48,7 @@ export default function ArticleCopyright({ post }) {
         </li>
         <li>
           <strong className='mr-2'>{locale.COMMON.COPYRIGHT}:</strong>
-          {post.copyright || locale.COMMON.COPYRIGHT_NOTICE}
+          {copyrightText}
         </li>
         {siteConfig('MATERY_ARTICLE_NOT_BY_AI', false, CONFIG) && (
           <li>

@@ -62,7 +62,7 @@
 | `NEXT_WIDGET_DARK_MODE`          | 见 config.js |
 | `NEXT_WIDGET_TOC`                | 见 config.js |
 | `NEXT_ARTICLE_RELATE_POSTS`      | 见 config.js |
-| `NEXT_ARTICLE_COPYRIGHT`         | 见 config.js |
+| `NEXT_ARTICLE_COPYRIGHT`         | 支持 `true` 全部显示、`false` 全部关闭、`custom` 仅填写 `copyright` 时显示。 |
 | `NEXT_ARTICLE_NOT_BY_AI`         | 见 config.js |
 | `NEXT_ARTICLE_INFO`              | 见 config.js |
 
