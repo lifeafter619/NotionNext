@@ -4,7 +4,7 @@ import SmartLink from '@/components/SmartLink'
  * BlogListArchive Component - System Log Style
  * Archive list with Endfield aesthetic
  */
-export const BlogListArchive = ({ archiveTitle, archivePosts }) => {
+export const BlogListArchive = ({ archiveTitle, archivePosts = {} }) => {
   return (
     <div className='mb-16'>
       {/* Year/Month Header - Technical Block */}
@@ -16,7 +16,8 @@ export const BlogListArchive = ({ archiveTitle, archivePosts }) => {
           {archiveTitle}
         </h2>
         <span className='text-xs text-[var(--endspace-text-secondary)] mb-2 tech-text z-10'>
-          {`// ${archivePosts[archiveTitle]?.length ?? 0}_ENTRIES_FOUND`}
+          {'// '}
+          {archivePosts[archiveTitle]?.length ?? 0}_ENTRIES_FOUND
         </span>
         <div className='flex-1' />
         <div className='text-xs text-black mb-2 tech-text'>
@@ -39,7 +40,7 @@ export const BlogListArchive = ({ archiveTitle, archivePosts }) => {
               <div className='endspace-frame p-4 flex flex-col md:flex-row md:items-center gap-4 hover:bg-[#FBFB46] transition-all group'>
                 {/* Date Badge */}
                 <div className='flex-shrink-0 flex items-center gap-2 text-xs tech-text text-[var(--endspace-text-secondary)] md:w-32 border-r border-[var(--endspace-border-base)] pr-4 group-hover:text-black group-hover:border-black/20 transition-colors'>
-                  <span className='text-[var(--endspace-accent-cyan)] opacity-70 group-hover:text-black group-hover:opacity-100 transition-colors'>
+                  <span className='text-[var(--endspace-text-muted)] group-hover:text-black transition-colors'>
                     [{post.publishDay || post.date?.start_date}]
                   </span>
                 </div>

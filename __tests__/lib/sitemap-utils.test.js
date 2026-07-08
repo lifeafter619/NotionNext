@@ -1,7 +1,9 @@
 import {
   buildSitemapLoc,
+  createSiteUrl,
   normalizeSitemapBaseUrl,
   normalizeSitemapLocale,
+  normalizeSiteUrl,
   toSitemapDateString
 } from '@/lib/sitemap-utils'
 
@@ -16,6 +18,14 @@ describe('sitemap-utils', () => {
     it('returns empty string for non-string values', () => {
       expect(normalizeSitemapBaseUrl(null)).toBe('')
       expect(normalizeSitemapBaseUrl(undefined)).toBe('')
+    })
+  })
+
+  describe('normalizeSiteUrl', () => {
+    it('shares the same base URL normalization for non-sitemap callers', () => {
+      expect(normalizeSiteUrl(' https://example.com/// ')).toBe(
+        'https://example.com'
+      )
     })
   })
 
@@ -78,6 +88,34 @@ describe('sitemap-utils', () => {
           slug: 'https://'
         })
       ).toBeNull()
+    })
+  })
+
+  describe('createSiteUrl', () => {
+    const baseUrl = 'https://example.com'
+
+    it('builds a site URL with exactly one slash', () => {
+      expect(createSiteUrl(`${baseUrl}/`, '/post/hello')).toBe(
+        'https://example.com/post/hello'
+      )
+    })
+
+    it('returns the normalized site URL when slug is empty', () => {
+      expect(createSiteUrl(`${baseUrl}/`, '')).toBe('https://example.com')
+    })
+
+    it('returns null for anchor-only slugs', () => {
+      expect(createSiteUrl(baseUrl, '#')).toBeNull()
+    })
+
+    it('keeps same-host absolute URLs', () => {
+      expect(createSiteUrl(baseUrl, 'https://example.com/about')).toBe(
+        'https://example.com/about'
+      )
+    })
+
+    it('drops cross-host absolute URLs', () => {
+      expect(createSiteUrl(baseUrl, 'https://external.com/about')).toBeNull()
     })
   })
 
