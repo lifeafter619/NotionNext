@@ -1,6 +1,6 @@
 {
   "name": "notion-next",
-  "version": "4.10.4",
+  "version": "4.10.5",
   "packageManager": "yarn@1.22.22",
   "homepage": "https://github.com/tangly1024/NotionNext.git",
   "license": "MIT",
@@ -70,6 +70,7 @@
     "@clerk/localizations": "^4.7.0",
     "@clerk/nextjs": "^7.4.2",
     "@headlessui/react": "^1.7.19",
+    "@notionhq/client": "^2.2.15",
     "@next/bundle-analyzer": "^16.2.6",
     "@supabase/supabase-js": "^2.107.0",
     "@tabler/icons-react": "^3.36.1",
@@ -100,7 +101,6 @@
   "devDependencies": {
     "@lhci/cli": "^0.15.1",
     "@netlify/plugin-nextjs": "^5.15.11",
-    "@notionhq/client": "^2.2.15",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",

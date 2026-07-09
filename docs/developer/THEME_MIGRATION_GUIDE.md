@@ -86,6 +86,17 @@ When migrating a new theme, verify all of these:
    - Jump to comment
    - Dark mode quick switch
 
+### First-Viewport Stability and CLS
+
+Each theme must define the first viewport during design and reserve stable space for it. The goal is not to remove real features for Lighthouse, but to keep the visual structure stable before and after Next.js scripts, dynamic theme chunks, images, fonts, ads, and plugins finish loading.
+
+- Home, list, and landing pages must plan desktop and mobile first-viewport height. The first major visual section (hero, featured post, first post group, etc.) should use `min-h-screen`, `min-h-[calc(100vh-var(--header-height))]`, fixed `aspect-ratio`, or an equivalent theme-specific constraint so the footer or second-screen content does not appear in the first viewport and then get pushed away.
+- Dynamic theme loading fallbacks, article `!post` fallbacks, and skeleton screens must stay close to the final layout height. If the final theme layout cannot be mirrored exactly, reserve at least one viewport of shell space.
+- Cover images, post thumbnails, sidebar images, avatars, ad slots, analytics cards, comment entry points, and plugin slots must have predefined width/height, `aspect-ratio`, or `min-height`. Content may load lazily, but it must not be inserted into the first viewport without reserved space.
+- Unstable-height modules such as dynamic categories, recommendations, tag clouds, ads, AI widgets, and comments should start below the first viewport. If they must appear in the first viewport, give their container a stable height close to the final state.
+- Do not remove real features such as AOS, web fonts, analytics, or ads just to improve lab scores. Prefer reserved dimensions, correct first-viewport priority, lazy-loading boundaries, and below-the-fold deferral.
+- Before merging, inspect the page under slow network or DevTools throttling from the initial HTML/fallback state through Next.js hydration. The first viewport, footer position, and main card heights should not visibly jump; CLS in Lighthouse / Performance should be near 0.
+
 ## 5) Config Design Pattern
 
 Use `siteConfig('<KEY>', <default>, CONFIG)` consistently.

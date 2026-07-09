@@ -366,6 +366,7 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: '评论总览', link: '/user-guide/comments/overview' },
+            { text: '会员与评论可选集成', link: '/developer/MEMBERSHIP_COMMENTS_ROADMAP' },
             { text: 'Cusdis', link: '/user-guide/comments/cusdis' },
             { text: 'Utterances', link: '/user-guide/comments/utterances' },
             { text: 'Giscus', link: '/user-guide/comments/giscus' },
@@ -373,6 +374,7 @@ export default defineConfig({
             { text: 'Artalk', link: '/user-guide/comments/artalk' },
             { text: 'Gitalk', link: '/user-guide/comments/gitalk' },
             { text: 'Valine', link: '/user-guide/comments/valine' },
+            { text: 'NotionComments', link: '/user-guide/comments/notion-comments' },
             { text: 'Waline', link: '/user-guide/comments/waline' }
           ]
         },
@@ -503,6 +505,7 @@ export default defineConfig({
             { text: '快速上手', link: '/developer/GETTING_STARTED' },
             { text: '愿景与路线图', link: '/developer/VISION_ROADMAP' },
             { text: '开放生态长期计划', link: '/developer/LONG_TERM_PLAN' },
+            { text: '会员、权限与评论可选集成', link: '/developer/MEMBERSHIP_COMMENTS_ROADMAP' },
             { text: '架构总览', link: '/developer/ARCHITECTURE' },
             { text: '目录与模块', link: '/developer/PROJECT_STRUCTURE' },
             { text: '配置体系', link: '/developer/CONFIGURATION' },

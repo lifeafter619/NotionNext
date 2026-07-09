@@ -1,34 +1,82 @@
 # 最新版本与更新日志
 
-> 当前主线：**4.10.4**（见根目录 `package.json`）
+> 当前主线：**4.10.5**（见根目录 `package.json`）
 
-## 4.10.4 发布要点
+## 4.10.5 发布要点
 
-本版本补齐 Notion 2026 年新增 HTML Block 的渲染支持，让 Notion AI 生成或用户上传的 `.html` 小工具可以在 NotionNext 文章中直接展示。
+本版本新增基于 Notion 数据库的 NotionComments 评论插件，并合入 `v4.10.4` 之后主线上的主题修复、Notion 渲染增强、复制权限配置、SEO 和依赖更新。
 
-### Notion HTML Block
+### NotionComments 评论插件
 
-- 支持 Notion HTML Block 在 API 中返回的 `embed + html_artifact` 数据结构。
-- 为 HTML artifact 附件补齐 Notion signed URL，并保留原始 `attachment:` source，避免被 URL 清理逻辑误替换。
-- 由于 Notion HTML 附件会返回 `Content-Disposition: attachment` 和严格 CSP，本版本会在服务端读取 HTML 内容，再通过 sandbox iframe 的 `srcDoc` 渲染。
-- HTML Block 运行在 iframe 隔离环境中，不直接注入站点正文 DOM，降低对主题样式和站点脚本的影响。
-- 限制单个 HTML artifact 最大 512KB，避免把过大的 HTML 文件塞入页面数据。
+- 新增 `NEXT_PUBLIC_COMMENT_NOTION_ENABLE` 评论开关，可与 Waline、Giscus、Valine、GitTalk、Utterance、Cusdis、Twikoo 等评论插件并存，通过文章底部评论区 Tab 切换体验。
+- 新增 `/api/notion-comments` 动态接口，评论数据写入用户自己的 Notion 数据库，支持文章维度查询、发表评论、回复评论、分页加载和失败重试。
+- 新增评论区交互界面：加载中、空状态、错误重试、回复输入、收起回复、加载更多等基础状态都已覆盖。
+- 新增 NotionComments 使用教程，包含 Notion Integration 创建、数据库字段配置、环境变量、部署方式、常见问题、使用效果截图，以及“独立评论数据库”和“Notion 页面原生评论”两种方案的取舍说明。
+- 新增会员评论路线图文档，记录未来会员体系和评论能力继续结合 Notion 数据的可选方向。
 
-### 适用场景
+### 主线功能与修复
 
-- Notion AI 生成的房贷计算器、ROI 计算器、互动表单、轻量图表等前端小工具。
-- 用户上传单文件 HTML artifact，并希望在文章正文中内嵌展示。
-- 普通外部网页 Embed 仍按原有 iframe 方式渲染。
+- 支持文章级自定义版权模式，并补充 `CAN_COPY` 复制权限配置文档和侧边栏入口。
+- 改进 SEO canonical metadata，减少错误 canonical 地址对搜索收录的影响。
+- 支持 Notion Heading 4 渲染。
+- 支持应用 Notion Collection View 的排序规则。
+- 修复分类和标签静态路径生成的保护逻辑。
+- 同步 Endspace 主题更新。
+- 修复 Claude 主题侧栏在 Adsense 场景下的高度问题。
+- 修复 Fuwari 固定主题色不生效问题。
+- 修复 Magzine 主题文章标签换行问题。
+- 为分享按钮和右侧浮动区域补充鼠标悬停提示。
+
+### 依赖与工作流更新
+
+- `form-data` 从 `4.0.5` 升级到 `4.0.6`。
+- `@babel/core` 从 `7.28.3` 升级到 `7.29.7`。
+- `axios` 从 `1.17.0` 升级到 `1.18.1`。
+- `@vercel/functions` 从 `3.6.2` 升级到 `3.7.5`。
+- `actions/checkout` 从 `4` 升级到 `7`。
+- `docker/metadata-action` 从 `5` 升级到 `6`。
 
 ### 升级说明
 
-- 正常升级无需新增环境变量。
-- 修改 Notion HTML Block 内容后，如本地预览仍显示旧内容，可清理 NotionNext 缓存或关闭开发缓存后重新访问。
+- 如需启用 NotionComments，需要新增：
+  - `NEXT_PUBLIC_COMMENT_NOTION_ENABLE=true`
+  - `NOTION_COMMENT_DATABASE_ID=你的评论数据库 ID`
+  - `NOTION_TOKEN=你的 Notion Integration Token`
+- NotionComments 依赖服务端 API Route，只支持 Vercel、Netlify、Node.js Server、Docker 等动态部署方式；使用 `yarn export` / 纯静态导出的站点不支持该插件。
+- `NOTION_TOKEN` 是敏感凭据，只应保存在服务端环境变量中，不要提交到仓库，也不要暴露在公开截图或前端配置里。
+
+### 自 v4.10.4 以来的提交
+
+- `feat: add Notion database comments plugin`
+- `docs: add optional membership comments roadmap`
+- `fix(endspace): sync upstream theme updates`
+- `fix: improve SEO canonical metadata (#4248)`
+- `feat: support custom article copyright mode`
+- `fix(claude): keep sidebar height with adsense (#4247)`
+- `fix: guard category/tag static paths`
+- `docs: explain adding CAN_COPY in Notion`
+- `docs: expose copy permission guide in sidebar`
+- `docs: add copy permission guide to config index`
+- `feat: support per-post copy permissions`
+- `fix(fuwari): honor fixed theme hue (#4243)`
+- `fix(magzine): keep post tags on one line`
+- `docs: fix post list style config comment (#4242)`
+- `fix: support Notion heading 4 (#4241)`
+- `fix: apply Notion collection view sorts (#4240)`
+- `chore(share buttons): add tips for mouse hover (#4212)`
+- `chore(right float area): add tips (#4213)`
+- `chore: bump form-data from 4.0.5 to 4.0.6 (#4204)`
+- `chore: bump @babel/core from 7.28.3 to 7.29.7 (#4211)`
+- `chore: bump axios from 1.17.0 to 1.18.1 (#4222)`
+- `chore: bump docker/metadata-action from 5 to 6 (#4228)`
+- `chore: bump actions/checkout from 4 to 7 (#4229)`
+- `chore: bump @vercel/functions from 3.6.2 to 3.7.5 (#4238)`
 
 ### 验证
 
-- `yarn lint --file components/NotionPage.js --file lib/db/notion/getPostBlocks.js`：通过（保留原有 hook dependency warning）。
-- `node -e "const p=require('./package.json'); if (p.version !== '4.10.4') process.exit(1)"`：通过。
+- `jest __tests__/lib/plugins/notionComments.test.js --runInBand`：通过。
+- `next lint --file components/NotionComments.js --file lib/plugins/notionComments.js --file __tests__/lib/plugins/notionComments.test.js`：通过。
+- `git diff --check`：通过。
 - `yarn docs:site:build`：通过。
 
 ## 4.10.3 发布要点
