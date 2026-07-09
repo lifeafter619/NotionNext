@@ -7,6 +7,20 @@ describe('LazyImage Component', () => {
     alt: 'Test image'
   }
 
+  it('does not warn when rendering priority image fetch priority hints', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    try {
+      render(<LazyImage {...defaultProps} priority />)
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
+    } finally {
+      consoleErrorSpy.mockRestore()
+    }
+  })
+
   it('renders with required props', () => {
     render(<LazyImage {...defaultProps} />)
 

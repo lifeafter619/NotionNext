@@ -1,5 +1,20 @@
 import { Readable } from 'stream'
 
+const MAX_REDIRECTS = 3
+const ALLOWED_DOMAINS = [
+  'notion.so',
+  'notionusercontent.com',
+  'file.notion.so',
+  'file.notion.com',
+  's3-us-west-2.amazonaws.com',
+  's3.us-west-2.amazonaws.com',
+  'images.unsplash.com',
+  'prod-files-secure.s3.us-west-2.amazonaws.com',
+  'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
+  'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
+  'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
+]
+
 function createReadableStream(reader) {
   return new Readable({
     read() {
@@ -26,43 +41,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing url parameter' })
   }
 
+  if (Array.isArray(url) || typeof url !== 'string') {
+    return res.status(400).json({ error: 'Invalid url parameter' })
+  }
+
   try {
     const targetUrl = new URL(url)
 
-    // Security: Validate protocol
-    if (targetUrl.protocol !== 'https:') {
+    const validation = validateImageUrl(targetUrl)
+    if (!validation.ok) {
+      if (validation.error === 'Domain not allowed') {
+        console.warn(`Blocked proxy attempt to: ${targetUrl.hostname}`)
+        return res.status(403).json({ error: validation.error })
+      }
       return res.status(400).json({ error: 'Protocol not allowed' })
     }
 
-    // Security: Validate hostname against allowed list to prevent SSRF
-    // Notion images are usually hosted on notion.so, aws s3, or unsplash
-    const ALLOWED_DOMAINS = [
-      'notion.so',
-      'notionusercontent.com',
-      'file.notion.so',
-      'file.notion.com',
-      's3-us-west-2.amazonaws.com',
-      's3.us-west-2.amazonaws.com',
-      'images.unsplash.com',
-      'prod-files-secure.s3.us-west-2.amazonaws.com',
-      'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
-      'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
-      'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
-    ]
-
-    // Check if the hostname ends with any of the allowed domains
-    const isAllowed = ALLOWED_DOMAINS.some(
-      domain =>
-        targetUrl.hostname === domain ||
-        targetUrl.hostname.endsWith('.' + domain)
-    )
-
-    if (!isAllowed) {
-      console.warn(`Blocked proxy attempt to: ${targetUrl.hostname}`)
-      return res.status(403).json({ error: 'Domain not allowed' })
-    }
-
-    const response = await fetch(url)
+    const response = await fetchAllowedImage(targetUrl)
 
     if (!response.ok) {
       // If the upstream request failed, return JSON error, do not stream body as image
@@ -79,7 +74,7 @@ export default async function handler(req, res) {
     }
 
     // Determine safe filename and extension
-    let finalFilename = filename || 'image'
+    let finalFilename = normalizeFilename(filename)
     // Ensure filename has an extension derived from Content-Type if possible
     const extensionMap = {
       'image/jpeg': '.jpg',
@@ -116,7 +111,62 @@ export default async function handler(req, res) {
       res.end()
     }
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ error: error.message })
+    }
     console.error('Proxy error:', error)
     res.status(500).json({ error: 'Failed to proxy image' })
   }
+}
+
+async function fetchAllowedImage(initialUrl) {
+  let currentUrl = initialUrl
+
+  for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
+    const response = await fetch(currentUrl.toString(), { redirect: 'manual' })
+
+    if (![301, 302, 303, 307, 308].includes(response.status)) {
+      return response
+    }
+
+    const location = response.headers.get('location')
+    if (!location) {
+      return response
+    }
+
+    const nextUrl = new URL(location, currentUrl)
+    const validation = validateImageUrl(nextUrl)
+    if (!validation.ok) {
+      const error = new Error(validation.error)
+      error.statusCode = validation.error === 'Domain not allowed' ? 403 : 400
+      throw error
+    }
+    currentUrl = nextUrl
+  }
+
+  const error = new Error('Too many redirects')
+  error.statusCode = 400
+  throw error
+}
+
+function validateImageUrl(targetUrl) {
+  if (targetUrl.protocol !== 'https:') {
+    return { ok: false, error: 'Protocol not allowed' }
+  }
+
+  const isAllowed = ALLOWED_DOMAINS.some(
+    domain =>
+      targetUrl.hostname === domain || targetUrl.hostname.endsWith('.' + domain)
+  )
+
+  if (!isAllowed) {
+    return { ok: false, error: 'Domain not allowed' }
+  }
+
+  return { ok: true }
+}
+
+function normalizeFilename(filename) {
+  const value = Array.isArray(filename) ? filename[0] : filename
+  return typeof value === 'string' && value.trim() ? value : 'image'
 }

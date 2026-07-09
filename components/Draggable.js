@@ -14,6 +14,14 @@ export const Draggable = ({ children, stick }) => {
 
   useEffect(() => {
     const draggableElements = document.getElementsByClassName('draggable')
+    const previousHandlers = {
+      onmousedown: document.onmousedown,
+      ontouchstart: document.ontouchstart,
+      onmousemove: document.onmousemove,
+      ontouchmove: document.ontouchmove,
+      onmouseup: document.onmouseup,
+      ontouchend: document.ontouchend
+    }
 
     function e(event) {
       if (!event) {
@@ -131,6 +139,18 @@ export const Draggable = ({ children, stick }) => {
     return () => {
       window.removeEventListener('resize', checkInWindow)
       cancelAnimationFrame(rafRef.current)
+      restoreDocumentHandler('onmousedown', start)
+      restoreDocumentHandler('ontouchstart', start)
+      restoreDocumentHandler('onmousemove', move)
+      restoreDocumentHandler('ontouchmove', move)
+      restoreDocumentHandler('onmouseup', stop)
+      restoreDocumentHandler('ontouchend', stop)
+    }
+
+    function restoreDocumentHandler(name, handler) {
+      if (document[name] === handler) {
+        document[name] = previousHandlers[name] || null
+      }
     }
   }, [stick])
 
