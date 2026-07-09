@@ -9,7 +9,8 @@ import { useState } from 'react'
  */
 export const MenuItemCollapse = ({ link }) => {
   const [show, changeShow] = useState(false)
-  const hasSubMenu = link?.subMenus?.length > 0
+  const subMenus = Array.isArray(link?.subMenus) ? link.subMenus : []
+  const hasSubMenu = subMenus.length > 0
 
   const [isOpen, changeIsOpen] = useState(false)
 
@@ -32,7 +33,7 @@ export const MenuItemCollapse = ({ link }) => {
         onClick={toggleShow}>
         {!hasSubMenu && (
           <SmartLink
-            href={link?.href}
+            href={link?.href || '#'}
             target={link?.target}
             className='font-extralight  flex justify-between pl-2 pr-4 dark:text-gray-200 no-underline tracking-widest'>
             <span className=' transition-all items-center duration-200'>
@@ -58,14 +59,18 @@ export const MenuItemCollapse = ({ link }) => {
       {/* 折叠子菜单 */}
       {hasSubMenu && (
         <Collapse isOpen={isOpen} className='rounded-xl'>
-          {link.subMenus.map((sLink, index) => {
+          {subMenus.map((sLink, index) => {
+            if (!sLink?.href) return null
+
             return (
               <div
                 key={index}
                 className='dark:bg-hexo-black-gray dark:text-gray-200 text-left px-3 justify-start bg-gray-50 hover:bg-gray-50 dark:hover:bg-gray-900 tracking-widest transition-all duration-200  py-3 pr-6'>
-                <SmartLink href={sLink.href} target={link?.target}>
+                <SmartLink
+                  href={sLink.href}
+                  target={sLink?.target || link?.target}>
                   <span className='text-sm ml-4 whitespace-nowrap'>
-                    {link?.icon && <i className={sLink.icon + ' mr-2'} />}{' '}
+                    {sLink?.icon && <i className={sLink.icon + ' mr-2'} />}{' '}
                     {sLink.title}
                   </span>
                 </SmartLink>

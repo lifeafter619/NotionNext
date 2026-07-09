@@ -22,17 +22,22 @@ const BlogPostListScroll = ({
 }) => {
   const { locale, NOTION_CONFIG } = useGlobal()
   const [page, updatePage] = useState(1)
-  const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', null, NOTION_CONFIG)
-  const postsToShow = getListByPage(posts, page, POSTS_PER_PAGE)
+  const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG)
+  const safePosts = Array.isArray(posts) ? posts.filter(Boolean) : []
+  const postsToShow = getListByPage(safePosts, page, POSTS_PER_PAGE)
   const targetRef = useRef(null)
   // 使用 useRef 而非 useState 以避免加载状态变化时触发不必要的重渲染
   // 此状态仅用于防止滚动事件触发重复加载
   const isLoadingRef = useRef(false)
   const rafRef = useRef(null) // 用于存储 requestAnimationFrame ID
 
+  useEffect(() => {
+    updatePage(1)
+  }, [posts])
+
   let hasMore = false
-  if (posts) {
-    const totalCount = posts.length
+  if (safePosts.length > 0) {
+    const totalCount = safePosts.length
     hasMore = page * POSTS_PER_PAGE < totalCount
   }
 
@@ -56,11 +61,10 @@ const BlogPostListScroll = ({
     rafRef.current = requestAnimationFrame(() => {
       if (!targetRef.current) return
 
-      const scrollS = window.scrollY + window.innerHeight
-      const clientHeight = targetRef.current.clientHeight
-      const triggerPoint = clientHeight - 200 // 提前 200px 触发加载
+      const rect = targetRef.current.getBoundingClientRect()
+      const triggerPoint = window.innerHeight + 200 // 提前 200px 触发加载
 
-      if (scrollS > triggerPoint) {
+      if (rect.bottom <= triggerPoint) {
         handleGetMore()
       }
     })
@@ -99,7 +103,7 @@ const BlogPostListScroll = ({
           {' '}
           {postsToShow.map((post, index) => (
             <BlogPostCard
-              key={post.id}
+              key={post?.id || post?.slug || index}
               index={index}
               post={post}
               showSummary={showSummary}

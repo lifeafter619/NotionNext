@@ -377,6 +377,11 @@ export default function FloatTocButton(props) {
       return
     }
 
+    if (typeof IntersectionObserver !== 'function') {
+      setShowOnDesktop(true)
+      return
+    }
+
     let observer = null
     let retryTimer = null
     let retryCount = 0

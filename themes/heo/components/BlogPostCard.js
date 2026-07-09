@@ -5,9 +5,31 @@ import SmartLink from '@/components/SmartLink'
 import CONFIG from '../config'
 import TagItemMini from './TagItemMini'
 
+function getPostHref(post) {
+  if (post?.href) return post.href
+  if (!post?.slug) return '#'
+
+  const rawSlug = String(post.slug)
+  if (/^https?:\/\//i.test(rawSlug)) return rawSlug
+
+  const subPath = siteConfig('SUB_PATH', '') || ''
+  const slug = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`
+  return `${subPath}${slug}` || '/'
+}
+
+function getPostText(value, fallback = '') {
+  if (Array.isArray(value)) return value.filter(Boolean).join(' ') || fallback
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value).trim() || fallback
+  }
+  return fallback
+}
+
 const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
+  if (!post) return null
+
   const showPreview =
-    siteConfig('HEO_POST_LIST_PREVIEW', null, CONFIG) && post.blockMap
+    siteConfig('HEO_POST_LIST_PREVIEW', null, CONFIG) && post?.blockMap
   const fallbackPageCover =
     post &&
     !post.pageCoverThumbnail &&
@@ -26,6 +48,13 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
     true,
     CONFIG
   )
+  const tagItems = Array.isArray(post?.tagItems)
+    ? post.tagItems.filter(tag => tag?.name)
+    : []
+  const postHref = getPostHref(post)
+  const title = getPostText(post?.title, '未命名')
+  const summary = getPostText(post?.summary)
+  const category = getPostText(post?.category)
 
   // 如果传入了className，则使用传入的样式，否则使用默认样式
   // 默认样式为：2xl:h-96 2xl:flex-col h-[23rem] md:h-52 md:flex-row
@@ -43,7 +72,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
       <div data-wow-delay='.2s' className={containerClass}>
         {/* 图片封面 */}
         {showPageCover && (
-          <SmartLink href={post?.href} passHref legacyBehavior>
+          <SmartLink href={postHref} passHref legacyBehavior>
             <div
               className={
                 (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +
@@ -60,7 +89,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
                     : '(min-width: 720px) 42vw, 100vw'
                 }
                 src={pageCoverThumbnail}
-                alt={post?.title}
+                alt={title}
                 className='h-full w-full object-cover object-center group-hover:scale-105 group-hover:brightness-75 transition-all duration-500 ease-in-out' //宽高都调整为自适应,保证封面居中
               />
             </div>
@@ -77,21 +106,21 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
           }>
           <header>
             {/* 分类 */}
-            {post?.category && (
+            {category && (
               <div
                 className={`flex mb-1 items-center ${showPreview ? 'justify-center' : 'justify-start'} hidden md:block flex-wrap dark:text-gray-300 text-gray-600 hover:text-indigo-700 dark:hover:text-yellow-500`}>
                 <SmartLink
                   passHref
-                  href={`/category/${encodeURIComponent(post.category)}`}
+                  href={`/category/${encodeURIComponent(category)}`}
                   className='cursor-pointer text-xs font-normal menu-link '>
-                  {post.category}
+                  {category}
                 </SmartLink>
               </div>
             )}
 
             {/* 标题和图标 */}
             <SmartLink
-              href={post?.href}
+              href={postHref}
               passHref
               className={
                 ' group-hover:text-indigo-700 dark:hover:text-yellow-700 dark:group-hover:text-yellow-600 text-black dark:text-gray-100  line-clamp-2 replace cursor-pointer text-xl font-extrabold leading-tight'
@@ -102,21 +131,21 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
                   className='heo-icon w-6 h-6 mr-1 align-middle transform translate-y-[-8%]' // 专门为 Heo 主题的图标设置样式
                 />
               )}
-              <span className='menu-link '>{post.title}</span>
+              <span className='menu-link '>{title}</span>
             </SmartLink>
           </header>
 
           {/* 摘要 */}
           {(!showPreview || showSummary) && (
             <main className='line-clamp-2 replace text-gray-700  dark:text-gray-300 text-sm font-light leading-tight'>
-              {post.summary}
+              {summary}
             </main>
           )}
 
           <div className='md:flex-nowrap flex-wrap md:justify-start inline-block'>
             <div>
               {' '}
-              {post.tagItems?.map(tag => (
+              {tagItems.map(tag => (
                 <TagItemMini key={tag.name} tag={tag} />
               ))}
             </div>

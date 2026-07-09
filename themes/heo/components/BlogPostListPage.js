@@ -16,10 +16,14 @@ import PaginationNumber from './PaginationNumber'
 const BlogPostListPage = ({ page = 1, posts = [], postCount, siteInfo }) => {
   const { NOTION_CONFIG } = useGlobal()
   const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG)
-  const totalPage = Math.ceil(postCount / POSTS_PER_PAGE)
-  const showPagination = postCount >= POSTS_PER_PAGE
+  const safePosts = Array.isArray(posts) ? posts.filter(Boolean) : []
+  const totalCount = Number.isFinite(Number(postCount))
+    ? Number(postCount)
+    : safePosts.length
+  const totalPage = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE))
+  const showPagination = totalCount > POSTS_PER_PAGE
   const POST_TWO_COLS = siteConfig('HEO_HOME_POST_TWO_COLS', true, CONFIG)
-  if (!posts || posts.length === 0 || page > totalPage) {
+  if (safePosts.length === 0 || page > totalPage) {
     return <BlogPostListEmpty />
   } else {
     return (
@@ -27,10 +31,10 @@ const BlogPostListPage = ({ page = 1, posts = [], postCount, siteInfo }) => {
         {/* 文章列表 */}
         <div
           className={`${POST_TWO_COLS && '2xl:grid 2xl:grid-cols-2'} grid-cols-1 gap-5`}>
-          {posts?.map((post, index) => (
+          {safePosts.map((post, index) => (
             <BlogPostCard
               index={index}
-              key={post.id}
+              key={post?.id || post?.slug || index}
               post={post}
               siteInfo={siteInfo}
             />

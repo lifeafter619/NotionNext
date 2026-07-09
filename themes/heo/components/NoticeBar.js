@@ -1,6 +1,7 @@
 import { ArrowRightCircle } from '@/components/HeroIcons'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { parseJsonWithFallback } from '@/lib/utils'
 import CONFIG from '../config'
 import Swipe from './Swipe'
 
@@ -11,9 +12,14 @@ export function NoticeBar() {
   let notices = siteConfig('HEO_NOTICE_BAR', null, CONFIG)
   const { locale } = useGlobal()
   if (typeof notices === 'string') {
-    notices = JSON.parse(notices)
+    notices = parseJsonWithFallback(notices, [], Array.isArray)
   }
-  if (!notices || notices?.length === 0) {
+  if (!Array.isArray(notices)) {
+    notices = []
+  }
+  notices = notices.filter(notice => notice?.title)
+
+  if (notices.length === 0) {
     return <></>
   }
 

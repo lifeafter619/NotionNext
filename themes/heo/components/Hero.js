@@ -8,6 +8,37 @@ import { useRouter } from 'next/router'
 import { memo, useImperativeHandle, useRef, useState } from 'react'
 import CONFIG from '../config'
 
+function getPostHref(post) {
+  if (post?.href) return post.href
+  if (!post?.slug) return '#'
+  const rawSlug = String(post.slug)
+  if (/^https?:\/\//i.test(rawSlug)) return rawSlug
+
+  const subPath = siteConfig('SUB_PATH', '') || ''
+  const slug = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`
+  return `${subPath}${slug}` || '/'
+}
+
+function pushPost(router, post) {
+  const href = getPostHref(post)
+  if (href && href !== '#') {
+    router.push(href)
+  }
+}
+
+function isLinkablePost(post) {
+  return Boolean(post?.href || post?.slug)
+}
+
+function getPostTitle(post) {
+  const title = post?.title
+  if (Array.isArray(title)) return title.filter(Boolean).join(' ') || '未命名'
+  if (typeof title === 'string' || typeof title === 'number') {
+    return String(title).trim() || '未命名'
+  }
+  return '未命名'
+}
+
 /**
  * 顶部英雄区
  * 左右布局，
@@ -63,14 +94,18 @@ function BannerGroup(props) {
  */
 function Banner(props) {
   const router = useRouter()
-  const { allNavPages } = props
+  const { allNavPages = [] } = props
+  const navPages = Array.isArray(allNavPages)
+    ? allNavPages.filter(post => post?.href || post?.slug)
+    : []
   /**
    * 随机跳转文章
    */
   function handleClickBanner() {
-    const randomIndex = Math.floor(Math.random() * allNavPages.length)
-    const randomPost = allNavPages[randomIndex]
-    router.push(`${siteConfig('SUB_PATH', '')}/${randomPost?.slug}`)
+    if (navPages.length === 0) return
+
+    const randomIndex = Math.floor(Math.random() * navPages.length)
+    pushPost(router, navPages[randomIndex])
   }
 
   // 遮罩文字
@@ -120,10 +155,10 @@ function Banner(props) {
  * 英雄区左上角banner条中斜向滚动的图标
  */
 const TagsGroupBar = memo(function TagsGroupBar() {
-  let groupIcons = siteConfig('HEO_GROUP_ICONS', null, CONFIG)
-  if (groupIcons) {
-    groupIcons = groupIcons.concat(groupIcons)
-  }
+  const icons = siteConfig('HEO_GROUP_ICONS', null, CONFIG)
+  const groupIcons = Array.isArray(icons)
+    ? icons.filter(Boolean).concat(icons.filter(Boolean))
+    : []
   return (
     <div className='tags-group-all flex -rotate-[30deg] h-full'>
       <div className='tags-group-wrapper flex flex-nowrap absolute top-16'>
@@ -183,7 +218,7 @@ function GroupMenu() {
   return (
     <div className='h-[165px] select-none xl:h-20 flex flex-col justify-between xl:space-y-0 xl:flex-row w-28 lg:w-48 xl:w-full xl:flex-nowrap xl:space-x-3'>
       <SmartLink
-        href={url_1}
+        href={url_1 || '#'}
         className='group relative overflow-hidden bg-gradient-to-r from-blue-500 to-blue-400 flex h-20 justify-start items-center text-white rounded-xl xl:hover:w-1/2 xl:w-1/3 transition-all duration-500 ease-in'>
         <div className='font-bold lg:text-lg  pl-5 relative -mt-2'>
           {title_1}
@@ -194,7 +229,7 @@ function GroupMenu() {
         </div>
       </SmartLink>
       <SmartLink
-        href={url_2}
+        href={url_2 || '#'}
         className='group relative overflow-hidden bg-gradient-to-r from-red-500 to-yellow-500 flex h-20 justify-start items-center text-white rounded-xl xl:hover:w-1/2 xl:w-1/3 transition-all duration-500 ease-in'>
         <div className='font-bold lg:text-lg pl-5 relative -mt-2'>
           {title_2}
@@ -206,7 +241,7 @@ function GroupMenu() {
       </SmartLink>
       {/* 第三个标签在小屏上不显示 */}
       <SmartLink
-        href={url_3}
+        href={url_3 || '#'}
         className='group relative overflow-hidden bg-gradient-to-r from-teal-300 to-cyan-300 hidden h-20 xl:flex justify-start items-center text-white rounded-xl xl:hover:w-1/2 xl:w-1/3 transition-all duration-500 ease-in'>
         <div className='font-bold text-lg pl-5 relative -mt-2'>
           {title_3}
@@ -228,7 +263,7 @@ function TopGroup(props) {
   const { locale } = useGlobal()
   const todayCardRef = useRef()
   function handleMouseLeave() {
-    todayCardRef.current.coverUp()
+    todayCardRef.current?.coverUp?.()
   }
 
   // 获取置顶推荐文章
@@ -244,23 +279,32 @@ function TopGroup(props) {
         id='top-group'
         className='w-full flex space-x-3 xl:space-x-0 xl:grid xl:grid-cols-3 xl:gap-3 xl:h-[342px] overflow-x-auto xl:overflow-visible snap-x snap-mandatory pb-1 xl:pb-0'>
         {topPosts?.map((p, index) => {
+          const href = getPostHref(p)
+          const headerImage = p?.pageCoverThumbnail || siteInfo?.pageCover
+          const title = getPostTitle(p)
           return (
             <SmartLink
-              href={`${siteConfig('SUB_PATH', '')}/${p?.slug}`}
+              href={href}
               key={index}
               className='block shrink-0 w-full min-w-full sm:w-52 sm:min-w-[13rem] xl:min-w-0 xl:w-full snap-start'>
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
-                <LazyImage
-                  priority={index === 0 && p?.pageCoverThumbnail}
-                  width={420}
-                  height={160}
-                  sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, 100vw'
-                  className='h-24 object-cover'
-                  alt={p?.title}
-                  src={p?.pageCoverThumbnail || siteInfo?.pageCover}
-                />
+                {headerImage ? (
+                  <LazyImage
+                    priority={index === 0 && Boolean(headerImage)}
+                    width={420}
+                    height={160}
+                    sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, 100vw'
+                    className='h-24 object-cover'
+                    alt={title}
+                    src={headerImage}
+                  />
+                ) : (
+                  <div className='h-24 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400'>
+                    <i className='fas fa-file-lines text-2xl' />
+                  </div>
+                )}
                 <div className='group-hover:text-indigo-600 dark:group-hover:text-yellow-600 line-clamp-2 overflow-hidden m-2 font-semibold'>
-                  {p?.title}
+                  {title}
                 </div>
                 {/* hover 悬浮的 ‘荐’ 字 */}
                 <div className='opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 duration-200 transition-all absolute -top-2 -left-2 bg-indigo-600 dark:bg-yellow-600  text-white rounded-xl overflow-hidden pr-2 pb-2 pl-4 pt-4 text-xs'>
@@ -281,30 +325,35 @@ function TopGroup(props) {
  * 获取推荐置顶文章
  */
 function getTopPosts({ latestPosts, allNavPages }) {
+  const latest = Array.isArray(latestPosts)
+    ? latestPosts.filter(isLinkablePost)
+    : []
+  const navPages = Array.isArray(allNavPages)
+    ? allNavPages.filter(isLinkablePost)
+    : []
+  const recommendTag = siteConfig(
+    'HEO_HERO_RECOMMEND_POST_TAG',
+    '',
+    CONFIG
+  )
+
   // 默认展示最近更新
-  if (
-    !siteConfig('HEO_HERO_RECOMMEND_POST_TAG', null, CONFIG) ||
-    siteConfig('HEO_HERO_RECOMMEND_POST_TAG', null, CONFIG) === ''
-  ) {
-    return latestPosts
+  if (!recommendTag) {
+    return latest.slice(0, 6)
   }
 
   // 显示包含‘推荐’标签的文章
   let sortPosts = []
 
   // 排序方式
-  if (
-    JSON.parse(
-      siteConfig('HEO_HERO_RECOMMEND_POST_SORT_BY_UPDATE_TIME', null, CONFIG)
-    )
-  ) {
-    sortPosts = Object.create(allNavPages).sort((a, b) => {
+  if (siteConfig('HEO_HERO_RECOMMEND_POST_SORT_BY_UPDATE_TIME', false, CONFIG)) {
+    sortPosts = [...navPages].sort((a, b) => {
       const dateA = new Date(a?.lastEditedDate)
       const dateB = new Date(b?.lastEditedDate)
       return dateB - dateA
     })
   } else {
-    sortPosts = Object.create(allNavPages)
+    sortPosts = [...navPages]
   }
 
   const topPosts = []
@@ -313,11 +362,7 @@ function getTopPosts({ latestPosts, allNavPages }) {
       break
     }
     // 查找标签
-    if (
-      post?.tags?.indexOf(
-        siteConfig('HEO_HERO_RECOMMEND_POST_TAG', null, CONFIG)
-      ) >= 0
-    ) {
+    if (Array.isArray(post?.tags) && post.tags.includes(recommendTag)) {
       topPosts.push(post)
     }
   }
@@ -368,7 +413,9 @@ function TodayCard({ cRef, siteInfo }) {
    * @param {*} e
    */
   function handleCardClick(e) {
-    router.push(link)
+    if (link) {
+      router.push(link)
+    }
   }
 
   // 如果配置为不显示遮罩，则不渲染TodayCard

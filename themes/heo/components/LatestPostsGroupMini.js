@@ -11,6 +11,26 @@ const getLatestPostKey = (post, index) => {
   return `${fallback}-${index}`
 }
 
+function getPostHref(post, subPath = '') {
+  if (post?.href) return post.href
+  if (!post?.slug) return '#'
+
+  const rawSlug = String(post.slug)
+  if (/^https?:\/\//i.test(rawSlug)) return rawSlug
+
+  const slug = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`
+  return `${subPath}${slug}` || '/'
+}
+
+function getPostTitle(post) {
+  const title = post?.title
+  if (Array.isArray(title)) return title.filter(Boolean).join(' ') || '未命名'
+  if (typeof title === 'string' || typeof title === 'number') {
+    return String(title).trim() || '未命名'
+  }
+  return '未命名'
+}
+
 /**
  * 最新文章列表
  * @param posts 所有文章数据
@@ -22,8 +42,11 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
   const currentPath = useRouter().asPath
   const { locale } = useGlobal()
   const SUB_PATH = siteConfig('SUB_PATH', '')
+  const posts = Array.isArray(latestPosts)
+    ? latestPosts.filter(post => post?.href || post?.slug)
+    : []
 
-  return latestPosts ? (
+  return posts.length > 0 ? (
     <>
       <div className=' mb-2 px-1 flex flex-nowrap justify-between'>
         <div>
@@ -31,27 +54,43 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
           {locale.COMMON.LATEST_POSTS}
         </div>
       </div>
-      {latestPosts.map((post, index) => {
-        const selected = currentPath === `${SUB_PATH}/${post.slug}`
+      {posts.map((post, index) => {
+        const href = getPostHref(post, SUB_PATH)
+        const selected =
+          href !== '#' &&
+          !/^https?:\/\//i.test(href) &&
+          currentPath.split(/[?#]/)[0] === href
         const headerImage =
           post?.pageCoverThumbnail || post?.pageCover || siteInfo?.pageCover
+        const title = getPostTitle(post)
+        const lastEditedDay =
+          typeof post?.lastEditedDay === 'string' ||
+          typeof post?.lastEditedDay === 'number'
+            ? String(post.lastEditedDay)
+            : ''
 
         return (
           <SmartLink
             key={getLatestPostKey(post, index)}
-            title={post.title}
-            href={post?.href}
+            title={title}
+            href={href}
             passHref
             className={'my-3 flex'}>
             <div className='w-20 h-14 overflow-hidden relative pointer-events-none'>
-              <LazyImage
-                src={`${headerImage}`}
-                alt={post.title}
-                width={80}
-                height={56}
-                sizes='80px'
-                className='object-cover w-full h-full rounded-lg'
-              />
+              {headerImage ? (
+                <LazyImage
+                  src={headerImage}
+                  alt={title}
+                  width={80}
+                  height={56}
+                  sizes='80px'
+                  className='object-cover w-full h-full rounded-lg'
+                />
+              ) : (
+                <div className='w-full h-full rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400'>
+                  <i className='fas fa-file-lines' />
+                </div>
+              )}
             </div>
             <div
               className={
@@ -60,8 +99,10 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
                 ' hover:text-indigo-400 dark:hover:text-yellow-600 cursor-pointer items-center flex'
               }>
               <div>
-                <div className='line-clamp-2 menu-link'>{post.title}</div>
-                <div className='text-gray-400'>{post.lastEditedDay}</div>
+                <div className='line-clamp-2 menu-link'>{title}</div>
+                {lastEditedDay && (
+                  <div className='text-gray-400'>{lastEditedDay}</div>
+                )}
               </div>
             </div>
           </SmartLink>

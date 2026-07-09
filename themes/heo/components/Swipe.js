@@ -9,6 +9,9 @@ import { useEffect, useState } from 'react'
  */
 export function Swipe({ items }) {
   const [activeIndex, setActiveIndex] = useState(0)
+  const safeItems = Array.isArray(items)
+    ? items.filter(item => item?.title)
+    : []
 
   const handleClick = item => {
     if (isBrowser && item?.url) {
@@ -17,17 +20,22 @@ export function Swipe({ items }) {
   }
 
   useEffect(() => {
-    if (!items?.length) return
+    if (!safeItems.length) {
+      setActiveIndex(0)
+      return
+    }
+
+    setActiveIndex(index => Math.min(index, safeItems.length - 1))
     const interval = setInterval(() => {
       // 函数式 setState，避免把 activeIndex 放进依赖数组导致每秒重建 interval
-      setActiveIndex(prev => (prev + 1) % items.length)
+      setActiveIndex(prev => (prev + 1) % safeItems.length)
     }, 3000)
     return () => clearInterval(interval)
-  }, [items?.length])
+  }, [safeItems.length])
 
   return (
     <div className='h-full relative w-full overflow-hidden'>
-      {items.map((item, index) => (
+      {safeItems.map((item, index) => (
         <div
           onClick={() => handleClick(item)}
           key={index}

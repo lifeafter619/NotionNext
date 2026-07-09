@@ -9,8 +9,11 @@ import { siteConfig } from '@/lib/config'
 export function AnalyticsCard(props) {
   const targetDate = new Date(siteConfig('HEO_SITE_CREATE_TIME', null, CONFIG))
   const today = new Date()
-  const diffTime = today.getTime() - targetDate.getTime() // 获取两个日期之间的毫秒数差值
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) // 将毫秒数差值转换为天数差值
+  const targetTime = targetDate.getTime()
+  const diffTime = today.getTime() - targetTime // 获取两个日期之间的毫秒数差值
+  const diffDays = Number.isFinite(targetTime)
+    ? Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)))
+    : 0 // 将毫秒数差值转换为天数差值
   const postCountTitle = siteConfig('HEO_POST_COUNT_TITLE', null, CONFIG)
   const siteTimeTitle = siteConfig('HEO_SITE_TIME_TITLE', null, CONFIG)
   const siteVisitTitle = siteConfig('HEO_SITE_VISIT_TITLE', null, CONFIG)

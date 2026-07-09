@@ -35,9 +35,14 @@ const PaginationNumber = ({ page, totalPage }) => {
    * 调到指定页
    */
   const jumpToPage = () => {
-    if (value) {
+    const parsedValue = parseInt(value, 10)
+    if (Number.isFinite(parsedValue)) {
+      const maxPage = Math.max(1, Number(totalPage) || 1)
+      const targetPage = Math.min(Math.max(parsedValue, 1), maxPage)
       router.push(
-        value === 1 ? `${pagePrefix}/` : `${pagePrefix}/page/${value}`
+        targetPage === 1
+          ? `${pagePrefix}/`
+          : `${pagePrefix}/page/${targetPage}`
       )
     }
   }
@@ -74,7 +79,12 @@ const PaginationNumber = ({ page, totalPage }) => {
             <input
               value={value}
               className='w-0 group-hover:w-20 group-hover:px-3 transition-all duration-200 bg-gray-100 border-none outline-none h-full rounded-lg'
-              onInput={handleInputChange}></input>
+              onInput={handleInputChange}
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
+                  jumpToPage()
+                }
+              }}></input>
             <div
               onClick={jumpToPage}
               className='cursor-pointer hover:bg-indigo-600  dark:bg-[#1e1e1e] dark:hover:bg-yellow-600 hover:text-white px-4 py-2 group-hover:px-2 group-hover:mx-1 group-hover:rounded bg-white'>

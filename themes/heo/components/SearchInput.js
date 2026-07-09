@@ -5,6 +5,7 @@ import { useGlobal } from '@/lib/global'
 const SearchInput = props => {
   const { currentSearch, cRef, className } = props
   const [onLoading, setLoadingState] = useState(false)
+  const [showClean, setShowClean] = useState(Boolean(currentSearch))
   const router = useRouter()
   const searchInputRef = useRef()
   const { locale } = useGlobal()
@@ -25,7 +26,7 @@ const SearchInput = props => {
       setLoadingState(true)
       router
         .push({ pathname: '/search/' + encodeURIComponent(key) })
-        .then(r => {
+        .finally(() => {
           setLoadingState(false)
         })
       // location.href = '/search/' + key
@@ -44,9 +45,9 @@ const SearchInput = props => {
   }
   const cleanSearch = () => {
     searchInputRef.current.value = ''
+    setShowClean(false)
   }
 
-  const [showClean, setShowClean] = useState(false)
   const updateSearchKey = val => {
     if (lockRef.current) {
       return
@@ -65,6 +66,7 @@ const SearchInput = props => {
 
   function unLockSearchInput() {
     lockRef.current = false
+    setShowClean(Boolean(searchInputRef.current?.value))
   }
 
   return (

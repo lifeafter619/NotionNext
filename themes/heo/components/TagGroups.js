@@ -11,11 +11,12 @@ import { useRouter } from 'next/router'
 const TagGroups = ({ tags, className }) => {
   const router = useRouter()
   const { tag: currentTag } = router.query
-  if (!tags) return <></>
+  const safeTags = Array.isArray(tags) ? tags.filter(tag => tag?.name) : []
+  if (safeTags.length === 0) return <></>
 
   return (
     <div id='tags-group' className='dark:border-gray-700 flex flex-wrap gap-2'>
-      {tags.map((tag, index) => {
+      {safeTags.map((tag, index) => {
         const selected = currentTag === tag.name
         return (
           <SmartLink

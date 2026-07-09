@@ -34,12 +34,12 @@ export const MenuListSide = props => {
     }
   ]
 
-  if (customNav) {
+  if (Array.isArray(customNav)) {
     links = customNav.concat(links)
   }
 
   // 如果 开启自定义菜单，则覆盖Page生成的菜单
-  if (siteConfig('CUSTOM_MENU')) {
+  if (siteConfig('CUSTOM_MENU') && Array.isArray(customMenu)) {
     links = customMenu
   }
 

@@ -6,6 +6,26 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import CONFIG from '../config'
 import LazyImage from '@/components/LazyImage'
 
+function getAdjacentHref(post) {
+  if (post?.href) return post.href
+  if (!post?.slug) return '#'
+  const rawSlug = String(post.slug)
+  if (/^https?:\/\//i.test(rawSlug)) return rawSlug
+
+  const subPath = siteConfig('SUB_PATH', '') || ''
+  const slug = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`
+  return `${subPath}${slug}` || '/'
+}
+
+function getPostTitle(post) {
+  const title = post?.title
+  if (Array.isArray(title)) return title.filter(Boolean).join(' ') || '未命名'
+  if (typeof title === 'string' || typeof title === 'number') {
+    return String(title).trim() || '未命名'
+  }
+  return '未命名'
+}
+
 /**
  * 上一篇，下一篇文章
  * @param {prev,next} param0
@@ -31,6 +51,11 @@ export default function PostAdjacent({ prev, next }) {
   }, [router])
 
   useEffect(() => {
+    if (typeof IntersectionObserver !== 'function') {
+      setIsShow(true)
+      return
+    }
+
     // 文章到底部时显示下一篇文章推荐
     const articleEnd = document.getElementById('article-end')
     const footerBottom = document.getElementById('footer-bottom')
@@ -159,36 +184,43 @@ export default function PostAdjacent({ prev, next }) {
     }
   }, [isDragging])
 
-  if (!prev || !next || !siteConfig('HEO_ARTICLE_ADJACENT', null, CONFIG)) {
+  if ((!prev && !next) || !siteConfig('HEO_ARTICLE_ADJACENT', null, CONFIG)) {
     return <></>
   }
+
+  const prevTitle = getPostTitle(prev)
+  const nextTitle = getPostTitle(next)
 
   return (
     <div id='article-end'>
       {/* 移动端 */}
       <section className='lg:hidden pt-8 text-gray-800 items-center text-xs md:text-sm flex flex-col m-1 '>
-        <SmartLink
-          href={`/${prev.slug}`}
-          passHref
-          className='cursor-pointer justify-between space-y-1 px-5 py-6 rounded-t-xl dark:bg-[#1e1e1e] border dark:border-gray-600 border-b-0 items-center dark:text-white flex flex-col w-full h-18 duration-200'>
-          <div className='flex justify-start items-center w-full'>上一篇</div>
-          <div className='flex justify-center items-center text-lg font-bold'>
-            {prev.title}
-          </div>
-        </SmartLink>
-        <SmartLink
-          href={`/${next.slug}`}
-          passHref
-          className='cursor-pointer justify-between space-y-1 px-5 py-6 rounded-b-xl dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200'>
-          <div className='flex justify-start items-center w-full'>下一篇</div>
-          <div className='flex justify-center items-center text-lg font-bold'>
-            {next.title}
-          </div>
-        </SmartLink>
+        {prev && (
+          <SmartLink
+            href={getAdjacentHref(prev)}
+            passHref
+            className={`${next ? 'rounded-t-xl border-b-0' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200`}>
+            <div className='flex justify-start items-center w-full'>上一篇</div>
+            <div className='flex justify-center items-center text-lg font-bold'>
+              {prevTitle}
+            </div>
+          </SmartLink>
+        )}
+        {next && (
+          <SmartLink
+            href={getAdjacentHref(next)}
+            passHref
+            className={`${prev ? 'rounded-b-xl' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200`}>
+            <div className='flex justify-start items-center w-full'>下一篇</div>
+            <div className='flex justify-center items-center text-lg font-bold'>
+              {nextTitle}
+            </div>
+          </SmartLink>
+        )}
       </section>
 
       {/* 桌面端 */}
-      {!isClosed && (
+      {next && !isClosed && (
         <div
           ref={nextPostRef}
           id='pc-next-post'
@@ -206,7 +238,7 @@ export default function PostAdjacent({ prev, next }) {
               <div className='h-32 w-full relative overflow-hidden group'>
                 <LazyImage
                   src={next.pageCoverThumbnail}
-                  alt={next.title}
+                  alt={nextTitle}
                   width={320}
                   height={128}
                   sizes='320px'
@@ -228,9 +260,9 @@ export default function PostAdjacent({ prev, next }) {
 
               {/* 标题 */}
               <SmartLink
-                href={`/${next.slug}`}
+                href={getAdjacentHref(next)}
                 className={`line-clamp-2 font-bold text-base leading-tight select-none cursor-pointer hover:text-indigo-600 dark:hover:text-yellow-500 transition-colors text-gray-900 dark:text-gray-100`}>
-                {next?.title}
+                {nextTitle}
               </SmartLink>
             </div>
 

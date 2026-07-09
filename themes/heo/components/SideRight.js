@@ -10,15 +10,10 @@ import VisitorInfoCard from './VisitorInfoCard'
 import { useArticleToc } from './useArticleToc'
 
 const FaceBookPage = dynamic(
-  () => {
-    let facebook = <></>
-    try {
-      facebook = import('@/components/FacebookPage')
-    } catch (err) {
-      console.error(err)
-    }
-    return facebook
-  },
+  () =>
+    import('@/components/FacebookPage').catch(() => ({
+      default: () => null
+    })),
   { ssr: false }
 )
 

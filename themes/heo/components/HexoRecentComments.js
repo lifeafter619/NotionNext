@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { Sanitizer } from '@/lib/utils/validation'
 import { RecentComments } from '@waline/client'
 import SmartLink from '@/components/SmartLink'
 import { useEffect, useState } from 'react'
@@ -17,10 +18,20 @@ const HexoRecentComments = props => {
     RecentComments({
       serverURL: siteConfig('COMMENT_WALINE_SERVER_URL'),
       count: 5
-    }).then(({ comments }) => {
-      changeLoading(false)
-      updateComments(comments)
     })
+      .then(({ comments }) => {
+        updateComments(
+          Array.isArray(comments)
+            ? comments.filter(comment => comment?.objectId && comment?.url)
+            : []
+        )
+      })
+      .catch(() => {
+        updateComments([])
+      })
+      .finally(() => {
+        changeLoading(false)
+      })
   }, [])
 
   return (
@@ -46,7 +57,9 @@ const HexoRecentComments = props => {
           <div key={comment.objectId} className='pb-2 pl-1'>
             <div
               className='dark:text-gray-200 text-sm waline-recent-content wl-content'
-              dangerouslySetInnerHTML={{ __html: comment.comment }}
+              dangerouslySetInnerHTML={{
+                __html: Sanitizer.sanitizeXss(comment.comment)
+              }}
             />
             <div className='dark:text-gray-400 text-gray-400  text-sm text-right cursor-pointer hover:text-red-500 hover:underline pt-1 pr-2'>
               <SmartLink

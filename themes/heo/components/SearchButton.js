@@ -33,7 +33,15 @@ export default function SearchButton(props) {
       <div
         onClick={handleSearch}
         title={locale.NAV.SEARCH}
-        alt={locale.NAV.SEARCH}
+        role='button'
+        aria-label={locale.NAV.SEARCH}
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleSearch()
+          }
+        }}
         className='cursor-pointer hover:bg-black hover:bg-opacity-10 rounded-full w-10 h-10 flex justify-center items-center duration-200 transition-all'>
         <i title={locale.NAV.SEARCH} className='fa-solid fa-magnifying-glass' />
       </div>

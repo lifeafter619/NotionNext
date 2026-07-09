@@ -12,6 +12,14 @@ import { useEffect, useRef } from 'react'
 
 const COVER_LOAD_TIMEOUT_MS = 1500
 
+function getPostText(value, fallback = '') {
+  if (Array.isArray(value)) return value.filter(Boolean).join(' ') || fallback
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value).trim() || fallback
+  }
+  return fallback
+}
+
 /**
  * 文章页头
  * @param {*} param0
@@ -52,6 +60,13 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
   }
 
   const ANALYTICS_BUSUANZI_ENABLE = siteConfig('ANALYTICS_BUSUANZI_ENABLE')
+  const tagItems = Array.isArray(post?.tagItems)
+    ? post.tagItems.filter(tag => tag?.name)
+    : []
+  const title = getPostText(post?.title, '未命名')
+  const category = getPostText(post?.category)
+  const publishDay = getPostText(post?.publishDay)
+  const lastEditedDay = getPostText(post?.lastEditedDay)
 
   // 封面图加载完成或出错后隐藏加载指示器
   const handleCoverLoad = () => {
@@ -155,23 +170,23 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           className='absolute top-40 sm:top-48 z-10 flex flex-col space-y-4 lg:-mt-12 w-full max-w-[86rem] px-5'>
           {/* 分类+标签 */}
           <div className='flex justify-center md:justify-start items-center gap-4'>
-            {post.category && (
+            {category && (
               <>
                 <SmartLink
-                  href={`/category/${encodeURIComponent(post.category)}`}
+                  href={`/category/${encodeURIComponent(category)}`}
                   className='mr-4'
                   passHref
                   legacyBehavior>
                   <div className='cursor-pointer font-sm font-bold px-3 py-1 rounded-lg  hover:bg-white text-white bg-blue-500 dark:bg-yellow-500 hover:text-blue-500 duration-200 '>
-                    {post.category}
+                    {category}
                   </div>
                 </SmartLink>
               </>
             )}
 
-            {post.tagItems && (
+            {tagItems.length > 0 && (
               <div className='hidden md:flex justify-center flex-nowrap overflow-x-auto'>
-                {post.tagItems.map((tag, index) => (
+                {tagItems.map((tag, index) => (
                   <SmartLink
                     key={index}
                     href={`/tag/${encodeURIComponent(tag.name)}`}
@@ -194,7 +209,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             {siteConfig('POST_TITLE_ICON') && (
               <NotionIcon icon={post.pageIcon} />
             )}
-            {post.title}
+            {title}
           </div>
 
           {/* 标题底部补充信息 */}
@@ -213,14 +228,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                     passHref
                     className='cursor-pointer hover:underline whitespace-nowrap'>
                     <i className='fa-regular fa-calendar'></i>{' '}
-                    {post?.publishDay}
+                    {publishDay}
                   </SmartLink>
                 </>
               )}
 
               <div className='whitespace-nowrap'>
                 <i className='fa-regular fa-calendar-check'></i>{' '}
-                {post.lastEditedDay}
+                {lastEditedDay}
               </div>
             </div>
 

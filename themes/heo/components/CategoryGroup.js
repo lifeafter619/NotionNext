@@ -1,7 +1,11 @@
 import SmartLink from '@/components/SmartLink'
 
 const CategoryGroup = ({ currentCategory, categories }) => {
-  if (!categories) {
+  const safeCategories = Array.isArray(categories)
+    ? categories.filter(category => category?.name)
+    : []
+
+  if (safeCategories.length === 0) {
     return <></>
   }
   return (
@@ -9,7 +13,7 @@ const CategoryGroup = ({ currentCategory, categories }) => {
       <div
         id='category-list'
         className='dark:border-gray-700 flex flex-wrap  mx-4'>
-        {categories.map(category => {
+        {safeCategories.map(category => {
           const selected = currentCategory === category.name
           return (
             <SmartLink

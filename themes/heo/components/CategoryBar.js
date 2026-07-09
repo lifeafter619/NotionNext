@@ -13,6 +13,9 @@ export default function CategoryBar(props) {
   const { categoryOptions, border = true } = props
   const { locale } = useGlobal()
   const [scrollRight, setScrollRight] = useState(false)
+  const safeCategoryOptions = Array.isArray(categoryOptions)
+    ? categoryOptions.filter(category => category?.name)
+    : []
   // 创建一个ref引用
   const categoryBarItemsRef = useRef(null)
 
@@ -39,7 +42,7 @@ export default function CategoryBar(props) {
         ref={categoryBarItemsRef}
         className='scroll-smooth max-w-4xl min-w-0 flex-1 rounded-lg scroll-hidden flex justify-start flex-nowrap items-center overflow-x-auto'>
         <MenuItem href='/' name={locale.NAV.INDEX} />
-        {categoryOptions?.map((c, index) => (
+        {safeCategoryOptions.map((c, index) => (
           <MenuItem
             key={index}
             href={`/category/${encodeURIComponent(c.name)}`}

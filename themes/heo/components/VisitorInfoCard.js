@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Card from './Card'
+import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/utils'
 
 const MINUTE_MS = 60000
 
@@ -87,13 +88,7 @@ export default function VisitorInfoCard() {
       const key = `reading_time_${today}`
 
       // 从 localStorage 获取今天的累积时间 (单位: 分钟)
-      let storedTime = 0
-      try {
-        const stored = localStorage.getItem(key)
-        storedTime = parseStoredMinutes(stored)
-      } catch (e) {
-        console.error('Failed to read reading time:', e)
-      }
+      const storedTime = parseStoredMinutes(safeLocalStorageGet(key))
 
       // 计算本次会话的增加时间
       // 为了避免重复计算，我们每分钟增加 1 分钟到 localStorage
@@ -109,17 +104,13 @@ export default function VisitorInfoCard() {
       const today = new Date().toLocaleDateString()
       const key = `reading_time_${today}`
 
-      try {
-        const stored = localStorage.getItem(key)
-        let newTime = 1
-        if (stored) {
-          newTime = parseStoredMinutes(stored) + 1
-        }
-        localStorage.setItem(key, newTime.toString())
-        setReadingTime(newTime)
-      } catch (e) {
-        console.error('Failed to save reading time:', e)
+      const stored = safeLocalStorageGet(key)
+      let newTime = 1
+      if (stored) {
+        newTime = parseStoredMinutes(stored) + 1
       }
+      safeLocalStorageSet(key, newTime.toString())
+      setReadingTime(newTime)
     }, 60000) // 每分钟更新
 
     return () => clearInterval(timer)
@@ -127,11 +118,13 @@ export default function VisitorInfoCard() {
 
   // 获取用户IP属地
   useEffect(() => {
+    let isActive = true
     const fetchLocation = async () => {
       try {
         // 使用 vore.top API获取IP和地理位置
         const response = await fetch('https://api.vore.top/api/IPdata')
         const data = await response.json()
+        if (!isActive) return
 
         if (data.code === 200 && data.ipdata) {
           // 从返回数据中提取城市和ISP信息
@@ -141,23 +134,27 @@ export default function VisitorInfoCard() {
         } else {
           setLocation('未知地区')
         }
-      } catch (error) {
-        console.warn('获取IP位置失败 (api.vore.top):', error)
+      } catch {
         // 尝试备用方案
         try {
           const response = await fetch('https://ipapi.co/json/')
           const data = await response.json()
+          if (!isActive) return
           const city =
             data.city || data.region || data.country_name || '未知地区'
           setLocation(city)
-        } catch (err) {
-          console.warn('获取IP位置失败 (ipapi.co):', err)
-          setLocation('未知地区')
+        } catch {
+          if (isActive) {
+            setLocation('未知地区')
+          }
         }
       }
     }
 
     fetchLocation()
+    return () => {
+      isActive = false
+    }
   }, [])
 
   // 获取今日访客数 (从busuanzi)

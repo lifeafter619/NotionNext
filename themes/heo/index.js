@@ -230,6 +230,38 @@ function getSearchText(value) {
   return value ? String(value) : ''
 }
 
+function escapeHtml(value) {
+  return getSearchText(value).replace(/[&<>"']/g, char => {
+    const entities = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }
+    return entities[char]
+  })
+}
+
+function sanitizeAlgoliaHighlight(value) {
+  return escapeHtml(value)
+    .replace(
+      /&lt;span class=(&quot;|&#39;)text-red-500 font-bold\1&gt;/g,
+      '<span class="text-red-500 font-bold">'
+    )
+    .replace(/&lt;\/span&gt;/g, '</span>')
+}
+
+function getFiniteNumber(value, fallback = 0) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : fallback
+}
+
+function formatDate(value) {
+  const date = new Date(value)
+  return Number.isFinite(date.getTime()) ? date.toLocaleDateString() : ''
+}
+
 function getResultSnippet(results, keyword) {
   if (!Array.isArray(results) || !keyword) return ''
   const snippets = results
@@ -259,28 +291,62 @@ function getBodySnippet(content, keyword) {
 function getPostHref(post) {
   if (post?.href) return post.href
   if (!post?.slug) return '#'
-  if (post.slug.startsWith('http')) return post.slug
-  return `${siteConfig('SUB_PATH', '')}/${post.slug}`
+  const slug = String(post.slug)
+  if (/^https?:\/\//i.test(slug)) return slug
+
+  const subPath = siteConfig('SUB_PATH', '') || ''
+  const normalizedSlug = slug.startsWith('/') ? slug : `/${slug}`
+  return `${subPath}${normalizedSlug}` || '/'
+}
+
+function postHasTag(post, tagName) {
+  return Array.isArray(post?.tags) && post.tags.includes(tagName)
 }
 
 function appendKeywordToHref(href, keyword) {
-  if (!keyword) return href
-  const separator = href.includes('?') ? '&' : '?'
-  return `${href}${separator}keyword=${encodeURIComponent(keyword)}`
+  if (!keyword || !href || href === '#') return href
+
+  try {
+    const isAbsolute = /^https?:\/\//i.test(href)
+    const base = siteConfig('LINK') || 'https://notionnext.local'
+    const url = new URL(href, base)
+    url.searchParams.set('keyword', keyword)
+    url.search = url.search.replace(/\+/g, '%20')
+
+    if (isAbsolute) return url.toString()
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    const [pathAndQuery, hash = ''] = href.split('#')
+    const separator = pathAndQuery.includes('?') ? '&' : '?'
+    return `${pathAndQuery}${separator}keyword=${encodeURIComponent(keyword)}${
+      hash ? `#${hash}` : ''
+    }`
+  }
 }
 
 function getSearchResultDisplay(post, currentSearch, isAlgolia) {
-  let displayContent = post.summary
-  let displayTitle = post.title
+  let displayContent = getSearchText(post?.summary)
+  let displayTitle = getSearchText(post?.title) || '未命名'
   let showJumpButton = false
   let matchLocation = ''
 
   if (isAlgolia) {
+    const highlightedSummary = sanitizeAlgoliaHighlight(post.summary)
+    const highlightedTitle = sanitizeAlgoliaHighlight(post.title)
+
     return {
-      displayContent: (
-        <span dangerouslySetInnerHTML={{ __html: post.summary }} />
+      displayContent: highlightedSummary ? (
+        <span dangerouslySetInnerHTML={{ __html: highlightedSummary }} />
+      ) : (
+        ''
       ),
-      displayTitle: <span dangerouslySetInnerHTML={{ __html: post.title }} />,
+      displayTitle: (
+        <span
+          dangerouslySetInnerHTML={{
+            __html: highlightedTitle || '未命名'
+          }}
+        />
+      ),
       showJumpButton: true,
       matchLocation: '文章内容'
     }
@@ -352,9 +418,9 @@ const SearchSkeletonRows = () => (
 )
 
 const LayoutSearch = props => {
-  const { keyword, posts, postCount } = props
+  const { keyword, posts } = props
   const router = useRouter()
-  const currentSearch = keyword || router?.query?.s
+  const currentSearch = getSearchText(keyword || router?.query?.s)
   const { locale } = useGlobal()
   const [sortOrder, setSortOrder] = useState('relevance')
   const [viewMode, setViewMode] = useState('list') // list or grid
@@ -393,8 +459,9 @@ const LayoutSearch = props => {
         if (!isActive) return
         const uniqueHitsMap = new Map()
         hits.forEach(hit => {
-          if (!uniqueHitsMap.has(hit.slug)) {
-            uniqueHitsMap.set(hit.slug, hit)
+          const key = hit?.slug || hit?.objectID
+          if (key && !uniqueHitsMap.has(key)) {
+            uniqueHitsMap.set(key, hit)
           }
         })
         const uniqueHits = Array.from(uniqueHitsMap.values())
@@ -405,15 +472,12 @@ const LayoutSearch = props => {
           title: hit._highlightResult?.title?.value || hit.title,
           summary: hit._snippetResult?.content?.value || hit.summary,
           slug: hit.slug,
-          href: hit.slug?.startsWith('http')
-            ? hit.slug
-            : `${siteConfig('SUB_PATH', '')}/${hit.slug}`,
+          href: getPostHref(hit),
           createdTime: hit.createdTime || hit.createdTimestamp
         }))
         setAlgoliaResults(mappedHits)
-      } catch (err) {
+      } catch {
         if (!isActive) return
-        console.error('Algolia search failed:', err)
         setAlgoliaResults(null)
       } finally {
         if (isActive) setLoading(false)
@@ -428,10 +492,16 @@ const LayoutSearch = props => {
 
   // 优先使用 Algolia 结果，否则使用本地结果
   const displayPosts = useMemo(
-    () =>
-      (algoliaResults || posts || []).filter(
-        post => post.slug || post.objectID
-      ),
+    () => {
+      const sourcePosts = Array.isArray(algoliaResults)
+        ? algoliaResults
+        : Array.isArray(posts)
+          ? posts
+          : []
+      return sourcePosts.filter(
+        post => post?.slug || post?.objectID || post?.href
+      )
+    },
     [algoliaResults, posts]
   )
 
@@ -582,7 +652,7 @@ const LayoutSearch = props => {
                 <div className='space-y-4'>
                   {sortedPosts.map((post, index) => (
                     <SearchResultCard
-                      key={post.id}
+                      key={post.id || post.slug || post.objectID || index}
                       post={post}
                       index={index}
                       currentSearch={currentSearch}
@@ -595,7 +665,7 @@ const LayoutSearch = props => {
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                   {sortedPosts.map((post, index) => (
                     <SearchResultGridCard
-                      key={post.id}
+                      key={post.id || post.slug || post.objectID || index}
                       post={post}
                       index={index}
                       currentSearch={currentSearch}
@@ -641,6 +711,13 @@ const SearchResultCard = ({
     getSearchResultDisplay(post, currentSearch, isAlgolia)
   const postHref = getPostHref(post)
   const hrefWithKeyword = appendKeywordToHref(postHref, currentSearch)
+  const canJumpToMatch = showJumpButton && postHref !== '#'
+  const postTags = Array.isArray(post?.tags)
+    ? post.tags.map(tag => getSearchText(tag)).filter(Boolean)
+    : []
+  const createdDate = formatDate(post?.createdTime)
+  const titleText = getSearchText(post?.title) || '未命名'
+  const category = getSearchText(post?.category)
 
   return (
     <SmartLink href={postHref}>
@@ -654,7 +731,7 @@ const SearchResultCard = ({
               height={126}
               sizes='(min-width: 720px) 10rem, 8rem'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
-              alt={post?.title}
+              alt={titleText}
               className='max-w-full max-h-full object-contain'
             />
           </div>
@@ -670,7 +747,7 @@ const SearchResultCard = ({
                 {displayContent}
               </div>
             )}
-            {showJumpButton && (
+            {canJumpToMatch && (
               <div
                 className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors cursor-pointer'
                 onClick={e => {
@@ -689,24 +766,23 @@ const SearchResultCard = ({
             )}
           </div>
           <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
-            {post.category && (
+            {category && (
               <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
                 <i className='fas fa-folder mr-1'></i>
-                {post.category}
+                {category}
               </span>
             )}
-            {post.tags &&
-              post.tags.slice(0, 2).map(tag => (
-                <span
-                  key={tag}
-                  className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md'>
-                  #{tag}
-                </span>
-              ))}
-            {post.createdTime && (
+            {postTags.slice(0, 2).map(tag => (
+              <span
+                key={tag}
+                className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md'>
+                #{tag}
+              </span>
+            ))}
+            {createdDate && (
               <span>
                 <i className='fas fa-calendar mr-1'></i>
-                {new Date(post.createdTime).toLocaleDateString()}
+                {createdDate}
               </span>
             )}
           </div>
@@ -731,9 +807,13 @@ const SearchResultGridCard = ({
   const { displayContent, displayTitle, showJumpButton, matchLocation } =
     getSearchResultDisplay(post, currentSearch, isAlgolia)
   const postHref = getPostHref(post)
+  const canJumpToMatch = showJumpButton && postHref !== '#'
   const hrefWithFragment = showJumpButton
     ? appendKeywordToHref(postHref, currentSearch)
     : postHref
+  const createdDate = formatDate(post?.createdTime)
+  const titleText = getSearchText(post?.title) || '未命名'
+  const category = getSearchText(post?.category)
 
   return (
     <SmartLink href={hrefWithFragment}>
@@ -747,7 +827,7 @@ const SearchResultGridCard = ({
               height={160}
               sizes='(min-width: 720px) 33vw, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
-              alt={post?.title}
+              alt={titleText}
               className='max-w-full max-h-full object-contain'
             />
           </div>
@@ -763,7 +843,7 @@ const SearchResultGridCard = ({
                 {displayContent}
               </div>
             )}
-            {showJumpButton && (
+            {canJumpToMatch && (
               <div
                 className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-2 py-1 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors cursor-pointer'
                 onClick={e => {
@@ -782,13 +862,13 @@ const SearchResultGridCard = ({
             )}
           </div>
           <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
-            {post.category && (
+            {category && (
               <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
-                {post.category}
+                {category}
               </span>
             )}
-            {post.createdTime && (
-              <span>{new Date(post.createdTime).toLocaleDateString()}</span>
+            {createdDate && (
+              <span>{createdDate}</span>
             )}
           </div>
         </div>
@@ -804,6 +884,8 @@ const SearchResultGridCard = ({
  */
 const LayoutArchive = props => {
   const { archivePosts } = props
+  const safeArchivePosts =
+    archivePosts && typeof archivePosts === 'object' ? archivePosts : {}
 
   // 归档页顶部显示条，如果是默认归档则不显示。分类详情页显示分类列表，标签详情页显示当前标签
 
@@ -813,10 +895,10 @@ const LayoutArchive = props => {
       <CategoryBar {...props} border={false} />
 
       <div className='px-3'>
-        {Object.keys(archivePosts).map(archiveTitle => (
+        {Object.keys(safeArchivePosts).map(archiveTitle => (
           <BlogPostArchive
             key={archiveTitle}
-            posts={archivePosts[archiveTitle]}
+            posts={safeArchivePosts[archiveTitle]}
             archiveTitle={archiveTitle}
           />
         ))}
@@ -879,6 +961,11 @@ const LayoutSlug = props => {
   // 监听滚动，延迟加载底部推荐和评论
   useEffect(() => {
     if (!post) return
+    if (typeof IntersectionObserver !== 'function') {
+      setShowRecommended(true)
+      return
+    }
+
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
@@ -904,9 +991,7 @@ const LayoutSlug = props => {
             '#article-wrapper #notion-article'
           )
           if (!article) {
-            router.push('/404').then(() => {
-              console.warn('找不到页面', router.asPath)
-            })
+            router.push('/404')
           }
         }
       }, waiting404)
@@ -1074,6 +1159,10 @@ const Layout404 = props => {
 const LayoutCategoryIndex = props => {
   const { categoryOptions, allPages } = props
   const { locale } = useGlobal()
+  const safeCategoryOptions = Array.isArray(categoryOptions)
+    ? categoryOptions.filter(category => category?.name)
+    : []
+  const safeAllPages = Array.isArray(allPages) ? allPages : []
 
   return (
     <div id='category-outer-wrapper' className='mt-8 px-5 md:px-0'>
@@ -1084,7 +1173,7 @@ const LayoutCategoryIndex = props => {
           <div>
             <h1 className='text-3xl font-bold'>{locale.COMMON.CATEGORY}</h1>
             <p className='text-blue-100 mt-1'>
-              共 {categoryOptions?.length || 0} 个分类
+              共 {safeCategoryOptions.length} 个分类
             </p>
           </div>
         </div>
@@ -1092,7 +1181,7 @@ const LayoutCategoryIndex = props => {
 
       {/* 分类统计卡片 */}
       <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8'>
-        {categoryOptions?.map(category => (
+        {safeCategoryOptions.map(category => (
           <SmartLink
             key={category.name}
             href={`/category/${encodeURIComponent(category.name)}`}
@@ -1105,7 +1194,7 @@ const LayoutCategoryIndex = props => {
                 {category.name}
               </span>
               <span className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                {category.count} 篇文章
+                {getFiniteNumber(category?.count, 0)} 篇文章
               </span>
             </div>
           </SmartLink>
@@ -1114,10 +1203,10 @@ const LayoutCategoryIndex = props => {
 
       {/* 分类文章列表 */}
       <div id='category-list' className='space-y-10'>
-        {categoryOptions?.map(category => {
-          const posts = allPages
-            ?.filter(
-              p => p.category === category.name && p.status === 'Published'
+        {safeCategoryOptions.map(category => {
+          const posts = safeAllPages
+            .filter(
+              p => p?.category === category.name && p?.status === 'Published'
             )
             .slice(0, 4) // 每个分类显示4篇文章
 
@@ -1138,7 +1227,7 @@ const LayoutCategoryIndex = props => {
                       {category.name}
                     </h2>
                     <span className='text-sm text-gray-500 dark:text-gray-400'>
-                      {category.count} 篇文章
+                      {getFiniteNumber(category?.count, 0)} 篇文章
                     </span>
                   </div>
                 </div>
@@ -1153,7 +1242,7 @@ const LayoutCategoryIndex = props => {
               <div className='space-y-4'>
                 {posts?.map((post, index) => (
                   <CategoryPostCard
-                    key={post.id}
+                    key={post?.id || post?.slug || index}
                     post={post}
                     index={index}
                     siteInfo={props.siteInfo}
@@ -1172,10 +1261,19 @@ const LayoutCategoryIndex = props => {
  * 分类页文章卡片 - 横向大图布局，标题完整显示
  */
 const CategoryPostCard = ({ post, index, siteInfo }) => {
+  if (!post) return null
+
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+  const postHref = getPostHref(post)
+  const postTags = Array.isArray(post?.tags)
+    ? post.tags.map(tag => getSearchText(tag)).filter(Boolean)
+    : []
+  const createdDate = formatDate(post?.createdTime)
+  const title = getSearchText(post?.title) || '未命名'
+  const summary = getSearchText(post?.summary)
 
   return (
-    <SmartLink href={post?.href}>
+    <SmartLink href={postHref}>
       <article className='flex flex-col md:flex-row gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-300 group cursor-pointer'>
         {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
@@ -1186,7 +1284,7 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
               height={144}
               sizes='(min-width: 720px) 12rem, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
-              alt={post?.title}
+              alt={title}
               className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
             />
           </div>
@@ -1196,27 +1294,27 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
           <div>
             {/* 标题 - 完整显示，不截断 */}
             <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-purple-400 transition-colors leading-relaxed'>
-              {post.title}
+              {title}
             </h3>
             {/* 摘要 */}
-            {post.summary && (
+            {summary && (
               <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2 leading-relaxed'>
-                {post.summary}
+                {summary}
               </p>
             )}
           </div>
           {/* 元信息 */}
           <div className='flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-500'>
-            {post.createdTime && (
+            {createdDate && (
               <span className='flex items-center gap-1'>
                 <i className='fas fa-calendar-alt'></i>
-                {new Date(post.createdTime).toLocaleDateString()}
+                {createdDate}
               </span>
             )}
-            {post.tags && post.tags.length > 0 && (
+            {postTags.length > 0 && (
               <span className='flex items-center gap-1'>
                 <i className='fas fa-tags'></i>
-                {post.tags.slice(0, 3).join(' / ')}
+                {postTags.slice(0, 3).join(' / ')}
               </span>
             )}
           </div>
@@ -1234,16 +1332,20 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
 const LayoutTagIndex = props => {
   const { tagOptions, allPages, tagPreviewPostsByTag } = props
   const { locale } = useGlobal()
+  const safeTagOptions = Array.isArray(tagOptions)
+    ? tagOptions.filter(tag => tag?.name)
+    : []
+  const safeAllPages = Array.isArray(allPages) ? allPages : []
   const [selectedTag, setSelectedTag] = useState(
     /** @type {string | null} */ (null)
   )
   const getPreviewPostsByTag = tagName => {
     const previewPosts = tagPreviewPostsByTag?.[tagName]
-    if (Array.isArray(previewPosts)) return previewPosts
+    if (Array.isArray(previewPosts)) return previewPosts.filter(Boolean)
 
     return (
-      allPages?.filter(
-        p => p.tags && p.tags.includes(tagName) && p.status === 'Published'
+      safeAllPages.filter(
+        p => postHasTag(p, tagName) && p?.status === 'Published'
       ) || []
     )
   }
@@ -1252,6 +1354,8 @@ const LayoutTagIndex = props => {
   const selectedPosts = selectedTag
     ? getPreviewPostsByTag(selectedTag).slice(0, 8)
     : []
+  const tagCounts = safeTagOptions.map(tag => getFiniteNumber(tag?.count, 0))
+  const maxTagCount = Math.max(1, ...tagCounts)
 
   return (
     <div id='tag-outer-wrapper' className='px-5 mt-8 md:px-0'>
@@ -1262,7 +1366,7 @@ const LayoutTagIndex = props => {
           <div>
             <h1 className='text-3xl font-bold'>{locale.COMMON.TAGS}</h1>
             <p className='text-emerald-100 mt-1'>
-              共 {tagOptions?.length || 0} 个标签
+              共 {safeTagOptions.length} 个标签
             </p>
           </div>
         </div>
@@ -1275,12 +1379,12 @@ const LayoutTagIndex = props => {
           标签云
         </h2>
         <div className='flex flex-wrap gap-2'>
-          {tagOptions?.map(tag => {
+          {safeTagOptions.map(tag => {
             // 根据文章数量计算标签大小
-            const maxCount = Math.max(...(tagOptions?.map(t => t.count) || [1]))
+            const count = getFiniteNumber(tag?.count, 0)
             const minSize = 0.8
             const maxSize = 1.4
-            const size = minSize + (tag.count / maxCount) * (maxSize - minSize)
+            const size = minSize + (count / maxTagCount) * (maxSize - minSize)
             const isSelected = selectedTag === tag.name
 
             return (
@@ -1294,7 +1398,7 @@ const LayoutTagIndex = props => {
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400'
                 }`}>
                 #{tag.name}
-                <sup className='ml-1 text-xs opacity-70'>{tag.count}</sup>
+                <sup className='ml-1 text-xs opacity-70'>{count}</sup>
               </button>
             )
           })}
@@ -1320,7 +1424,7 @@ const LayoutTagIndex = props => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
             {selectedPosts.map((post, index) => (
               <TagPostCard
-                key={post.id}
+                key={post?.id || post?.slug || index}
                 post={post}
                 index={index}
                 siteInfo={props.siteInfo}
@@ -1332,7 +1436,7 @@ const LayoutTagIndex = props => {
 
       {/* 按标签分组的文章列表 */}
       <div id='tag-list' className='space-y-8'>
-        {tagOptions?.slice(0, 10).map(tag => {
+        {safeTagOptions.slice(0, 10).map(tag => {
           const posts = getPreviewPostsByTag(tag.name).slice(0, 3)
 
           if (!posts || posts.length === 0) return null
@@ -1352,7 +1456,7 @@ const LayoutTagIndex = props => {
                       #{tag.name}
                     </h2>
                     <span className='text-sm text-gray-500 dark:text-gray-400'>
-                      {tag.count} 篇文章
+                      {getFiniteNumber(tag?.count, 0)} 篇文章
                     </span>
                   </div>
                 </div>
@@ -1367,7 +1471,7 @@ const LayoutTagIndex = props => {
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                 {posts?.map((post, index) => (
                   <TagPostCard
-                    key={post.id}
+                    key={post?.id || post?.slug || index}
                     post={post}
                     index={index}
                     siteInfo={props.siteInfo}
@@ -1386,10 +1490,17 @@ const LayoutTagIndex = props => {
  * 标签页文章卡片 - 垂直大图布局，标题完整显示
  */
 const TagPostCard = ({ post, index, siteInfo }) => {
+  if (!post) return null
+
   const showCover = post?.pageCoverThumbnail || siteInfo?.pageCover
+  const postHref = getPostHref(post)
+  const createdDate = formatDate(post?.createdTime)
+  const title = getSearchText(post?.title) || '未命名'
+  const summary = getSearchText(post?.summary)
+  const category = getSearchText(post?.category)
 
   return (
-    <SmartLink href={post?.href}>
+    <SmartLink href={postHref}>
       <article className='group cursor-pointer rounded-xl overflow-hidden border dark:border-gray-700 hover:shadow-lg hover:border-emerald-500 dark:hover:border-teal-500 transition-all duration-300'>
         {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
         {showCover && (
@@ -1400,7 +1511,7 @@ const TagPostCard = ({ post, index, siteInfo }) => {
               height={160}
               sizes='(min-width: 720px) 33vw, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
-              alt={post?.title}
+              alt={title}
               className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
             />
           </div>
@@ -1409,26 +1520,26 @@ const TagPostCard = ({ post, index, siteInfo }) => {
         <div className='p-4'>
           {/* 标题 - 完整显示 */}
           <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-teal-400 transition-colors leading-relaxed'>
-            {post.title}
+            {title}
           </h3>
           {/* 摘要 */}
-          {post.summary && (
+          {summary && (
             <p className='text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2'>
-              {post.summary}
+              {summary}
             </p>
           )}
           {/* 元信息 */}
           <div className='flex items-center gap-3 mt-3 text-xs text-gray-500 dark:text-gray-500'>
-            {post.createdTime && (
+            {createdDate && (
               <span className='flex items-center gap-1'>
                 <i className='fas fa-calendar-alt'></i>
-                {new Date(post.createdTime).toLocaleDateString()}
+                {createdDate}
               </span>
             )}
-            {post.category && (
+            {category && (
               <span className='flex items-center gap-1'>
                 <i className='fas fa-folder'></i>
-                {post.category}
+                {category}
               </span>
             )}
           </div>

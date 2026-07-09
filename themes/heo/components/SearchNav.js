@@ -20,10 +20,17 @@ export default function SearchNav(props) {
   }, [])
 
   // 计算标签最大/最小计数，用于词云大小
-  const maxCount =
-    tagOptions?.length > 0 ? Math.max(...tagOptions.map(t => t.count)) : 1
-  const minCount =
-    tagOptions?.length > 0 ? Math.min(...tagOptions.map(t => t.count)) : 1
+  const safeTagOptions = Array.isArray(tagOptions)
+    ? tagOptions.filter(tag => tag?.name)
+    : []
+  const safeCategoryOptions = Array.isArray(categoryOptions)
+    ? categoryOptions.filter(category => category?.name)
+    : []
+  const tagCounts = safeTagOptions
+    .map(tag => Number(tag?.count))
+    .filter(Number.isFinite)
+  const maxCount = tagCounts.length > 0 ? Math.max(...tagCounts) : 1
+  const minCount = tagCounts.length > 0 ? Math.min(...tagCounts) : 1
 
   return (
     <>
@@ -38,7 +45,7 @@ export default function SearchNav(props) {
           <div
             id='category-list'
             className='duration-200 flex flex-wrap gap-3 mx-4'>
-            {categoryOptions?.map(category => {
+            {safeCategoryOptions.map(category => {
               return (
                 <SmartLink
                   key={category.name}
@@ -70,10 +77,13 @@ export default function SearchNav(props) {
           <div
             id='tags-list'
             className='duration-200 flex flex-wrap gap-3 mx-4 justify-center items-center py-4'>
-            {tagOptions?.map(tag => {
+            {safeTagOptions.map(tag => {
+              const count = Number.isFinite(Number(tag?.count))
+                ? Number(tag.count)
+                : minCount
               // 计算字体大小 1rem - 2rem
               const fontSize =
-                1 + ((tag.count - minCount) / (maxCount - minCount || 1)) * 1.5
+                1 + ((count - minCount) / (maxCount - minCount || 1)) * 1.5
 
               return (
                 <SmartLink
@@ -86,16 +96,16 @@ export default function SearchNav(props) {
                       opacity: 0.8 + (fontSize - 1) * 0.2
                     }}
                     className={`inline-block px-2 py-1 rounded-lg ${
-                      tag.count > maxCount * 0.8
+                      count > maxCount * 0.8
                         ? 'text-red-500 font-bold'
-                        : tag.count > maxCount * 0.5
+                        : count > maxCount * 0.5
                           ? 'text-orange-500 font-medium'
                           : 'text-blue-500 dark:text-blue-400'
                     } hover:text-white hover:bg-blue-500 dark:hover:bg-yellow-600 rounded transition-colors`}>
                     {tag.name}
-                    {tag.count > 1 && (
+                    {count > 1 && (
                       <sup className='ml-0.5 text-xs text-gray-400'>
-                        {tag.count}
+                        {count}
                       </sup>
                     )}
                   </span>

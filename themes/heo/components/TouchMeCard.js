@@ -1,14 +1,13 @@
 import { siteConfig } from '@/lib/config'
 import SmartLink from '@/components/SmartLink'
 import CONFIG from '../config'
-import { useState } from 'react'
 
 /**
  * 交流频道
  * @returns
  */
 export default function TouchMeCard() {
-  if (!JSON.parse(siteConfig('HEO_SOCIAL_CARD', null, CONFIG))) {
+  if (!siteConfig('HEO_SOCIAL_CARD', true, CONFIG)) {
     return <></>
   }
   return (

@@ -160,7 +160,7 @@ const Header = props => {
           <div className='flex flex-shrink-0 justify-end items-center w-auto lg:w-48 gap-1'>
             <RandomPostButton {...props} />
             <SearchButton {...props} />
-            {!JSON.parse(siteConfig('THEME_SWITCH')) && (
+            {!siteConfig('THEME_SWITCH') && (
               <div className='hidden md:block'>
                 <DarkModeButton {...props} />
               </div>
