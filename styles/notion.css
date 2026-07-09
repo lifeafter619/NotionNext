@@ -793,16 +793,14 @@ svg.notion-page-icon {
   margin-bottom: 0.5em;
 }
 
-pre[class*='language-'] {
-  line-height: inherit;
-}
+/* 行高/折行等对齐关键度量统一由 styles/prism-code.css 管理 */
 
 code[class*='language-'] {
   background: unset !important;
 }
 
 .notion-code {
-  padding: 30px 16px 30px 20px;
+  padding: 2.5rem 1rem 1.25rem;
   border-bottom-right-radius: 0.5rem;
   border-bottom-left-radius: 0.5rem;
   tab-size: 2;
@@ -810,8 +808,9 @@ code[class*='language-'] {
   box-sizing: border-box;
   overflow: auto;
   font-family:
-    SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-  @apply w-full mb-0 dark:bg-black !important;
+    ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', Menlo, Courier,
+    monospace;
+  @apply w-full mb-0 !important;
 }
 
 .notion-column {

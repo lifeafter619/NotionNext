@@ -5,6 +5,7 @@ import '@/styles/utility-patterns.css'
 // core styles shared by all of react-notion-x (required)
 import '@/styles/notion.css' //  重写部分notion样式
 import 'react-notion-x/src/styles.css' // 原版的react-notion-x
+import '@/styles/prism-code.css' // 内置代码块主题与行号对齐样式（需在 notion 样式之后引入）
 
 import useAdjustStyle from '@/hooks/useAdjustStyle'
 import { GlobalContextProvider } from '@/lib/global'

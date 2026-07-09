@@ -1,0 +1,488 @@
+/* ==========================================================================
+   内置代码块主题（本地打包、零外部请求、明暗双色）
+   --------------------------------------------------------------------------
+   设计目标：
+   1. 行号与代码内容严格共享同一套度量（字体/字号/行高/折行规则），
+      从根源上消除 Prism line-numbers 行号错位问题；
+      对齐关键属性使用 !important，任何后加载的样式都无法破坏对齐。
+   2. 默认无需任何远程 Prism 主题即可获得完整、美观的配色；
+      如在 conf/code.config.js 配置了远程主题 CSS，其 token 配色与背景
+      仍可覆盖本文件（本文件的配色选择器特意保持低优先级）。
+   浅色配色参考 GitHub Light，深色配色参考 One Dark。
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 代码块容器
+   -------------------------------------------------------------------------- */
+.notion .code-toolbar {
+  margin: 0.9rem 0 1.1rem;
+  border: 1px solid rgba(31, 35, 40, 0.12);
+}
+
+:where(.dark) .notion .code-toolbar {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+/* --------------------------------------------------------------------------
+   2. pre 基础度量 —— 行号对齐的根基，禁止被后加载样式篡改
+   -------------------------------------------------------------------------- */
+pre.notion-code[class*='language-'] {
+  position: relative;
+  /* 未被 .code-toolbar 包裹前（水合初期）与包裹后的容器保持同样的外边距，避免布局跳动 */
+  margin: 0.9rem 0 1.1rem !important;
+  padding: 2.5rem 1rem 1.25rem !important;
+  line-height: 1.7 !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: break-word;
+  word-break: normal;
+  tab-size: 2 !important;
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', 'JetBrains Mono', 'Cascadia Code',
+    Consolas, 'Liberation Mono', Menlo, monospace !important;
+  text-shadow: none;
+}
+
+/* 被工具栏容器包裹后，外边距交由容器管理 */
+.code-toolbar > pre.notion-code[class*='language-'] {
+  margin: 0 !important;
+}
+
+pre.notion-code[class*='language-'] > code {
+  font-family: inherit !important;
+  font-size: 100% !important;
+  line-height: inherit !important;
+  white-space: inherit !important;
+  overflow-wrap: inherit;
+  text-shadow: none;
+}
+
+/* 行号槽宽度与行号插件的 left:-3.8em 严格配对 */
+pre.notion-code[class*='language-'].line-numbers {
+  padding-left: 3.8em !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. 背景与基础文字色（低优先级，允许远程主题覆盖）
+   -------------------------------------------------------------------------- */
+.notion-code {
+  background: #f6f8fa;
+}
+
+:where(.dark) .notion-code {
+  background: #282c34;
+}
+
+.notion pre code {
+  color: #24292f;
+}
+
+:where(.dark) .notion pre code {
+  color: #abb2bf;
+}
+
+/* --------------------------------------------------------------------------
+   4. Token 配色 —— 浅色（GitHub Light）
+   -------------------------------------------------------------------------- */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6e7781;
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: #24292f;
+}
+
+.token.namespace {
+  opacity: 0.75;
+}
+
+.token.keyword,
+.token.atrule {
+  color: #cf222e;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.token.url {
+  color: #0a3069;
+}
+
+.token.function {
+  color: #8250df;
+}
+
+.token.class-name,
+.token.maybe-class-name {
+  color: #953800;
+}
+
+.token.number,
+.token.boolean,
+.token.constant,
+.token.symbol {
+  color: #0550ae;
+}
+
+.token.property,
+.token.tag,
+.token.selector {
+  color: #116329;
+}
+
+.token.attr-name,
+.token.builtin,
+.token.entity {
+  color: #0550ae;
+}
+
+.token.variable {
+  color: #953800;
+}
+
+.token.operator {
+  color: #0550ae;
+  background: none;
+}
+
+.token.important {
+  color: #cf222e;
+  font-weight: 600;
+}
+
+.token.inserted {
+  color: #116329;
+  background: #dafbe1;
+}
+
+.token.deleted {
+  color: #82071e;
+  background: #ffebe9;
+}
+
+.token.bold {
+  font-weight: 600;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   4b. Token 配色 —— 深色（One Dark）
+   -------------------------------------------------------------------------- */
+:where(.dark) .token.comment,
+:where(.dark) .token.prolog,
+:where(.dark) .token.doctype,
+:where(.dark) .token.cdata {
+  color: #7f848e;
+}
+
+:where(.dark) .token.punctuation {
+  color: #abb2bf;
+}
+
+:where(.dark) .token.keyword,
+:where(.dark) .token.atrule {
+  color: #c678dd;
+}
+
+:where(.dark) .token.string,
+:where(.dark) .token.char,
+:where(.dark) .token.attr-value,
+:where(.dark) .token.regex {
+  color: #98c379;
+}
+
+:where(.dark) .token.function {
+  color: #61afef;
+}
+
+:where(.dark) .token.class-name,
+:where(.dark) .token.maybe-class-name {
+  color: #e5c07b;
+}
+
+:where(.dark) .token.number,
+:where(.dark) .token.boolean,
+:where(.dark) .token.constant,
+:where(.dark) .token.symbol,
+:where(.dark) .token.attr-name {
+  color: #d19a66;
+}
+
+:where(.dark) .token.property,
+:where(.dark) .token.tag,
+:where(.dark) .token.selector,
+:where(.dark) .token.variable {
+  color: #e06c75;
+}
+
+:where(.dark) .token.operator,
+:where(.dark) .token.entity,
+:where(.dark) .token.url {
+  color: #56b6c2;
+  background: none;
+}
+
+:where(.dark) .token.builtin {
+  color: #e5c07b;
+}
+
+:where(.dark) .token.important {
+  color: #c678dd;
+  font-weight: 600;
+}
+
+:where(.dark) .token.inserted {
+  color: #98c379;
+  background: rgba(152, 195, 121, 0.12);
+}
+
+:where(.dark) .token.deleted {
+  color: #e06c75;
+  background: rgba(224, 108, 117, 0.12);
+}
+
+/* --------------------------------------------------------------------------
+   5. 行号槽视觉（分隔线、数字颜色、等宽数字）
+   -------------------------------------------------------------------------- */
+pre.notion-code .line-numbers-rows {
+  top: 0;
+  letter-spacing: 0;
+  border-right: 1px solid rgba(31, 35, 40, 0.12);
+}
+
+pre.notion-code .line-numbers-rows > span::before {
+  color: #8c959f;
+  padding-right: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.dark) pre.notion-code .line-numbers-rows {
+  border-right-color: rgba(255, 255, 255, 0.09);
+}
+
+:where(.dark) pre.notion-code .line-numbers-rows > span::before {
+  color: #5c6370;
+}
+
+/* --------------------------------------------------------------------------
+   6. 工具栏（语言标签 + 复制按钮）—— 芯片化，移动端常显
+   -------------------------------------------------------------------------- */
+div.code-toolbar > .toolbar {
+  opacity: 0.92 !important;
+  top: 0.6rem !important;
+  right: 0.75rem !important;
+  left: auto !important;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 20;
+  transition: opacity 0.2s ease;
+}
+
+div.code-toolbar:hover > .toolbar,
+div.code-toolbar:focus-within > .toolbar {
+  opacity: 1 !important;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item {
+  display: inline-flex !important;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button,
+div.code-toolbar > .toolbar > .toolbar-item > span {
+  margin: 0 !important;
+  padding: 0.18rem 0.6rem !important;
+  font-size: 0.72rem !important;
+  line-height: 1.2 !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #57606a !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  border: 1px solid rgba(31, 35, 40, 0.12) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  user-select: none;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a,
+div.code-toolbar > .toolbar > .toolbar-item > button {
+  cursor: pointer;
+}
+
+div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+div.code-toolbar > .toolbar > .toolbar-item > a:focus-visible,
+div.code-toolbar > .toolbar > .toolbar-item > button:focus-visible {
+  color: #0969da !important;
+  border-color: rgba(9, 105, 218, 0.45) !important;
+  background: #f0f6ff !important;
+}
+
+/* 复制成功的状态反馈 */
+div.code-toolbar > .toolbar button[data-copy-state='copy-success'] {
+  color: #1a7f37 !important;
+  border-color: rgba(26, 127, 55, 0.45) !important;
+}
+
+:where(.dark) div.code-toolbar > .toolbar > .toolbar-item > a,
+:where(.dark) div.code-toolbar > .toolbar > .toolbar-item > button,
+:where(.dark) div.code-toolbar > .toolbar > .toolbar-item > span {
+  color: #9aa2b1 !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+:where(.dark) div.code-toolbar > .toolbar > .toolbar-item > a:hover,
+:where(.dark) div.code-toolbar > .toolbar > .toolbar-item > button:hover,
+:where(.dark) div.code-toolbar > .toolbar > .toolbar-item > a:focus-visible,
+:where(.dark)
+  div.code-toolbar
+  > .toolbar
+  > .toolbar-item
+  > button:focus-visible {
+  color: #61afef !important;
+  border-color: rgba(97, 175, 239, 0.5) !important;
+  background: rgba(97, 175, 239, 0.12) !important;
+}
+
+:where(.dark)
+  div.code-toolbar
+  > .toolbar
+  button[data-copy-state='copy-success'] {
+  color: #98c379 !important;
+  border-color: rgba(152, 195, 121, 0.5) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. 代码折叠面板（renderCollapseCode 生成的结构）
+   -------------------------------------------------------------------------- */
+.collapse-panel-wrapper {
+  border: 1px solid rgba(31, 35, 40, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f6f8fa;
+}
+
+:where(.dark) .collapse-panel-wrapper {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: #21252b;
+}
+
+.collapse-header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #57606a;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.collapse-header:hover {
+  background: rgba(31, 35, 40, 0.04);
+  color: #24292f;
+}
+
+.collapse-header:focus-visible {
+  outline: 2px solid #316dca;
+  outline-offset: -2px;
+}
+
+:where(.dark) .collapse-header {
+  color: #9aa2b1;
+}
+
+:where(.dark) .collapse-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #d7dae0;
+}
+
+.collapse-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collapse-chevron {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  transition: transform 0.3s ease;
+}
+
+.collapse-panel-wrapper.is-expanded .collapse-chevron {
+  transform: rotate(180deg);
+}
+
+.collapse-panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+/* 面板内的代码块：去掉外框与阴影，与折叠头无缝拼接 */
+.collapse-panel .code-toolbar {
+  margin: 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(31, 35, 40, 0.12) !important;
+  border-radius: 0 0 12px 12px !important;
+  box-shadow: none !important;
+}
+
+:where(.dark) .collapse-panel .code-toolbar {
+  border-top-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. 代码区滚动条（仅在极端内容溢出时出现，保持纤细低调）
+   -------------------------------------------------------------------------- */
+pre.notion-code {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 149, 159, 0.4) transparent;
+}
+
+pre.notion-code::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+pre.notion-code::-webkit-scrollbar-thumb {
+  background: rgba(140, 149, 159, 0.4);
+  border-radius: 8px;
+}
+
+pre.notion-code::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   9. 打印时隐藏交互性装饰
+   -------------------------------------------------------------------------- */
+@media print {
+  div.code-toolbar > .toolbar,
+  .pre-mac {
+    display: none !important;
+  }
+}
