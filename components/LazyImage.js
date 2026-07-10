@@ -252,19 +252,12 @@ function getDefaultImageSizes(width) {
   return `${width}px`
 }
 
-/**
- * 根据窗口尺寸决定压缩图片宽度
- * @param {*} src
- * @param {*} maxWidth
- * @returns
- */
 export function adjustImgSize(src, maxWidth) {
   if (!src) {
     return null
   }
 
-  const targetWidth = getViewportTargetWidth(maxWidth)
-  return replaceImageWidthParam(src, targetWidth)
+  return replaceImageWidthParam(src, normalizeImageWidth(maxWidth))
 }
 
 function normalizeImageWidth(width) {
@@ -273,26 +266,6 @@ function normalizeImageWidth(width) {
     return numericWidth
   }
   return 1080
-}
-
-function getViewportTargetWidth(maxWidth) {
-  const maxImageWidth = normalizeImageWidth(maxWidth)
-
-  if (typeof window === 'undefined') {
-    return maxImageWidth
-  }
-
-  const documentWidth =
-    typeof document !== 'undefined'
-      ? Number(document.documentElement?.clientWidth)
-      : 0
-  const viewportWidth =
-    Number(window.innerWidth) ||
-    documentWidth ||
-    Number(window?.screen?.width) ||
-    maxImageWidth
-
-  return Math.min(Math.ceil(viewportWidth), maxImageWidth)
 }
 
 function replaceImageWidthParam(imageSrc, width) {
