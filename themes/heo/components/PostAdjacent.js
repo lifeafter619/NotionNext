@@ -34,7 +34,6 @@ function getPostTitle(post) {
 export default function PostAdjacent({ prev, next }) {
   const [isShow, setIsShow] = useState(false)
   const [isClosed, setIsClosed] = useState(false)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const dragStartRef = useRef({ x: 0, y: 0 })
   const positionRef = useRef({ x: 0, y: 0 })
@@ -42,13 +41,41 @@ export default function PostAdjacent({ prev, next }) {
 
   const router = useRouter()
   const { locale } = useGlobal()
+  const adjacentIdentity = [
+    prev?.id || prev?.href || prev?.slug || '',
+    next?.id || next?.href || next?.slug || ''
+  ].join(':')
+
+  const resetDragStyles = useCallback(
+    (updateState = true, element = nextPostRef.current) => {
+      if (element) {
+        element.style.transform = ''
+        element.style.transition = ''
+      }
+      positionRef.current = { x: 0, y: 0 }
+      if (updateState) {
+        setIsDragging(false)
+      }
+    },
+    []
+  )
 
   useEffect(() => {
     setIsShow(false)
     setIsClosed(false)
-    setPosition({ x: 0, y: 0 })
-    positionRef.current = { x: 0, y: 0 }
-  }, [router])
+    resetDragStyles()
+  }, [router.asPath, adjacentIdentity, resetDragStyles])
+
+  useEffect(() => {
+    const handleResize = () => resetDragStyles()
+    const desktopNavigation = nextPostRef.current
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      resetDragStyles(false, desktopNavigation)
+    }
+  }, [resetDragStyles])
 
   useEffect(() => {
     if (typeof IntersectionObserver !== 'function') {
@@ -163,8 +190,7 @@ export default function PostAdjacent({ prev, next }) {
     }
 
     const handleEnd = () => {
-      setIsDragging(false)
-      setPosition(positionRef.current)
+      resetDragStyles()
     }
 
     if (isDragging) {
@@ -174,6 +200,7 @@ export default function PostAdjacent({ prev, next }) {
         passive: false
       })
       document.addEventListener('touchend', handleEnd)
+      document.addEventListener('touchcancel', handleEnd)
     }
 
     return () => {
@@ -181,8 +208,9 @@ export default function PostAdjacent({ prev, next }) {
       document.removeEventListener('mouseup', handleEnd)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleEnd)
+      document.removeEventListener('touchcancel', handleEnd)
     }
-  }, [isDragging])
+  }, [isDragging, resetDragStyles])
 
   if ((!prev && !next) || !siteConfig('HEO_ARTICLE_ADJACENT', null, CONFIG)) {
     return <></>
@@ -194,7 +222,7 @@ export default function PostAdjacent({ prev, next }) {
   return (
     <div id='article-end'>
       {/* 移动端 */}
-      <section className='lg:hidden pt-8 text-gray-800 items-center text-xs md:text-sm flex flex-col m-1 '>
+      <section className='md:hidden pt-8 text-gray-800 items-center text-xs md:text-sm flex flex-col m-1 '>
         {prev && (
           <SmartLink
             href={getAdjacentHref(prev)}
