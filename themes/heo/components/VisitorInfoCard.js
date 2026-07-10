@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Card from './Card'
 import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/utils'
+import { siteConfig } from '@/lib/config'
+import CONFIG from '../config'
 
 const MINUTE_MS = 60000
 
@@ -28,7 +30,7 @@ function getMillisecondsUntilNextMinute() {
 
 /**
  * 访客信息卡片
- * 显示用户本地时间、IP属地、阅读时间和今日访客数
+ * 显示用户本地时间、IP属地、阅读时间和累计浏览量
  * @returns
  */
 export default function VisitorInfoCard() {
@@ -36,9 +38,11 @@ export default function VisitorInfoCard() {
     currentTime: '',
     greeting: ''
   })
-  const [location, setLocation] = useState('加载中...')
+  const [location, setLocation] = useState(null)
   const [readingTime, setReadingTime] = useState(0)
-  const [todayVisitors, setTodayVisitors] = useState('-')
+  const [pageViews, setPageViews] = useState('-')
+  const locationEnabled =
+    siteConfig('HEO_VISITOR_LOCATION_ENABLE', false, CONFIG) === true
   const parseStoredMinutes = value => {
     const minutes = parseInt(value || '0', 10)
     return Number.isFinite(minutes) && minutes >= 0 ? minutes : 0
@@ -118,7 +122,13 @@ export default function VisitorInfoCard() {
 
   // 获取用户IP属地
   useEffect(() => {
+    if (!locationEnabled) {
+      setLocation(null)
+      return
+    }
+
     let isActive = true
+    setLocation('加载中...')
     const fetchLocation = async () => {
       try {
         // 使用 vore.top API获取IP和地理位置
@@ -155,9 +165,9 @@ export default function VisitorInfoCard() {
     return () => {
       isActive = false
     }
-  }, [])
+  }, [locationEnabled])
 
-  // 获取今日访客数 (从busuanzi)
+  // 获取页面累计浏览量 (从busuanzi)
   // 延迟常量 - busuanzi需要一定时间加载
   const BUSUANZI_CHECK_DELAY_MS = 2000
 
@@ -166,7 +176,7 @@ export default function VisitorInfoCard() {
       // busuanzi会通过全局DOM更新，我们需要监听变化
       const pageViewElement = document.querySelector('.busuanzi_value_page_pv')
       if (pageViewElement && pageViewElement.textContent) {
-        setTodayVisitors(pageViewElement.textContent)
+        setPageViews(pageViewElement.textContent)
       }
     }
 
@@ -177,7 +187,7 @@ export default function VisitorInfoCard() {
     const observer = new MutationObserver(mutations => {
       mutations.forEach(mutation => {
         if (mutation.target.classList.contains('busuanzi_value_page_pv')) {
-          setTodayVisitors(mutation.target.textContent || '-')
+          setPageViews(mutation.target.textContent || '-')
         }
       })
     })
@@ -236,13 +246,17 @@ export default function VisitorInfoCard() {
         {/* IP属地 */}
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>📍</span>
-          <span className='text-sm'>
-            欢迎来自
-            <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
-              {location}
+          {locationEnabled ? (
+            <span className='text-sm'>
+              欢迎来自
+              <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
+                {location || '加载中...'}
+              </span>
+              的朋友来访~
             </span>
-            的朋友来访~
-          </span>
+          ) : (
+            <span className='text-sm'>欢迎您的来访~</span>
+          )}
         </div>
 
         {/* 阅读时间 */}
@@ -257,15 +271,15 @@ export default function VisitorInfoCard() {
           </span>
         </div>
 
-        {/* 今日访客数 */}
+        {/* 累计浏览量 */}
         <div className='flex items-center space-x-2 text-gray-700 dark:text-gray-300'>
           <span className='text-lg'>👥</span>
           <span className='text-sm'>
-            您是今天的第
+            本站内容已被浏览{' '}
             <span className='font-semibold text-indigo-600 dark:text-yellow-500'>
-              {todayVisitors}
+              {pageViews}
             </span>
-            位读者
+            {' '}次
           </span>
         </div>
       </div>

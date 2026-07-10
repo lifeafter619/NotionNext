@@ -4,6 +4,7 @@ const CONFIG = {
   HEO_ANIMATE_ON_SCROLL: false, // 是否开启滚动动画，关闭可降低设备消耗
 
   HEO_HOME_BANNER_ENABLE: true,
+  HEO_VISITOR_LOCATION_ENABLE: true, // 是否允许请求第三方服务获取访客 IP 属地
 
   HEO_SITE_CREATE_TIME: '2021-08-21', // 建站日期，用于计算网站运行的第几天
 
