@@ -11,11 +11,11 @@
 
 遵循此教程您将在[Vercel](https://tangly1024.com/article/vercel)上免费搭建一个[NotionNext](/user-guide/intro)博客。
 
-> **❓**
->
-> [NotionNext](/user-guide/intro)是一个完全开源免费的建站脚本，将您的[Notion](https://blog.tangly1024.com/article/notion)笔记实时渲染成博客。
->
-> Vercel是一个来自国外的在线脚本托管平台，对于个人使用，其免费版已经完全足够，因此您无需购买服务器即可搭建自己的网站。
+::: info 问题
+[NotionNext](/user-guide/intro)是一个完全开源免费的建站脚本，将您的[Notion](https://blog.tangly1024.com/article/notion)笔记实时渲染成博客。
+
+Vercel是一个来自国外的在线脚本托管平台，对于个人使用，其免费版已经完全足够，因此您无需购买服务器即可搭建自己的网站。
+:::
 
 站点效果预览→：[https://preview.tangly1024.com/](https://preview.tangly1024.com/) , 站点左下角图标点击可以体验主题切换：
 
@@ -93,9 +93,9 @@ https://player.bilibili.com/player.html?aid=913088616&bvid=BV1fM4y1L7Qi&cid=1203
 
 ## 二、复制源代码
 
-> **💡**
->
-> 注意，请不要使用qq邮箱等国内邮箱，**尽量使用hotmail或gmail等国际邮箱**，否则下一步登陆vercel后会提示账号被封禁。
+::: tip 提示
+注意，请不要使用qq邮箱等国内邮箱，**尽量使用hotmail或gmail等国际邮箱**，否则下一步登陆vercel后会提示账号被封禁。
+:::
 
 1. 请先注册并登陆[Github账号](https://github.com/)，
 
@@ -138,10 +138,11 @@ You can't perform that action at this time. You signed in with another tab or wi
 To deploy a new Project, import an existing Git Repository or get started with one of our Templates.
 
 1. 在代码仓库列表中选择导入**NotionNext**
-   ![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
-   > **💡**
-   >
-   > 注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
+![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
+::: tip 提示
+注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
+:::
+
 
 ### 配置页面ID并部署
 
@@ -163,21 +164,21 @@ To deploy a new Project, import an existing Git Repository or get started with o
 
 ## 注意事项
 
-> **💡**
->
-> NotionNext会实时抓取Notion笔记内容
-> (由于缓存和网络延迟，最多刷新两次页面即可看到同步结果)。
+::: tip 提示
+NotionNext会实时抓取Notion笔记内容
+(由于缓存和网络延迟，最多刷新两次页面即可看到同步结果)。
+:::
 
-> **⚠️**
->
-> **若您的站点始终无法同步笔记的数据**，请再次检查上面的步骤，或者干脆重来一遍：
->
-> 1. 在Notion中检查您的`NOTION_PAGE_ID` 格式是否正确、并已开起页面分享。
-> 2. Vercel后台环境变量中`NOTION_PAGE_ID`是否配置，并重新配置后尝试`Redeploy`。
->    如何检查Vercel后台环境变量配置：
->    ![Untitled](/legacy/27a7df016686481d.png)
->    如何重新部署
->    ![Untitled](/legacy/1f4cae5794779d16.png)
+::: warning 注意
+**若您的站点始终无法同步笔记的数据**，请再次检查上面的步骤，或者干脆重来一遍：
+1. 在Notion中检查您的`NOTION_PAGE_ID` 格式是否正确、并已开起页面分享。
+2. Vercel后台环境变量中`NOTION_PAGE_ID`是否配置，并重新配置后尝试`Redeploy`。
+如何检查Vercel后台环境变量配置：
+![Untitled](/legacy/27a7df016686481d.png)
+如何重新部署
+![Untitled](/legacy/1f4cae5794779d16.png)
+:::
+
 
 ## 自定义您的站点
 

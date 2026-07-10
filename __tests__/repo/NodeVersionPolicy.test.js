@@ -30,7 +30,7 @@ describe('Node version policy', () => {
   it('keeps CI on a Node version supported by the dependency tree', () => {
     const nvmrc = fs.readFileSync(path.join(root, '.nvmrc'), 'utf8')
 
-    expect(isAtLeast(nvmrc, '20.19.0')).toBe(true)
+    expect(isAtLeast(nvmrc, '22')).toBe(true)
   })
 
   it('documents the same minimum Node version in package engines', () => {
@@ -38,6 +38,6 @@ describe('Node version policy', () => {
       fs.readFileSync(path.join(root, 'package.json'), 'utf8')
     )
 
-    expect(packageJson.engines.node).toContain('>=20.19.0')
+    expect(packageJson.engines.node).toContain('>=22')
   })
 })

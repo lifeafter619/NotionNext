@@ -5,6 +5,16 @@ import { useEffect } from 'react'
 
 let aosInitialized = false
 
+const refreshAOS = () => {
+  if (!window.AOS) return
+
+  if (window.AOS.refreshHard) {
+    window.AOS.refreshHard()
+  } else if (window.AOS.refresh) {
+    window.AOS.refresh()
+  }
+}
+
 /**
  * 加载滚动动画
  * 改从外部CDN读取
@@ -51,6 +61,17 @@ export default function AOSAnimation() {
       cancelTask()
     }
   }, [router.asPath])
+
+  useEffect(() => {
+    const handleRouteChangeComplete = () => {
+      window.requestAnimationFrame(refreshAOS)
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChangeComplete)
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChangeComplete)
+    }
+  }, [router.events])
 
   return null
 }

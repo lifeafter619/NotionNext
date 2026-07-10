@@ -72,14 +72,28 @@
   **Full Changelog**: [https://github.com/tangly1024/NotionNext/compare/v3.15.0...v3.15.1](https://github.com/tangly1024/NotionNext/compare/v3.15.0...v3.15.1)
 
 ### v3.15.0(2023.6.7) 性能优化
-
-- What's Changed - 压缩用户头像，优化首页打开速度 - 社交分享按钮 by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1074](https://github.com/tangly1024/NotionNext/pull/1074) - 输入回车键提交文章密码 by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1085](https://github.com/tangly1024/NotionNext/pull/1085) - fix: wrapper style paddingTop by @kitety in [https://github.com/tangly1024/NotionNext/pull/1076](https://github.com/tangly1024/NotionNext/pull/1076) - Update blog.config.js by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1087](https://github.com/tangly1024/NotionNext/pull/1087) - loadExternalResource by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1095](https://github.com/tangly1024/NotionNext/pull/1095) - fix performance by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1098](https://github.com/tangly1024/NotionNext/pull/1098) - Fix/404 by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1099](https://github.com/tangly1024/NotionNext/pull/1099) - Fix hexo 跳转url by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1104](https://github.com/tangly1024/NotionNext/pull/1104) - Fix/website performance 缩减js文件体积 333kb → 100kb by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1109](https://github.com/tangly1024/NotionNext/pull/1109)
-  ![Untitled](/legacy/d1ae447c998c2feb.png) 1. 为减小打包体积，将页面Layout改为异步加载异步加载1. 重构部分组件加载，从第三方CDN外部加载
-- 待处理：此版本缺陷
-  > **💡** - 用户首次打开博客访问的第一个页面会闪一下
+  - What's Changed
+    - 压缩用户头像，优化首页打开速度
+    - 社交分享按钮 by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1074](https://github.com/tangly1024/NotionNext/pull/1074)
+    - 输入回车键提交文章密码 by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1085](https://github.com/tangly1024/NotionNext/pull/1085)
+    - fix: wrapper style paddingTop by @kitety in [https://github.com/tangly1024/NotionNext/pull/1076](https://github.com/tangly1024/NotionNext/pull/1076)
+    - Update blog.config.js by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1087](https://github.com/tangly1024/NotionNext/pull/1087)
+    - loadExternalResource by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1095](https://github.com/tangly1024/NotionNext/pull/1095)
+    - fix performance by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1098](https://github.com/tangly1024/NotionNext/pull/1098)
+    - Fix/404 by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1099](https://github.com/tangly1024/NotionNext/pull/1099)
+    - Fix hexo 跳转url by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1104](https://github.com/tangly1024/NotionNext/pull/1104)
+    - Fix/website performance 缩减js文件体积 333kb → 100kb by @tangly1024 in [https://github.com/tangly1024/NotionNext/pull/1109](https://github.com/tangly1024/NotionNext/pull/1109)
+![Untitled](/legacy/d1ae447c998c2feb.png)
+      1. 为减小打包体积，将页面Layout改为异步加载异步加载
+      1. 重构部分组件加载，从第三方CDN外部加载
+  - 待处理：此版本缺陷
+::: tip 提示
+- 用户首次打开博客访问的第一个页面会闪一下
 - 本地开发时首屏打开会弹一个红窗报错，问题不大、有空处理。
-  - New Contributors - @kitety made their first contribution in [https://github.com/tangly1024/NotionNext/pull/1076](https://github.com/tangly1024/NotionNext/pull/1076)
-    **Full Changelog**: [https://github.com/tangly1024/NotionNext/compare/v3.14.0...v3.15.0](https://github.com/tangly1024/NotionNext/compare/v3.14.0...v3.15.0)
+  - New Contributors
+    - @kitety made their first contribution in [https://github.com/tangly1024/NotionNext/pull/1076](https://github.com/tangly1024/NotionNext/pull/1076)
+**Full Changelog**: [https://github.com/tangly1024/NotionNext/compare/v3.14.0...v3.15.0](https://github.com/tangly1024/NotionNext/compare/v3.14.0...v3.15.0)
+:::
 
 </details>
 
@@ -240,15 +254,16 @@ IMG_URL_TYPE: process.env.NEXT_PUBLIC_IMG_TYPE || 'Amazon',
 ```
 
 ### 3.12.0 (2023.3.9)
-
-- 新增主题 simple
-- 修复next主题右侧丢失的分类和标签页面
-- 支持配置多级菜单（暂时仅支持simple主题）
-  > **👏** simple主题多级菜单的配置说明：
-
+  - 新增主题 simple
+  - 修复next主题右侧丢失的分类和标签页面
+  - 支持配置多级菜单（暂时仅支持simple主题）
+::: tip 提示
+simple主题多级菜单的配置说明：
 1.  blog.config.js 中开启 CUSTOM_MENU
 2.  在notion中添加 Menu类型的文章 如图：
-    > ![Untitled](/legacy/bb91197d312ebba0.png)
+
+![Untitled](/legacy/bb91197d312ebba0.png)
+:::
 
 </details>
 

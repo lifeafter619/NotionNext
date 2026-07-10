@@ -39,6 +39,34 @@ NotionNext会扫描/themes目录下的文件夹，并根据文件夹的名字生
 
 ## 如何修改默认主题？
 
+### 新手常见问题：固定 simple 主题并隐藏切换按钮
+
+如果你只是想固定使用 `simple` 主题，并且不想让页面显示“切换主题”按钮，不需要改代码。
+
+优先在 Notion Config 表里添加这三项：
+
+```text
+THEME=simple
+THEME_SWITCH=false
+WIDGET_PET_SWITCH_THEME=false
+```
+
+含义如下：
+
+- `THEME=simple`：固定使用 simple 主题。
+- `THEME_SWITCH=false`：隐藏页面上的主题切换按钮。
+- `WIDGET_PET_SWITCH_THEME=false`：防止点击宠物挂件时切换主题。
+
+如果你没有使用 Notion Config，而是在 Vercel 后台配置环境变量，则填写：
+
+```text
+NEXT_PUBLIC_THEME=simple
+NEXT_PUBLIC_THEME_SWITCH=false
+NEXT_PUBLIC_WIDGET_PET_SWITCH_THEME=false
+```
+
+改完后重新部署一次。如果重新部署后仍然不是 `simple`，请先检查 Notion Config 表里是否已经写了其它 `THEME`，因为 Notion Config 的优先级高于 Vercel 环境变量，也高于 GitHub 代码里的默认值。
+
 可以改变blog.config.js配置中`THEME`这一项的值；示例如下：
 
 - 方法1：改动github中的源代码：

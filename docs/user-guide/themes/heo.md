@@ -9,7 +9,9 @@
 
 ![Heo 主题预览](/images/themes-preview/heo.webp)
 
-> **💡** 感谢张洪大佬的设计 [https://blog.zhheo.com/](https://blog.zhheo.com/)
+::: tip 提示
+感谢张洪大佬的设计 [https://blog.zhheo.com/](https://blog.zhheo.com/)
+:::
 
 ## 主题说明
 

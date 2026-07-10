@@ -9,9 +9,9 @@
 
 ![Magazine 主题预览](/images/themes-preview/magzine.webp)
 
-> **💡**
->
-> 新主题，需要升级到V4.7.1之后的版本才能使用
+::: tip 提示
+新主题，需要升级到V4.7.1之后的版本才能使用
+:::
 
 ![桌面端](/legacy/e5089e1db6109fc0.png)
 ![移动端](/legacy/aa0f0b759ff50dec.png)
