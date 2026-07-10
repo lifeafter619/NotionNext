@@ -2243,11 +2243,11 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 
 /* 高亮/突出块 - Callout 现代化 */
 .notion-callout {
-  padding: 10px 2px;
+  padding: 0.85em 1em 0.85em 0.85em;
   display: flex;
   width: 100%;
   border-radius: var(--notion-rounded-radius);
-  align-items: center;
+  align-items: flex-start;
   box-sizing: border-box;
   margin: 12px 0;
   border: none;
@@ -2297,20 +2297,22 @@ figure.notion-asset-wrapper.notion-asset-wrapper-video > div {
 }
 
 .notion-callout .notion-page-icon {
-  align-self: center;
-  width: 24px;
-  height: 24px;
-  font-size: 1.2em;
-  line-height: 1.2em;
+  align-self: flex-start;
+  width: 1.15em;
+  height: 1.15em;
+  font-size: 1em;
+  line-height: 1;
   flex-shrink: 0;
-  margin: 0 10px 0 0;
+  margin: 0.25em 0.75em 0 0;
 }
 
 .notion-callout-text {
+  margin-left: 0;
   white-space: pre-wrap;
   word-break: break-word;
   overflow: hidden;
   flex: 1;
+  min-width: 0;
 }
 
 /* 加粗文字 - 增强效果 (更强的黄色高亮) */

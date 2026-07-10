@@ -1,0 +1,26 @@
+diff --git a/node_modules/react-notion-x/build/index.js b/node_modules/react-notion-x/build/index.js
+index 2a2ac26..a0c6c7d 100644
+--- a/node_modules/react-notion-x/build/index.js
++++ b/node_modules/react-notion-x/build/index.js
+@@ -2089,6 +2089,8 @@ var defaultComponents = {
+   // use the built-in callout rendering by default
+   Button: void 0,
+   // use the built-in button rendering by default
++  File: void 0,
++  // use the built-in file rendering by default
+   Code: dummyComponent("Code"),
+   Equation: dummyComponent("Equation"),
+   Collection: dummyComponent("Collection"),
+@@ -3092,8 +3094,10 @@ function Block(props) {
+     }
+     case "audio":
+       return /* @__PURE__ */ jsx32(Audio, { block, className: blockId });
+-    case "file":
+-      return /* @__PURE__ */ jsx32(File, { block, className: blockId });
++    case "file": {
++      const FileComponent = components.File || File;
++      return /* @__PURE__ */ jsx32(FileComponent, { block, className: blockId });
++    }
+     case "equation":
+       return /* @__PURE__ */ jsx32(
+         components.Equation,

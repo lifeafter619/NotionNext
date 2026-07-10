@@ -1,4 +1,5 @@
 import { Readable } from 'stream'
+import { pipeline } from 'stream/promises'
 
 const MAX_REDIRECTS = 3
 const ALLOWED_DOMAINS = [
@@ -106,11 +107,18 @@ export default async function handler(req, res) {
       // Check if body is a web stream (Next.js environment)
       const reader = response.body.getReader()
       const stream = createReadableStream(reader)
-      stream.pipe(res)
+      await pipeline(stream, res)
     } else {
       res.end()
     }
   } catch (error) {
+    if (res.headersSent || res.destroyed || res.writableEnded) {
+      console.error('Proxy stream error:', error)
+      if (!res.destroyed && typeof res.destroy === 'function') {
+        res.destroy(error)
+      }
+      return
+    }
     if (error.statusCode) {
       return res.status(error.statusCode).json({ error: error.message })
     }

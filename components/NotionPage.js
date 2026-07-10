@@ -8,6 +8,7 @@ import {
   restoreCompactBlockMapForRender
 } from '@/lib/db/notion/cleanBlockMapForClient'
 import NotionButton from '@/components/NotionButton'
+import NotionFile from '@/components/NotionFile'
 import {
   bindNotionHashScrollHandler,
   scrollToNotionHeading
@@ -245,6 +246,7 @@ const NotionPage = ({ post, className }) => {
             Collection,
             Embed: NotionEmbed,
             Equation,
+            File: NotionFile,
             Link: NotionLink,
             Modal,
             Pdf,

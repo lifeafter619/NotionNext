@@ -870,6 +870,16 @@ const setupLineNumberAlignment = prismThemeLoaded => {
     subtree: true
   })
 
+  // 8. 可访问性字号控件会切换 html class，代码折行高度随之变化，需要重新测量行号。
+  let rootStyleObserver = null
+  if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+    rootStyleObserver = new MutationObserver(schedule)
+    rootStyleObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    })
+  }
+
   return () => {
     disposed = true
     if (rafId) {
@@ -880,6 +890,9 @@ const setupLineNumberAlignment = prismThemeLoaded => {
       resizeObserver.disconnect()
     }
     detailsObserver.disconnect()
+    if (rootStyleObserver) {
+      rootStyleObserver.disconnect()
+    }
   }
 }
 

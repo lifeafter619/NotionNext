@@ -405,8 +405,10 @@ describe('fetchGlobalAllData cache sanitization', () => {
       category: 'Category',
       tags: ['tag'],
       pageIcon: 'N',
+      pageCover: '/nav-cover-original.jpg',
       pageCoverThumbnail: heavyCover,
       lastEditedDate: '2026-01-01T00:00:00.000Z',
+      lastEditedDay: '2026-01-01',
       publishDate: 1767225600000,
       ext: {
         rank: 10
@@ -481,9 +483,13 @@ describe('fetchGlobalAllData cache sanitization', () => {
     ])
     expect(result.latestPosts).toEqual([
       {
+        id: '22345678-1234-1234-1234-123456789abc',
         title: 'Nav Post',
         slug: 'article/nav-post',
-        href: '/article/nav-post'
+        href: '/article/nav-post',
+        pageCover: '/nav-cover-original.jpg',
+        pageCoverThumbnail: heavyCover,
+        lastEditedDay: '2026-01-01'
       }
     ])
     expect(result.recommendPosts).toEqual([
