@@ -102,7 +102,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             (isDefaultStyle && POST_TWO_COLS
               ? '2xl:p-4 2xl:h-48 2xl:w-full'
               : '') +
-            ` flex ${isDefaultStyle ? 'p-6' : 'p-3'} flex-col justify-between h-48 md:h-full w-full md:w-7/12`
+            ` flex ${isDefaultStyle ? 'p-6' : 'p-3'} flex-col justify-between h-48 md:h-full w-full${showPageCover ? ' md:w-7/12' : ''}`
           }>
           <header>
             {/* 分类 */}

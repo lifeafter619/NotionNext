@@ -83,6 +83,17 @@ describe('heo post cover fallback', () => {
     expect(coverWrapper).toHaveClass('md:flex-none')
   })
 
+  it('uses the full content width when no cover can be resolved', () => {
+    const { getByText } = render(
+      <BlogPostCard index={0} post={createPost()} siteInfo={{}} />
+    )
+
+    const content = getByText('Post title').closest('div.flex-col')
+
+    expect(content).toHaveClass('w-full')
+    expect(content).not.toHaveClass('md:w-7/12')
+  })
+
   it('does not mutate a post when BlogPostArchive uses the site default cover', () => {
     const post = createPost()
 
