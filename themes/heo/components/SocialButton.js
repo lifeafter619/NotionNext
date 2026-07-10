@@ -1,6 +1,5 @@
 import { siteConfig } from '@/lib/config'
-import { useRef } from 'react'
-import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
+import { resolveContactEmail } from '@/lib/plugins/mailEncrypt'
 
 /**
  * 社交联系方式按钮组
@@ -18,12 +17,11 @@ const SocialButton = () => {
   const ENABLE_RSS = siteConfig('ENABLE_RSS')
   const CONTACT_BILIBILI = siteConfig('CONTACT_BILIBILI')
   const CONTACT_YOUTUBE = siteConfig('CONTACT_YOUTUBE')
-
-  const emailIcon = useRef(null)
+  const contactEmail = resolveContactEmail(CONTACT_EMAIL)
 
   return (
-    <div className='w-full justify-center flex-wrap flex'>
-      <div className='space-x-12 text-3xl text-gray-600 dark:text-gray-300 '>
+    <div className='w-full flex justify-center'>
+      <div className='flex flex-wrap justify-center gap-x-6 gap-y-4 sm:gap-x-12 text-3xl text-gray-600 dark:text-gray-300'>
         {CONTACT_GITHUB && (
           <a
             target='_blank'
@@ -78,12 +76,11 @@ const SocialButton = () => {
             <i className='transform hover:scale-125 duration-150 fab fa-instagram dark:hover:text-indigo-400 hover:text-indigo-600' />
           </a>
         )}
-        {CONTACT_EMAIL && (
+        {contactEmail && (
           <a
-            onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
+            href={`mailto:${contactEmail}`}
             title='email'
-            className='cursor-pointer'
-            ref={emailIcon}>
+            className='cursor-pointer'>
             <i className='transform hover:scale-125 duration-150 fas fa-envelope dark:hover:text-indigo-400 hover:text-indigo-600' />
           </a>
         )}
