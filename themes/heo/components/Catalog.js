@@ -163,7 +163,9 @@ const Catalog = ({
   }
 
   return (
-    <div className='px-3 py-1 dark:text-white text-black flex flex-col h-full'>
+    <div
+      data-heo-catalog
+      className='px-3 py-1 dark:text-white text-black flex flex-col h-full'>
       <div className='w-full flex-shrink-0'>
         <i className='mr-1 fas fa-stream' />
         {locale.COMMON.TABLE_OF_CONTENTS}

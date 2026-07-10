@@ -312,16 +312,16 @@ describe('heo FloatTocButton fallback toc', () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(
       'beforeend',
-      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div><div id="sideRightLatest"></div></div></aside>'
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"><div data-heo-catalog></div></div><div id="sideRightLatest"></div></div></aside>'
     )
     window.IntersectionObserver = jest.fn(callback => ({
       observe: jest.fn(element => {
         callback([
           {
-            isIntersecting: element.id === 'sideRightSticky',
+            isIntersecting: element.hasAttribute('data-heo-catalog'),
             boundingClientRect: {
-              top: element.id === 'sideRightSticky' ? 120 : -120,
-              bottom: element.id === 'sideRightSticky' ? 720 : -80
+              top: element.hasAttribute('data-heo-catalog') ? 120 : -120,
+              bottom: element.hasAttribute('data-heo-catalog') ? 720 : -80
             }
           }
         ])
@@ -346,26 +346,30 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
   })
 
-  it('does not show the desktop floating toc while later sidebar blocks are still visible', async () => {
+  it('observes the catalog boundary instead of later sidebar blocks', async () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(
       'beforeend',
-      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div><div id="sideRightLatest"></div></div></aside>'
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"><div data-heo-catalog></div></div><div id="sideRightLatest"></div></div></aside>'
     )
-    window.IntersectionObserver = jest.fn(callback => ({
-      observe: jest.fn(element => {
+    const observe = jest.fn()
+    window.IntersectionObserver = jest.fn(callback => {
+      observe.mockImplementation(element => {
         callback([
           {
+            target: element,
             isIntersecting: false,
-            boundingClientRect: {
-              top: -240,
-              bottom: 320
-            }
+            boundingClientRect: element.hasAttribute('data-heo-catalog')
+              ? { top: -620, bottom: 40 }
+              : { top: -240, bottom: 320 }
           }
         ])
-      }),
-      disconnect: jest.fn()
-    }))
+      })
+      return {
+        observe,
+        disconnect: jest.fn()
+      }
+    })
 
     render(
       <FloatTocButton
@@ -381,7 +385,12 @@ describe('heo FloatTocButton fallback toc', () => {
       expect(window.IntersectionObserver).toHaveBeenCalled()
     })
 
-    expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
+    const catalog = document.querySelector('[data-heo-catalog]')
+    expect(observe).toHaveBeenCalledWith(catalog)
+    expect(observe).not.toHaveBeenCalledWith(
+      document.getElementById('sideRightLatest')
+    )
+    expect(document.getElementById('float-toc-button')).toBeInTheDocument()
   })
 
   it('shows the desktop floating toc when the whole sidebar area is above the viewport', async () => {
