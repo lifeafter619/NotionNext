@@ -14,12 +14,15 @@ export default function ReadingProgress({ title }) {
   function handleScroll() {
     const scrollHeight = document.documentElement.scrollHeight
     const clientHeight = document.documentElement.clientHeight
-    const scrollY = window.scrollY || window.pageYOffset
+    const scrollTop = window.scrollY || window.pageYOffset
+    const scrollableHeight = scrollHeight - clientHeight
+    const rawProgress =
+      scrollableHeight > 0 ? (scrollTop / scrollableHeight) * 100 : 0
+    const progress = Number.isFinite(rawProgress)
+      ? Math.min(100, Math.max(0, Math.floor(rawProgress)))
+      : 0
 
-    const percent = Math.floor(
-      (scrollY / (scrollHeight - clientHeight - 20)) * 100
-    )
-    setScrollPercentage(percent)
+    setScrollPercentage(progress)
   }
 
   // 监听滚动事件
@@ -60,10 +63,17 @@ export default function ReadingProgress({ title }) {
     setShowToast(false)
   }
 
+  const accessibleTitle = title || '阅读进度'
+
   return (
     <>
       <div
-        title={'阅读进度'}
+        title={accessibleTitle}
+        role='progressbar'
+        aria-label={accessibleTitle}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={scrollPercentage}
         onClick={handleScrollTop}
         className={`${scrollPercentage > 0 ? 'w-10 h-10 ' : 'w-0 h-0 opacity-0'} group cursor-pointer  hover:bg-black hover:bg-opacity-10 rounded-full flex justify-center items-center duration-200 transition-all`}>
         <ArrowSmallUp className={'w-5 h-5 hidden group-hover:block'} />
