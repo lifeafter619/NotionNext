@@ -1,10 +1,11 @@
 import { useRouter } from 'next/router'
-import { useImperativeHandle, useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useGlobal } from '@/lib/global'
 
 const SearchInput = props => {
   const { currentSearch, cRef, className } = props
   const [onLoading, setLoadingState] = useState(false)
+  const [searchText, setSearchText] = useState(currentSearch || '')
   const [showClean, setShowClean] = useState(Boolean(currentSearch))
   const router = useRouter()
   const searchInputRef = useRef()
@@ -12,6 +13,12 @@ const SearchInput = props => {
   // 输入法组合期锁定 — 用 useRef 持有，避免使用模块级变量在 SSR
   // 多请求 / 多实例间互相污染（之前 `let lock = false` 是模块作用域）。
   const lockRef = useRef(false)
+
+  useEffect(() => {
+    setSearchText(currentSearch || '')
+    setShowClean(Boolean(currentSearch))
+  }, [currentSearch])
+
   useImperativeHandle(cRef, () => {
     return {
       focus: () => {
@@ -44,15 +51,15 @@ const SearchInput = props => {
     }
   }
   const cleanSearch = () => {
-    searchInputRef.current.value = ''
+    setSearchText('')
     setShowClean(false)
   }
 
   const updateSearchKey = val => {
+    setSearchText(val)
     if (lockRef.current) {
       return
     }
-    searchInputRef.current.value = val
 
     if (val) {
       setShowClean(true)
@@ -83,7 +90,7 @@ const SearchInput = props => {
         onCompositionEnd={unLockSearchInput}
         placeholder={locale.SEARCH.ARTICLES}
         onChange={e => updateSearchKey(e.target.value)}
-        defaultValue={currentSearch || ''}
+        value={searchText}
       />
 
       <div

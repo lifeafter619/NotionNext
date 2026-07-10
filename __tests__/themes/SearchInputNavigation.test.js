@@ -104,3 +104,31 @@ describe.each([
     })
   })
 })
+
+describe('heo controlled SearchInput', () => {
+  it('synchronizes the textbox when currentSearch changes', () => {
+    const { container, rerender } = render(
+      <HeoSearchInput currentSearch='alpha' cRef={React.createRef()} />
+    )
+
+    expect(container.querySelector('input')).toHaveValue('alpha')
+
+    rerender(
+      <HeoSearchInput currentSearch='beta' cRef={React.createRef()} />
+    )
+
+    expect(container.querySelector('input')).toHaveValue('beta')
+  })
+
+  it('keeps composition text visible while the input is controlled', () => {
+    const { container } = render(
+      <HeoSearchInput currentSearch='' cRef={React.createRef()} />
+    )
+    const input = container.querySelector('input')
+
+    fireEvent.compositionStart(input)
+    fireEvent.change(input, { target: { value: '中' } })
+
+    expect(input).toHaveValue('中')
+  })
+})

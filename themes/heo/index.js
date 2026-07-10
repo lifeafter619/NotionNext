@@ -79,6 +79,8 @@ const LayoutBase = props => {
   const { fullWidth, isDarkMode } = useGlobal()
   const router = useRouter()
   const [showSideRight, setShowSideRight] = useState(false)
+  const showHomeBanner =
+    siteConfig('HEO_HOME_BANNER_ENABLE', true, CONFIG) !== false
 
   useEffect(() => {
     if (router.route === '/404') {
@@ -106,7 +108,7 @@ const LayoutBase = props => {
       {router.route === '/' ? (
         <>
           <NoticeBar />
-          <Hero {...props} />
+          {showHomeBanner && <Hero {...props} />}
         </>
       ) : null}
       {post ? <PostHeader {...props} isDarkMode={isDarkMode} /> : null}
