@@ -1,6 +1,6 @@
 import { loadExternalResource } from '@/lib/utils'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 /**
  * 加载进度条
@@ -8,39 +8,44 @@ import { useEffect, useState } from 'react'
  */
 export default function LoadingProgress() {
   const router = useRouter()
-  const [NProgress, setNProgress] = useState(null)
+  const nProgressRef = useRef(null)
   // 加载进度条
   useEffect(() => {
-    loadExternalResource(
-      'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.js',
-      'js'
-    ).then(() => {
-      if (window.NProgress) {
-        setNProgress(window.NProgress)
-        // 调速
-        window.NProgress.settings.minimun = 0.1
-        loadExternalResource(
-          'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.css',
-          'css'
-        )
-      }
-    })
+    let active = true
 
-    const handleStart = url => {
-      NProgress?.start()
+    const handleStart = () => {
+      nProgressRef.current?.start()
     }
 
     const handleStop = () => {
-      NProgress?.done()
+      nProgressRef.current?.done()
     }
 
     router.events.on('routeChangeStart', handleStart)
     router.events.on('routeChangeError', handleStop)
     router.events.on('routeChangeComplete', handleStop)
+
+    loadExternalResource(
+      'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.js',
+      'js'
+    ).then(() => {
+      if (!active || !window.NProgress) return
+
+      nProgressRef.current = window.NProgress
+      // 调速
+      window.NProgress.settings.minimum = 0.1
+      return loadExternalResource(
+        'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.css',
+        'css'
+      )
+    })
+
     return () => {
+      active = false
+      nProgressRef.current = null
       router.events.off('routeChangeStart', handleStart)
       router.events.off('routeChangeComplete', handleStop)
       router.events.off('routeChangeError', handleStop)
     }
-  }, [router])
+  }, [router.events])
 }
