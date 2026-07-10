@@ -915,7 +915,11 @@ const LayoutArchive = props => {
 const LayoutSlug = props => {
   const { post, lock, validPassword } = props
   const { locale, fullWidth } = useGlobal()
-  const [showRecommended, setShowRecommended] = useState(false)
+  const postIdentity = post?.id || post?.slug || post?.title
+  const [recommendedPostId, setRecommendedPostId] = useState(null)
+  const showRecommended = Boolean(
+    postIdentity && recommendedPostId === postIdentity
+  )
 
   // 从 blockMap 判断是否包含代码块（兼容压缩数据），随文章切换即时更新，
   // 避免客户端导航后沿用上一篇文章的宽度布局
@@ -960,16 +964,16 @@ const LayoutSlug = props => {
 
   // 监听滚动，延迟加载底部推荐和评论
   useEffect(() => {
-    if (!post) return
+    if (!postIdentity) return
     if (typeof IntersectionObserver !== 'function') {
-      setShowRecommended(true)
+      setRecommendedPostId(postIdentity)
       return
     }
 
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          setShowRecommended(true)
+          setRecommendedPostId(postIdentity)
           observer.disconnect()
         }
       },
@@ -980,7 +984,7 @@ const LayoutSlug = props => {
       observer.observe(target)
     }
     return () => observer.disconnect()
-  }, [post])
+  }, [postIdentity])
 
   useEffect(() => {
     // 404

@@ -4,12 +4,14 @@ import SearchHighlightNav from '@/components/SearchHighlightNav'
 const mockReplaceSearchResult = jest.fn()
 const mockRouterReplace = jest.fn()
 let mockRouterQuery = {}
+let mockRouterAsPath = '/post'
 let mockScrollIntoView = jest.fn()
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
     pathname: '/[prefix]/[slug]',
     query: mockRouterQuery,
+    asPath: mockRouterAsPath,
     replace: mockRouterReplace
   })
 }))
@@ -23,6 +25,7 @@ describe('SearchHighlightNav', () => {
   beforeEach(() => {
     jest.useFakeTimers()
     mockRouterQuery = { keyword: 'missing' }
+    mockRouterAsPath = '/post?keyword=missing'
     mockRouterReplace.mockClear()
     mockReplaceSearchResult.mockReset()
     mockReplaceSearchResult.mockResolvedValue()
@@ -97,6 +100,36 @@ describe('SearchHighlightNav', () => {
 
     expect(screen.getByText('内容定位')).toBeInTheDocument()
     expect(screen.getByText('1')).toBeInTheDocument()
+  })
+
+  it('clears a browser event keyword when navigating to another route', async () => {
+    mockRouterQuery = {}
+    mockRouterAsPath = '/post-a'
+    const { rerender } = render(<SearchHighlightNav />)
+
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('notionnext:article-search', {
+          detail: { keyword: 'transient' }
+        })
+      )
+    })
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+    expect(screen.getByText('内容定位')).toBeInTheDocument()
+
+    mockRouterAsPath = '/post-b'
+    rerender(<SearchHighlightNav />)
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.queryByText('内容定位')).not.toBeInTheDocument()
+    expect(document.querySelectorAll('.search-highlight')).toHaveLength(0)
   })
 
   it('cleans up drag listeners when unmounted during a drag', async () => {

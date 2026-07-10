@@ -15,7 +15,9 @@ import Artalk from './Artalk'
  */
 const Comment = ({ frontMatter, className }) => {
   const router = useRouter()
-  const [shouldLoad, setShouldLoad] = useState(false)
+  const articleId = frontMatter?.id
+  const [loadedCommentId, setLoadedCommentId] = useState(null)
+  const shouldLoad = Boolean(articleId && loadedCommentId === articleId)
   const commentRef = useRef(null)
 
   const COMMENT_ARTALK_SERVER = siteConfig('COMMENT_ARTALK_SERVER')
@@ -32,32 +34,31 @@ const Comment = ({ frontMatter, className }) => {
     siteConfig('COMMENT_NOTION_ENABLE') === 'true'
 
   useEffect(() => {
+    const target = commentRef.current
     // Check if the component is visible in the viewport
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          setShouldLoad(true)
+          setLoadedCommentId(articleId)
           observer.unobserve(entry.target)
         }
       })
     })
 
-    if (commentRef.current) {
-      observer.observe(commentRef.current)
+    if (target) {
+      observer.observe(target)
     }
 
     // 预加载：2秒后自动加载评论
     const timer = setTimeout(() => {
-      setShouldLoad(true)
+      setLoadedCommentId(articleId)
     }, 2000)
 
     return () => {
       clearTimeout(timer)
-      if (commentRef.current) {
-        observer.unobserve(commentRef.current)
-      }
+      observer.disconnect()
     }
-  }, [frontMatter])
+  }, [articleId])
 
   useEffect(() => {
     if (!isBrowser || !router.isReady) {
