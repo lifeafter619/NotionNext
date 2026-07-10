@@ -25,20 +25,22 @@ export default function LoadingProgress() {
     router.events.on('routeChangeError', handleStop)
     router.events.on('routeChangeComplete', handleStop)
 
-    loadExternalResource(
+    void loadExternalResource(
       'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.js',
       'js'
-    ).then(() => {
-      if (!active || !window.NProgress) return
+    )
+      .then(() => {
+        if (!active || !window.NProgress) return
 
-      nProgressRef.current = window.NProgress
-      // 调速
-      window.NProgress.settings.minimum = 0.1
-      return loadExternalResource(
-        'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.css',
-        'css'
-      )
-    })
+        nProgressRef.current = window.NProgress
+        // 调速
+        window.NProgress.settings.minimum = 0.1
+        return loadExternalResource(
+          'https://cdnjs.snrat.com/ajax/libs/nprogress/0.2.0/nprogress.min.css',
+          'css'
+        )
+      })
+      .catch(() => {})
 
     return () => {
       active = false

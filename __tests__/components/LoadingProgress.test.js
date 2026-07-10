@@ -157,4 +157,34 @@ describe('LoadingProgress', () => {
     expect(nProgress.done).not.toHaveBeenCalled()
     expect(errorSpy).not.toHaveBeenCalled()
   })
+
+  it('absorbs script resource failures', async () => {
+    loadExternalResource.mockRejectedValueOnce(new Error('script failed'))
+
+    await act(async () => {
+      render(<LoadingProgress />)
+      await Promise.resolve()
+    })
+
+    expect(loadExternalResource).toHaveBeenCalledTimes(1)
+  })
+
+  it('absorbs stylesheet resource failures', async () => {
+    window.NProgress = {
+      start: jest.fn(),
+      done: jest.fn(),
+      settings: {}
+    }
+    loadExternalResource
+      .mockResolvedValueOnce()
+      .mockRejectedValueOnce(new Error('stylesheet failed'))
+
+    await act(async () => {
+      render(<LoadingProgress />)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(loadExternalResource).toHaveBeenCalledTimes(2)
+  })
 })
