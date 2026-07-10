@@ -17,7 +17,7 @@ import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
@@ -257,9 +257,24 @@ function getFiniteNumber(value, fallback = 0) {
   return Number.isFinite(number) ? number : fallback
 }
 
+const shanghaiDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+})
+
 function formatDate(value) {
   const date = new Date(value)
-  return Number.isFinite(date.getTime()) ? date.toLocaleDateString() : ''
+  if (!Number.isFinite(date.getTime())) return ''
+
+  const dateParts = shanghaiDateFormatter
+    .formatToParts(date)
+    .reduce((parts, part) => {
+      if (part.type !== 'literal') parts[part.type] = part.value
+      return parts
+    }, {})
+  return `${dateParts.year}-${dateParts.month}-${dateParts.day}`
 }
 
 function getResultSnippet(results, keyword) {
@@ -417,6 +432,22 @@ const SearchSkeletonRows = () => (
   </div>
 )
 
+const SearchErrorState = ({ onRetry }) => (
+  <div
+    role='alert'
+    className='mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-center dark:border-red-500/30 dark:bg-red-500/10'>
+    <p className='font-medium text-red-700 dark:text-red-300'>
+      搜索服务暂时不可用，请稍后重试
+    </p>
+    <button
+      type='button'
+      onClick={onRetry}
+      className='mt-3 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400'>
+      重试
+    </button>
+  </div>
+)
+
 const LayoutSearch = props => {
   const { keyword, posts } = props
   const router = useRouter()
@@ -424,25 +455,30 @@ const LayoutSearch = props => {
   const { locale } = useGlobal()
   const [sortOrder, setSortOrder] = useState('relevance')
   const [viewMode, setViewMode] = useState('list') // list or grid
-  const [algoliaResults, setAlgoliaResults] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [algoliaState, setAlgoliaState] = useState({
+    status: 'idle',
+    hits: []
+  })
+  const [retryToken, setRetryToken] = useState(0)
+  const searchGenerationRef = useRef(0)
 
   // 检查是否开启 Algolia
   const enableAlgolia = isAlgoliaSearchEnabled(siteConfig)
 
   useEffect(() => {
     if (!enableAlgolia || !currentSearch) {
-      setAlgoliaResults(null)
-      setLoading(false)
+      searchGenerationRef.current += 1
+      setAlgoliaState({ status: 'idle', hits: [] })
       return
     }
 
-    let isActive = true
-    setLoading(true)
+    const generation = ++searchGenerationRef.current
+    const isCurrentGeneration = () => searchGenerationRef.current === generation
+    setAlgoliaState({ status: 'loading', hits: [] })
     const runAlgoliaSearch = async () => {
       try {
         const algoliaModule = await import('algoliasearch')
-        if (!isActive) return
+        if (!isCurrentGeneration()) return
 
         const createAlgoliaClient = algoliaModule.default || algoliaModule
         const client = createAlgoliaClient(
@@ -456,9 +492,10 @@ const LayoutSearch = props => {
           highlightPostTag: '</span>'
         })
 
-        if (!isActive) return
+        if (!isCurrentGeneration()) return
         const uniqueHitsMap = new Map()
-        hits.forEach(hit => {
+        const searchHits = Array.isArray(hits) ? hits : []
+        searchHits.forEach(hit => {
           const key = hit?.slug || hit?.objectID
           if (key && !uniqueHitsMap.has(key)) {
             uniqueHitsMap.set(key, hit)
@@ -475,35 +512,36 @@ const LayoutSearch = props => {
           href: getPostHref(hit),
           createdTime: hit.createdTime || hit.createdTimestamp
         }))
-        setAlgoliaResults(mappedHits)
+        setAlgoliaState({
+          status: mappedHits.length > 0 ? 'success' : 'empty',
+          hits: mappedHits
+        })
       } catch {
-        if (!isActive) return
-        setAlgoliaResults(null)
-      } finally {
-        if (isActive) setLoading(false)
+        if (!isCurrentGeneration()) return
+        setAlgoliaState({ status: 'error', hits: [] })
       }
     }
     runAlgoliaSearch()
 
     return () => {
-      isActive = false
+      if (isCurrentGeneration()) searchGenerationRef.current += 1
     }
-  }, [currentSearch, enableAlgolia])
+  }, [currentSearch, enableAlgolia, retryToken])
 
   // 优先使用 Algolia 结果，否则使用本地结果
-  const displayPosts = useMemo(
-    () => {
-      const sourcePosts = Array.isArray(algoliaResults)
-        ? algoliaResults
+  const displayPosts = useMemo(() => {
+    const hasSettledAlgoliaResults =
+      algoliaState.status === 'success' || algoliaState.status === 'empty'
+    const sourcePosts =
+      enableAlgolia && hasSettledAlgoliaResults
+        ? algoliaState.hits
         : Array.isArray(posts)
           ? posts
           : []
-      return sourcePosts.filter(
-        post => post?.slug || post?.objectID || post?.href
-      )
-    },
-    [algoliaResults, posts]
-  )
+    return sourcePosts.filter(
+      post => post?.slug || post?.objectID || post?.href
+    )
+  }, [algoliaState, enableAlgolia, posts])
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -556,6 +594,8 @@ const LayoutSearch = props => {
 
   const hasSearch = Boolean(currentSearch)
   const hasResults = sortedPosts.length > 0
+  const loading = enableAlgolia && algoliaState.status === 'loading'
+  const hasSearchError = enableAlgolia && algoliaState.status === 'error'
 
   return (
     <div id='search-page-wrapper' className='px-5 md:px-0'>
@@ -645,7 +685,13 @@ const LayoutSearch = props => {
 
         {loading && <SearchInlineStatus currentSearch={currentSearch} />}
 
-        {(loading || hasResults || (hasSearch && !hasResults)) && (
+        {hasSearchError && (
+          <SearchErrorState onRetry={() => setRetryToken(token => token + 1)} />
+        )}
+
+        {(loading ||
+          hasResults ||
+          (hasSearch && !hasResults && !hasSearchError)) && (
           <div id='posts-wrapper'>
             {hasResults ? (
               viewMode === 'list' ? (
@@ -867,9 +913,7 @@ const SearchResultGridCard = ({
                 {category}
               </span>
             )}
-            {createdDate && (
-              <span>{createdDate}</span>
-            )}
+            {createdDate && <span>{createdDate}</span>}
           </div>
         </div>
       </article>

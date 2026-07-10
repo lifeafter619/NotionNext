@@ -253,4 +253,164 @@ describe('heo search result jump navigation', () => {
     expect(screen.queryByText('Alpha post')).not.toBeInTheDocument()
     expect(screen.getByText('Beta post')).toBeInTheDocument()
   })
+
+  it('shows a retryable service error instead of the empty state when Algolia rejects', async () => {
+    isAlgoliaSearchEnabled.mockReturnValue(true)
+    const failedSearch = createDeferred()
+    const retrySearch = createDeferred()
+    const search = jest
+      .fn()
+      .mockImplementationOnce(() => failedSearch.promise)
+      .mockImplementationOnce(() => retrySearch.promise)
+    algoliasearch.mockReturnValue({
+      initIndex: () => ({ search })
+    })
+
+    render(
+      <LayoutSearch
+        keyword='service-error'
+        posts={[]}
+        postCount={0}
+        siteInfo={{}}
+        categoryOptions={[]}
+        tagOptions={[]}
+      />
+    )
+
+    await act(async () => {
+      failedSearch.reject(new Error('Algolia unavailable'))
+      await Promise.resolve()
+    })
+
+    expect(
+      await screen.findByText('搜索服务暂时不可用，请稍后重试')
+    ).toBeInTheDocument()
+    expect(screen.queryByText('未找到相关文章')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '重试' }))
+
+    await waitFor(() => {
+      expect(search).toHaveBeenCalledTimes(2)
+    })
+
+    await act(async () => {
+      retrySearch.resolve({
+        hits: [
+          {
+            objectID: 'recovered-id',
+            slug: 'recovered-post',
+            title: 'Recovered post',
+            summary: 'Recovered summary'
+          }
+        ]
+      })
+      await Promise.resolve()
+    })
+
+    expect(await screen.findByText('Recovered post')).toBeInTheDocument()
+  })
+
+  it('shows the normal empty state when Algolia succeeds without hits', async () => {
+    isAlgoliaSearchEnabled.mockReturnValue(true)
+    const search = jest.fn().mockResolvedValue({ hits: [] })
+    algoliasearch.mockReturnValue({
+      initIndex: () => ({ search })
+    })
+
+    render(
+      <LayoutSearch
+        keyword='nothing-here'
+        posts={[]}
+        postCount={0}
+        siteInfo={{}}
+        categoryOptions={[]}
+        tagOptions={[]}
+      />
+    )
+
+    expect(await screen.findByText('未找到相关文章')).toBeInTheDocument()
+    expect(
+      screen.queryByText('搜索服务暂时不可用，请稍后重试')
+    ).not.toBeInTheDocument()
+  })
+
+  it('formats Algolia result dates as YYYY-MM-DD in Asia/Shanghai', async () => {
+    isAlgoliaSearchEnabled.mockReturnValue(true)
+    const search = jest.fn().mockResolvedValue({
+      hits: [
+        {
+          objectID: 'date-id',
+          slug: 'date-post',
+          title: 'Shanghai date post',
+          summary: 'Date summary',
+          createdTime: '2026-07-09T16:30:00.000Z'
+        }
+      ]
+    })
+    algoliasearch.mockReturnValue({
+      initIndex: () => ({ search })
+    })
+
+    render(
+      <LayoutSearch
+        keyword='date'
+        posts={[]}
+        postCount={0}
+        siteInfo={{}}
+        categoryOptions={[]}
+        tagOptions={[]}
+      />
+    )
+
+    expect(await screen.findByText('Shanghai date post')).toBeInTheDocument()
+    expect(screen.getByText('2026-07-10')).toBeInTheDocument()
+  })
+
+  it('invalidates an in-flight Algolia response when the keyword is cleared', async () => {
+    isAlgoliaSearchEnabled.mockReturnValue(true)
+    const pendingSearch = createDeferred()
+    const search = jest.fn(() => pendingSearch.promise)
+    algoliasearch.mockReturnValue({
+      initIndex: () => ({ search })
+    })
+
+    const baseProps = {
+      posts: [],
+      postCount: 0,
+      siteInfo: {},
+      categoryOptions: [],
+      tagOptions: []
+    }
+    const { rerender } = render(
+      <LayoutSearch keyword='temporary' {...baseProps} />
+    )
+
+    await waitFor(() => {
+      expect(search).toHaveBeenCalledWith(
+        'temporary',
+        expect.objectContaining({
+          attributesToSnippet: ['content:150', 'summary:100']
+        })
+      )
+    })
+
+    rerender(<LayoutSearch keyword='' {...baseProps} />)
+
+    await act(async () => {
+      pendingSearch.resolve({
+        hits: [
+          {
+            objectID: 'late-id',
+            slug: 'late-post',
+            title: 'Late response post',
+            summary: 'Late summary'
+          }
+        ]
+      })
+      await Promise.resolve()
+    })
+
+    expect(screen.queryByText('Late response post')).not.toBeInTheDocument()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
 })
