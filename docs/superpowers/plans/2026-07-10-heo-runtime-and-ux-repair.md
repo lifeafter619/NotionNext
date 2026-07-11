@@ -849,7 +849,7 @@ git commit -m "fix: validate HEO styles in lint"
 - Modify if implementation discoveries require it: `docs/superpowers/specs/2026-07-10-heo-runtime-and-ux-repair-design.md`
 - Modify: `docs/superpowers/plans/2026-07-10-heo-runtime-and-ux-repair.md` (check completed boxes/evidence notes only)
 
-- [ ] **Step 1: Run all focused HEO/shared-runtime regressions**
+- [x] **Step 1: Run all focused HEO/shared-runtime regressions**
 
 Run:
 
@@ -859,13 +859,13 @@ npm test -- --runInBand __tests__/lib/configFalseyValues.test.js __tests__/compo
 
 Expected: PASS with no console errors, React warnings, open handles, or unhandled promises.
 
-- [ ] **Step 2: Run the full Jest suite**
+- [x] **Step 2: Run the full Jest suite**
 
 Run: `npm test -- --runInBand`
 
 Expected: PASS. If an unrelated baseline failure exists, rerun it independently and record exact evidence before deciding whether it is in scope.
 
-- [ ] **Step 3: Run static quality gates**
+- [x] **Step 3: Run static quality gates**
 
 Run:
 
@@ -877,13 +877,13 @@ git diff --check
 
 Expected: all commands exit 0.
 
-- [ ] **Step 4: Run the production build**
+- [x] **Step 4: Run the production build**
 
 Run: `npm run build`
 
 Expected: exit 0 and generate a production Next.js build without hydration, compile, lint, or type failures.
 
-- [ ] **Step 5: Verify the 26-item evidence matrix**
+- [x] **Step 5: Verify the 26-item evidence matrix**
 
 For each Spec ID 01-26, record one of:
 
@@ -892,7 +892,7 @@ For each Spec ID 01-26, record one of:
 
 Confirm specifically that `themes/heo/config.js` still contains `HEO_VISITOR_LOCATION_ENABLE: true` after all merges.
 
-- [ ] **Step 6: Review the final diff**
+- [x] **Step 6: Review the final diff**
 
 Run:
 
@@ -904,7 +904,7 @@ git log --oneline -20
 
 Inspect for unrelated edits, accidental visual redesign, changed public routes, removed stable classes, secrets, generated output, or dependency lockfile churn.
 
-- [ ] **Step 7: Commit verification documentation if changed**
+- [x] **Step 7: Commit verification documentation if changed**
 
 ```powershell
 git add -- docs/superpowers/specs/2026-07-10-heo-runtime-and-ux-repair-design.md docs/superpowers/plans/2026-07-10-heo-runtime-and-ux-repair.md
@@ -912,3 +912,55 @@ git commit -m "docs: record HEO repair verification"
 ```
 
 Skip this commit when no documentation changed.
+
+## Task 16 verification evidence (2026-07-11)
+
+### Fresh quality-gate results
+
+| Gate | Result |
+| --- | --- |
+| Focused HEO/shared-runtime Jest regressions | PASS: 30 suites, 168 tests |
+| Full Jest suite | PASS: 117 suites, 496 tests |
+| ESLint including `themes/` | PASS: exit 0, 0 errors, 268 pre-existing warnings |
+| TypeScript | PASS: `tsc --noEmit`, exit 0 |
+| Whitespace/error-marker check | PASS: `git diff --check`, exit 0 |
+| Next.js production build | PASS: compiled successfully and generated 60/60 static pages |
+
+The full-suite `FileLock` warnings are expected output from the existing timeout-fallback test. The build emitted only the existing multiple-lockfile workspace-root inference warning. Neither command reported a failure.
+
+### Spec 01-26 evidence matrix
+
+`RED -> fix -> GREEN` means the implementation session observed the intended failing regression before the production change and then observed it passing. Commit IDs identify the production/test change that preserves the evidence.
+
+| ID | Evidence classification | Regression evidence and implementation |
+| --- | --- | --- |
+| 01 | RED -> fix -> GREEN | `configFalseyValues.test.js`; preserve false/zero/empty values in `40e8655e` |
+| 02 | RED -> fix -> GREEN | `LazyImage.test.js`; stable SSR/hydration image sources in `2cb9216a` |
+| 03 | RED -> fix -> GREEN | `LoadingProgress.test.js`; delayed instance, cleanup, and rejection handling in `47ac7511` and `451e5906` |
+| 04 | RED -> fix -> GREEN | `SearchHighlightNav.test.js`; route-scoped event keyword in `aaa35d2c` |
+| 05 | RED -> fix -> GREEN | `CommentLifecycle.test.js`; current-article comment load state in `aaa35d2c` |
+| 06 | RED -> fix -> GREEN | `CommentLifecycle.test.js` and `LayoutResponsiveControls.test.js`; observer disconnect and article-scoped deferred content in `aaa35d2c` |
+| 07 | Existing proof retained | The pre-existing stale-Algolia-response regression passed before Task 6; source inspection confirmed the active-request cleanup guard, which `cb44f707` retained. The same suite now also covers keyword-clear invalidation. |
+| 08 | RED -> fix -> GREEN | `SearchResultJumpNavigation.test.js`; distinct retryable error and successful empty states in `cb44f707` |
+| 09 | RED -> fix -> GREEN | `SearchResultJumpNavigation.test.js`; deterministic Asia/Shanghai `YYYY-MM-DD` formatting in `cb44f707` |
+| 10 | RED -> fix -> GREEN | `SearchInputNavigation.test.js`; controlled HEO input including composition behavior in `839c886a` |
+| 11 | RED -> fix -> GREEN | `FloatTocButtonFallback.test.js`; observe `[data-heo-catalog]` rather than the whole sidebar in `379a2f94` |
+| 12 | RED -> fix -> GREEN | `PostAdjacent.test.js`; exclusive breakpoints and transform reset in `7edbe016` |
+| 13 | RED -> fix -> GREEN | `ReadingProgress.test.js`; finite 0..100 progress and accessible title in `2a9b327e` |
+| 14 | RED -> fix -> GREEN | `VisitorInfoCardStorage.test.js`; cumulative page-view copy in `2f4f6b50` |
+| 15 | RED -> fix -> GREEN | `VisitorInfoCardStorage.test.js`; opt-in location request and safe fallback in `2f4f6b50`; `themes/heo/config.js` still explicitly sets `HEO_VISITOR_LOCATION_ENABLE: true` |
+| 16 | RED -> fix -> GREEN | `ConfigRendering.test.js`; banner-off removes the Hero wrapper in `839c886a` |
+| 17 | RED -> fix -> GREEN | `ConfigRendering.test.js`; configured ICP filing link in `839c886a` |
+| 18 | RED -> fix -> GREEN | `PostCoverFallback.test.js`; coverless card content uses full width in `75b8dc3e` |
+| 19 | RED -> fix -> GREEN | `SwipeExternalOpen.test.js`; internal/external target handling and autoplay pause controls in `edb84246` |
+| 20 | RED -> fix -> GREEN | `SemanticMarkup.test.js`; single Link-owned Logo/404 interaction surfaces in `37b2efaf` |
+| 21 | RED -> fix -> GREEN | `SocialButton.test.js`; wrapping controls, valid `mailto:`, and no empty anchors in `edb84246` |
+| 22 | RED -> fix -> GREEN | `SemanticMarkup.test.js`; canonical `notion-article` remains unique via announcement/content ID separation in `37b2efaf` |
+| 23 | RED -> fix -> GREEN | `SemanticMarkup.test.js`; removed HEO Movie microdata while retaining SEO as sole BlogPosting owner in `37b2efaf` |
+| 24 | RED -> fix -> GREEN | `StyleValidity.test.js`; valid CSS comments in `e3199913` |
+| 25 | RED -> fix -> GREEN | `StyleValidity.test.js`; exact Tailwind token corrections in `e3199913` |
+| 26 | RED -> fix -> GREEN | `StyleValidity.test.js`; lint and lint-fix include `themes/` in `e3199913` |
+
+### Final diff review
+
+Reviewed `git diff --stat 32bb6613..HEAD`, `git diff --name-status 32bb6613..HEAD`, and the 20 most recent commits. The 47 changed files are limited to the approved plan/spec/handoff, regression tests, worktree ignore entry, shared runtime components, and HEO files. No dependency lockfile churn, generated output, suspected secrets, public-route changes, visual redesign, or removal of stable compatibility classes was found. The unrelated working-tree deletion of `PROJECT_COMPLETION_REPORT.md` was preserved and excluded from this task.
