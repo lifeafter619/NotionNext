@@ -227,7 +227,7 @@ export default function PostAdjacent({ prev, next }) {
           <SmartLink
             href={getAdjacentHref(prev)}
             passHref
-            className={`${next ? 'rounded-t-xl border-b-0' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200`}>
+            className={`${next ? 'rounded-t-xl border-b-0' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full min-h-[4.5rem] duration-200`}>
             <div className='flex justify-start items-center w-full'>上一篇</div>
             <div className='flex justify-center items-center text-lg font-bold'>
               {prevTitle}
@@ -238,7 +238,7 @@ export default function PostAdjacent({ prev, next }) {
           <SmartLink
             href={getAdjacentHref(next)}
             passHref
-            className={`${prev ? 'rounded-b-xl' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200`}>
+            className={`${prev ? 'rounded-b-xl' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full min-h-[4.5rem] duration-200`}>
             <div className='flex justify-start items-center w-full'>下一篇</div>
             <div className='flex justify-center items-center text-lg font-bold'>
               {nextTitle}
