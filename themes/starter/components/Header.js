@@ -1,5 +1,6 @@
 /* eslint-disable no-unreachable */
 import DashboardButton from '@/components/ui/dashboard/DashboardButton'
+import { SignedIn, SignedOut } from '@/components/ClerkAuthState'
 import { starterConfig } from '../config'
 import { useGlobal } from '@/lib/global'
 import { UserButton } from '@clerk/nextjs'
