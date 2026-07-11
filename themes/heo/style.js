@@ -10,7 +10,7 @@ const Style = () => {
         background-color: #f7f9fe;
       }
 
-      // 公告栏中的字体固定白色
+      /* 公告栏中的字体固定白色 */
       #theme-heo #announcement-content .notion {
         color: white;
       }
@@ -73,7 +73,7 @@ const Style = () => {
         box-sizing: border-box;
       }
 
-      // 标签滚动动画
+      /* 标签滚动动画 */
       .tags-group-wrapper {
         animation: rowup 60s linear infinite;
         will-change: transform;

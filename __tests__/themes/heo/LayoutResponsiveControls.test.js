@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 
 let mockFullWidth = true
 let mockAlgoliaModuleLoadCount = 0
@@ -35,9 +35,12 @@ jest.mock('next/dynamic', () => {
   return loader => {
     function DynamicComponent(props) {
       const source = loader.toString()
-      if (!source.includes('SideRight')) {
-        return null
+      if (source.includes('PostRecommend')) {
+        const mod = require('@/themes/heo/components/PostRecommend')
+        const LoadedComponent = mod.default || mod
+        return React.createElement(LoadedComponent, props)
       }
+      if (!source.includes('SideRight')) return null
       const mod = require('@/themes/heo/components/SideRight')
       const LoadedComponent = mod.default || mod
       return React.createElement(LoadedComponent, props)
@@ -143,7 +146,11 @@ jest.mock('@/themes/heo/components/PostLock', () => ({
 }))
 jest.mock('@/themes/heo/components/PostAdjacent', () => () => null)
 jest.mock('@/themes/heo/components/PostCopyright', () => () => null)
-jest.mock('@/themes/heo/components/PostRecommend', () => () => null)
+jest.mock('@/themes/heo/components/PostRecommend', () => {
+  return function MockPostRecommend() {
+    return <div data-testid='heo-post-recommend'>recommendations</div>
+  }
+})
 jest.mock('@/themes/heo/components/SearchNav', () => () => null)
 jest.mock('@/themes/heo/components/SideRight', () => {
   mockSideRightModuleLoadCount += 1
@@ -271,5 +278,37 @@ describe('heo responsive article controls', () => {
     expect(mockSideRightModuleLoadCount).toBe(0)
     expect(mockSideRightRenderCount).toBe(0)
     expect(screen.queryByTestId('heo-side-right')).not.toBeInTheDocument()
+  })
+
+  it('defers bottom content again when the article changes', () => {
+    const OriginalIntersectionObserver = global.IntersectionObserver
+    let observerCallback
+    global.IntersectionObserver = class MockIntersectionObserver {
+      constructor(callback) {
+        observerCallback = callback
+      }
+      observe() {}
+      disconnect() {}
+    }
+
+    try {
+      const { LayoutSlug } = require('@/themes/heo')
+      const postA = { ...post, id: 'post-a', type: 'Post' }
+      const postB = { ...postA, id: 'post-b', title: 'Second article' }
+      const { rerender } = render(<LayoutSlug post={postA} />)
+
+      act(() => {
+        observerCallback([{ isIntersecting: true }])
+      })
+      expect(screen.getByTestId('heo-post-recommend')).toBeInTheDocument()
+
+      rerender(<LayoutSlug post={postB} />)
+
+      expect(
+        screen.queryByTestId('heo-post-recommend')
+      ).not.toBeInTheDocument()
+    } finally {
+      global.IntersectionObserver = OriginalIntersectionObserver
+    }
   })
 })

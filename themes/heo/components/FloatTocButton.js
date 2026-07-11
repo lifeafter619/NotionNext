@@ -383,23 +383,33 @@ export default function FloatTocButton(props) {
     }
 
     let observer = null
+    let sidebarMutationObserver = null
+    let observedTarget = null
     let retryTimer = null
     let retryCount = 0
 
     const observeSidebarCatalog = () => {
       const sideRight = document.getElementById('sideRight')
+      const sideRightSticky = document.getElementById('sideRightSticky')
       const sideRightFloatingBoundary =
-        document.getElementById('sideRightSticky') ||
+        sideRightSticky?.querySelector('[data-heo-catalog]') ||
         document.getElementById('sideRightCatalog')
 
       if (sideRight && window.getComputedStyle(sideRight).display === 'none') {
+        observer?.disconnect()
+        observedTarget = null
         setShowOnDesktop(true)
         return
       }
 
       if (!sideRightFloatingBoundary) {
+        observer?.disconnect()
+        observedTarget = null
         setShowOnDesktop(retryCount >= 6)
         retryCount += 1
+        if (retryTimer) {
+          window.clearTimeout(retryTimer)
+        }
         retryTimer = window.setTimeout(
           observeSidebarCatalog,
           retryCount > 30 ? 500 : 100
@@ -407,10 +417,17 @@ export default function FloatTocButton(props) {
         return
       }
 
+      if (observedTarget === sideRightFloatingBoundary) {
+        return
+      }
+
+      observer?.disconnect()
+      observedTarget = sideRightFloatingBoundary
       setShowOnDesktop(false)
       observer = new IntersectionObserver(
         entries => {
           entries.forEach(entry => {
+            if (entry.target && entry.target !== observedTarget) return
             const entryBottom = entry.boundingClientRect?.bottom || 0
             setShowOnDesktop(!entry.isIntersecting && entryBottom <= 80)
           })
@@ -422,12 +439,21 @@ export default function FloatTocButton(props) {
       )
 
       observer.observe(sideRightFloatingBoundary)
+
+      if (!sidebarMutationObserver && typeof MutationObserver === 'function') {
+        sidebarMutationObserver = new MutationObserver(observeSidebarCatalog)
+        sidebarMutationObserver.observe(sideRight || document.body, {
+          childList: true,
+          subtree: true
+        })
+      }
     }
 
     observeSidebarCatalog()
 
     return () => {
       observer?.disconnect()
+      sidebarMutationObserver?.disconnect()
       if (retryTimer) {
         window.clearTimeout(retryTimer)
       }

@@ -48,7 +48,7 @@ const Footer = () => {
             <>
               <i className='fas fa-shield-alt' />{' '}
               <a
-                href='https://icp.gov.moe/?keyword=66619.eu.org'
+                href={BEI_AN_LINK || 'https://beian.miit.gov.cn/'}
                 className='mr-2'>
                 {siteConfig('BEI_AN')}
               </a>

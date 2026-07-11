@@ -30,7 +30,7 @@ const ReadingPositionSaver = dynamic(
  * @param {*} param0
  * @returns
  */
-const NotionPage = ({ post, className }) => {
+const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
   // 是否关闭数据库和画册的点击跳转
   const POST_DISABLE_GALLERY_CLICK = siteConfig('POST_DISABLE_GALLERY_CLICK')
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
@@ -67,8 +67,9 @@ const NotionPage = ({ post, className }) => {
         // 我们这里加一个简单的过滤：排除 sidebar 内的图片。
         // 假设侧栏 id 是 sideRight 或 side-bar。
 
+        const article = document.getElementById(contentId)
         let allImages = Array.from(
-          document.querySelectorAll('#notion-article .notion-asset-wrapper img')
+          article?.querySelectorAll('.notion-asset-wrapper img') || []
         )
 
         // 过滤掉位于侧栏中的图片 (如果侧栏不幸被包含在 #notion-article 中，或者有重叠)
@@ -133,7 +134,7 @@ const NotionPage = ({ post, className }) => {
         openViewer(imageList, currentIndex)
       }
     },
-    [openViewer]
+    [contentId, openViewer]
   )
 
   // 页面首次打开时执行的勾子
@@ -149,7 +150,7 @@ const NotionPage = ({ post, className }) => {
   useEffect(() => {
     if (!isBrowser) return
 
-    const article = document.getElementById('notion-article')
+    const article = document.getElementById(contentId)
     if (!article) return
 
     const handleArticleImageError = event => {
@@ -163,7 +164,7 @@ const NotionPage = ({ post, className }) => {
     return () => {
       article.removeEventListener('error', handleArticleImageError, true)
     }
-  }, [post])
+  }, [contentId, post])
 
   // 页面文章发生变化时会执行的勾子
   useEffect(() => {
@@ -233,7 +234,7 @@ const NotionPage = ({ post, className }) => {
   return (
     <>
       <div
-        id='notion-article'
+        id={contentId}
         className={`mx-auto overflow-hidden ${className || ''}`}
         onClick={handleImageClick}>
         <NotionRenderer

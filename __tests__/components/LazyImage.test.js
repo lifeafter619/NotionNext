@@ -1,4 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act } from 'react'
+import { hydrateRoot } from 'react-dom/client'
+import { renderToString } from 'react-dom/server.node'
 import LazyImage from '@/components/LazyImage'
 
 describe('LazyImage Component', () => {
@@ -82,30 +85,17 @@ describe('LazyImage Component', () => {
   })
 
   it('uses the optimized image URL immediately for priority images', () => {
-    const originalInnerWidth = window.innerWidth
-    Object.defineProperty(window, 'innerWidth', {
-      configurable: true,
-      value: 640
-    })
+    render(
+      <LazyImage
+        {...defaultProps}
+        src='https://images.unsplash.com/photo.jpg?width=1080&q=80'
+        priority
+      />
+    )
 
-    try {
-      render(
-        <LazyImage
-          {...defaultProps}
-          src='https://images.unsplash.com/photo.jpg?width=1080&q=80'
-          priority
-        />
-      )
-
-      const image = screen.getByAltText('Test image')
-      expect(image.getAttribute('src')).toContain('width=640')
-      expect(image.getAttribute('src')).not.toContain('data:image/gif')
-    } finally {
-      Object.defineProperty(window, 'innerWidth', {
-        configurable: true,
-        value: originalInnerWidth
-      })
-    }
+    const image = screen.getByAltText('Test image')
+    expect(image.getAttribute('src')).toContain('width=')
+    expect(image.getAttribute('src')).not.toContain('data:image/gif')
   })
 
   it('does not allocate a JavaScript preloader for priority images', () => {
@@ -296,55 +286,111 @@ describe('LazyImage Component', () => {
     }
   })
 
-  it('uses viewport width instead of physical screen width for optimized image URLs', async () => {
-    const OriginalImage = global.Image
-    const originalInnerWidth = window.innerWidth
-    const originalScreenWidth = window.screen.width
+  it('keeps optimized sources stable from server render through narrow viewport hydration', async () => {
+    const originalWindowDescriptor = Object.getOwnPropertyDescriptor(
+      global,
+      'window'
+    )
+    const originalDocumentDescriptor = Object.getOwnPropertyDescriptor(
+      global,
+      'document'
+    )
+    const originalInnerWidthDescriptor = Object.getOwnPropertyDescriptor(
+      window,
+      'innerWidth'
+    )
+    const originalScreenWidthDescriptor = Object.getOwnPropertyDescriptor(
+      window.screen,
+      'width'
+    )
+    const props = {
+      ...defaultProps,
+      src: 'https://images.unsplash.com/photo.jpg?width=1080&q=80',
+      width: 1080,
+      priority: true
+    }
+    let serverMarkup
+    let container
+    let root
+    let consoleErrorSpy
+    let consoleWarnSpy
 
-    Object.defineProperty(window, 'innerWidth', {
-      configurable: true,
-      value: 480
-    })
-    Object.defineProperty(window.screen, 'width', {
-      configurable: true,
-      value: 1920
-    })
-
-    global.Image = class MockImage {
-      constructor() {
-        this.onload = null
-      }
-
-      set src(_val) {
-        queueMicrotask(() => {
-          if (this.onload) this.onload()
-        })
-      }
+    try {
+      Reflect.deleteProperty(global, 'window')
+      Reflect.deleteProperty(global, 'document')
+      serverMarkup = renderToString(<LazyImage {...props} />)
+    } finally {
+      Object.defineProperty(global, 'window', originalWindowDescriptor)
+      Object.defineProperty(global, 'document', originalDocumentDescriptor)
     }
 
     try {
-      render(
-        <LazyImage
-          {...defaultProps}
-          src='https://images.unsplash.com/photo.jpg?width=1080&q=80'
-          priority
-        />
-      )
-
-      const image = screen.getByAltText('Test image')
-      await waitFor(() => {
-        expect(image.getAttribute('src')).toContain('width=480')
-      })
-    } finally {
-      global.Image = OriginalImage
       Object.defineProperty(window, 'innerWidth', {
         configurable: true,
-        value: originalInnerWidth
+        value: 480
       })
       Object.defineProperty(window.screen, 'width', {
         configurable: true,
-        value: originalScreenWidth
+        value: 1920
       })
+
+      container = document.createElement('div')
+      container.innerHTML = serverMarkup
+      document.body.appendChild(container)
+
+      const serverImage = container.querySelector('img')
+      expect(serverImage.getAttribute('src')).toContain('width=1080')
+
+      consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+      await act(async () => {
+        root = hydrateRoot(container, <LazyImage {...props} />)
+      })
+
+      const hydratedImage = container.querySelector('img')
+      expect(hydratedImage.getAttribute('src')).toContain('width=1080')
+      expect(hydratedImage.getAttribute('srcset')).toContain('320w')
+      expect(hydratedImage.getAttribute('srcset')).toContain('480w')
+
+      const hydrationWarnings = [
+        ...consoleErrorSpy.mock.calls,
+        ...consoleWarnSpy.mock.calls
+      ].filter(call =>
+        /hydration|did not match|server html|prop [`']?src/i.test(
+          call.map(String).join(' ')
+        )
+      )
+      expect(hydrationWarnings).toEqual([])
+    } finally {
+      if (root) {
+        await act(async () => {
+          root.unmount()
+        })
+      }
+      container?.remove()
+      consoleErrorSpy?.mockRestore()
+      consoleWarnSpy?.mockRestore()
+      if (originalInnerWidthDescriptor) {
+        Object.defineProperty(
+          window,
+          'innerWidth',
+          originalInnerWidthDescriptor
+        )
+      } else {
+        Reflect.deleteProperty(window, 'innerWidth')
+      }
+      if (originalScreenWidthDescriptor) {
+        Object.defineProperty(
+          window.screen,
+          'width',
+          originalScreenWidthDescriptor
+        )
+      } else {
+        Reflect.deleteProperty(window.screen, 'width')
+      }
     }
   })
 })

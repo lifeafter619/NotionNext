@@ -65,6 +65,10 @@ export default function SearchHighlightNav() {
     }
   }, [])
 
+  useEffect(() => {
+    setEventKeyword('')
+  }, [router.asPath])
+
   // 跳转到指定匹配
   const scrollToMatch = useCallback(index => {
     const highlights = document.querySelectorAll('.search-highlight')

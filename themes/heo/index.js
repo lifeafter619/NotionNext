@@ -17,7 +17,7 @@ import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
@@ -79,6 +79,8 @@ const LayoutBase = props => {
   const { fullWidth, isDarkMode } = useGlobal()
   const router = useRouter()
   const [showSideRight, setShowSideRight] = useState(false)
+  const showHomeBanner =
+    siteConfig('HEO_HOME_BANNER_ENABLE', true, CONFIG) !== false
 
   useEffect(() => {
     if (router.route === '/404') {
@@ -106,7 +108,7 @@ const LayoutBase = props => {
       {router.route === '/' ? (
         <>
           <NoticeBar />
-          <Hero {...props} />
+          {showHomeBanner && <Hero {...props} />}
         </>
       ) : null}
       {post ? <PostHeader {...props} isDarkMode={isDarkMode} /> : null}
@@ -257,9 +259,24 @@ function getFiniteNumber(value, fallback = 0) {
   return Number.isFinite(number) ? number : fallback
 }
 
+const shanghaiDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit'
+})
+
 function formatDate(value) {
   const date = new Date(value)
-  return Number.isFinite(date.getTime()) ? date.toLocaleDateString() : ''
+  if (!Number.isFinite(date.getTime())) return ''
+
+  const dateParts = shanghaiDateFormatter
+    .formatToParts(date)
+    .reduce((parts, part) => {
+      if (part.type !== 'literal') parts[part.type] = part.value
+      return parts
+    }, {})
+  return `${dateParts.year}-${dateParts.month}-${dateParts.day}`
 }
 
 function getResultSnippet(results, keyword) {
@@ -417,6 +434,22 @@ const SearchSkeletonRows = () => (
   </div>
 )
 
+const SearchErrorState = ({ onRetry }) => (
+  <div
+    role='alert'
+    className='mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-center dark:border-red-500/30 dark:bg-red-500/10'>
+    <p className='font-medium text-red-700 dark:text-red-300'>
+      搜索服务暂时不可用，请稍后重试
+    </p>
+    <button
+      type='button'
+      onClick={onRetry}
+      className='mt-3 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400'>
+      重试
+    </button>
+  </div>
+)
+
 const LayoutSearch = props => {
   const { keyword, posts } = props
   const router = useRouter()
@@ -424,25 +457,30 @@ const LayoutSearch = props => {
   const { locale } = useGlobal()
   const [sortOrder, setSortOrder] = useState('relevance')
   const [viewMode, setViewMode] = useState('list') // list or grid
-  const [algoliaResults, setAlgoliaResults] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [algoliaState, setAlgoliaState] = useState({
+    status: 'idle',
+    hits: []
+  })
+  const [retryToken, setRetryToken] = useState(0)
+  const searchGenerationRef = useRef(0)
 
   // 检查是否开启 Algolia
   const enableAlgolia = isAlgoliaSearchEnabled(siteConfig)
 
   useEffect(() => {
     if (!enableAlgolia || !currentSearch) {
-      setAlgoliaResults(null)
-      setLoading(false)
+      searchGenerationRef.current += 1
+      setAlgoliaState({ status: 'idle', hits: [] })
       return
     }
 
-    let isActive = true
-    setLoading(true)
+    const generation = ++searchGenerationRef.current
+    const isCurrentGeneration = () => searchGenerationRef.current === generation
+    setAlgoliaState({ status: 'loading', hits: [] })
     const runAlgoliaSearch = async () => {
       try {
         const algoliaModule = await import('algoliasearch')
-        if (!isActive) return
+        if (!isCurrentGeneration()) return
 
         const createAlgoliaClient = algoliaModule.default || algoliaModule
         const client = createAlgoliaClient(
@@ -456,9 +494,10 @@ const LayoutSearch = props => {
           highlightPostTag: '</span>'
         })
 
-        if (!isActive) return
+        if (!isCurrentGeneration()) return
         const uniqueHitsMap = new Map()
-        hits.forEach(hit => {
+        const searchHits = Array.isArray(hits) ? hits : []
+        searchHits.forEach(hit => {
           const key = hit?.slug || hit?.objectID
           if (key && !uniqueHitsMap.has(key)) {
             uniqueHitsMap.set(key, hit)
@@ -475,35 +514,38 @@ const LayoutSearch = props => {
           href: getPostHref(hit),
           createdTime: hit.createdTime || hit.createdTimestamp
         }))
-        setAlgoliaResults(mappedHits)
+        setAlgoliaState({
+          status: mappedHits.length > 0 ? 'success' : 'empty',
+          hits: mappedHits
+        })
       } catch {
-        if (!isActive) return
-        setAlgoliaResults(null)
-      } finally {
-        if (isActive) setLoading(false)
+        if (!isCurrentGeneration()) return
+        setAlgoliaState({ status: 'error', hits: [] })
       }
     }
     runAlgoliaSearch()
 
     return () => {
-      isActive = false
+      if (isCurrentGeneration()) searchGenerationRef.current += 1
     }
-  }, [currentSearch, enableAlgolia])
+  }, [currentSearch, enableAlgolia, retryToken])
 
   // 优先使用 Algolia 结果，否则使用本地结果
-  const displayPosts = useMemo(
-    () => {
-      const sourcePosts = Array.isArray(algoliaResults)
-        ? algoliaResults
+  const displayPosts = useMemo(() => {
+    const hasSettledAlgoliaResults =
+      algoliaState.status === 'success' || algoliaState.status === 'empty'
+    const sourcePosts =
+      enableAlgolia && hasSettledAlgoliaResults
+        ? algoliaState.hits
         : Array.isArray(posts)
           ? posts
           : []
-      return sourcePosts.filter(
-        post => post?.slug || post?.objectID || post?.href
-      )
-    },
-    [algoliaResults, posts]
-  )
+    return sourcePosts.filter(
+      post => post?.slug || post?.objectID || post?.href
+    )
+  }, [algoliaState, enableAlgolia, posts])
+  const usingAlgoliaResults =
+    enableAlgolia && algoliaState.status === 'success'
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -520,7 +562,7 @@ const LayoutSearch = props => {
 
   // 本地搜索高亮 (Algolia 自带高亮，不需要这个)
   useEffect(() => {
-    if (!currentSearch || enableAlgolia || !isBrowser) {
+    if (!currentSearch || usingAlgoliaResults || !isBrowser) {
       return
     }
 
@@ -552,10 +594,12 @@ const LayoutSearch = props => {
       window.clearTimeout(timeoutId)
     }
     // 切换视图（list/grid）或排序会重建/重排结果卡片，需要重新执行关键词高亮
-  }, [currentSearch, enableAlgolia, sortedPosts, viewMode])
+  }, [currentSearch, sortedPosts, usingAlgoliaResults, viewMode])
 
   const hasSearch = Boolean(currentSearch)
   const hasResults = sortedPosts.length > 0
+  const loading = enableAlgolia && algoliaState.status === 'loading'
+  const hasSearchError = enableAlgolia && algoliaState.status === 'error'
 
   return (
     <div id='search-page-wrapper' className='px-5 md:px-0'>
@@ -645,7 +689,13 @@ const LayoutSearch = props => {
 
         {loading && <SearchInlineStatus currentSearch={currentSearch} />}
 
-        {(loading || hasResults || (hasSearch && !hasResults)) && (
+        {hasSearchError && (
+          <SearchErrorState onRetry={() => setRetryToken(token => token + 1)} />
+        )}
+
+        {(loading ||
+          hasResults ||
+          (hasSearch && !hasResults && !hasSearchError)) && (
           <div id='posts-wrapper'>
             {hasResults ? (
               viewMode === 'list' ? (
@@ -657,7 +707,7 @@ const LayoutSearch = props => {
                       index={index}
                       currentSearch={currentSearch}
                       siteInfo={props.siteInfo}
-                      isAlgolia={!!enableAlgolia}
+                      isAlgolia={usingAlgoliaResults}
                     />
                   ))}
                 </div>
@@ -670,7 +720,7 @@ const LayoutSearch = props => {
                       index={index}
                       currentSearch={currentSearch}
                       siteInfo={props.siteInfo}
-                      isAlgolia={!!enableAlgolia}
+                      isAlgolia={usingAlgoliaResults}
                     />
                   ))}
                 </div>
@@ -867,9 +917,7 @@ const SearchResultGridCard = ({
                 {category}
               </span>
             )}
-            {createdDate && (
-              <span>{createdDate}</span>
-            )}
+            {createdDate && <span>{createdDate}</span>}
           </div>
         </div>
       </article>
@@ -915,7 +963,11 @@ const LayoutArchive = props => {
 const LayoutSlug = props => {
   const { post, lock, validPassword } = props
   const { locale, fullWidth } = useGlobal()
-  const [showRecommended, setShowRecommended] = useState(false)
+  const postIdentity = post?.id || post?.slug || post?.title
+  const [recommendedPostId, setRecommendedPostId] = useState(null)
+  const showRecommended = Boolean(
+    postIdentity && recommendedPostId === postIdentity
+  )
 
   // 从 blockMap 判断是否包含代码块（兼容压缩数据），随文章切换即时更新，
   // 避免客户端导航后沿用上一篇文章的宽度布局
@@ -960,16 +1012,16 @@ const LayoutSlug = props => {
 
   // 监听滚动，延迟加载底部推荐和评论
   useEffect(() => {
-    if (!post) return
+    if (!postIdentity) return
     if (typeof IntersectionObserver !== 'function') {
-      setShowRecommended(true)
+      setRecommendedPostId(postIdentity)
       return
     }
 
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          setShowRecommended(true)
+          setRecommendedPostId(postIdentity)
           observer.disconnect()
         }
       },
@@ -980,7 +1032,7 @@ const LayoutSlug = props => {
       observer.observe(target)
     }
     return () => observer.disconnect()
-  }, [post])
+  }, [postIdentity])
 
   useEffect(() => {
     // 404
@@ -1009,10 +1061,7 @@ const LayoutSlug = props => {
         {!lock && post && (
           <div className='mx-auto md:w-full md:px-5'>
             {/* 文章主体 */}
-            <article
-              id='article-wrapper'
-              itemScope
-              itemType='https://schema.org/Movie'>
+            <article id='article-wrapper'>
               {/* Notion文章主体 */}
               <section
                 className='wow fadeInUp p-5 justify-center mx-auto'
@@ -1132,10 +1181,10 @@ const Layout404 = props => {
                   404
                 </h1>
                 <div className='dark:text-white'>请尝试站内搜索寻找文章</div>
-                <SmartLink href='/'>
-                  <button className='bg-blue-500 py-2 px-4 text-white shadow rounded-lg hover:bg-blue-600 hover:shadow-md duration-200 transition-all'>
-                    回到主页
-                  </button>
+                <SmartLink
+                  href='/'
+                  className='bg-blue-500 py-2 px-4 text-white shadow rounded-lg hover:bg-blue-600 hover:shadow-md duration-200 transition-all'>
+                  回到主页
                 </SmartLink>
               </div>
             </div>

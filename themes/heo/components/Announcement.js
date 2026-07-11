@@ -10,7 +10,7 @@ const Announcement = ({ post, className }) => {
           <div
             id='announcement-content'
             className='[&_img]:pointer-events-none'>
-            <NotionPage post={post} />
+            <NotionPage post={post} contentId='heo-announcement' />
           </div>
         )}
       </div>

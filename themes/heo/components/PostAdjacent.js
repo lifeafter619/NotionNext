@@ -42,13 +42,42 @@ export default function PostAdjacent({ prev, next }) {
 
   const router = useRouter()
   const { locale } = useGlobal()
+  const adjacentIdentity = [
+    prev?.id || prev?.href || prev?.slug || '',
+    next?.id || next?.href || next?.slug || ''
+  ].join(':')
+
+  const resetDragStyles = useCallback(
+    (updateState = true, element = nextPostRef.current) => {
+      if (element) {
+        element.style.transform = ''
+        element.style.transition = ''
+      }
+      positionRef.current = { x: 0, y: 0 }
+      if (updateState) {
+        setPosition({ x: 0, y: 0 })
+        setIsDragging(false)
+      }
+    },
+    []
+  )
 
   useEffect(() => {
     setIsShow(false)
     setIsClosed(false)
-    setPosition({ x: 0, y: 0 })
-    positionRef.current = { x: 0, y: 0 }
-  }, [router])
+    resetDragStyles()
+  }, [router.asPath, adjacentIdentity, resetDragStyles])
+
+  useEffect(() => {
+    const handleResize = () => resetDragStyles()
+    const desktopNavigation = nextPostRef.current
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      resetDragStyles(false, desktopNavigation)
+    }
+  }, [resetDragStyles])
 
   useEffect(() => {
     if (typeof IntersectionObserver !== 'function') {
@@ -163,9 +192,11 @@ export default function PostAdjacent({ prev, next }) {
     }
 
     const handleEnd = () => {
+      setPosition({ ...positionRef.current })
       setIsDragging(false)
-      setPosition(positionRef.current)
     }
+
+    const handleCancel = () => resetDragStyles()
 
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
@@ -174,6 +205,7 @@ export default function PostAdjacent({ prev, next }) {
         passive: false
       })
       document.addEventListener('touchend', handleEnd)
+      document.addEventListener('touchcancel', handleCancel)
     }
 
     return () => {
@@ -181,8 +213,9 @@ export default function PostAdjacent({ prev, next }) {
       document.removeEventListener('mouseup', handleEnd)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleEnd)
+      document.removeEventListener('touchcancel', handleCancel)
     }
-  }, [isDragging])
+  }, [isDragging, resetDragStyles])
 
   if ((!prev && !next) || !siteConfig('HEO_ARTICLE_ADJACENT', null, CONFIG)) {
     return <></>
@@ -194,12 +227,12 @@ export default function PostAdjacent({ prev, next }) {
   return (
     <div id='article-end'>
       {/* 移动端 */}
-      <section className='lg:hidden pt-8 text-gray-800 items-center text-xs md:text-sm flex flex-col m-1 '>
+      <section className='md:hidden pt-8 text-gray-800 items-center text-xs md:text-sm flex flex-col m-1 '>
         {prev && (
           <SmartLink
             href={getAdjacentHref(prev)}
             passHref
-            className={`${next ? 'rounded-t-xl border-b-0' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200`}>
+            className={`${next ? 'rounded-t-xl border-b-0' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full min-h-[4.5rem] duration-200`}>
             <div className='flex justify-start items-center w-full'>上一篇</div>
             <div className='flex justify-center items-center text-lg font-bold'>
               {prevTitle}
@@ -210,7 +243,7 @@ export default function PostAdjacent({ prev, next }) {
           <SmartLink
             href={getAdjacentHref(next)}
             passHref
-            className={`${prev ? 'rounded-b-xl' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full h-18 duration-200`}>
+            className={`${prev ? 'rounded-b-xl' : 'rounded-xl'} cursor-pointer justify-between space-y-1 px-5 py-6 dark:bg-[#1e1e1e] border dark:border-gray-600 items-center dark:text-white flex flex-col w-full min-h-[4.5rem] duration-200`}>
             <div className='flex justify-start items-center w-full'>下一篇</div>
             <div className='flex justify-center items-center text-lg font-bold'>
               {nextTitle}
@@ -228,7 +261,11 @@ export default function PostAdjacent({ prev, next }) {
           style={{
             cursor: isDragging ? 'grabbing' : 'move',
             touchAction: 'none',
-            transition: isDragging ? 'none' : undefined
+            transition: isDragging ? 'none' : undefined,
+            transform:
+              position.x || position.y
+                ? `translate(${position.x}px, ${position.y}px)`
+                : undefined
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}>

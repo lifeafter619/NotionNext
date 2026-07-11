@@ -60,7 +60,7 @@ export function InfoCard(props) {
         <GreetingsWords />
         {/* 头像 - 禁止点击 */}
         <div
-          className={`${isSlugPage ? 'absolute right-0 -mt-8 -mr-6 hover:opacity-0 hover:scale-150 blur' : 'cursor-default'} pointer-events-none justify-center items-center flex dark:text-gray-100 transform transitaion-all duration-200`}>
+          className={`${isSlugPage ? 'absolute right-0 -mt-8 -mr-6 hover:opacity-0 hover:scale-150 blur' : 'cursor-default'} pointer-events-none justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
           <LazyImage
             src={siteInfo?.icon}
             className='rounded-full'
