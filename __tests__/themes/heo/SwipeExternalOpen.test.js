@@ -118,6 +118,11 @@ describe('HEO Swipe navigation and autoplay', () => {
     const firstLink = screen.getByRole('link', { name: 'First notice' })
     const secondLink = screen.getByRole('link', { name: 'Second notice' })
 
+    expect(firstLink).toHaveClass('motion-reduce:duration-0')
+    expect(firstLink).toHaveClass('motion-reduce:transition-none')
+    expect(secondLink).toHaveClass('motion-reduce:duration-0')
+    expect(secondLink).toHaveClass('motion-reduce:transition-none')
+
     act(() => jest.advanceTimersByTime(6000))
     expect(firstLink).toHaveClass('translate-y-0')
 

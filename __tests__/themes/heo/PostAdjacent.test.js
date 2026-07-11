@@ -101,16 +101,18 @@ describe('heo PostAdjacent responsive controls', () => {
     expect(desktopNavigation).toHaveClass('md:flex')
   })
 
-  it('clears direct drag styles when a drag ends', () => {
+  it('keeps the dragged position when a drag ends', () => {
     const { container } = render(
       <PostAdjacent prev={prevPost} next={nextPost} />
     )
     const desktopNavigation = container.querySelector('#pc-next-post')
 
     dragDesktopCard(desktopNavigation)
+    const draggedTransform = desktopNavigation.style.transform
     fireEvent.mouseUp(document)
 
-    expect(desktopNavigation.style.transform).toBe('')
+    expect(desktopNavigation.style.transform).toBe(draggedTransform)
+    expect(desktopNavigation.style.transform).toContain('translate(')
     expect(desktopNavigation.style.transition).toBe('')
   })
 

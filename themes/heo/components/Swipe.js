@@ -68,7 +68,7 @@ export function Swipe({ items }) {
       onFocus={() => setIsFocusWithin(true)}
       onBlur={handleBlur}>
       {safeItems.map((item, index) => {
-        const className = `whitespace-nowrap absolute top-0 bottom-0 w-full h-full flex justify-center items-center line-clamp-1 transform transition-transform duration-500 ${
+        const className = `whitespace-nowrap absolute top-0 bottom-0 w-full h-full flex justify-center items-center line-clamp-1 transform transition-transform duration-500 motion-reduce:duration-0 motion-reduce:transition-none ${
             index === activeIndex
               ? 'translate-y-0 slide-in'
               : 'translate-y-full slide-out'
@@ -104,6 +104,13 @@ export function Swipe({ items }) {
           animation-name: slide-out;
           animation-duration: 0.5s;
           animation-fill-mode: forwards;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .slide-in,
+          .slide-out {
+            animation: none;
+          }
         }
 
         @keyframes slide-in {

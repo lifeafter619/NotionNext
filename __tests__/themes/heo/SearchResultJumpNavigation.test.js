@@ -269,8 +269,16 @@ describe('heo search result jump navigation', () => {
     render(
       <LayoutSearch
         keyword='service-error'
-        posts={[]}
-        postCount={0}
+        posts={[
+          {
+            id: 'fallback-id',
+            slug: 'fallback-post',
+            href: '/fallback-post',
+            title: 'service-error fallback',
+            summary: 'Local fallback summary'
+          }
+        ]}
+        postCount={1}
         siteInfo={{}}
         categoryOptions={[]}
         tagOptions={[]}
@@ -286,6 +294,8 @@ describe('heo search result jump navigation', () => {
       await screen.findByText('搜索服务暂时不可用，请稍后重试')
     ).toBeInTheDocument()
     expect(screen.queryByText('未找到相关文章')).not.toBeInTheDocument()
+    expect(screen.getAllByText('(标题)').length).toBeGreaterThan(0)
+    expect(screen.queryByText('(文章内容)')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: '重试' }))
 

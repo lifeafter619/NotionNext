@@ -34,6 +34,7 @@ function getPostTitle(post) {
 export default function PostAdjacent({ prev, next }) {
   const [isShow, setIsShow] = useState(false)
   const [isClosed, setIsClosed] = useState(false)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const dragStartRef = useRef({ x: 0, y: 0 })
   const positionRef = useRef({ x: 0, y: 0 })
@@ -54,6 +55,7 @@ export default function PostAdjacent({ prev, next }) {
       }
       positionRef.current = { x: 0, y: 0 }
       if (updateState) {
+        setPosition({ x: 0, y: 0 })
         setIsDragging(false)
       }
     },
@@ -190,8 +192,11 @@ export default function PostAdjacent({ prev, next }) {
     }
 
     const handleEnd = () => {
-      resetDragStyles()
+      setPosition({ ...positionRef.current })
+      setIsDragging(false)
     }
+
+    const handleCancel = () => resetDragStyles()
 
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
@@ -200,7 +205,7 @@ export default function PostAdjacent({ prev, next }) {
         passive: false
       })
       document.addEventListener('touchend', handleEnd)
-      document.addEventListener('touchcancel', handleEnd)
+      document.addEventListener('touchcancel', handleCancel)
     }
 
     return () => {
@@ -208,7 +213,7 @@ export default function PostAdjacent({ prev, next }) {
       document.removeEventListener('mouseup', handleEnd)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleEnd)
-      document.removeEventListener('touchcancel', handleEnd)
+      document.removeEventListener('touchcancel', handleCancel)
     }
   }, [isDragging, resetDragStyles])
 
@@ -256,7 +261,11 @@ export default function PostAdjacent({ prev, next }) {
           style={{
             cursor: isDragging ? 'grabbing' : 'move',
             touchAction: 'none',
-            transition: isDragging ? 'none' : undefined
+            transition: isDragging ? 'none' : undefined,
+            transform:
+              position.x || position.y
+                ? `translate(${position.x}px, ${position.y}px)`
+                : undefined
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}>

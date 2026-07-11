@@ -544,6 +544,8 @@ const LayoutSearch = props => {
       post => post?.slug || post?.objectID || post?.href
     )
   }, [algoliaState, enableAlgolia, posts])
+  const usingAlgoliaResults =
+    enableAlgolia && algoliaState.status === 'success'
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -560,7 +562,7 @@ const LayoutSearch = props => {
 
   // 本地搜索高亮 (Algolia 自带高亮，不需要这个)
   useEffect(() => {
-    if (!currentSearch || enableAlgolia || !isBrowser) {
+    if (!currentSearch || usingAlgoliaResults || !isBrowser) {
       return
     }
 
@@ -592,7 +594,7 @@ const LayoutSearch = props => {
       window.clearTimeout(timeoutId)
     }
     // 切换视图（list/grid）或排序会重建/重排结果卡片，需要重新执行关键词高亮
-  }, [currentSearch, enableAlgolia, sortedPosts, viewMode])
+  }, [currentSearch, sortedPosts, usingAlgoliaResults, viewMode])
 
   const hasSearch = Boolean(currentSearch)
   const hasResults = sortedPosts.length > 0
@@ -705,7 +707,7 @@ const LayoutSearch = props => {
                       index={index}
                       currentSearch={currentSearch}
                       siteInfo={props.siteInfo}
-                      isAlgolia={!!enableAlgolia}
+                      isAlgolia={usingAlgoliaResults}
                     />
                   ))}
                 </div>
@@ -718,7 +720,7 @@ const LayoutSearch = props => {
                       index={index}
                       currentSearch={currentSearch}
                       siteInfo={props.siteInfo}
-                      isAlgolia={!!enableAlgolia}
+                      isAlgolia={usingAlgoliaResults}
                     />
                   ))}
                 </div>
