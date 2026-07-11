@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import Header from '@/themes/heo/components/Header'
 import ReadingProgress from '@/themes/heo/components/ReadingProgress'
 
@@ -86,10 +87,12 @@ describe('heo ReadingProgress', () => {
       fireEvent.scroll(window)
       act(() => animationFrameCallback())
 
-      const progressbar = screen.getByRole('progressbar', {
-        name: 'Demo article'
+      const progressButton = screen.getByRole('button', {
+        name: `Demo article，阅读进度 ${expectedProgress}%，返回顶部`
       })
-      const progress = Number(progressbar.getAttribute('aria-valuenow'))
+      const progress = Number(
+        progressButton.getAttribute('data-scroll-percentage')
+      )
 
       expect(Number.isFinite(progress)).toBe(true)
       expect(progress).toBeGreaterThanOrEqual(0)
@@ -102,7 +105,9 @@ describe('heo ReadingProgress', () => {
     render(<Header post={{ title: 'Current article' }} />)
 
     expect(
-      screen.getByRole('progressbar', { name: 'Current article' })
+      screen.getByRole('button', {
+        name: 'Current article，阅读进度 0%，返回顶部'
+      })
     ).toHaveAttribute('title', 'Current article')
   })
 
@@ -110,7 +115,27 @@ describe('heo ReadingProgress', () => {
     render(<Header post={{}} />)
 
     expect(
-      screen.getByRole('progressbar', { name: '阅读进度' })
+      screen.getByRole('button', {
+        name: '阅读进度，阅读进度 0%，返回顶部'
+      })
     ).toHaveAttribute('title', '阅读进度')
+  })
+
+  it('returns to the top when activated from the keyboard', async () => {
+    const user = userEvent.setup()
+    render(<ReadingProgress title='Keyboard article' />)
+
+    const progressButton = screen.getByRole('button', {
+      name: 'Keyboard article，阅读进度 0%，返回顶部'
+    })
+    progressButton.focus()
+    await user.keyboard('{Enter}')
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 0,
+      behavior: 'smooth'
+    })
+
+    await user.click(screen.getByRole('button', { name: '回到原位置' }))
   })
 })

@@ -1,5 +1,6 @@
 import { siteConfig } from '@/lib/config'
-import { resolveContactEmail } from '@/lib/plugins/mailEncrypt'
+import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
+import { useRef } from 'react'
 
 /**
  * 社交联系方式按钮组
@@ -7,6 +8,7 @@ import { resolveContactEmail } from '@/lib/plugins/mailEncrypt'
  * @constructor
  */
 const SocialButton = () => {
+  const emailIcon = useRef(null)
   const CONTACT_GITHUB = siteConfig('CONTACT_GITHUB')
   const CONTACT_TWITTER = siteConfig('CONTACT_TWITTER')
   const CONTACT_TELEGRAM = siteConfig('CONTACT_TELEGRAM')
@@ -17,7 +19,13 @@ const SocialButton = () => {
   const ENABLE_RSS = siteConfig('ENABLE_RSS')
   const CONTACT_BILIBILI = siteConfig('CONTACT_BILIBILI')
   const CONTACT_YOUTUBE = siteConfig('CONTACT_YOUTUBE')
-  const contactEmail = resolveContactEmail(CONTACT_EMAIL)
+
+  const handleEmailKeyDown = e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleEmailClick(e, emailIcon, CONTACT_EMAIL)
+    }
+  }
 
   return (
     <div className='w-full flex justify-center'>
@@ -76,9 +84,13 @@ const SocialButton = () => {
             <i className='transform hover:scale-125 duration-150 fab fa-instagram dark:hover:text-indigo-400 hover:text-indigo-600' />
           </a>
         )}
-        {contactEmail && (
+        {CONTACT_EMAIL && (
           <a
-            href={`mailto:${contactEmail}`}
+            ref={emailIcon}
+            role='link'
+            tabIndex={0}
+            onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
+            onKeyDown={handleEmailKeyDown}
             title='email'
             className='cursor-pointer'>
             <i className='transform hover:scale-125 duration-150 fas fa-envelope dark:hover:text-indigo-400 hover:text-indigo-600' />

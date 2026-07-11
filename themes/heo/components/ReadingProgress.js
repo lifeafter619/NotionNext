@@ -67,13 +67,11 @@ export default function ReadingProgress({ title }) {
 
   return (
     <>
-      <div
+      <button
+        type='button'
         title={accessibleTitle}
-        role='progressbar'
-        aria-label={accessibleTitle}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={scrollPercentage}
+        aria-label={`${accessibleTitle}，阅读进度 ${scrollPercentage}%，返回顶部`}
+        data-scroll-percentage={scrollPercentage}
         onClick={handleScrollTop}
         className={`${scrollPercentage > 0 ? 'w-10 h-10 ' : 'w-0 h-0 opacity-0'} group cursor-pointer  hover:bg-black hover:bg-opacity-10 rounded-full flex justify-center items-center duration-200 transition-all`}>
         <ArrowSmallUp className={'w-5 h-5 hidden group-hover:block'} />
@@ -84,7 +82,7 @@ export default function ReadingProgress({ title }) {
             <ArrowSmallUp className={'w-5 h-5 fill-white'} />
           )}
         </div>
-      </div>
+      </button>
 
       {showToast &&
         createPortal(
