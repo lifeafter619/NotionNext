@@ -1059,10 +1059,7 @@ const LayoutSlug = props => {
         {!lock && post && (
           <div className='mx-auto md:w-full md:px-5'>
             {/* 文章主体 */}
-            <article
-              id='article-wrapper'
-              itemScope
-              itemType='https://schema.org/Movie'>
+            <article id='article-wrapper'>
               {/* Notion文章主体 */}
               <section
                 className='wow fadeInUp p-5 justify-center mx-auto'
@@ -1182,10 +1179,10 @@ const Layout404 = props => {
                   404
                 </h1>
                 <div className='dark:text-white'>请尝试站内搜索寻找文章</div>
-                <SmartLink href='/'>
-                  <button className='bg-blue-500 py-2 px-4 text-white shadow rounded-lg hover:bg-blue-600 hover:shadow-md duration-200 transition-all'>
-                    回到主页
-                  </button>
+                <SmartLink
+                  href='/'
+                  className='bg-blue-500 py-2 px-4 text-white shadow rounded-lg hover:bg-blue-600 hover:shadow-md duration-200 transition-all'>
+                  回到主页
                 </SmartLink>
               </div>
             </div>
