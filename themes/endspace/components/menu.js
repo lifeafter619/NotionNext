@@ -46,7 +46,8 @@ const normalizeMenuItem = (link, index) => {
   if (!link || link.show === false) return null
   const name = link.name || link.title || link.label || ''
   const path = normalizeHref(link)
-  if (!name || !path) return null
+  const subMenus = normalizeMenu(link.subMenus || link.children)
+  if (!name || (!path && subMenus.length === 0)) return null
   const icons = normalizeIcon(link)
 
   return {
@@ -57,7 +58,7 @@ const normalizeMenuItem = (link, index) => {
     href: path,
     pageIcon: icons.pageIcon,
     customIcon: icons.customIcon,
-    subMenus: normalizeMenu(link.subMenus)
+    subMenus
   }
 }
 

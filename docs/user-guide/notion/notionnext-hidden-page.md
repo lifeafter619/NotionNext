@@ -13,6 +13,18 @@
 
 创建隐藏单页的方式： 将页面type设为`Page`或`Post`、status设为`Invisible`、 并指定`slug` 值作为访问地址，详见以下属性表：
 
+## 页面状态规范
+
+NotionNext 将 `status` 作为公开入口的基础开关。官方约定如下：
+
+| status | 含义 | 公共入口 |
+| --- | --- | --- |
+| `Published` | 正常发布的公开内容 | 首页、分页、归档、分类、标签、RSS、Sitemap、搜索索引都会按公开内容处理。 |
+| `Invisible` | 隐藏公共入口，但保留完整 `slug` 直接访问能力 | 不进入首页、分页、归档、分类、标签统计、RSS、Sitemap、搜索索引；适合作为内嵌页、补充页、临时分享页。 |
+| 其他值 / 空值 | 未发布内容 | 不作为公开内容处理。 |
+
+如果文章设置了 `password`，它仍然是另一层访问控制：页面入口是否出现由 `status` 决定，正文展示由密码保护决定。不要把 `Invisible` 当成私密文章使用；它只是隐藏公共入口，知道完整地址的人仍可访问。
+
 ## 示例
 
 下图中的隐藏单页`slug` 值为`example-3`，因此在浏览器中访问链接：[https://preview.tangly1024.com/example-3](https://preview.tangly1024.com/example-3) ， 即可展示此页面内容。

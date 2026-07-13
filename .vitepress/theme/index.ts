@@ -18,11 +18,12 @@ function patchSearchTokenize(siteData: EnhanceAppContext['siteData']) {
 }
 
 const chatApi = import.meta.env.VITE_DOCS_CHAT_API
+const chatVersion = 'v2026.07.11.1'
 const chatLayout = chatApi
   ? chat(Layout, {
       api: chatApi,
       buttonText: 'AI 助手',
-      headerText: 'NotionNext AI 助手',
+      headerText: `NotionNext AI 助手 ${chatVersion}`,
       headerUrl: null,
       initialMessage:
         '你好，我是 NotionNext 文档助手。你可以直接问我部署、主题、Notion 配置、评论插件等问题。',

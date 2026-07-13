@@ -6,7 +6,12 @@ import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { EndspacePlayer } from './EndspacePlayer'
 import NotionMenuIcon from './NotionMenuIcon'
-import { IconMenu2, IconX, IconBrandX } from '@tabler/icons-react'
+import {
+  IconMenu2,
+  IconX,
+  IconBrandX,
+  IconChevronDown
+} from '@tabler/icons-react'
 import { getEndspaceActiveMenuName, getEndspaceMenuItems } from './menu'
 // Social Icons (Solid)
 import GithubFillIcon from 'remixicon-react/GithubFillIcon'
@@ -34,12 +39,20 @@ const SocialIconComponents = {
   CONTACT_ZHISHIXINGQIU: GlobeFillIcon
 }
 
+const pathMatches = (asPath, path) => {
+  const cleanPath = asPath.split(/[?#]/)[0] || '/'
+  if (!path || path.startsWith('http') || path.startsWith('#')) return false
+  if (path === '/') return cleanPath === '/'
+  return cleanPath === path || cleanPath.startsWith(`${path}/`)
+}
+
 export const MobileNav = props => {
   const router = useRouter()
   const { siteInfo } = useGlobal()
   const { customNav, customMenu } = props
   const [activeTab, setActiveTab] = useState('Home')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [openSubMenuId, setOpenSubMenuId] = useState(null)
   const emailIcon = useRef(null)
 
   // Get avatar from props or global context
@@ -79,6 +92,7 @@ export const MobileNav = props => {
   // Close menu when route changes
   useEffect(() => {
     setIsMenuOpen(false)
+    setOpenSubMenuId(null)
   }, [router.asPath])
 
   // Prevent body scroll when menu is open
@@ -165,21 +179,66 @@ export const MobileNav = props => {
         }`}>
         {/* Navigation Items */}
         <div className='flex flex-col items-start p-6 space-y-2'>
-          {menuItems.map(item => (
-            <SmartLink
-              key={item.id || item.name}
-              href={item.path}
-              className={`flex items-center gap-4 py-3 w-full transition-all group ${
-                activeTab === item.name
-                  ? 'text-black font-bold'
-                  : 'text-[var(--endspace-text-secondary)] hover:text-black'
-              }`}>
-              <div className='endspace-menu-icon-wrap transition-colors'>
-                {renderIcon(item)}
+          {menuItems.map(item => {
+            const hasSubMenu = item.subMenus?.length > 0
+            const isOpen = openSubMenuId === item.id
+            const className = `flex items-center gap-4 py-3 w-full transition-all group ${
+              activeTab === item.name
+                ? 'text-black font-bold'
+                : 'text-[var(--endspace-text-secondary)] hover:text-black'
+            }`
+
+            if (!hasSubMenu) {
+              return (
+                <SmartLink
+                  key={item.id || item.name}
+                  href={item.path}
+                  className={className}>
+                  <div className='endspace-menu-icon-wrap transition-colors'>
+                    {renderIcon(item)}
+                  </div>
+                  <span className='text-xl font-medium'>{item.name}</span>
+                </SmartLink>
+              )
+            }
+
+            return (
+              <div key={item.id || item.name} className='w-full'>
+                <button
+                  type='button'
+                  className={`${className} text-left`}
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenSubMenuId(isOpen ? null : item.id)}>
+                  <div className='endspace-menu-icon-wrap transition-colors'>
+                    {renderIcon(item)}
+                  </div>
+                  <span className='text-xl font-medium'>{item.name}</span>
+                  <IconChevronDown
+                    size={18}
+                    stroke={1.5}
+                    className={`ml-auto transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className='ml-10 border-l border-[var(--endspace-border-base)] py-1'>
+                    {item.subMenus.map(subItem => (
+                      <SmartLink
+                        key={subItem.id || subItem.path}
+                        href={subItem.path}
+                        target={subItem.target}
+                        className={`block py-2 pl-4 pr-2 text-sm transition-colors hover:text-black ${
+                          pathMatches(router.asPath, subItem.path)
+                            ? 'font-bold text-black'
+                            : 'text-[var(--endspace-text-secondary)]'
+                        }`}>
+                        {subItem.name}
+                      </SmartLink>
+                    ))}
+                  </div>
+                )}
               </div>
-              <span className='text-xl font-medium'>{item.name}</span>
-            </SmartLink>
-          ))}
+            )
+          })}
         </div>
 
         {/* Music Player (No Label, No Divider) */}
