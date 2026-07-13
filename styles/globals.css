@@ -321,6 +321,21 @@ img {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* 按钮点击波纹效果 */
 .btn-ripple {
   position: relative;

@@ -16,7 +16,14 @@ export default async function handler(req, res) {
       })
       const data = await response.json().catch(() => ({}))
       if (!response.ok) {
-        return res.status(response.status >= 500 ? 502 : 400).json({
+        const responseStatus =
+          response.status === 429
+            ? 429
+            : response.status >= 500 ||
+                [401, 403, 404].includes(response.status)
+              ? 502
+              : 400
+        return res.status(responseStatus).json({
           status: 'error',
           message: data?.detail || data?.title || 'Subscription failed!'
         })
@@ -26,10 +33,17 @@ export default async function handler(req, res) {
         .json({ status: 'success', message: 'Subscription successful!' })
     } catch (error) {
       console.error('Subscription error:', error)
-      res.status(error.statusCode || 400).json({
-        status: 'error',
-        message: error.message || 'Subscription failed!'
-      })
+      const statusCode = Number(error?.statusCode)
+      res
+        .status(
+          Number.isInteger(statusCode) && statusCode >= 400 && statusCode < 600
+            ? statusCode
+            : 502
+        )
+        .json({
+          status: 'error',
+          message: error?.message || 'Subscription failed!'
+        })
     }
   } else {
     res.status(405).json({ status: 'error', message: 'Method not allowed' })

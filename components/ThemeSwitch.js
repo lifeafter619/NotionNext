@@ -1,4 +1,5 @@
 import { getThemeSwitchMeta } from '@/conf/themeSwitch.manifest'
+import BLOG from '@/blog.config'
 import { useGlobal } from '@/lib/global'
 import { getQueryParam } from '@/lib/utils'
 import { THEMES } from '@/themes/theme'
@@ -41,10 +42,12 @@ const ThemeSwitch = () => {
   }
 
   const changeTheme = newTheme => {
-    const query = router.query
-    query.theme = newTheme
-    router.push({ pathname: router.pathname, query }).then(() => {})
+    const query = { ...router.query, theme: newTheme }
+    setSideBarVisible(false)
+    void router.push({ pathname: router.pathname, query })
   }
+
+  if (BLOG.THEME_LOCKED) return null
 
   return (
     <>
@@ -60,7 +63,8 @@ const ThemeSwitch = () => {
           }`}>
           {/* 悬浮入口：明暗随 isDarkMode，与 html.dark / 切换按钮一致 */}
           <div className='flex min-h-[3rem] items-center gap-2.5 pl-0.5 pr-1 duration-200 group-hover:gap-3'>
-            <span
+            <button
+              type='button'
               className={`relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl text-white shadow-md ring-2 transition active:scale-95 ${
                 isDarkMode
                   ? 'bg-gradient-to-br from-indigo-400 via-violet-500 to-fuchsia-500 ring-white/18'
@@ -69,9 +73,7 @@ const ThemeSwitch = () => {
               onClick={() => {
                 setSideBarVisible(true)
               }}
-              onTouchStart={() => {
-                setSideBarVisible(true)
-              }}
+              aria-label={locale.MENU.THEME_SWITCH}
               title='Open theme panel'>
               <span
                 className={`absolute inset-0 rounded-xl bg-gradient-to-t to-transparent ${
@@ -82,7 +84,7 @@ const ThemeSwitch = () => {
                 className='fa-solid fa-palette relative text-[15px]'
                 aria-hidden
               />
-            </span>
+            </button>
             <div className='min-w-0 flex-1 overflow-hidden py-0.5'>
               <label htmlFor='themeSelect' className='sr-only'>
                 {locale.COMMON.THEME}
@@ -121,6 +123,7 @@ const ThemeSwitch = () => {
       </Draggable>
 
       <SideBarDrawer
+        ariaLabel={locale.MENU.THEME_SWITCH}
         className='flex max-h-screen w-[min(100vw-0.5rem,28rem)] flex-col overflow-hidden border-r border-gray-200/90 bg-white p-0 shadow-2xl dark:border-gray-800 dark:bg-gray-950 md:w-[min(100vw-2rem,48rem)] lg:w-[min(100vw-3rem,56rem)]'
         isOpen={sideBarVisible}
         showOnPC={true}
@@ -140,11 +143,12 @@ const ThemeSwitch = () => {
               </div>
               <button
                 type='button'
-                className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white'
+                aria-label='Close theme panel'
+                className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white'
                 onClick={() => {
                   setSideBarVisible(false)
                 }}>
-                <i className='fas fa-times' />
+                <i className='fas fa-times' aria-hidden />
               </button>
             </div>
           </div>
@@ -163,8 +167,8 @@ const ThemeSwitch = () => {
                 <span className='min-w-0'>
                   <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
                     {isDarkMode
-                      ? locale.MENU.DARK_MODE
-                      : locale.MENU.LIGHT_MODE}
+                      ? locale.MENU.LIGHT_MODE
+                      : locale.MENU.DARK_MODE}
                   </span>
                   <span className='mt-0.5 block text-xs text-gray-600 dark:text-gray-400'>
                     {isDarkMode ? '点击切换为浅色模式' : '点击切换为深色模式'}
@@ -199,7 +203,9 @@ const ThemeSwitch = () => {
                 const active = currentTheme === t
                 const meta = getThemeSwitchMeta(t)
                 return (
-                  <div
+                  <button
+                    type='button'
+                    aria-pressed={active}
                     className={`cursor-pointer rounded-2xl border bg-white p-1.5 shadow-sm transition dark:bg-gray-900/40 ${
                       active
                         ? 'border-indigo-500 ring-2 ring-indigo-500/30 dark:border-indigo-400'
@@ -235,7 +241,7 @@ const ThemeSwitch = () => {
                         </span>
                       )}
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>

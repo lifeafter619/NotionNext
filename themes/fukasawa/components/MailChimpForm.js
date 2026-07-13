@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { subscribeToNewsletter } from '@/lib/plugins/mailchimp'
 import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
@@ -9,31 +9,27 @@ import { useGlobal } from '@/lib/global'
  * @returns
  */
 export default function MailChimpForm() {
-  const formRef = useRef()
+  const inputRef = useRef(null)
   const [success, setSuccess] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
   const { locale } = useGlobal()
 
-  useEffect(() => {
-    const form = formRef.current
-    const handleSubmit = e => {
-      e.preventDefault()
-      const email = document.querySelector('#newsletter').value
-      subscribeToNewsletter(email)
-        .then(response => {
-          console.log('Subscription succeeded:', response)
-          // 在此处添加成功订阅后的操作
-          setSuccess(true)
-        })
-        .catch(error => {
-          console.error('Subscription failed:', error)
-          // 在此处添加订阅失败后的操作
-        })
+  const handleSubmit = async event => {
+    event.preventDefault()
+    if (submitting || success) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      await subscribeToNewsletter(inputRef.current?.value || '')
+      setSuccess(true)
+    } catch {
+      setError('Subscription failed. Check your email and try again.')
+    } finally {
+      setSubmitting(false)
     }
-    form?.addEventListener('submit', handleSubmit)
-    return () => {
-      form?.removeEventListener('submit', handleSubmit)
-    }
-  }, [subscribeToNewsletter])
+  }
 
   return (
     <>
@@ -43,7 +39,7 @@ export default function MailChimpForm() {
             {locale.MAILCHIMP.SUBSCRIBE}
           </h6>
           <p className='text-sm text-gray-600 mb-4'>{locale.MAILCHIMP.MSG}</p>
-          <form ref={formRef}>
+          <form onSubmit={handleSubmit} aria-busy={submitting}>
             <div className='flex flex-wrap mb-4'>
               <div className='w-full'>
                 <label className='block text-sm sr-only' htmlFor='newsletter'>
@@ -51,7 +47,8 @@ export default function MailChimpForm() {
                 </label>
                 <div className='relative flex items-center max-w-xs'>
                   <input
-                    disabled={success}
+                    ref={inputRef}
+                    disabled={success || submitting}
                     id='newsletter'
                     type='email'
                     className='form-input w-full text-gray-800 px-3 py-2 pr-12 text-sm'
@@ -59,7 +56,7 @@ export default function MailChimpForm() {
                     required
                   />
                   <button
-                    disabled={success}
+                    disabled={success || submitting}
                     type='submit'
                     className='absolute inset-0 left-auto'
                     aria-label='Subscribe'>
@@ -79,8 +76,13 @@ export default function MailChimpForm() {
                 </div>
                 {/* Success message */}
                 {success && (
-                  <p className='mt-2 text-green-600 text-sm'>
+                  <p role='status' className='mt-2 text-green-600 text-sm'>
                     Thanks for subscribing!
+                  </p>
+                )}
+                {error && (
+                  <p role='alert' className='mt-2 text-red-600 text-sm'>
+                    {error}
                   </p>
                 )}
               </div>

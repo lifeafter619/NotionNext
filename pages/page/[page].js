@@ -5,6 +5,12 @@ import { formatNotionBlock } from '@/lib/db/notion/getPostBlocks'
 import { adapterNotionBlockMap } from '@/lib/utils/notion.util'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
+import {
+  getPaginationSlice,
+  normalizePageSize,
+  parsePositivePageNumber
+} from '@/lib/utils/pagination'
+import { isExport } from '@/lib/utils/buildMode'
 
 /**
  * 文章列表分页
@@ -23,18 +29,22 @@ export async function getStaticPaths({ locale }) {
     locale
   })
   const totalPages = Math.ceil(
-    postCount / siteConfig('POSTS_PER_PAGE', null, NOTION_CONFIG)
+    postCount /
+      normalizePageSize(siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG))
   )
   return {
     // remove first page, we 're not gonna handle that.
-    paths: Array.from({ length: totalPages - 1 }, (_, i) => ({
+    paths: Array.from({ length: Math.max(totalPages - 1, 0) }, (_, i) => ({
       params: { page: '' + (i + 2) }
     })),
-    fallback: true
+    fallback: isExport() ? false : 'blocking'
   }
 }
 
 export async function getStaticProps({ params: { page }, locale }) {
+  const pageNumber = parsePositivePageNumber(page)
+  if (!pageNumber || pageNumber < 2) return { notFound: true }
+
   const from = `page-${page}`
   const props = await fetchGlobalAllData({ from, locale })
   const { allPages } = props
@@ -45,15 +55,24 @@ export async function getStaticProps({ params: { page }, locale }) {
   )
 
   const allPosts = (allPages || []).filter(
-    page => page.type === 'Post' && page.status === 'Published'
+    page => page?.type === 'Post' && page.status === 'Published'
   )
   const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', 12, props?.NOTION_CONFIG)
+  const pagination = getPaginationSlice({
+    page: pageNumber,
+    totalItems: allPosts.length,
+    pageSize: POSTS_PER_PAGE,
+    minimumPage: 2
+  })
+  if (!pagination.isValid) {
+    return {
+      notFound: true,
+      revalidate: isExport() ? undefined : 60
+    }
+  }
   // 处理分页
-  props.posts = allPosts.slice(
-    POSTS_PER_PAGE * (page - 1),
-    POSTS_PER_PAGE * page
-  )
-  props.page = page
+  props.posts = allPosts.slice(pagination.start, pagination.end)
+  props.page = pageNumber
 
   // 处理预览
   if (siteConfig('POST_LIST_PREVIEW', false, props?.NOTION_CONFIG)) {
@@ -80,7 +99,7 @@ export async function getStaticProps({ params: { page }, locale }) {
   delete props.allPages
   return {
     props,
-    revalidate: process.env.EXPORT
+    revalidate: isExport()
       ? undefined
       : siteConfig(
           'NEXT_REVALIDATE_SECOND',

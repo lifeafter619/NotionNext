@@ -2,13 +2,13 @@ import BLOG, { LAYOUT_MAPPINGS } from '@/blog.config'
 import { THEMES } from '@/conf/theme.config'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import { getQueryParam, getQueryVariable, isBrowser } from '../lib/utils'
 
 export { THEMES } from '@/conf/theme.config'
 
 const baseLayoutCache = new Map()
 const layoutByThemeCache = new Map()
-let domFixTimer = null
 
 const LayoutLoading = () => (
   <div className='min-h-screen w-full bg-[#f6f6f1] dark:bg-black' />
@@ -76,14 +76,14 @@ const normalizeThemeName = themeValue => {
 }
 
 const scheduleFixThemeDOM = (delay = 120) => {
-  if (!isBrowser) return
-  if (domFixTimer) {
-    clearTimeout(domFixTimer)
-  }
-  domFixTimer = setTimeout(() => {
+  if (!isBrowser) return () => {}
+  const timer = window.setTimeout(() => {
     fixThemeDOM()
-    domFixTimer = null
   }, delay)
+
+  return () => {
+    window.clearTimeout(timer)
+  }
 }
 
 async function importThemeConfig(themeFolderName) {
@@ -182,8 +182,11 @@ export const useLayoutByTheme = ({ layoutName, theme }) => {
   const themeQuery = getCurrentTheme(router, theme)
   const cacheKey = `${themeQuery}:${layoutName}`
 
+  useEffect(() => {
+    return scheduleFixThemeDOM(themeQuery === BLOG.THEME ? 80 : 240)
+  }, [layoutName, themeQuery])
+
   if (layoutByThemeCache.has(cacheKey)) {
-    scheduleFixThemeDOM(themeQuery === BLOG.THEME ? 80 : 240)
     return layoutByThemeCache.get(cacheKey)
   }
 
@@ -203,7 +206,6 @@ export const useLayoutByTheme = ({ layoutName, theme }) => {
     loading: getLayoutLoading(layoutName)
   })
   layoutByThemeCache.set(cacheKey, DynamicLayoutComponent)
-  scheduleFixThemeDOM(themeQuery === BLOG.THEME ? 80 : 240)
   return DynamicLayoutComponent
 }
 
@@ -226,6 +228,7 @@ const fixThemeDOM = () => {
   if (isBrowser) {
     const elements = document.querySelectorAll('[id^="theme-"]')
     if (elements?.length > 1) {
+      const retainedElement = elements[elements.length - 1]
       for (let i = 0; i < elements.length - 1; i++) {
         if (
           elements[i] &&
@@ -235,7 +238,7 @@ const fixThemeDOM = () => {
           elements[i].parentNode.removeChild(elements[i])
         }
       }
-      elements[0]?.scrollIntoView()
+      retainedElement?.scrollIntoView()
     }
   }
 }
@@ -263,9 +266,9 @@ export const initDarkMode = (updateDarkMode, defaultDarkMode) => {
   }
 
   updateDarkMode(newDarkMode)
-  document
-    .getElementsByTagName('html')[0]
-    .setAttribute('class', newDarkMode ? 'dark' : 'light')
+  const htmlElement = document.documentElement
+  htmlElement.classList.remove('dark', 'light')
+  htmlElement.classList.add(newDarkMode ? 'dark' : 'light')
 }
 
 function getDefaultDarkMode(defaultDarkMode) {

@@ -9,6 +9,7 @@ import {
   getPageBlockCacheKey
 } from '@/lib/db/notion/getPostBlocks'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
+import { isExport } from '@/lib/utils/buildMode'
 import { idToUuid } from 'notion-utils'
 
 const SEARCH_CONCURRENCY = 4
@@ -32,7 +33,7 @@ export async function getStaticProps({ params: { keyword }, locale }) {
   const { allPages } = props
   const allPosts = allPages?.filter(
     page =>
-      (page.type === 'Post' || page.type === 'Page') &&
+      (page?.type === 'Post' || page?.type === 'Page') &&
       page.status === 'Published'
   )
   props.posts = await filterByMemCache(allPosts, keyword)
@@ -58,7 +59,7 @@ export async function getStaticProps({ params: { keyword }, locale }) {
   delete props.allPages
   return {
     props,
-    revalidate: process.env.EXPORT
+    revalidate: isExport()
       ? undefined
       : siteConfig(
           'NEXT_REVALIDATE_SECOND',
@@ -71,7 +72,7 @@ export async function getStaticProps({ params: { keyword }, locale }) {
 export function getStaticPaths() {
   return {
     paths: [{ params: { keyword: 'NotionNext' } }],
-    fallback: true
+    fallback: isExport() ? false : 'blocking'
   }
 }
 
@@ -116,7 +117,7 @@ function getSearchSnippets(text, lowerText, keyword) {
  * @param keyword 关键词
  * @returns
  */
-async function filterByMemCache(allPosts, keyword) {
+export async function filterByMemCache(allPosts, keyword) {
   const normalizedKeyword = String(keyword || '')
     .trim()
     .toLowerCase()
@@ -138,38 +139,47 @@ async function filterByMemCache(allPosts, keyword) {
       return hit ? { ...nextPost, content: null, blockMap: undefined } : null
     }
 
-    const cacheKey = getPageBlockCacheKey(post.id, post.lastEditedDate)
-    let page = await getDataFromCache(cacheKey, true)
-    if (!page) {
-      page = await getPage(post.id, 'search-index', {
-        cacheVersion: post.lastEditedDate
-      })
-    }
-
-    const pId = idToUuid(post.id)
-    if (page?.block?.[pId]?.value?.content) {
-      nextPost.content = page.block[pId].value.content
-    } else if (page?.block) {
-      // 兼容id不一致的情况
-      const blockId = Object.keys(page.block).find(
-        id => page.block[id]?.value?.type === 'page'
-      )
-      if (blockId) {
-        nextPost.content = page.block[blockId].value.content
+    try {
+      const cacheKey = getPageBlockCacheKey(post.id, post.lastEditedDate)
+      let page = await getDataFromCache(cacheKey, true)
+      if (!page) {
+        page = await getPage(post.id, 'search-index', {
+          cacheVersion: post.lastEditedDate
+        })
       }
-    }
 
-    const contentText = getPageContentText(nextPost, page) || ''
-    const lowerContentText = contentText.toLowerCase()
-    nextPost.content = contentText
-    nextPost.results = getSearchSnippets(
-      contentText,
-      lowerContentText,
-      normalizedKeyword
-    )
+      const pId = idToUuid(post.id)
+      if (page?.block?.[pId]?.value?.content) {
+        nextPost.content = page.block[pId].value.content
+      } else if (page?.block) {
+        // 兼容id不一致的情况
+        const blockId = Object.keys(page.block).find(
+          id => page.block[id]?.value?.type === 'page'
+        )
+        if (blockId) {
+          nextPost.content = page.block[blockId].value.content
+        }
+      }
 
-    if (nextPost.results.length > 0) {
-      hit = true
+      const contentText = getPageContentText(nextPost, page) || ''
+      const lowerContentText = contentText.toLowerCase()
+      nextPost.content = contentText
+      nextPost.results = getSearchSnippets(
+        contentText,
+        lowerContentText,
+        normalizedKeyword
+      )
+
+      if (nextPost.results.length > 0) {
+        hit = true
+      }
+    } catch (error) {
+      nextPost.content = null
+      nextPost.results = []
+      console.error('Failed to inspect post content during search', {
+        postId: post.id,
+        message: error instanceof Error ? error.message : String(error)
+      })
     }
 
     return hit ? nextPost : null

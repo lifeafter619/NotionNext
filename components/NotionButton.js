@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNotionContext } from 'react-notion-x'
 
 const FALLBACK_BUTTON_TEXT = 'Untitled button'
@@ -6,6 +6,9 @@ const FALLBACK_BUTTON_TEXT = 'Untitled button'
 export default function NotionButton({ block, blockId, className }) {
   const { recordMap = {}, mapPageUrl } = useNotionContext()
   const [isLoading, setIsLoading] = useState(false)
+  const [actionMessage, setActionMessage] = useState('')
+  const [actionFailed, setActionFailed] = useState(false)
+  const actionInFlightRef = useRef(false)
 
   if (!block || block.type !== 'button') return null
 
@@ -39,9 +42,13 @@ export default function NotionButton({ block, blockId, className }) {
     }
 
     if (actionTarget.kind === 'webhook') {
+      if (actionInFlightRef.current) return
+      actionInFlightRef.current = true
       setIsLoading(true)
+      setActionMessage('')
+      setActionFailed(false)
       try {
-        await fetch('/api/webhook-proxy', {
+        const response = await fetch('/api/webhook-proxy', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -52,7 +59,17 @@ export default function NotionButton({ block, blockId, className }) {
             headers: actionTarget.headers
           })
         })
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok || result.success === false) {
+          throw new Error(result.error || 'Webhook request failed')
+        }
+        setActionMessage('Action completed')
+      } catch (error) {
+        console.error('Notion button action failed:', error)
+        setActionFailed(true)
+        setActionMessage('Action failed. Please try again.')
       } finally {
+        actionInFlightRef.current = false
         setIsLoading(false)
       }
       return
@@ -80,6 +97,16 @@ export default function NotionButton({ block, blockId, className }) {
         onClick={handleClick}>
         {label}
       </button>
+      {actionMessage && (
+        <span
+          className={joinClasses(
+            'notion-button-status',
+            actionFailed ? 'text-red-600' : 'text-green-600'
+          )}
+          role={actionFailed ? 'alert' : 'status'}>
+          {actionMessage}
+        </span>
+      )}
     </div>
   )
 }
@@ -117,11 +144,14 @@ function getActionTarget(
     action.url ||
     action.config?.link ||
     action.link
+  const normalizedUrl = typeof url === 'string' ? url.trim() : ''
 
-  if (['send_webhook', 'http_request'].includes(action.type) && url) {
+  if (['send_webhook', 'http_request'].includes(action.type)) {
+    const webhookUrl = getWebhookUrl(normalizedUrl)
+    if (!webhookUrl) return null
     return {
       kind: 'webhook',
-      url: url.trim(),
+      url: webhookUrl,
       headers: getCustomHeaders(action.config),
       payload: createWebhookPayload({
         action,
@@ -134,10 +164,12 @@ function getActionTarget(
     }
   }
 
-  if (typeof url === 'string' && url.trim()) {
+  if (normalizedUrl) {
+    const kind = getNavigationKind(normalizedUrl)
+    if (!kind) return null
     return {
-      kind: isExternalUrl(url) ? 'external' : 'internal',
-      url: url.trim()
+      kind,
+      url: normalizedUrl
     }
   }
 
@@ -150,9 +182,10 @@ function getActionTarget(
 
   if (pageId && typeof mapPageUrl === 'function') {
     const pageUrl = mapPageUrl(pageId, null)
-    if (pageUrl) {
+    const kind = typeof pageUrl === 'string' ? getNavigationKind(pageUrl) : null
+    if (kind) {
       return {
-        kind: 'internal',
+        kind,
         url: pageUrl
       }
     }
@@ -245,8 +278,28 @@ function getPlainText(value) {
   ).trim()
 }
 
-function isExternalUrl(url) {
-  return /^(https?:)?\/\//i.test(url)
+function getNavigationKind(url) {
+  try {
+    const base = new URL('https://notionnext.local')
+    const parsed = new URL(url, base)
+    if (['mailto:', 'tel:', 'sms:'].includes(parsed.protocol)) {
+      return 'internal'
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) return null
+    return parsed.origin === base.origin ? 'internal' : 'external'
+  } catch {
+    return null
+  }
+}
+
+function getWebhookUrl(url) {
+  if (!url) return null
+  try {
+    const parsed = new URL(url)
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null
+  } catch {
+    return null
+  }
 }
 
 function joinClasses(...classes) {

@@ -1,10 +1,22 @@
 import Link from 'next/link'
 import { siteConfig } from '@/lib/config'
+import { useRouter } from 'next/router'
 
 // 过滤 <a> 标签不能识别的 props
 const filterDOMProps = props => {
-  const { passHref, legacyBehavior, placeholderSrc, fallbackSrc, ...rest } =
-    props
+  const {
+    passHref,
+    legacyBehavior,
+    placeholderSrc,
+    fallbackSrc,
+    prefetch,
+    replace,
+    scroll,
+    shallow,
+    locale,
+    onNavigate,
+    ...rest
+  } = props
   return rest
 }
 
@@ -33,6 +45,7 @@ const PERSISTED_QUERY_KEYS = ['theme', 'locale', 'lang', 'lite']
 
 const SmartLink = ({ href, children, ...rest }) => {
   const LINK = siteConfig('LINK')
+  const router = useRouter()
 
   // 获取 URL 字符串用于判断是否是外链
   let urlString = ''
@@ -47,16 +60,27 @@ const SmartLink = ({ href, children, ...rest }) => {
     urlString = href.pathname
   }
 
-  const isExternal = urlString.startsWith('http') && !urlString.startsWith(LINK)
+  const siteOrigin = getUrlOrigin(LINK)
+  const resolvedUrl = resolveUrl(urlString, LINK)
+  const isHttpUrl = ['http:', 'https:'].includes(resolvedUrl?.protocol)
+  const isExternal = Boolean(
+    isHttpUrl && siteOrigin && resolvedUrl.origin !== siteOrigin
+  )
+  const isDirectProtocol = ['mailto:', 'tel:', 'sms:'].includes(
+    resolvedUrl?.protocol
+  )
+  const isBlockedProtocol = ['javascript:', 'data:', 'vbscript:'].includes(
+    resolvedUrl?.protocol
+  )
 
   const getPersistedQuery = () => {
-    if (typeof window === 'undefined') return {}
-    const queryString = window.location.search?.slice(1) || ''
-    const params = new URLSearchParams(queryString)
     const preserved = {}
     for (const key of PERSISTED_QUERY_KEYS) {
-      const value = params.get(key)
-      if (value !== null && value !== '') preserved[key] = value
+      const queryValue = router.query?.[key]
+      const value = Array.isArray(queryValue) ? queryValue[0] : queryValue
+      if (value !== undefined && value !== null && value !== '') {
+        preserved[key] = String(value)
+      }
     }
     return preserved
   }
@@ -69,7 +93,8 @@ const SmartLink = ({ href, children, ...rest }) => {
 
     const isAbsolute =
       value.startsWith('http://') || value.startsWith('https://')
-    const url = new URL(value, LINK)
+    const url = resolveUrl(value, LINK)
+    if (!url) return value
     Object.entries(preservedQuery).forEach(([key, paramValue]) => {
       if (!url.searchParams.has(key)) {
         url.searchParams.set(key, paramValue)
@@ -98,15 +123,28 @@ const SmartLink = ({ href, children, ...rest }) => {
     const externalUrl =
       typeof href === 'string' ? href : new URL(href.pathname, LINK).toString()
 
+    const domProps = filterDOMProps(rest)
     return (
       <a
+        {...domProps}
         href={externalUrl}
         target='_blank'
-        rel='noopener noreferrer'
-        {...filterDOMProps(rest)}>
+        rel='noopener noreferrer'>
         {children}
       </a>
     )
+  }
+
+  if (isDirectProtocol) {
+    return (
+      <a {...filterDOMProps(rest)} href={urlString}>
+        {children}
+      </a>
+    )
+  }
+
+  if (isBlockedProtocol) {
+    return <span {...filterDOMProps(rest)}>{children}</span>
   }
 
   // 内部链接（可为对象形式）
@@ -123,3 +161,28 @@ const SmartLink = ({ href, children, ...rest }) => {
 }
 
 export default SmartLink
+
+function resolveUrl(value, baseUrl) {
+  if (!value || typeof value !== 'string') return null
+  try {
+    return new URL(value, getValidBaseUrl(baseUrl))
+  } catch {
+    return null
+  }
+}
+
+function getValidBaseUrl(value) {
+  try {
+    return new URL(value).toString()
+  } catch {
+    return 'https://notionnext.local/'
+  }
+}
+
+function getUrlOrigin(value) {
+  try {
+    return new URL(value).origin
+  } catch {
+    return null
+  }
+}

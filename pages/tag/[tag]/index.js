@@ -2,6 +2,7 @@ import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
+import { isExport } from '@/lib/utils/buildMode'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -20,8 +21,8 @@ export async function getStaticProps({ params: { tag }, locale }) {
 
   // 过滤状态；allPages 缺失时兜底为空列表，避免 fallback 请求期间构建崩溃
   props.posts = (props.allPages || [])
-    .filter(page => page.type === 'Post' && page.status === 'Published')
-    .filter(post => post && post?.tags && post?.tags.includes(tag))
+    .filter(page => page?.type === 'Post' && page.status === 'Published')
+    .filter(post => Array.isArray(post?.tags) && post.tags.includes(tag))
 
   // 处理文章页数
   props.postCount = props.posts.length
@@ -46,7 +47,7 @@ export async function getStaticProps({ params: { tag }, locale }) {
   delete props.allPages
   return {
     props,
-    revalidate: process.env.EXPORT
+    revalidate: isExport()
       ? undefined
       : siteConfig(
           'NEXT_REVALIDATE_SECOND',
@@ -65,11 +66,9 @@ function getTagNames(tags) {
   if (!Array.isArray(tags)) {
     return []
   }
-  const tagNames = []
-  tags.forEach(tag => {
-    tagNames.push(tag.name)
-  })
-  return tagNames
+  return tags
+    .map(tag => tag?.name)
+    .filter(name => typeof name === 'string' && name.length > 0)
 }
 
 export async function getStaticPaths() {
@@ -81,7 +80,7 @@ export async function getStaticPaths() {
     paths: tagNames.map(tag => ({
       params: { tag }
     })),
-    fallback: true
+    fallback: isExport() ? false : 'blocking'
   }
 }
 

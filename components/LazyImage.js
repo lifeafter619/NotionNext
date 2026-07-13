@@ -57,15 +57,19 @@ export default function LazyImage({
       placeholderSrc,
       defaultPlaceholderSrc
     ])
-    const nextFallbackSrc =
-      fallbackCandidates[
-        Math.min(fallbackIndexRef.current, fallbackCandidates.length - 1)
-      ]
-    fallbackIndexRef.current += 1
+    let nextFallbackSrc = null
+
+    while (fallbackIndexRef.current < fallbackCandidates.length) {
+      const candidate = fallbackCandidates[fallbackIndexRef.current]
+      fallbackIndexRef.current += 1
+      if (candidate !== currentSrc) {
+        nextFallbackSrc = candidate
+        break
+      }
+    }
 
     if (imageRef.current) {
       if (nextFallbackSrc) {
-        imageRef.current.src = nextFallbackSrc
         setCurrentSrc(nextFallbackSrc)
       }
       setImageLoaded(true)
@@ -74,7 +78,7 @@ export default function LazyImage({
     if (typeof onError === 'function') {
       onError()
     }
-  }, [defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
+  }, [currentSrc, defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
 
   const handleImageLoaded = useCallback(() => {
     if (currentSrc !== optimizedImageSrc) return
@@ -135,13 +139,7 @@ export default function LazyImage({
         observer.unobserve(imageElement)
       }
     }
-  }, [
-    optimizedImageSrc,
-    priority,
-    defaultPlaceholderSrc,
-    handleImageError,
-    placeholderImageSrc
-  ])
+  }, [optimizedImageSrc, priority, defaultPlaceholderSrc, placeholderImageSrc])
 
   // 构造 srcset 以支持响应式图片加载
   const generateSrcSet = imageSrc => {
@@ -179,7 +177,7 @@ export default function LazyImage({
     srcSet,
     sizes: imageSizes,
     'data-src': src, // 存储原始图片地址
-    alt: alt || 'Lazy loaded image',
+    alt: alt ?? '',
     onLoad: handleImageLoaded,
     onError: handleImageError,
     className: `${className || ''}${imageLoaded ? '' : ' lazy-image-placeholder'}`,
@@ -191,7 +189,7 @@ export default function LazyImage({
     onClick,
     // 性能优化属性
     loading: priority ? 'eager' : loading || 'lazy',
-    fetchpriority: priority ? 'high' : undefined,
+    fetchPriority: priority ? 'high' : undefined,
     decoding: 'async',
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
@@ -220,7 +218,7 @@ export default function LazyImage({
             href={optimizedImageSrc}
             imageSrcSet={srcSet}
             imageSizes={imgProps.sizes}
-            fetchpriority='high'
+            fetchPriority='high'
           />
         </Head>
       )}

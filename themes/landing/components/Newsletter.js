@@ -1,32 +1,29 @@
 import { subscribeToNewsletter } from '@/lib/plugins/mailchimp'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
 
 export default function Newsletter() {
-  const formRef = useRef()
+  const inputRef = useRef(null)
   const [success, setSuccess] = useState(false)
-  useEffect(() => {
-    const form = formRef.current
-    const handleSubmit = e => {
-      e.preventDefault()
-      const email = document.querySelector('#newsletter').value
-      subscribeToNewsletter(email)
-        .then(response => {
-          console.log('Subscription succeeded:', response)
-          // 在此处添加成功订阅后的操作
-          setSuccess(true)
-        })
-        .catch(error => {
-          console.error('Subscription failed:', error)
-          // 在此处添加订阅失败后的操作
-        })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async event => {
+    event.preventDefault()
+    if (submitting || success) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      await subscribeToNewsletter(inputRef.current?.value || '')
+      setSuccess(true)
+    } catch {
+      setError('订阅失败，请检查邮箱地址后重试。')
+    } finally {
+      setSubmitting(false)
     }
-    form?.addEventListener('submit', handleSubmit)
-    return () => {
-      form?.removeEventListener('submit', handleSubmit)
-    }
-  }, [subscribeToNewsletter])
+  }
 
   if (!JSON.parse(siteConfig('LANDING_NEWSLETTER', null, CONFIG))) {
     return <></>
@@ -131,10 +128,14 @@ export default function Newsletter() {
                 </p>
 
                 {/* CTA form */}
-                <form ref={formRef} className='w-full lg:w-auto'>
+                <form
+                  className='w-full lg:w-auto'
+                  onSubmit={handleSubmit}
+                  aria-busy={submitting}>
                   <div className='flex flex-col sm:flex-row justify-center max-w-xs mx-auto sm:max-w-md lg:mx-0'>
                     <input
-                      disabled={success}
+                      ref={inputRef}
+                      disabled={success || submitting}
                       type='email'
                       className='form-input w-full appearance-none bg-gray-800 border border-gray-700 focus:border-gray-600 rounded-sm px-4 py-3 mb-2 sm:mb-0 sm:mr-2  placeholder-gray-500'
                       placeholder='Your email…'
@@ -142,16 +143,26 @@ export default function Newsletter() {
                       required
                     />
                     <button
-                      disabled={success}
+                      disabled={success || submitting}
                       type='submit'
-                      className={`btn text-white  shadow ${success ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
-                      href='#0'>
-                      {success ? 'Subscribed' : 'Subscribe'}
+                      className={`btn text-white shadow disabled:cursor-not-allowed disabled:opacity-70 ${success ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                      {success
+                        ? 'Subscribed'
+                        : submitting
+                          ? 'Subscribing...'
+                          : 'Subscribe'}
                     </button>
                   </div>
                   {/* Success message */}
                   {success && (
-                    <p className='text-sm text-gray-400 mt-3'>感谢您的订阅!</p>
+                    <p role='status' className='text-sm text-gray-400 mt-3'>
+                      感谢您的订阅!
+                    </p>
+                  )}
+                  {error && (
+                    <p role='alert' className='text-sm text-red-300 mt-3'>
+                      {error}
+                    </p>
                   )}
                   {!success && (
                     <p className='text-sm text-gray-400 mt-3'>

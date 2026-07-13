@@ -1,28 +1,9 @@
-// pages/sitemap.xml.js
-import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import axios from 'axios'
 import {
   buildSafeOAuthRedirectQuery,
   NOTION_API_VERSION
 } from '@/lib/db/notion/oauth'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import Slug from '../[prefix]'
-
-/**
- * 根据notion的slug访问页面
- * 解析二级目录 /article/about
- * @param {*} props
- * @returns
- */
-const UI = props => {
-  const { redirect_pathname, redirect_query } = props
-  const router = useRouter()
-  useEffect(() => {
-    router?.push({ pathname: redirect_pathname, query: redirect_query })
-  }, [])
-  return <Slug {...props} />
-}
+const UI = () => null
 
 /**
  * 服务端接收参数处理
@@ -30,10 +11,9 @@ const UI = props => {
  * @returns
  */
 export const getServerSideProps = async ctx => {
-  const from = `auth`
-  const props = await fetchGlobalAllData({ from })
-  delete props.allPages
-  const code = ctx.query.code
+  const code = Array.isArray(ctx.query.code)
+    ? ctx.query.code[0]
+    : ctx.query.code
 
   let params = null
   if (code) {
@@ -42,25 +22,25 @@ export const getServerSideProps = async ctx => {
 
   // 授权成功的划保存下用户的workspace信息
   if (params?.status === 200) {
-    props.redirect_query = buildSafeOAuthRedirectQuery(params.data)
+    const redirectQuery = buildSafeOAuthRedirectQuery(params.data)
     console.log('Notion OAuth token exchange succeeded', {
       workspaceId: params.data?.workspace_id,
       workspaceName: params.data?.workspace_name
     })
+    return buildRedirectResult(redirectQuery)
   } else if (!params) {
-    console.log('请求异常', params)
-    props.redirect_query = { msg: '无效请求' }
+    return buildRedirectResult({ msg: '无效请求' })
   } else {
-    console.log('请求失败', params)
-    props.redirect_query = { msg: params.statusText }
-  }
-
-  props.redirect_pathname = '/auth/result'
-
-  return {
-    props
+    return buildRedirectResult({ msg: params.statusText || '授权失败' })
   }
 }
+
+const buildRedirectResult = query => ({
+  redirect: {
+    destination: `/auth/result?${new URLSearchParams(query).toString()}`,
+    permanent: false
+  }
+})
 
 const fetchToken = async code => {
   if (!code) {
@@ -112,6 +92,14 @@ const fetchToken = async code => {
         'Error fetching token',
         error instanceof Error ? error.message : String(error)
       )
+    }
+    return {
+      status: error?.response?.status || 502,
+      statusText:
+        error?.response?.data?.message ||
+        error?.response?.statusText ||
+        'Notion authorization request failed',
+      data: null
     }
   }
 }

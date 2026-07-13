@@ -17,6 +17,9 @@ export default function CustomContextMenu(props) {
   const [show, setShow] = useState(false)
   const { isDarkMode, updateDarkMode, locale } = useGlobal()
   const menuRef = useRef(null)
+  const previousFocusRef = useRef(null)
+  const shouldRestoreFocusRef = useRef(false)
+  const focusFrameRef = useRef(null)
   const windowSize = useWindowSize()
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
@@ -31,38 +34,91 @@ export default function CustomContextMenu(props) {
 
     const randomIndex = Math.floor(Math.random() * allNavPages.length)
     const randomPost = allNavPages[randomIndex]
-    router.push(`${siteConfig('SUB_PATH', '')}/${randomPost?.slug}`)
+    if (!randomPost?.slug) return
+    void router.push(`${siteConfig('SUB_PATH', '')}/${randomPost.slug}`)
   }
 
   useLayoutEffect(() => {
-    setWidth(menuRef.current.offsetWidth)
-    setHeight(menuRef.current.offsetHeight)
+    const menu = menuRef.current
+    if (!menu) return
+
+    const updateSize = () => {
+      setWidth(menu.offsetWidth)
+      setHeight(menu.offsetHeight)
+    }
+    updateSize()
+
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(updateSize)
+    observer.observe(menu)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
+    if (focusFrameRef.current !== null) {
+      window.cancelAnimationFrame(focusFrameRef.current)
+      focusFrameRef.current = null
+    }
+    shouldRestoreFocusRef.current = false
     setShow(false)
-  }, [router])
+  }, [router.asPath])
+
+  useEffect(() => {
+    if (show || !previousFocusRef.current) return
+    const previousFocus = previousFocusRef.current
+    const shouldRestoreFocus = shouldRestoreFocusRef.current
+    previousFocusRef.current = null
+    shouldRestoreFocusRef.current = false
+    if (
+      shouldRestoreFocus &&
+      previousFocus instanceof HTMLElement &&
+      previousFocus.isConnected
+    ) {
+      previousFocus.focus()
+    }
+  }, [show])
 
   useEffect(() => {
     const handleContextMenu = event => {
       event.preventDefault()
+      if (!menuRef.current?.contains(document.activeElement)) {
+        previousFocusRef.current = document.activeElement
+      }
       // 计算点击位置加菜单宽高是否超出屏幕，如果超出则贴边弹出
-      const x =
+      const x = Math.max(
+        0,
         event.clientX < windowSize.width - width
           ? event.clientX
           : windowSize.width - width
-      const y =
+      )
+      const y = Math.max(
+        0,
         event.clientY < windowSize.height - height
           ? event.clientY
           : windowSize.height - height
+      )
       setPosition({ y: `${y}px`, x: `${x}px` })
       setShow(true)
+      if (focusFrameRef.current !== null) {
+        window.cancelAnimationFrame(focusFrameRef.current)
+      }
+      focusFrameRef.current = window.requestAnimationFrame(() => {
+        menuRef.current?.querySelector('[role="menuitem"]')?.focus()
+        focusFrameRef.current = null
+      })
     }
 
     /**
      * 鼠标点击即关闭菜单
      */
     const handleClick = event => {
+      if (focusFrameRef.current !== null) {
+        window.cancelAnimationFrame(focusFrameRef.current)
+        focusFrameRef.current = null
+      }
+      shouldRestoreFocusRef.current = Boolean(
+        event.target instanceof Node && menuRef.current?.contains(event.target)
+      )
       setShow(false)
     }
 
@@ -72,8 +128,12 @@ export default function CustomContextMenu(props) {
     return () => {
       window.removeEventListener('contextmenu', handleContextMenu)
       window.removeEventListener('click', handleClick)
+      if (focusFrameRef.current !== null) {
+        window.cancelAnimationFrame(focusFrameRef.current)
+        focusFrameRef.current = null
+      }
     }
-  }, [windowSize])
+  }, [height, width, windowSize.height, windowSize.width])
 
   function handleBack() {
     window.history.back()
@@ -93,8 +153,11 @@ export default function CustomContextMenu(props) {
 
   function handleCopyLink() {
     const url = stripTransientQueryParamsFromUrl(window.location.href)
-    navigator.clipboard
-      .writeText(url)
+    const copyPromise = navigator.clipboard?.writeText
+      ? navigator.clipboard.writeText(url)
+      : copyTextWithLegacyApi(url)
+
+    copyPromise
       .then(() => {
         // console.log('页面地址已复制')
         alert(`${locale.COMMON.PAGE_URL_COPIED} : ${url}`)
@@ -108,34 +171,21 @@ export default function CustomContextMenu(props) {
    * 切换主题
    */
   function handleChangeTheme() {
+    if (THEMES.length === 0) return
     const randomTheme = THEMES[Math.floor(Math.random() * THEMES.length)] // 从THEMES数组中 随机取一个主题
-    const query = router.query
-    query.theme = randomTheme
-    router.push({ pathname: router.pathname, query })
+    const query = { ...router.query, theme: randomTheme }
+    void router.push({ pathname: router.pathname, query })
   }
 
   /**
    * 复制内容
    */
   function handleCopy() {
-    const selectedText = document.getSelection().toString()
-    if (selectedText) {
-      const tempInput = document.createElement('input')
-      tempInput.value = selectedText
-      document.body.appendChild(tempInput)
-      tempInput.select()
-      document.execCommand('copy')
-      if (
-        tempInput &&
-        tempInput.parentNode &&
-        tempInput.parentNode.contains(tempInput)
-      ) {
-        tempInput.parentNode.removeChild(tempInput)
-      }
-      // alert("Text copied: " + selectedText);
-    } else {
-      // alert("Please select some text first.");
-    }
+    const selectedText = document.getSelection()?.toString() || ''
+    if (!selectedText) return
+    void copyTextWithLegacyApi(selectedText).catch(error => {
+      console.error('复制所选文本失败:', error)
+    })
   }
 
   function handleChangeDarkMode() {
@@ -170,24 +220,73 @@ export default function CustomContextMenu(props) {
   return (
     <div
       ref={menuRef}
+      role='menu'
+      aria-hidden={!show}
+      onKeyDown={event => {
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          shouldRestoreFocusRef.current = true
+          setShow(false)
+          return
+        }
+
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+          return
+        }
+        const items = Array.from(
+          menuRef.current?.querySelectorAll('[role="menuitem"]') || []
+        )
+        if (!items.length) return
+        event.preventDefault()
+        const currentIndex = items.indexOf(document.activeElement)
+        const nextIndex =
+          event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? items.length - 1
+              : event.key === 'ArrowUp'
+                ? currentIndex <= 0
+                  ? items.length - 1
+                  : currentIndex - 1
+                : currentIndex < 0
+                  ? 0
+                  : (currentIndex + 1) % items.length
+        items[nextIndex].focus()
+      }}
       style={{ top: position.y, left: position.x }}
       className={`${show ? '' : 'invisible opacity-0'} select-none transition-opacity duration-200 fixed z-50`}>
       {/* 菜单内容 */}
       <div className='rounded-xl w-52 dark:hover:border-yellow-600 bg-white dark:bg-[#040404] dark:text-gray-200 dark:border-gray-600 p-3 border drop-shadow-lg flex-col duration-300 transition-colors'>
         {/* 顶部导航按钮 */}
         <div className='flex justify-between'>
-          <i
+          <button
+            type='button'
+            role='menuitem'
+            aria-label='Back'
             onClick={handleBack}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-8 rounded cursor-pointer fa-solid fa-arrow-left'></i>
-          <i
+            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-arrow-left'
+          />
+          <button
+            type='button'
+            role='menuitem'
+            aria-label='Forward'
             onClick={handleForward}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-8 rounded cursor-pointer fa-solid fa-arrow-right'></i>
-          <i
+            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-arrow-right'
+          />
+          <button
+            type='button'
+            role='menuitem'
+            aria-label='Refresh'
             onClick={handleRefresh}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-8 rounded cursor-pointer fa-solid fa-rotate-right'></i>
-          <i
+            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-rotate-right'
+          />
+          <button
+            type='button'
+            role='menuitem'
+            aria-label='Scroll to top'
             onClick={handleScrollTop}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-8 rounded cursor-pointer fa-solid fa-arrow-up'></i>
+            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-arrow-up'
+          />
         </div>
 
         <hr className='my-2 border-dashed' />
@@ -196,7 +295,9 @@ export default function CustomContextMenu(props) {
         <div className='w-full px-2'>
           {CUSTOM_RIGHT_CLICK_CONTEXT_MENU_RANDOM_POST &&
             allNavPages.length > 0 && (
-              <div
+              <button
+                type='button'
+                role='menuitem'
                 onClick={handleJumpToRandomPost}
                 title={locale.MENU.WALK_AROUND}
                 className='w-full px-2 h-10 flex justify-start items-center flex-nowrap cursor-pointer hover:bg-blue-600 hover:text-white rounded-lg duration-200 transition-all'>
@@ -204,11 +305,12 @@ export default function CustomContextMenu(props) {
                 <div className='whitespace-nowrap'>
                   {locale.MENU.WALK_AROUND}
                 </div>
-              </div>
+              </button>
             )}
 
           {CUSTOM_RIGHT_CLICK_CONTEXT_MENU_CATEGORY && (
             <SmartLink
+              role='menuitem'
               href='/category'
               title={locale.MENU.CATEGORY}
               className='w-full px-2 h-10 flex justify-start items-center flex-nowrap cursor-pointer hover:bg-blue-600 hover:text-white rounded-lg duration-200 transition-all'>
@@ -219,6 +321,7 @@ export default function CustomContextMenu(props) {
 
           {CUSTOM_RIGHT_CLICK_CONTEXT_MENU_TAG && (
             <SmartLink
+              role='menuitem'
               href='/tag'
               title={locale.MENU.TAGS}
               className='w-full px-2 h-10 flex justify-start items-center flex-nowrap cursor-pointer hover:bg-blue-600 hover:text-white rounded-lg duration-200 transition-all'>
@@ -233,27 +336,33 @@ export default function CustomContextMenu(props) {
         {/* 功能按钮 */}
         <div className='w-full px-2'>
           {CAN_COPY && (
-            <div
+            <button
+              type='button'
+              role='menuitem'
               onClick={handleCopy}
               title={locale.MENU.COPY}
               className='w-full px-2 h-10 flex justify-start items-center flex-nowrap cursor-pointer hover:bg-blue-600 hover:text-white rounded-lg duration-200 transition-all'>
               <i className='fa-solid fa-copy mr-2' />
               <div className='whitespace-nowrap'>{locale.MENU.COPY}</div>
-            </div>
+            </button>
           )}
 
           {CUSTOM_RIGHT_CLICK_CONTEXT_MENU_SHARE_LINK && (
-            <div
+            <button
+              type='button'
+              role='menuitem'
               onClick={handleCopyLink}
               title={locale.MENU.SHARE_URL}
               className='w-full px-2 h-10 flex justify-start items-center flex-nowrap cursor-pointer hover:bg-blue-600 hover:text-white rounded-lg duration-200 transition-all'>
               <i className='fa-solid fa-arrow-up-right-from-square mr-2' />
               <div className='whitespace-nowrap'>{locale.MENU.SHARE_URL}</div>
-            </div>
+            </button>
           )}
 
           {CUSTOM_RIGHT_CLICK_CONTEXT_MENU_DARK_MODE && (
-            <div
+            <button
+              type='button'
+              role='menuitem'
               onClick={handleChangeDarkMode}
               title={
                 isDarkMode ? locale.MENU.LIGHT_MODE : locale.MENU.DARK_MODE
@@ -268,11 +377,13 @@ export default function CustomContextMenu(props) {
                 {' '}
                 {isDarkMode ? locale.MENU.LIGHT_MODE : locale.MENU.DARK_MODE}
               </div>
-            </div>
+            </button>
           )}
 
           {CUSTOM_RIGHT_CLICK_CONTEXT_MENU_THEME_SWITCH && (
-            <div
+            <button
+              type='button'
+              role='menuitem'
               onClick={handleChangeTheme}
               title={locale.MENU.THEME_SWITCH}
               className='w-full px-2 h-10 flex justify-start items-center flex-nowrap cursor-pointer hover:bg-blue-600 hover:text-white rounded-lg duration-200 transition-all'>
@@ -280,10 +391,33 @@ export default function CustomContextMenu(props) {
               <div className='whitespace-nowrap'>
                 {locale.MENU.THEME_SWITCH}
               </div>
-            </div>
+            </button>
           )}
         </div>
       </div>
     </div>
   )
+}
+
+function copyTextWithLegacyApi(value) {
+  return new Promise((resolve, reject) => {
+    const tempInput = document.createElement('textarea')
+    tempInput.value = value
+    tempInput.setAttribute('readonly', '')
+    tempInput.style.position = 'fixed'
+    tempInput.style.opacity = '0'
+    document.body.appendChild(tempInput)
+    tempInput.select()
+
+    try {
+      if (!document.execCommand('copy')) {
+        throw new Error('Copy command was rejected')
+      }
+      resolve()
+    } catch (error) {
+      reject(error)
+    } finally {
+      tempInput.remove()
+    }
+  })
 }

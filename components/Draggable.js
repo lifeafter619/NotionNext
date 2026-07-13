@@ -10,153 +10,94 @@ export const Draggable = ({ children, stick }) => {
   const draggableRef = useRef(null)
   const rafRef = useRef(null)
   const [moving, setMoving] = useState(false)
-  let currentObj, offsetX, offsetY
 
   useEffect(() => {
-    const draggableElements = document.getElementsByClassName('draggable')
-    const previousHandlers = {
-      onmousedown: document.onmousedown,
-      ontouchstart: document.ontouchstart,
-      onmousemove: document.onmousemove,
-      ontouchmove: document.ontouchmove,
-      onmouseup: document.onmouseup,
-      ontouchend: document.ontouchend
-    }
+    const dragRoot = draggableRef.current
+    const dragTarget = dragRoot?.firstElementChild
+    if (!dragRoot || !dragTarget) return
 
-    function e(event) {
-      if (!event) {
-        event = window.event
-        event.target = event.srcElement
-        event.layerX = event.offsetX
-        event.layerY = event.offsetY
-      }
-      if (event.type === 'touchstart' || event.type === 'touchmove') {
-        event.clientX = event.touches[0].clientX
-        event.clientY = event.touches[0].clientY
-      }
-      event.mx = event.pageX || event.clientX + document.body.scrollLeft
-      event.my = event.pageY || event.clientY + document.body.scrollTop
-      return event
-    }
+    let activePointerId = null
+    let offsetX = 0
+    let offsetY = 0
 
-    document.onmousedown = start
-    document.ontouchstart = start
+    const checkInWindow = () => {
+      const rect = dragTarget.getBoundingClientRect()
+      const maxLeft = Math.max(window.innerWidth - rect.width, 0)
+      const maxTop = Math.max(window.innerHeight - rect.height, 0)
+      const nextLeft =
+        stick === 'left'
+          ? 0
+          : stick === 'right'
+            ? maxLeft
+            : Math.min(Math.max(rect.left, 0), maxLeft)
+      const nextTop = Math.min(Math.max(rect.top, 0), maxTop)
 
-    function start(event) {
-      if (!draggableElements) return
-      event = e(event)
-
-      for (const drag of draggableElements) {
-        if (inDragBox(event, drag)) {
-          currentObj = drag.firstElementChild
-        }
-      }
-      if (currentObj) {
-        if (event.type === 'touchstart') {
-          event.preventDefault()
-          document.documentElement.style.overflow = 'hidden'
-        }
-
-        setMoving(true)
-        offsetX = event.mx - currentObj.offsetLeft
-        offsetY = event.my - currentObj.offsetTop
-
-        document.onmousemove = move
-        document.ontouchmove = move
-        document.onmouseup = stop
-        document.ontouchend = stop
-      }
-    }
-
-    function move(event) {
-      event = e(event)
-      rafRef.current = requestAnimationFrame(() => updatePosition(event))
+      dragTarget.style.left = `${nextLeft}px`
+      dragTarget.style.top = `${nextTop}px`
     }
 
     const stop = event => {
-      event = e(event)
-      document.documentElement.style.overflow = 'auto'
-      cancelAnimationFrame(rafRef.current)
+      if (activePointerId === null || event.pointerId !== activePointerId)
+        return
+      activePointerId = null
+      window.cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
       setMoving(false)
-      if (stick) {
-        checkInWindow() // 吸附逻辑
+      dragRoot.releasePointerCapture?.(event.pointerId)
+      if (stick) checkInWindow()
+    }
+
+    const move = event => {
+      if (activePointerId === null || event.pointerId !== activePointerId)
+        return
+      event.preventDefault()
+      window.cancelAnimationFrame(rafRef.current)
+      rafRef.current = window.requestAnimationFrame(() => {
+        dragTarget.style.left = `${event.clientX - offsetX}px`
+        dragTarget.style.top = `${event.clientY - offsetY}px`
+      })
+    }
+
+    const start = event => {
+      if (
+        event.button !== 0 ||
+        (event.target instanceof Element &&
+          event.target.closest(
+            'button, a, input, textarea, select, [role="button"]'
+          ))
+      ) {
+        return
       }
-      currentObj =
-        document.ontouchmove =
-        document.ontouchend =
-        document.onmousemove =
-        document.onmouseup =
-          null
+
+      const rect = dragTarget.getBoundingClientRect()
+      activePointerId = event.pointerId
+      offsetX = event.clientX - rect.left
+      offsetY = event.clientY - rect.top
+      dragRoot.setPointerCapture?.(event.pointerId)
+      setMoving(true)
     }
 
-    const updatePosition = event => {
-      if (currentObj) {
-        const left = event.mx - offsetX
-        const top = event.my - offsetY
-        currentObj.style.left = left + 'px'
-        currentObj.style.top = top + 'px'
-      }
-    }
-
-    function inDragBox(event, drag) {
-      const { clientX, clientY } = event
-      const { offsetHeight, offsetWidth, offsetTop, offsetLeft } =
-        drag.firstElementChild
-      const horizontal =
-        clientX > offsetLeft && clientX < offsetLeft + offsetWidth
-      const vertical = clientY > offsetTop && clientY < offsetTop + offsetHeight
-
-      return horizontal && vertical
-    }
-
-    function checkInWindow() {
-      for (const drag of draggableElements) {
-        const { offsetHeight, offsetWidth, offsetTop, offsetLeft } =
-          drag.firstElementChild
-        const { clientHeight, clientWidth } = document.documentElement
-        if (offsetTop < 0) {
-          drag.firstElementChild.style.top = '0px'
-        }
-        if (offsetTop > clientHeight - offsetHeight) {
-          drag.firstElementChild.style.top = clientHeight - offsetHeight + 'px'
-        }
-        if (offsetLeft < 0) {
-          drag.firstElementChild.style.left = '0px'
-        }
-        if (offsetLeft > clientWidth - offsetWidth) {
-          drag.firstElementChild.style.left = clientWidth - offsetWidth + 'px'
-        }
-        if (stick === 'left') {
-          drag.firstElementChild.style.left = '0px'
-        } else if (stick === 'right') {
-          drag.firstElementChild.style.left = clientWidth - offsetWidth + 'px'
-        }
-      }
-    }
-
+    dragRoot.addEventListener('pointerdown', start)
+    dragRoot.addEventListener('pointermove', move)
+    dragRoot.addEventListener('pointerup', stop)
+    dragRoot.addEventListener('pointercancel', stop)
     window.addEventListener('resize', checkInWindow)
 
     return () => {
+      dragRoot.removeEventListener('pointerdown', start)
+      dragRoot.removeEventListener('pointermove', move)
+      dragRoot.removeEventListener('pointerup', stop)
+      dragRoot.removeEventListener('pointercancel', stop)
       window.removeEventListener('resize', checkInWindow)
-      cancelAnimationFrame(rafRef.current)
-      restoreDocumentHandler('onmousedown', start)
-      restoreDocumentHandler('ontouchstart', start)
-      restoreDocumentHandler('onmousemove', move)
-      restoreDocumentHandler('ontouchmove', move)
-      restoreDocumentHandler('onmouseup', stop)
-      restoreDocumentHandler('ontouchend', stop)
-    }
-
-    function restoreDocumentHandler(name, handler) {
-      if (document[name] === handler) {
-        document[name] = previousHandlers[name] || null
-      }
+      window.cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
     }
   }, [stick])
 
   return (
     <div
       className={`draggable ${moving ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+      style={{ touchAction: 'none' }}
       ref={draggableRef}>
       {children}
     </div>

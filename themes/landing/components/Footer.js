@@ -1,6 +1,6 @@
 import { subscribeToNewsletter } from '@/lib/plugins/mailchimp'
 import SmartLink from '@/components/SmartLink'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import CONFIG from '../config'
 import Logo from './Logo'
 import { siteConfig } from '@/lib/config'
@@ -9,29 +9,26 @@ import { siteConfig } from '@/lib/config'
  * 页脚
  */
 export default function Footer() {
-  const formRef = useRef()
+  const inputRef = useRef(null)
   const [success, setSuccess] = useState(false)
-  useEffect(() => {
-    const form = formRef.current
-    const handleSubmit = e => {
-      e.preventDefault()
-      const email = document.querySelector('#newsletter').value
-      subscribeToNewsletter(email)
-        .then(response => {
-          console.log('Subscription succeeded:', response)
-          // 在此处添加成功订阅后的操作
-          setSuccess(true)
-        })
-        .catch(error => {
-          console.error('Subscription failed:', error)
-          // 在此处添加订阅失败后的操作
-        })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async event => {
+    event.preventDefault()
+    if (submitting || success) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      await subscribeToNewsletter(inputRef.current?.value || '')
+      setSuccess(true)
+    } catch {
+      setError('Subscription failed. Check your email and try again.')
+    } finally {
+      setSubmitting(false)
     }
-    form?.addEventListener('submit', handleSubmit)
-    return () => {
-      form?.removeEventListener('submit', handleSubmit)
-    }
-  }, [subscribeToNewsletter])
+  }
 
   return (
     <footer>
@@ -177,7 +174,7 @@ export default function Footer() {
                 <p className='text-sm text-gray-600 mb-4'>
                   Get the latest news and articles to your inbox every month.
                 </p>
-                <form ref={formRef}>
+                <form onSubmit={handleSubmit} aria-busy={submitting}>
                   <div className='flex flex-wrap mb-4'>
                     <div className='w-full'>
                       <label
@@ -187,7 +184,8 @@ export default function Footer() {
                       </label>
                       <div className='relative flex items-center max-w-xs'>
                         <input
-                          disabled={success}
+                          ref={inputRef}
+                          disabled={success || submitting}
                           id='newsletter'
                           type='email'
                           className='form-input w-full text-gray-800 px-3 py-2 pr-12 text-sm'
@@ -195,7 +193,7 @@ export default function Footer() {
                           required
                         />
                         <button
-                          disabled={success}
+                          disabled={success || submitting}
                           type='submit'
                           className='absolute inset-0 left-auto'
                           aria-label='Subscribe'>
@@ -215,8 +213,15 @@ export default function Footer() {
                       </div>
                       {/* Success message */}
                       {success && (
-                        <p className='mt-2 text-green-600 text-sm'>
+                        <p
+                          role='status'
+                          className='mt-2 text-green-600 text-sm'>
                           Thanks for subscribing!
+                        </p>
+                      )}
+                      {error && (
+                        <p role='alert' className='mt-2 text-red-600 text-sm'>
+                          {error}
                         </p>
                       )}
                     </div>

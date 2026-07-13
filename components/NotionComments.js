@@ -30,29 +30,57 @@ const NotionComments = ({ postId }) => {
   const [visibleRootCount, setVisibleRootCount] = useState(ROOT_PAGE_SIZE)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [errorSource, setErrorSource] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const contentRef = useRef(null)
+  const loadRequestRef = useRef(0)
+  const postIdRef = useRef(postId)
+  postIdRef.current = postId
 
   const loadComments = useCallback(async () => {
+    const requestId = loadRequestRef.current + 1
+    loadRequestRef.current = requestId
     setLoading(true)
     setError('')
+    setErrorSource('')
     try {
       const response = await fetch(
         `/api/notion-comments?postId=${encodeURIComponent(postId)}`
       )
       if (!response.ok) throw new Error('Failed to load comments')
-      setComments(await response.json())
-    } catch (error) {
+      const result = await response.json()
+      if (!Array.isArray(result)) throw new Error('Invalid comments response')
+      if (loadRequestRef.current === requestId) setComments(result)
+    } catch {
+      if (loadRequestRef.current !== requestId) return
       setError('评论加载失败，请重试')
+      setErrorSource('load')
     } finally {
-      setLoading(false)
+      if (loadRequestRef.current === requestId) setLoading(false)
     }
   }, [postId])
 
   useEffect(() => {
-    if (!postId) return
+    setComments([])
+    setContent('')
+    setReplyTo('')
+    setExpandedReplies({})
+    setVisibleReplyCounts({})
+    setVisibleRootCount(ROOT_PAGE_SIZE)
+    setNotice('')
+    setError('')
+    setErrorSource('')
+    setSubmitting(false)
+    if (!postId) {
+      loadRequestRef.current += 1
+      setLoading(false)
+      return
+    }
     void loadComments()
+    return () => {
+      loadRequestRef.current += 1
+    }
   }, [loadComments, postId])
 
   const commentTree = useMemo(() => buildCommentTree(comments), [comments])
@@ -61,10 +89,12 @@ const NotionComments = ({ postId }) => {
 
   const submitComment = async event => {
     event.preventDefault()
-    if (!content.trim() || !author.trim() || submitting) return
+    if (!postId || !content.trim() || !author.trim() || submitting) return
 
+    const submittedPostId = postId
     setSubmitting(true)
     setError('')
+    setErrorSource('')
     setNotice('')
     try {
       const response = await fetch('/api/notion-comments', {
@@ -79,8 +109,15 @@ const NotionComments = ({ postId }) => {
           website
         })
       })
-      if (!response.ok) throw new Error('Failed to submit comment')
-      const result = await response.json()
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const submitError = new Error(
+          result.error || 'Failed to submit comment'
+        )
+        submitError.status = response.status
+        throw submitError
+      }
+      if (postIdRef.current !== submittedPostId) return
       setContent('')
       setReplyTo('')
       setNotice(
@@ -91,7 +128,13 @@ const NotionComments = ({ postId }) => {
       }
       await loadComments()
     } catch (error) {
-      setError('评论提交失败，请稍后重试')
+      if (postIdRef.current !== submittedPostId) return
+      setError(
+        error?.status === 429
+          ? '提交过于频繁，请稍后再试'
+          : '评论提交失败，请稍后重试'
+      )
+      setErrorSource('submit')
     } finally {
       setSubmitting(false)
     }
@@ -139,8 +182,7 @@ const NotionComments = ({ postId }) => {
         key={comment.id}
         className={`flex gap-3 border-gray-200 py-4 dark:border-gray-700 ${
           level === 0 ? 'border-b' : 'border-l pl-3 sm:pl-4'
-        }`}
-      >
+        }`}>
         <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white dark:bg-gray-100 dark:text-gray-900'>
           {getInitial(comment.author)}
         </div>
@@ -162,8 +204,7 @@ const NotionComments = ({ postId }) => {
             <button
               type='button'
               className='text-blue-600 hover:underline dark:text-blue-400'
-              onClick={() => startReply(comment)}
-            >
+              onClick={() => startReply(comment)}>
               回复
             </button>
 
@@ -171,8 +212,7 @@ const NotionComments = ({ postId }) => {
               <button
                 type='button'
                 className='text-gray-600 hover:underline dark:text-gray-300'
-                onClick={() => toggleReplies(comment.id)}
-              >
+                onClick={() => toggleReplies(comment.id)}>
                 {repliesOpen ? '收起回复' : `查看 ${replyCount} 条回复`}
               </button>
             )}
@@ -185,8 +225,7 @@ const NotionComments = ({ postId }) => {
                 <button
                   type='button'
                   className='ml-12 text-sm text-gray-600 hover:underline dark:text-gray-300'
-                  onClick={() => showMoreReplies(comment.id)}
-                >
+                  onClick={() => showMoreReplies(comment.id)}>
                   展开更多回复
                 </button>
               )}
@@ -215,8 +254,7 @@ const NotionComments = ({ postId }) => {
             <button
               type='button'
               className='shrink-0 text-gray-600 hover:underline dark:text-gray-300'
-              onClick={() => setReplyTo('')}
-            >
+              onClick={() => setReplyTo('')}>
               取消
             </button>
           </div>
@@ -226,10 +264,10 @@ const NotionComments = ({ postId }) => {
           className='space-y-3'
           onSubmit={event => {
             void submitComment(event)
-          }}
-        >
+          }}>
           <textarea
             ref={contentRef}
+            aria-label={replyTarget ? '回复内容' : '评论内容'}
             className='w-full rounded-md border border-gray-300 bg-transparent p-3 text-sm outline-none focus:border-blue-500 dark:border-gray-600'
             maxLength={2000}
             onChange={event => setContent(event.target.value)}
@@ -248,6 +286,7 @@ const NotionComments = ({ postId }) => {
           />
           <div className='grid gap-2 sm:grid-cols-[1fr_1fr_auto]'>
             <input
+              aria-label='昵称'
               className='min-w-0 rounded-md border border-gray-300 bg-transparent p-2 text-sm outline-none focus:border-blue-500 dark:border-gray-600'
               maxLength={40}
               onChange={event => setNickname(event.target.value)}
@@ -255,6 +294,7 @@ const NotionComments = ({ postId }) => {
               value={nickname}
             />
             <input
+              aria-label='邮箱，不会公开'
               className='min-w-0 rounded-md border border-gray-300 bg-transparent p-2 text-sm outline-none focus:border-blue-500 dark:border-gray-600'
               maxLength={254}
               onChange={event => setAuthor(event.target.value)}
@@ -266,8 +306,9 @@ const NotionComments = ({ postId }) => {
             <button
               type='submit'
               className='rounded-md bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-60'
-              disabled={submitting}
-            >
+              disabled={
+                submitting || !postId || !content.trim() || !author.trim()
+              }>
               {submitting ? '提交中...' : replyTarget ? '回复' : '评论'}
             </button>
           </div>
@@ -275,29 +316,34 @@ const NotionComments = ({ postId }) => {
       </section>
 
       {notice && (
-        <div className='rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-200'>
+        <div
+          role='status'
+          className='rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-200'>
           {notice}
         </div>
       )}
 
       {error && (
-        <div className='flex items-center justify-between gap-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200'>
+        <div
+          role='alert'
+          className='flex items-center justify-between gap-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200'>
           <span>{error}</span>
-          <button
-            type='button'
-            className='underline'
-            onClick={() => {
-              void loadComments()
-            }}
-          >
-            重试
-          </button>
+          {errorSource === 'load' && (
+            <button
+              type='button'
+              className='underline'
+              onClick={() => {
+                void loadComments()
+              }}>
+              重试
+            </button>
+          )}
         </div>
       )}
 
       <section>
-        {loading ? (
-          <div className='space-y-3'>
+        {loading && (
+          <div role='status' aria-label='正在加载评论' className='space-y-3'>
             {[0, 1, 2].map(item => (
               <div
                 key={item}
@@ -305,26 +351,28 @@ const NotionComments = ({ postId }) => {
               />
             ))}
           </div>
-        ) : visibleRoots.length ? (
-          <>
-            <div>{visibleRoots.map(comment => renderComment(comment))}</div>
-            {visibleRootCount < commentTree.length && (
-              <button
-                type='button'
-                className='mt-4 w-full rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
-                onClick={() =>
-                  setVisibleRootCount(count => count + ROOT_PAGE_SIZE)
-                }
-              >
-                加载更多评论
-              </button>
-            )}
-          </>
-        ) : (
-          <p className='rounded-md border border-dashed border-gray-300 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400'>
-            还没有评论，来写第一条吧。
-          </p>
         )}
+        {!loading &&
+          !(errorSource === 'load' && comments.length === 0) &&
+          (visibleRoots.length ? (
+            <>
+              <div>{visibleRoots.map(comment => renderComment(comment))}</div>
+              {visibleRootCount < commentTree.length && (
+                <button
+                  type='button'
+                  className='mt-4 w-full rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
+                  onClick={() =>
+                    setVisibleRootCount(count => count + ROOT_PAGE_SIZE)
+                  }>
+                  加载更多评论
+                </button>
+              )}
+            </>
+          ) : (
+            <p className='rounded-md border border-dashed border-gray-300 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400'>
+              还没有评论，来写第一条吧。
+            </p>
+          ))}
       </section>
     </div>
   )

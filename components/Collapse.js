@@ -14,6 +14,8 @@ const Collapse = ({
   collapseRef
 }) => {
   const ref = useRef(null)
+  const onHeightChangeRef = useRef(onHeightChange)
+  onHeightChangeRef.current = onHeightChange
 
   useImperativeHandle(collapseRef, () => {
     return {
@@ -22,75 +24,53 @@ const Collapse = ({
        * @param {*} param0
        */
       updateCollapseHeight: ({ height, increase }) => {
-        if (isOpen) {
-          ref.current.style.height = ref.current.scrollHeight
-          ref.current.style.height = 'auto'
+        if (isOpen && ref.current) {
+          const sizeProperty = type === 'horizontal' ? 'width' : 'height'
+          ref.current.style[sizeProperty] = 'auto'
         }
       }
     }
-  })
-
-  /**
-   * 折叠
-   * @param {*} element
-   */
-  const collapseSection = element => {
-    const sectionHeight = element.scrollHeight
-    const sectionWidth = element.scrollWidth
-
-    requestAnimationFrame(function () {
-      switch (type) {
-        case 'horizontal':
-          element.style.width = sectionWidth + 'px'
-          requestAnimationFrame(function () {
-            element.style.width = 0 + 'px'
-          })
-          break
-        case 'vertical':
-          element.style.height = sectionHeight + 'px'
-          requestAnimationFrame(function () {
-            element.style.height = 0 + 'px'
-          })
-      }
-    })
-  }
-
-  /**
-   * 展开
-   * @param {*} element
-   */
-  const expandSection = element => {
-    const sectionHeight = element.scrollHeight
-    const sectionWidth = element.scrollWidth
-    let clearTime = 0
-    switch (type) {
-      case 'horizontal':
-        element.style.width = sectionWidth + 'px'
-        clearTime = setTimeout(() => {
-          element.style.width = 'auto'
-        }, 400)
-        break
-      case 'vertical':
-        element.style.height = sectionHeight + 'px'
-        clearTime = setTimeout(() => {
-          element.style.height = 'auto'
-        }, 400)
-    }
-  }
+  }, [isOpen, type])
 
   useEffect(() => {
+    const element = ref.current
+    if (!element) return
+
+    const sizeProperty = type === 'horizontal' ? 'width' : 'height'
+    const measuredSize =
+      type === 'horizontal' ? element.scrollWidth : element.scrollHeight
+    let outerFrame = null
+    let innerFrame = null
+    let transitionTimer = null
+
     if (isOpen) {
-      expandSection(ref.current)
+      element.style[sizeProperty] = `${measuredSize}px`
+      transitionTimer = window.setTimeout(() => {
+        if (ref.current === element) {
+          element.style[sizeProperty] = 'auto'
+        }
+      }, 400)
     } else {
-      collapseSection(ref.current)
-    }
-    // 通知父组件高度变化
-    onHeightChange &&
-      onHeightChange({
-        height: ref.current.scrollHeight,
-        increase: isOpen
+      outerFrame = window.requestAnimationFrame(() => {
+        element.style[sizeProperty] = `${measuredSize}px`
+        innerFrame = window.requestAnimationFrame(() => {
+          element.style[sizeProperty] = '0px'
+        })
       })
-  }, [isOpen])
+    }
+
+    // 通知父组件高度变化
+    onHeightChangeRef.current?.({
+      height: element.scrollHeight,
+      increase: isOpen
+    })
+
+    return () => {
+      if (transitionTimer) window.clearTimeout(transitionTimer)
+      if (outerFrame) window.cancelAnimationFrame(outerFrame)
+      if (innerFrame) window.cancelAnimationFrame(innerFrame)
+    }
+  }, [isOpen, type])
 
   return (
     <div

@@ -5,7 +5,12 @@ import { createPortal } from 'react-dom'
  * 图片查看器组件
  * 支持放大、缩小、旋转、翻转、下载、切换图片、缩略图预览等功能
  */
-const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
+const ImageViewer = ({
+  isOpen,
+  images = [],
+  currentIndex = 0,
+  onClose = () => {}
+}) => {
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
   const [position, setPosition] = useState({ x: 0, y: 0 })
@@ -40,8 +45,16 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const initialDistanceRef = useRef(0)
   const initialScaleRef = useRef(1)
   const imgRef = useRef(null)
+  const dialogRef = useRef(null)
+  const closeButtonRef = useRef(null)
+  const previousFocusRef = useRef(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
   const thumbnailScrollRef = useRef(null)
   const imageLoadIdRef = useRef(0)
+  const closeViewer = useCallback(() => {
+    onCloseRef.current()
+  }, [])
 
   useEffect(() => {
     setMounted(true)
@@ -77,9 +90,10 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   // 当外部传入的 currentIndex 改变时更新内部 index
   useEffect(() => {
     if (isOpen) {
-      setIndex(currentIndex)
+      const lastIndex = Math.max((images?.length || 1) - 1, 0)
+      setIndex(Math.min(Math.max(Number(currentIndex) || 0, 0), lastIndex))
     }
-  }, [isOpen, currentIndex])
+  }, [isOpen, currentIndex, images?.length])
 
   // 初始化图片：优先显示缩略图，后台加载高清图
   useEffect(() => {
@@ -143,6 +157,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const handlePrev = useCallback(
     e => {
       e?.stopPropagation()
+      if (!images.length) return
       setIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))
     },
     [images.length]
@@ -152,6 +167,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
   const handleNext = useCallback(
     e => {
       e?.stopPropagation()
+      if (!images.length) return
       setIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))
     },
     [images.length]
@@ -159,8 +175,36 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
   // 键盘事件处理
   useEffect(() => {
+    if (!isOpen) return
+
+    previousFocusRef.current = document.activeElement
+    const focusFrame = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus()
+    })
+
     const handleKeyDown = e => {
-      if (!isOpen) return
+      if (e.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+        )
+        const elements = Array.from(focusable || [])
+        if (!elements.length) {
+          e.preventDefault()
+          dialogRef.current?.focus()
+          return
+        }
+
+        const first = elements[0]
+        const last = elements[elements.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+        return
+      }
 
       // 查看器工具栏包含缩放数字输入框，输入时不能触发快捷键（如 0 重置、r 旋转）
       if (
@@ -174,12 +218,15 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
       switch (e.key) {
         case 'Escape':
-          onClose()
+          e.preventDefault()
+          closeViewer()
           break
         case 'ArrowLeft':
+          e.preventDefault()
           handlePrev()
           break
         case 'ArrowRight':
+          e.preventDefault()
           handleNext()
           break
         case '+':
@@ -205,16 +252,17 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       }
     }
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = 'hidden'
-    }
+    document.addEventListener('keydown', handleKeyDown)
 
     return () => {
+      window.cancelAnimationFrame(focusFrame)
       document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = ''
+      const previousFocus = previousFocusRef.current
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+        previousFocus.focus()
+      }
     }
-  }, [isOpen, onClose, resetState, handlePrev, handleNext])
+  }, [isOpen, closeViewer, resetState, handlePrev, handleNext])
 
   // 全局滚轮事件处理 - 用于缩放图片，同时防止页面滚动
   useEffect(() => {
@@ -222,7 +270,9 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
     const handleGlobalWheel = e => {
       // 如果是在缩略图栏上滚动，允许默认行为
-      if (e.target.closest('.thumbnail-strip')) return
+      if (e.target instanceof Element && e.target.closest('.thumbnail-strip')) {
+        return
+      }
 
       e.preventDefault()
       e.stopPropagation()
@@ -237,7 +287,9 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
     const preventTouchScroll = e => {
       // 如果是在缩略图栏上滑动，允许默认行为
-      if (e.target.closest('.thumbnail-strip')) return
+      if (e.target instanceof Element && e.target.closest('.thumbnail-strip')) {
+        return
+      }
 
       e.preventDefault()
       e.stopPropagation()
@@ -270,6 +322,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
     const originalOverflow = document.body.style.overflow
     const originalPosition = document.body.style.position
     const originalTop = document.body.style.top
+    const originalWidth = document.body.style.width
     const scrollY = window.scrollY
     document.body.style.overflow = 'hidden'
     document.body.style.position = 'fixed'
@@ -282,7 +335,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       document.body.style.overflow = originalOverflow
       document.body.style.position = originalPosition
       document.body.style.top = originalTop
-      document.body.style.width = ''
+      document.body.style.width = originalWidth
       document.body.style.paddingRight = originalPaddingRight
 
       // 恢复 fixed 元素
@@ -491,11 +544,13 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
   const content = (
     <div
+      ref={dialogRef}
       className='fixed inset-0 z-[9999] flex items-center justify-center bg-black/90'
-      onClick={onClose}
+      onClick={closeViewer}
       role='dialog'
       aria-modal='true'
-      aria-label='Image viewer'>
+      aria-label='Image viewer'
+      tabIndex={-1}>
       {/* 背景遮罩 */}
       <div className='absolute inset-0 backdrop-blur-sm' />
 
@@ -529,8 +584,13 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
       {/* 关闭按钮 */}
       <button
+        ref={closeButtonRef}
+        type='button'
         className='absolute top-4 right-4 p-2 text-white hover:text-gray-300 transition-colors z-50 rounded-full bg-black/20 hover:bg-black/40'
-        onClick={onClose}
+        onClick={event => {
+          event.stopPropagation()
+          closeViewer()
+        }}
         aria-label='Close image viewer'>
         <svg
           className='w-8 h-8'
@@ -550,6 +610,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
       {images && images.length > 1 && (
         <>
           <button
+            type='button'
             className='absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors z-50'
             onClick={handlePrev}
             aria-label='Previous image'>
@@ -567,6 +628,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
             </svg>
           </button>
           <button
+            type='button'
             className='absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors z-50'
             onClick={handleNext}
             aria-label='Next image'>
@@ -594,10 +656,13 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
         >
           <div ref={thumbnailScrollRef} className='flex gap-2 mx-auto'>
             {images.map((img, i) => (
-              <div
+              <button
+                type='button'
                 key={i}
                 className={`relative w-16 h-16 flex-shrink-0 cursor-pointer rounded overflow-hidden border-2 transition-colors ${i === index ? 'border-blue-500' : 'border-transparent hover:border-gray-500'}`}
-                onClick={() => setIndex(i)}>
+                onClick={() => setIndex(i)}
+                aria-label={`View image ${i + 1}`}
+                aria-pressed={i === index}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img.src}
@@ -605,7 +670,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
                   className='w-full h-full object-cover'
                   loading='lazy'
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -625,8 +690,11 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
                 {index + 1} / {images.length}
               </span>
               <button
+                type='button'
                 className={`text-white p-1 hover:text-blue-400 transition-colors rounded ${showThumbnails ? 'text-blue-400' : ''}`}
                 onClick={() => setShowThumbnails(!showThumbnails)}
+                aria-label='Toggle thumbnails'
+                aria-pressed={showThumbnails}
                 title='缩略图'>
                 <svg
                   className='w-4 h-4'
@@ -648,6 +716,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 缩小 */}
         <button
+          type='button'
           className='p-2 text-white hover:text-blue-400 transition-colors disabled:opacity-50'
           onClick={handleZoomOut}
           disabled={scale <= 0.25}
@@ -671,6 +740,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
         <div className='relative group flex items-center justify-center'>
           <input
             type='text'
+            aria-label='Zoom percentage'
             value={zoomInput}
             onChange={handleZoomChange}
             onKeyDown={handleZoomSubmit}
@@ -684,6 +754,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 放大 */}
         <button
+          type='button'
           className='p-2 text-white hover:text-blue-400 transition-colors disabled:opacity-50'
           onClick={handleZoomIn}
           disabled={scale >= 5}
@@ -708,6 +779,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 逆时针旋转 */}
         <button
+          type='button'
           className='p-2 text-white hover:text-blue-400 transition-colors'
           onClick={handleRotateLeft}
           aria-label='Rotate left'
@@ -728,6 +800,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 顺时针旋转 */}
         <button
+          type='button'
           className='p-2 text-white hover:text-blue-400 transition-colors'
           onClick={handleRotateRight}
           aria-label='Rotate right'
@@ -748,6 +821,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 水平翻转 (图标替换为更明显的箭头) */}
         <button
+          type='button'
           className={`p-2 hover:text-blue-400 transition-colors ${flipX ? 'text-blue-400' : 'text-white'}`}
           onClick={handleFlipX}
           aria-label='Flip Horizontal'
@@ -776,6 +850,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 垂直翻转 (图标替换为更明显的箭头) */}
         <button
+          type='button'
           className={`p-2 hover:text-blue-400 transition-colors ${flipY ? 'text-blue-400' : 'text-white'}`}
           onClick={handleFlipY}
           aria-label='Flip Vertical'
@@ -800,6 +875,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 重置 */}
         <button
+          type='button'
           className='p-2 text-white hover:text-blue-400 transition-colors'
           onClick={resetState}
           aria-label='Reset'
@@ -820,6 +896,7 @@ const ImageViewer = ({ isOpen, images, currentIndex, onClose }) => {
 
         {/* 下载 */}
         <button
+          type='button'
           className='p-2 text-white hover:text-blue-400 transition-colors'
           onClick={handleDownload}
           aria-label='Download'
