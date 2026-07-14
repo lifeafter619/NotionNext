@@ -3,7 +3,6 @@ import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { cleanPostListForClient } from '@/lib/utils/clientPost'
 import { DynamicLayout } from '@/themes/theme'
-import { filterByMemCache } from '..'
 import {
   getPaginationSlice,
   parsePositivePageNumber
@@ -24,6 +23,7 @@ const Index = props => {
  * @returns
  */
 export async function getStaticProps({ params: { keyword, page }, locale }) {
+  const { filterByMemCache } = await import('@/lib/search/filterByMemCache')
   const pageNumber = parsePositivePageNumber(page)
   if (!pageNumber || pageNumber < 2) return { notFound: true }
 
