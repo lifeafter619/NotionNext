@@ -39,7 +39,11 @@ export default function MailChimpForm() {
             {locale.MAILCHIMP.SUBSCRIBE}
           </h6>
           <p className='text-sm text-gray-600 mb-4'>{locale.MAILCHIMP.MSG}</p>
-          <form onSubmit={handleSubmit} aria-busy={submitting}>
+          <form
+            onSubmit={event => {
+              void handleSubmit(event)
+            }}
+            aria-busy={submitting}>
             <div className='flex flex-wrap mb-4'>
               <div className='w-full'>
                 <label className='block text-sm sr-only' htmlFor='newsletter'>

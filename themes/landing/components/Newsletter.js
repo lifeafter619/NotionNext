@@ -130,7 +130,9 @@ export default function Newsletter() {
                 {/* CTA form */}
                 <form
                   className='w-full lg:w-auto'
-                  onSubmit={handleSubmit}
+                  onSubmit={event => {
+                    void handleSubmit(event)
+                  }}
                   aria-busy={submitting}>
                   <div className='flex flex-col sm:flex-row justify-center max-w-xs mx-auto sm:max-w-md lg:mx-0'>
                     <input

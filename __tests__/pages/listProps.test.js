@@ -83,6 +83,30 @@ function mockSiteData() {
   })
 }
 
+function mockPaginatedSiteData() {
+  siteConfig.mockImplementation((key, fallback) => {
+    if (key === 'THEME') return 'heo'
+    if (key === 'POST_LIST_STYLE') return 'page'
+    if (key === 'POSTS_PER_PAGE') return 1
+    if (key === 'POST_LIST_PREVIEW') return false
+    return fallback
+  })
+  fetchGlobalAllData.mockResolvedValue({
+    NOTION_CONFIG: {},
+    allPages: [
+      {
+        ...sensitivePost,
+        id: 'post-0',
+        title: 'First page post',
+        slug: 'article/first',
+        href: '/article/first'
+      },
+      sensitivePost
+    ],
+    postCount: 2
+  })
+}
+
 function mockDefaultSiteConfig() {
   siteConfig.mockImplementation((key, fallback) => {
     if (key === 'THEME') return 'heo'
@@ -167,8 +191,9 @@ describe('list page props', () => {
   })
 
   it('cleans numbered page post list props', async () => {
+    mockPaginatedSiteData()
     const result = await getPageStaticProps({
-      params: { page: '1' },
+      params: { page: '2' },
       locale: 'zh-CN'
     })
 
@@ -235,8 +260,9 @@ describe('list page props', () => {
   })
 
   it('cleans category page post list props', async () => {
+    mockPaginatedSiteData()
     const result = await getCategoryPageStaticProps({
-      params: { category: 'cat-a', page: '1' },
+      params: { category: 'cat-a', page: '2' },
       locale: 'zh-CN'
     })
 
@@ -255,8 +281,9 @@ describe('list page props', () => {
   })
 
   it('cleans tag page post list props', async () => {
+    mockPaginatedSiteData()
     const result = await getTagPageStaticProps({
-      params: { tag: 'tag-a', page: '1' },
+      params: { tag: 'tag-a', page: '2' },
       locale: 'zh-CN'
     })
 

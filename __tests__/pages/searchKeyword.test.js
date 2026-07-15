@@ -35,12 +35,25 @@ jest.mock('@/lib/config', () => ({
 
 const { fetchGlobalAllData } = require('@/lib/db/SiteDataApi')
 const { getDataFromCache } = require('@/lib/cache/cache_manager')
+const {
+  getPageContentText
+} = require('@/lib/db/notion/getPageContentText')
+const { siteConfig } = require('@/lib/config')
 const { getStaticProps } = require('@/pages/search/[keyword]')
 const {
   getStaticProps: getSearchPageStaticProps
 } = require('@/pages/search/[keyword]/page/[page]')
 
 describe('search keyword page props', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    siteConfig.mockImplementation((key, fallback) => {
+      if (key === 'POST_LIST_STYLE') return 'page'
+      if (key === 'POSTS_PER_PAGE') return 12
+      return fallback
+    })
+  })
+
   it('does not send allPages or password hashes to the browser', async () => {
     fetchGlobalAllData.mockResolvedValue({
       NOTION_CONFIG: {},
@@ -90,9 +103,26 @@ describe('search keyword page props', () => {
   })
 
   it('cleans paginated search results and keeps body snippets', async () => {
+    siteConfig.mockImplementation((key, fallback) => {
+      if (key === 'POST_LIST_STYLE') return 'page'
+      if (key === 'POSTS_PER_PAGE') return 1
+      return fallback
+    })
     fetchGlobalAllData.mockResolvedValue({
       NOTION_CONFIG: {},
       allPages: [
+        {
+          id: 'first-result',
+          type: 'Post',
+          status: 'Published',
+          title: 'Needle first result',
+          summary: 'Summary',
+          slug: 'article/first-result',
+          href: '/article/first-result',
+          tags: [],
+          category: '',
+          password: 'hashed-password'
+        },
         {
           id: 'post-1',
           type: 'Post',
@@ -118,9 +148,10 @@ describe('search keyword page props', () => {
         }
       }
     })
+    getPageContentText.mockReturnValueOnce('Body has needle match')
 
     const result = await getSearchPageStaticProps({
-      params: { keyword: 'needle', page: '1' },
+      params: { keyword: 'needle', page: '2' },
       locale: 'zh-CN'
     })
 
@@ -133,9 +164,38 @@ describe('search keyword page props', () => {
   })
 
   it('does not search protected post body content on paginated search', async () => {
+    siteConfig.mockImplementation((key, fallback) => {
+      if (key === 'POST_LIST_STYLE') return 'page'
+      if (key === 'POSTS_PER_PAGE') return 1
+      return fallback
+    })
     fetchGlobalAllData.mockResolvedValue({
       NOTION_CONFIG: {},
       allPages: [
+        {
+          id: 'public-result-1',
+          type: 'Post',
+          status: 'Published',
+          title: 'Needle public result one',
+          summary: 'Summary',
+          slug: 'article/public-one',
+          href: '/article/public-one',
+          tags: [],
+          category: '',
+          password: 'hashed-password'
+        },
+        {
+          id: 'public-result-2',
+          type: 'Post',
+          status: 'Published',
+          title: 'Needle public result two',
+          summary: 'Summary',
+          slug: 'article/public-two',
+          href: '/article/public-two',
+          tags: [],
+          category: '',
+          password: 'hashed-password'
+        },
         {
           id: 'protected-post',
           type: 'Post',
@@ -150,23 +210,14 @@ describe('search keyword page props', () => {
         }
       ]
     })
-    getDataFromCache.mockResolvedValueOnce({
-      block: {
-        block1: {
-          value: {
-            properties: {
-              title: [['private needle body']]
-            }
-          }
-        }
-      }
-    })
-
     const result = await getSearchPageStaticProps({
-      params: { keyword: 'needle', page: '1' },
+      params: { keyword: 'needle', page: '2' },
       locale: 'zh-CN'
     })
 
-    expect(result.props.posts).toHaveLength(0)
+    expect(result.props.posts).toEqual([
+      expect.objectContaining({ id: 'public-result-2' })
+    ])
+    expect(getDataFromCache).not.toHaveBeenCalled()
   })
 })

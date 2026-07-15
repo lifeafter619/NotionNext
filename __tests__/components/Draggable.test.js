@@ -2,41 +2,36 @@ import { render } from '@testing-library/react'
 import { Draggable } from '@/components/Draggable'
 
 describe('Draggable', () => {
-  beforeEach(() => {
-    document.onmousedown = null
-    document.ontouchstart = null
-    document.onmousemove = null
-    document.ontouchmove = null
-    document.onmouseup = null
-    document.ontouchend = null
-  })
-
   afterEach(() => {
-    document.onmousedown = null
-    document.ontouchstart = null
-    document.onmousemove = null
-    document.ontouchmove = null
-    document.onmouseup = null
-    document.ontouchend = null
+    jest.restoreAllMocks()
   })
 
-  it('removes document drag handlers when unmounted', () => {
-    const { unmount } = render(
+  it('removes pointer and resize handlers when unmounted', () => {
+    const { container, unmount } = render(
       <Draggable>
         <button type='button'>Drag me</button>
       </Draggable>
     )
-
-    expect(document.onmousedown).toEqual(expect.any(Function))
-    expect(document.ontouchstart).toEqual(expect.any(Function))
+    const dragRoot = container.querySelector('.draggable')
+    const removePointerListener = jest.spyOn(dragRoot, 'removeEventListener')
+    const removeWindowListener = jest.spyOn(window, 'removeEventListener')
 
     unmount()
 
-    expect(document.onmousedown).toBeNull()
-    expect(document.ontouchstart).toBeNull()
-    expect(document.onmousemove).toBeNull()
-    expect(document.ontouchmove).toBeNull()
-    expect(document.onmouseup).toBeNull()
-    expect(document.ontouchend).toBeNull()
+    for (const eventName of [
+      'pointerdown',
+      'pointermove',
+      'pointerup',
+      'pointercancel'
+    ]) {
+      expect(removePointerListener).toHaveBeenCalledWith(
+        eventName,
+        expect.any(Function)
+      )
+    }
+    expect(removeWindowListener).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    )
   })
 })

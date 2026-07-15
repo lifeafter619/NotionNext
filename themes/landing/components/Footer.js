@@ -174,7 +174,11 @@ export default function Footer() {
                 <p className='text-sm text-gray-600 mb-4'>
                   Get the latest news and articles to your inbox every month.
                 </p>
-                <form onSubmit={handleSubmit} aria-busy={submitting}>
+                <form
+                  onSubmit={event => {
+                    void handleSubmit(event)
+                  }}
+                  aria-busy={submitting}>
                   <div className='flex flex-wrap mb-4'>
                     <div className='w-full'>
                       <label

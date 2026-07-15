@@ -1,34 +1,30 @@
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import AOSAnimation from '@/components/AOSAnimation'
 
-const routeEvents = {
-  on: jest.fn(),
-  off: jest.fn()
-}
+let mockAsPath = '/article/example'
+const mockLoadExternalResource = jest.fn(() => Promise.resolve())
 
 jest.mock('next/router', () => ({
-  useRouter: () => ({
-    asPath: '/article/example',
-    events: routeEvents
-  })
+  useRouter: () => ({ asPath: mockAsPath })
 }))
 
 jest.mock('@/lib/utils', () => ({
   isBrowser: true,
-  loadExternalResource: jest.fn()
+  loadExternalResource: (...args) => mockLoadExternalResource(...args)
 }))
 
 describe('AOSAnimation route changes', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockAsPath = '/article/example'
+    document.body.innerHTML = "<div data-aos='fade-up'></div>"
     window.AOS = {
-      refreshHard: jest.fn()
+      init: jest.fn()
     }
-    window.requestAnimationFrame = jest.fn(callback => {
+    window.requestIdleCallback = jest.fn(callback => {
       callback()
       return 1
     })
-    window.requestIdleCallback = jest.fn(() => 1)
     window.cancelIdleCallback = jest.fn()
   })
 
@@ -38,25 +34,21 @@ describe('AOSAnimation route changes', () => {
     delete window.cancelIdleCallback
   })
 
-  it('refreshes after route completion and removes the listener on unmount', () => {
-    const { unmount } = render(<AOSAnimation />)
+  it('uses automatic mutation observation and initializes only once', async () => {
+    const { rerender } = render(<AOSAnimation />)
 
-    expect(routeEvents.on).toHaveBeenCalledWith(
-      'routeChangeComplete',
-      expect.any(Function)
+    await waitFor(() => expect(window.AOS.init).toHaveBeenCalledTimes(1))
+    expect(window.AOS.init.mock.calls[0][0]).not.toHaveProperty(
+      'disableMutationObserver'
     )
 
-    const routeCompleteHandler = routeEvents.on.mock.calls[0][1]
-    routeCompleteHandler()
+    mockAsPath = '/article/next'
+    rerender(<AOSAnimation />)
 
-    expect(window.requestAnimationFrame).toHaveBeenCalledTimes(1)
-    expect(window.AOS.refreshHard).toHaveBeenCalledTimes(1)
-
-    unmount()
-
-    expect(routeEvents.off).toHaveBeenCalledWith(
-      'routeChangeComplete',
-      routeCompleteHandler
+    await waitFor(() =>
+      expect(window.requestIdleCallback).toHaveBeenCalledTimes(2)
     )
+    expect(window.AOS.init).toHaveBeenCalledTimes(1)
+    expect(mockLoadExternalResource).toHaveBeenCalledTimes(2)
   })
 })

@@ -189,7 +189,7 @@ export default function LazyImage({
     onClick,
     // 性能优化属性
     loading: priority ? 'eager' : loading || 'lazy',
-    fetchPriority: priority ? 'high' : undefined,
+    fetchpriority: priority ? 'high' : undefined,
     decoding: 'async',
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
@@ -218,7 +218,7 @@ export default function LazyImage({
             href={optimizedImageSrc}
             imageSrcSet={srcSet}
             imageSizes={imgProps.sizes}
-            fetchPriority='high'
+            fetchpriority='high'
           />
         </Head>
       )}
