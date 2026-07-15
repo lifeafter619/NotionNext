@@ -20,6 +20,7 @@ describe('HEO style validity', () => {
     'components',
     'PostAdjacent.js'
   )
+  const hero = readSource('themes', 'heo', 'components', 'Hero.js')
   const packageJson = JSON.parse(readSource('package.json'))
 
   it('uses valid CSS comments inside the global style template', () => {
@@ -42,6 +43,8 @@ describe('HEO style validity', () => {
 
     expect(postAdjacent).not.toContain('h-18')
     expect(postAdjacent).toContain('min-h-[4.5rem]')
+
+    expect(hero).not.toContain("className={`'${")
   })
 
   it('includes themes in lint and lint-fix scope', () => {

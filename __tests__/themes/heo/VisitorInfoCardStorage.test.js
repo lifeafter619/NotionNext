@@ -58,8 +58,16 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
 
     expect(screen.getByText('加载中...')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('Shanghai')).toBeInTheDocument())
-    expect(fetch).toHaveBeenNthCalledWith(1, 'https://api.vore.top/api/IPdata')
-    expect(fetch).toHaveBeenNthCalledWith(2, 'https://ipapi.co/json/')
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      'https://api.vore.top/api/IPdata',
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      'https://ipapi.co/json/',
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
   })
 
   it('shows an unknown location when both enabled services fail', async () => {
@@ -74,11 +82,11 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
-  it('describes Busuanzi page views as cumulative views', () => {
-    const pageViews = document.createElement('span')
-    pageViews.className = 'busuanzi_value_page_pv'
-    pageViews.textContent = '42'
-    document.body.appendChild(pageViews)
+  it('describes Busuanzi site views as cumulative views', () => {
+    const siteViews = document.createElement('span')
+    siteViews.className = 'busuanzi_value_site_pv'
+    siteViews.textContent = '42'
+    document.body.appendChild(siteViews)
 
     render(<VisitorInfoCard />)
 
@@ -92,8 +100,8 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
     expect(screen.queryByText(/今天的第/)).not.toBeInTheDocument()
   })
 
-  it('keeps visitor location enabled in the HEO project config', () => {
-    expect(CONFIG.HEO_VISITOR_LOCATION_ENABLE).toBe(true)
+  it('keeps visitor location opt-in in the HEO project config', () => {
+    expect(CONFIG.HEO_VISITOR_LOCATION_ENABLE).toBe(false)
   })
 
   it('falls back to zero minutes when stored reading time is invalid', async () => {

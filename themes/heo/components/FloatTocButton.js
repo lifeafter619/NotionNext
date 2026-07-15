@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Catalog from './Catalog'
-import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useArticleToc } from './useArticleToc'
 import { scrollToHeoComment } from './commentScroll'
+import { siteConfig } from '@/lib/config'
+import CONFIG from '../config'
 
 const DESKTOP_TOC_BREAKPOINT = 1280
-const DESKTOP_ZOOM_MIN_VIEWPORT = 720
+const MAX_SIDEBAR_CATALOG_RETRIES = 30
 const MOBILE_DRAWER_DEFAULT_HEIGHT_VH = 58
 const MOBILE_DRAWER_MIN_HEIGHT_VH = 40
 const MOBILE_DRAWER_MAX_HEIGHT_VH = 90
@@ -17,35 +18,9 @@ const MOBILE_ACTION_DEFAULT_RIGHT = 16
 const MOBILE_ACTION_DEFAULT_BOTTOM = 80
 const MOBILE_ACTION_SCREEN_MARGIN = 16
 
-function hasDesktopPointer() {
-  if (
-    typeof window === 'undefined' ||
-    typeof window.matchMedia !== 'function'
-  ) {
-    return false
-  }
-
-  return window.matchMedia('(hover: hover) and (pointer: fine)').matches
-}
-
-function getAvailableScreenWidth() {
-  if (typeof window === 'undefined') return 0
-
-  return Math.max(window.screen?.width || 0, window.outerWidth || 0)
-}
-
 function shouldUseDesktopTocMode() {
   if (typeof window === 'undefined') return false
-
-  if (window.innerWidth >= DESKTOP_TOC_BREAKPOINT) {
-    return true
-  }
-
-  return (
-    window.innerWidth >= DESKTOP_ZOOM_MIN_VIEWPORT &&
-    getAvailableScreenWidth() >= DESKTOP_TOC_BREAKPOINT &&
-    hasDesktopPointer()
-  )
+  return window.innerWidth >= DESKTOP_TOC_BREAKPOINT
 }
 
 /**
@@ -83,12 +58,67 @@ export default function FloatTocButton(props) {
   )
 
   useEffect(() => {
-    setDesktopPos(prev => ({ ...prev, y: window.innerHeight / 2 - 100 }))
+    setDesktopPos(prev => ({
+      ...prev,
+      y: Math.max(MOBILE_ACTION_SCREEN_MARGIN, window.innerHeight / 2 - 100)
+    }))
   }, [])
 
   useEffect(() => {
     const syncViewport = () => {
-      setIsDesktopTocMode(shouldUseDesktopTocMode())
+      const desktopMode = shouldUseDesktopTocMode()
+      setIsDesktopTocMode(desktopMode)
+
+      if (desktopMode) {
+        const floatingElement =
+          document.getElementById('float-toc-button') ||
+          document.getElementById('float-comment-button')
+        const width = floatingElement?.offsetWidth || 288
+        const height = floatingElement?.offsetHeight || 120
+        const maxRight = Math.max(0, window.innerWidth - width)
+        const maxBottom = Math.max(0, window.innerHeight - height)
+
+        setDesktopPos(prev => {
+          const next = {
+            x: Math.max(0, Math.min(prev.x, maxRight)),
+            y: Math.max(0, Math.min(prev.y, maxBottom))
+          }
+          return next.x === prev.x && next.y === prev.y ? prev : next
+        })
+        return
+      }
+
+      setButtonPos(prev => {
+        if (prev.x === null || prev.y === null) return prev
+
+        const mobileActionGroup = document.getElementById(
+          'heo-mobile-floating-actions'
+        )
+        const groupWidth =
+          mobileActionGroup?.offsetWidth || MOBILE_ACTION_BUTTON_SIZE
+        const groupHeight =
+          mobileActionGroup?.offsetHeight ||
+          MOBILE_ACTION_BUTTON_SIZE * 2 + MOBILE_ACTION_GAP
+        const maxRight = Math.max(
+          MOBILE_ACTION_SCREEN_MARGIN,
+          window.innerWidth - groupWidth - MOBILE_ACTION_SCREEN_MARGIN
+        )
+        const maxBottom = Math.max(
+          MOBILE_ACTION_SCREEN_MARGIN,
+          window.innerHeight - groupHeight - MOBILE_ACTION_SCREEN_MARGIN
+        )
+        const next = {
+          x: Math.max(
+            MOBILE_ACTION_SCREEN_MARGIN,
+            Math.min(prev.x, maxRight)
+          ),
+          y: Math.max(
+            MOBILE_ACTION_SCREEN_MARGIN,
+            Math.min(prev.y, maxBottom)
+          )
+        }
+        return next.x === prev.x && next.y === prev.y ? prev : next
+      })
     }
 
     syncViewport()
@@ -132,13 +162,19 @@ export default function FloatTocButton(props) {
   const isDraggingDesktopRef = useRef(false)
   const desktopDragHandlersRef = useRef({ mouseMove: null, mouseUp: null })
 
-  const { post, lock } = props
-  const hasServerToc = Array.isArray(post?.toc) && post.toc.length > 0
+  const { post, lock, commentEnabled = true } = props
+  const tocWidgetEnabled = siteConfig('HEO_WIDGET_TOC', true, CONFIG)
+  const commentWidgetEnabled = Boolean(
+    commentEnabled && siteConfig('HEO_WIDGET_TO_COMMENT', true, CONFIG)
+  )
+  const hasServerToc =
+    tocWidgetEnabled && Array.isArray(post?.toc) && post.toc.length > 0
+  const canUseToc = tocWidgetEnabled && Boolean(post) && !lock
   const shouldBuildFallbackToc =
-    Boolean(post) &&
-    !lock &&
+    canUseToc &&
     (hasServerToc || !isDesktopTocMode || showOnDesktop)
   const toc = useArticleToc(post?.toc, shouldBuildFallbackToc)
+  const hasToc = tocWidgetEnabled && toc.length > 0
 
   const toggleToc = () => {
     // 如果正在拖拽，不触发点击
@@ -372,7 +408,7 @@ export default function FloatTocButton(props) {
 
   // 监听滚动，使用 IntersectionObserver 替代 scroll 事件以优化性能
   useEffect(() => {
-    if (!isDesktopTocMode) {
+    if (!isDesktopTocMode || !canUseToc) {
       setShowOnDesktop(false)
       return
     }
@@ -407,6 +443,10 @@ export default function FloatTocButton(props) {
         observedTarget = null
         setShowOnDesktop(retryCount >= 6)
         retryCount += 1
+        if (retryCount >= MAX_SIDEBAR_CATALOG_RETRIES) {
+          setShowOnDesktop(true)
+          return
+        }
         if (retryTimer) {
           window.clearTimeout(retryTimer)
         }
@@ -458,7 +498,7 @@ export default function FloatTocButton(props) {
         window.clearTimeout(retryTimer)
       }
     }
-  }, [isDesktopTocMode])
+  }, [isDesktopTocMode, canUseToc])
 
   // 当目录隐藏且滚动回右侧栏范围时，关闭目录弹窗
   useEffect(() => {
@@ -468,17 +508,19 @@ export default function FloatTocButton(props) {
   }, [isDesktopTocMode, showOnDesktop, tocVisible])
 
   useEffect(() => {
-    if (isDesktopTocMode && toc.length > 0 && !hasServerToc) {
+    if (isDesktopTocMode && hasToc && !hasServerToc) {
       setShowOnDesktop(true)
     }
-  }, [isDesktopTocMode, toc.length, hasServerToc])
+  }, [isDesktopTocMode, hasToc, hasServerToc])
 
-  if (!post || lock || toc.length < 1) {
+  if (!post || lock || (!hasToc && !commentWidgetEnabled)) {
     return <></>
   }
 
   const showMobileControls = !isDesktopTocMode
-  const showDesktopFloatingToc = isDesktopTocMode && showOnDesktop
+  const showDesktopFloatingToc = isDesktopTocMode && hasToc && showOnDesktop
+  const showDesktopCommentOnly =
+    isDesktopTocMode && !hasToc && commentWidgetEnabled
   const mobileActionStyle = {
     right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
     bottom:
@@ -498,23 +540,29 @@ export default function FloatTocButton(props) {
           onTouchStart={handleButtonTouchStart}
           onTouchMove={handleButtonTouchMove}>
           {/* 按钮 */}
-          <div
-            onClick={toggleToc}
-            className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
-            <button
-              id='toc-button'
-              type='button'
-              aria-label='打开目录导航'
-              className={
-                'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
-              }>
-              <span className='sr-only'>目录导航</span>
-            </button>
-            {isExpandedButton && (
-              <span className='font-bold ml-1 whitespace-nowrap'>目录导航</span>
-            )}
-          </div>
-          <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
+          {hasToc && (
+            <div
+              onClick={toggleToc}
+              className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
+              <button
+                id='toc-button'
+                type='button'
+                aria-label='打开目录导航'
+                className={
+                  'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
+                }>
+                <span className='sr-only'>目录导航</span>
+              </button>
+              {isExpandedButton && (
+                <span className='font-bold ml-1 whitespace-nowrap'>
+                  目录导航
+                </span>
+              )}
+            </div>
+          )}
+          {commentWidgetEnabled && (
+            <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
+          )}
         </div>
       )}
 
@@ -556,6 +604,7 @@ export default function FloatTocButton(props) {
                 toc={toc}
                 onActiveSectionChange={setActiveSectionId}
                 onItemClick={() => changeTocVisible(false)}
+                showCommentButton={commentWidgetEnabled}
               />
             </div>
           </div>
@@ -593,6 +642,7 @@ export default function FloatTocButton(props) {
                       toc={toc}
                       onActiveSectionChange={setActiveSectionId}
                       forceSpy={true}
+                      showCommentButton={commentWidgetEnabled}
                     />
                   </div>
                 )}
@@ -615,8 +665,19 @@ export default function FloatTocButton(props) {
             </div>
 
             {/* 跳转评论按钮 - 独立卡片 */}
-            {!tocVisible && <JumpToCommentButtonDesktop />}
+            {!tocVisible && commentWidgetEnabled && (
+              <JumpToCommentButtonDesktop />
+            )}
           </div>
+        </div>
+      )}
+
+      {showDesktopCommentOnly && (
+        <div
+          id='float-comment-button'
+          className='fixed z-50 w-72'
+          style={{ right: `${desktopPos.x}px`, bottom: `${desktopPos.y}px` }}>
+          <JumpToCommentButtonDesktop />
         </div>
       )}
     </>

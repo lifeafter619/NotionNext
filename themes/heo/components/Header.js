@@ -8,6 +8,7 @@ import RandomPostButton from './RandomPostButton'
 import ReadingProgress from './ReadingProgress'
 import SearchButton from './SearchButton'
 import dynamic from 'next/dynamic'
+import CONFIG from '../config'
 
 const SlideOver = dynamic(() => import('./SlideOver'), { ssr: false })
 
@@ -27,6 +28,8 @@ const Header = props => {
   const [slideOverOpenSignal, setSlideOverOpenSignal] = useState(0)
 
   const router = useRouter()
+  const showDarkMode = siteConfig('HEO_WIDGET_DARK_MODE', true, CONFIG)
+  const showReadingProgress = siteConfig('HEO_WIDGET_TO_TOP', true, CONFIG)
   const slideOverRef = useRef()
   // 缓存 #post-bg 节点的引用，避免每次滚动都重新查询 DOM
   const postBgRef = useRef(null)
@@ -160,12 +163,14 @@ const Header = props => {
           <div className='flex flex-shrink-0 justify-end items-center w-auto lg:w-48 gap-1'>
             <RandomPostButton {...props} />
             <SearchButton {...props} />
-            {!siteConfig('THEME_SWITCH') && (
+            {!siteConfig('THEME_SWITCH') && showDarkMode && (
               <div className='hidden md:block'>
                 <DarkModeButton {...props} />
               </div>
             )}
-            <ReadingProgress title={props.post?.title || '阅读进度'} />
+            {showReadingProgress && (
+              <ReadingProgress title={props.post?.title || '阅读进度'} />
+            )}
 
             {/* 移动端菜单按钮 */}
             <div

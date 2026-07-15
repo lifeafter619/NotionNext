@@ -118,7 +118,7 @@ export function useArticleToc(postToc, enabled = true) {
       clearTimeout(syncTimer)
       observer?.disconnect()
     }
-  }, [enabled, serverToc.length])
+  }, [enabled, serverToc])
 
   return serverToc.length > 0 ? serverToc : clientToc
 }

@@ -36,6 +36,7 @@ import SearchHighlightNav from '@/components/SearchHighlightNav'
 import CONFIG from './config'
 import { Style } from './style'
 import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
+import { isHeoCommentServiceConfigured } from './utils/commentEnabled'
 
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
@@ -973,42 +974,10 @@ const LayoutSlug = props => {
   // 避免客户端导航后沿用上一篇文章的宽度布局
   const hasCode = useMemo(() => blockMapHasCode(post?.blockMap), [post])
 
-  const commentEnable =
-    siteConfig('COMMENT_TWIKOO_ENV_ID') ||
-    siteConfig('COMMENT_WALINE_SERVER_URL') ||
-    siteConfig('COMMENT_VALINE_APP_ID') ||
-    siteConfig('COMMENT_GISCUS_REPO') ||
-    siteConfig('COMMENT_CUSDIS_APP_ID') ||
-    siteConfig('COMMENT_UTTERRANCES_REPO') ||
-    siteConfig('COMMENT_GITALK_CLIENT_ID') ||
-    siteConfig('COMMENT_WEBMENTION_ENABLE')
+  const commentEnable = isHeoCommentServiceConfigured()
 
   const router = useRouter()
   const waiting404 = siteConfig('POST_WAITING_TIME_FOR_404') * 1000
-
-  // 检查 URL 是否包含搜索跳转
-  useEffect(() => {
-    if (isBrowser) {
-      const hash = window.location.hash
-      if (hash && hash.includes('text=')) {
-        // 解析 text= 后的内容 (简单处理，浏览器会自动高亮)
-        // const text = decodeURIComponent(hash.split('text=')[1])
-        // 这里我们只需要提示用户跳转成功
-        const toastElement = document.getElementById('toast-wrapper')
-        if (!toastElement) {
-          // 如果没有 Toast 容器，这里可以手动触发一个 (theme-heo 通常有全局 Toast，这里复用 logic 或创建临时提示)
-          // 由于 Toast 组件通常是命令式调用的，这里我们尝试一个简单的 dom 操作或依赖全局状态
-          // 暂时使用 alert 替代验证，或者更好的方式是使用 context
-          // 但 themes/heo/index.js 似乎没有直接暴露 toast context
-          // 我们直接渲染一个临时的 Toast
-          setShowJumpToast(true)
-          setTimeout(() => setShowJumpToast(false), 3000)
-        }
-      }
-    }
-  }, [])
-
-  const [showJumpToast, setShowJumpToast] = useState(false)
 
   // 监听滚动，延迟加载底部推荐和评论
   useEffect(() => {
@@ -1121,18 +1090,11 @@ const LayoutSlug = props => {
         )}
       </div>
 
-      <FloatTocButton {...props} />
+      <FloatTocButton
+        {...props}
+        commentEnabled={Boolean(commentEnable && !fullWidth)}
+      />
       <SearchHighlightNav />
-
-      {/* 搜索跳转提示 */}
-      {showJumpToast && (
-        <div className='fixed top-20 left-0 right-0 mx-auto z-50 w-fit'>
-          <div className='bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-fade-in-down'>
-            <i className='fas fa-search-location'></i>
-            <span>已跳转到搜索内容位置</span>
-          </div>
-        </div>
-      )}
     </>
   )
 }

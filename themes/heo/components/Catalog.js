@@ -5,7 +5,7 @@ import {
 } from '@/lib/utils/notionHashScroll'
 import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getHeoCommentScrollTop } from './commentScroll'
 
@@ -63,7 +63,8 @@ const Catalog = ({
   onActiveSectionChange,
   onItemClick,
   className,
-  forceSpy
+  forceSpy,
+  showCommentButton = true
 }) => {
   const { locale } = useGlobal()
   const [activeSection, setActiveSection] = useState(null)
@@ -75,59 +76,67 @@ const Catalog = ({
     savedScrollY: 0
   })
 
-  // 监听滚动事件
+  // 目录自动滚动
+  const tRef = useRef(null)
+  const tocIds = useMemo(
+    () =>
+      Array.isArray(toc)
+        ? toc.map(tocItem => uuidToId(tocItem?.id || ''))
+        : [],
+    [toc]
+  )
+
+  const actionSectionScrollSpy = useMemo(
+    () =>
+      throttle(() => {
+        // 性能优化：如果目录不可见（如在折叠的浮动按钮中），不进行计算
+        if (!forceSpy && tRef.current && tRef.current.offsetParent === null) {
+          return
+        }
+        const sections = document.getElementsByClassName('notion-h')
+        let prevBBox = null
+        let currentSectionId = null
+        for (let i = 0; i < sections.length; ++i) {
+          const section = sections[i]
+          if (!section || !(section instanceof Element)) continue
+          if (!currentSectionId) {
+            currentSectionId = section.getAttribute('data-id')
+          }
+          const bbox = section.getBoundingClientRect()
+          const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
+          const offset = Math.max(150, prevHeight / 4)
+          // GetBoundingClientRect returns values relative to viewport
+          if (bbox.top - offset < 0) {
+            currentSectionId = section.getAttribute('data-id')
+            prevBBox = bbox
+            continue
+          }
+          // No need to continue loop, if last element has been detected
+          break
+        }
+        setActiveSection(currentSectionId)
+        if (onActiveSectionChange) {
+          onActiveSectionChange(currentSectionId)
+        }
+        const index = Math.max(tocIds.indexOf(currentSectionId), 0)
+        if (tRef?.current) {
+          // 让当前阅读的目录项居中显示
+          const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
+          tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
+        }
+      }, 500),
+    [forceSpy, onActiveSectionChange, tocIds]
+  )
+
+  // 目录变化时重绑监听，避免客户端切换文章后继续使用旧目录闭包。
   useEffect(() => {
     window.addEventListener('scroll', actionSectionScrollSpy, { passive: true })
     actionSectionScrollSpy()
     return () => {
       window.removeEventListener('scroll', actionSectionScrollSpy)
+      actionSectionScrollSpy.cancel?.()
     }
-  }, [])
-
-  // 目录自动滚动
-  const tRef = useRef(null)
-  const tocIds = []
-
-  const actionSectionScrollSpy = useCallback(
-    throttle(() => {
-      // 性能优化：如果目录不可见（如在折叠的浮动按钮中），不进行计算
-      if (!forceSpy && tRef.current && tRef.current.offsetParent === null) {
-        return
-      }
-      const sections = document.getElementsByClassName('notion-h')
-      let prevBBox = null
-      let currentSectionId = activeSection
-      for (let i = 0; i < sections.length; ++i) {
-        const section = sections[i]
-        if (!section || !(section instanceof Element)) continue
-        if (!currentSectionId) {
-          currentSectionId = section.getAttribute('data-id')
-        }
-        const bbox = section.getBoundingClientRect()
-        const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
-        const offset = Math.max(150, prevHeight / 4)
-        // GetBoundingClientRect returns values relative to viewport
-        if (bbox.top - offset < 0) {
-          currentSectionId = section.getAttribute('data-id')
-          prevBBox = bbox
-          continue
-        }
-        // No need to continue loop, if last element has been detected
-        break
-      }
-      setActiveSection(currentSectionId)
-      if (onActiveSectionChange) {
-        onActiveSectionChange(currentSectionId)
-      }
-      const index = Math.max(tocIds.indexOf(currentSectionId), 0)
-      if (tRef?.current) {
-        // 让当前阅读的目录项居中显示
-        const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
-        tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
-      }
-    }, 500),
-    [toc, activeSection, forceSpy]
-  )
+  }, [actionSectionScrollSpy])
 
   // 处理跳转逻辑
   const handleJump = (title, targetScrollY) => {
@@ -176,7 +185,6 @@ const Catalog = ({
         <nav className='h-full'>
           {toc?.map(tocItem => {
             const id = uuidToId(tocItem.id || '')
-            tocIds.push(id)
             return (
               <a
                 key={id}
@@ -206,9 +214,11 @@ const Catalog = ({
         </nav>
       </div>
 
-      <div className='flex-shrink-0'>
-        <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
-      </div>
+      {showCommentButton && (
+        <div className='flex-shrink-0'>
+          <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
+        </div>
+      )}
 
       {/* 统一的 Toast 提示框 */}
       {toastState.show &&

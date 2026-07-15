@@ -10,14 +10,14 @@ jest.mock('next/router', () => ({
 }))
 
 jest.mock('@/lib/config', () => ({
-  siteConfig: jest.fn(key => {
+  siteConfig: jest.fn((key, defaultValue) => {
     const config = {
       AUTHOR: 'Author',
       TITLE: 'Site title',
       BIO: 'Bio',
       THEME_SWITCH: false
     }
-    return config[key] ?? false
+    return config[key] ?? defaultValue ?? false
   })
 }))
 
@@ -61,6 +61,7 @@ describe('heo ReadingProgress', () => {
 
   beforeEach(() => {
     animationFrameCallback = null
+    setScrollMetrics({ scrollHeight: 1000, clientHeight: 500, scrollY: 0 })
     window.requestAnimationFrame = jest.fn(callback => {
       animationFrameCallback = callback
       return 1
@@ -100,6 +101,18 @@ describe('heo ReadingProgress', () => {
       expect(progress).toBe(expectedProgress)
     }
   )
+
+  it('syncs restored scroll progress when the component mounts', () => {
+    setScrollMetrics({ scrollHeight: 1000, clientHeight: 500, scrollY: 250 })
+
+    render(<ReadingProgress title='Restored article' />)
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Restored article，阅读进度 50%，返回顶部'
+      })
+    ).toHaveAttribute('data-scroll-percentage', '50')
+  })
 
   it('uses the current article title as the accessible progress label', () => {
     render(<Header post={{ title: 'Current article' }} />)

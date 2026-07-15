@@ -41,8 +41,14 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/out/',
     '<rootDir>/output/',
+    '<rootDir>/.worktrees/',
     '<rootDir>/.vercel/'
   ],
+
+  // Worktrees live inside the repository but must not participate in module
+  // discovery, otherwise duplicate manual mocks pollute targeted test runs.
+  modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
+  watchPathIgnorePatterns: ['<rootDir>/.worktrees/'],
 
   // Transform files
   transform: {
@@ -70,6 +76,7 @@ const customJestConfig = {
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/.next/**',
+    '!**/.worktrees/**',
     '!**/out/**',
     '!**/coverage/**'
   ],

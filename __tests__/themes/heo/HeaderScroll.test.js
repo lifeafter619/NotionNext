@@ -2,6 +2,7 @@ import { fireEvent, render } from '@testing-library/react'
 
 let mockSlideOverModuleLoadCount = 0
 let mockSlideOverRenderCount = 0
+const mockHeaderConfig = {}
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
@@ -10,24 +11,24 @@ jest.mock('next/router', () => ({
 }))
 
 jest.mock('@/lib/config', () => ({
-  siteConfig: jest.fn(key => {
-    const config = {
-      AUTHOR: 'Author',
-      TITLE: 'Title',
-      BIO: 'Bio',
-      THEME_SWITCH: false
-    }
-    return config[key] ?? false
-  })
+  siteConfig: jest.fn((key, defaultValue) =>
+    Object.prototype.hasOwnProperty.call(mockHeaderConfig, key)
+      ? mockHeaderConfig[key]
+      : defaultValue
+  )
 }))
 
-jest.mock('@/themes/heo/components/DarkModeButton', () => () => null)
+jest.mock('@/themes/heo/components/DarkModeButton', () => () => (
+  <div data-testid='dark-mode-button' />
+))
 jest.mock('@/themes/heo/components/Logo', () => () => null)
 jest.mock('@/themes/heo/components/MenuListTop', () => ({
   MenuListTop: () => null
 }))
 jest.mock('@/themes/heo/components/RandomPostButton', () => () => null)
-jest.mock('@/themes/heo/components/ReadingProgress', () => () => null)
+jest.mock('@/themes/heo/components/ReadingProgress', () => () => (
+  <div data-testid='reading-progress' />
+))
 jest.mock('@/themes/heo/components/SearchButton', () => () => null)
 jest.mock('@/themes/heo/components/SlideOver', () => {
   mockSlideOverModuleLoadCount += 1
@@ -66,6 +67,15 @@ describe('heo Header scroll handling', () => {
   beforeEach(() => {
     mockSlideOverModuleLoadCount = 0
     mockSlideOverRenderCount = 0
+    Object.keys(mockHeaderConfig).forEach(key => delete mockHeaderConfig[key])
+    Object.assign(mockHeaderConfig, {
+      AUTHOR: 'Author',
+      TITLE: 'Title',
+      BIO: 'Bio',
+      THEME_SWITCH: false,
+      HEO_WIDGET_DARK_MODE: true,
+      HEO_WIDGET_TO_TOP: true
+    })
   })
 
   it('uses one scroll listener for header state updates', () => {
@@ -109,5 +119,16 @@ describe('heo Header scroll handling', () => {
 
     expect(mockSlideOverModuleLoadCount).toBe(1)
     expect(getByTestId('heo-slide-over')).toHaveTextContent('menu')
+  })
+
+  it('hides dark mode and reading progress controls when disabled', () => {
+    mockHeaderConfig.HEO_WIDGET_DARK_MODE = false
+    mockHeaderConfig.HEO_WIDGET_TO_TOP = false
+    const Header = getHeader()
+
+    const { queryByTestId } = render(<Header />)
+
+    expect(queryByTestId('dark-mode-button')).not.toBeInTheDocument()
+    expect(queryByTestId('reading-progress')).not.toBeInTheDocument()
   })
 })

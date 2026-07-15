@@ -140,11 +140,15 @@ function DarkModeBlockButton() {
   }
   return (
     <button
+      type='button'
       onClick={handleChangeDarkMode}
       className={
         'group min-h-11 duration-200 hover:text-white hover:shadow-md hover:bg-blue-600 flex justify-between items-center px-3 py-2 border dark:border-gray-600 bg-white dark:bg-[#ff953e] rounded-lg'
       }>
-      <DarkModeButton cRef={darkModeRef} className='group-hover:text-white' />{' '}
+      <DarkModeButton
+        cRef={darkModeRef}
+        className='group-hover:text-white pointer-events-none'
+      />{' '}
       {isDarkMode ? locale.MENU.LIGHT_MODE : locale.MENU.DARK_MODE}
     </button>
   )

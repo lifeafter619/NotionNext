@@ -5,6 +5,7 @@ import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
 
 const MINUTE_MS = 60000
+const LOCATION_REQUEST_TIMEOUT_MS = 5000
 
 function getGreeting(hours) {
   if (hours >= 5 && hours < 12) {
@@ -26,6 +27,14 @@ function getMillisecondsUntilNextMinute() {
   const now = new Date()
   const remainingSeconds = 60 - now.getSeconds()
   return remainingSeconds * 1000 - now.getMilliseconds()
+}
+
+function getLocalDateKey() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -88,7 +97,7 @@ export default function VisitorInfoCard() {
   useEffect(() => {
     const updateReadingTime = () => {
       // 获取今天的日期字符串 YYYY-MM-DD (使用本地时间，而非UTC)
-      const today = new Date().toLocaleDateString()
+      const today = getLocalDateKey()
       const key = `reading_time_${today}`
 
       // 从 localStorage 获取今天的累积时间 (单位: 分钟)
@@ -105,7 +114,9 @@ export default function VisitorInfoCard() {
 
     // 每分钟增加并保存
     const timer = setInterval(() => {
-      const today = new Date().toLocaleDateString()
+      if (document.visibilityState === 'hidden') return
+
+      const today = getLocalDateKey()
       const key = `reading_time_${today}`
 
       const stored = safeLocalStorageGet(key)
@@ -128,12 +139,32 @@ export default function VisitorInfoCard() {
     }
 
     let isActive = true
+    const activeControllers = new Set()
     setLocation('加载中...')
+    const fetchJson = async url => {
+      const controller = new AbortController()
+      activeControllers.add(controller)
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        LOCATION_REQUEST_TIMEOUT_MS
+      )
+
+      try {
+        const response = await fetch(url, { signal: controller.signal })
+        if (response.ok === false) {
+          throw new Error(`Location request failed: ${response.status}`)
+        }
+        return await response.json()
+      } finally {
+        clearTimeout(timeoutId)
+        activeControllers.delete(controller)
+      }
+    }
+
     const fetchLocation = async () => {
       try {
         // 使用 vore.top API获取IP和地理位置
-        const response = await fetch('https://api.vore.top/api/IPdata')
-        const data = await response.json()
+        const data = await fetchJson('https://api.vore.top/api/IPdata')
         if (!isActive) return
 
         if (data.code === 200 && data.ipdata) {
@@ -142,13 +173,14 @@ export default function VisitorInfoCard() {
           // 仅显示城市，不显示运营商
           setLocation(city)
         } else {
-          setLocation('未知地区')
+          throw new Error('Primary location service returned no location')
         }
       } catch {
+        if (!isActive) return
+
         // 尝试备用方案
         try {
-          const response = await fetch('https://ipapi.co/json/')
-          const data = await response.json()
+          const data = await fetchJson('https://ipapi.co/json/')
           if (!isActive) return
           const city =
             data.city || data.region || data.country_name || '未知地区'
@@ -164,50 +196,37 @@ export default function VisitorInfoCard() {
     fetchLocation()
     return () => {
       isActive = false
+      activeControllers.forEach(controller => controller.abort())
+      activeControllers.clear()
     }
   }, [locationEnabled])
 
-  // 获取页面累计浏览量 (从busuanzi)
-  // 延迟常量 - busuanzi需要一定时间加载
-  const BUSUANZI_CHECK_DELAY_MS = 2000
-
+  // 获取全站累计浏览量 (从 busuanzi)
   useEffect(() => {
     const checkBusuanzi = () => {
-      // busuanzi会通过全局DOM更新，我们需要监听变化
-      const pageViewElement = document.querySelector('.busuanzi_value_page_pv')
-      if (pageViewElement && pageViewElement.textContent) {
-        setPageViews(pageViewElement.textContent)
+      const siteViewElement = document.querySelector('.busuanzi_value_site_pv')
+      if (siteViewElement?.textContent?.trim()) {
+        setPageViews(siteViewElement.textContent.trim())
+        return true
       }
+      return false
     }
 
-    // 初始检查
-    checkBusuanzi()
+    if (checkBusuanzi()) return
 
-    // 创建一个MutationObserver来监听busuanzi值的变化
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.target.classList.contains('busuanzi_value_page_pv')) {
-          setPageViews(mutation.target.textContent || '-')
-        }
-      })
-    })
-
-    // 延迟开始观察，确保DOM元素存在
-    const timer = setTimeout(() => {
-      const targetNode = document.querySelector('.busuanzi_value_page_pv')
-      if (targetNode) {
-        observer.observe(targetNode, {
-          childList: true,
-          characterData: true,
-          subtree: true
-        })
-        checkBusuanzi()
+    const observer = new MutationObserver(() => {
+      if (checkBusuanzi()) {
+        observer.disconnect()
       }
-    }, BUSUANZI_CHECK_DELAY_MS)
+    })
+    observer.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    })
 
     return () => {
       observer.disconnect()
-      clearTimeout(timer)
     }
   }, [])
 

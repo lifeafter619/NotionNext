@@ -452,7 +452,7 @@ function TodayCard({ cRef, siteInfo }) {
           {/* 查看更多的按钮 */}
           <div
             onClick={handleClickShowMore}
-            className={`'${isCoverUp ? '' : 'hidden pointer-events-none'} z-10 group flex items-center px-3 h-10 justify-center  rounded-3xl
+            className={`${isCoverUp ? '' : 'hidden pointer-events-none'} z-10 group flex items-center px-3 h-10 justify-center rounded-3xl
             glassmorphism transition-colors duration-100 `}>
             <PlusSmall
               className={

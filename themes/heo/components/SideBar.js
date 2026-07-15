@@ -23,7 +23,6 @@ const SideBar = props => {
               router.push('/')
             }}
             className='justify-center items-center flex hover:rotate-45 py-6 hover:scale-105 dark:text-gray-100  transform duration-200 cursor-pointer'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <LazyImage
               src={siteInfo?.icon}
               className='rounded-full'

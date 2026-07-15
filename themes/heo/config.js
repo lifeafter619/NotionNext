@@ -4,7 +4,7 @@ const CONFIG = {
   HEO_ANIMATE_ON_SCROLL: false, // 是否开启滚动动画，关闭可降低设备消耗
 
   HEO_HOME_BANNER_ENABLE: true,
-  HEO_VISITOR_LOCATION_ENABLE: true, // 是否允许请求第三方服务获取访客 IP 属地
+  HEO_VISITOR_LOCATION_ENABLE: false, // 是否允许请求第三方服务获取访客 IP 属地（涉及隐私，默认关闭）
 
   HEO_SITE_CREATE_TIME: '2021-08-21', // 建站日期，用于计算网站运行的第几天
 
@@ -142,7 +142,7 @@ const CONFIG = {
   HEO_SITE_VISIT_TITLE: '访问量:',
   HEO_SITE_VISITOR_TITLE: '访客数:',
 
-  // *****  以下配置无效，只是预留开发 ****
+  // 主题菜单、文章列表与浮动组件配置
   // 菜单配置
   HEO_MENU_INDEX: true, // 显示首页
   HEO_MENU_CATEGORY: true, // 显示分类

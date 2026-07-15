@@ -118,7 +118,7 @@ export default function PostAdjacent({ prev, next }) {
       if (footerBottom) observer.unobserve(footerBottom)
       observer.disconnect()
     }
-  }, [])
+  }, [adjacentIdentity])
 
   // 鼠标拖拽开始
   const handleMouseDown = useCallback(e => {

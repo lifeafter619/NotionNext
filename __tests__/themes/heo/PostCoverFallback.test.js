@@ -2,22 +2,22 @@ import { render } from '@testing-library/react'
 import BlogPostArchive from '@/themes/heo/components/BlogPostArchive'
 import BlogPostCard from '@/themes/heo/components/BlogPostCard'
 
+const mockThemeConfig = {
+  HEO_POST_LIST_PREVIEW: false,
+  HEO_POST_LIST_COVER_DEFAULT: true,
+  HEO_POST_LIST_COVER: true,
+  HEO_HOME_POST_TWO_COLS: false,
+  HEO_POST_LIST_COVER_HOVER_ENLARGE: true,
+  HEO_POST_LIST_IMG_CROSSOVER: true,
+  POST_TITLE_ICON: false
+}
+
 jest.mock('@/lib/config', () => ({
-  siteConfig: jest.fn(key => {
-    const config = {
-      HEO_POST_LIST_PREVIEW: false,
-      HEO_POST_LIST_COVER_DEFAULT: true,
-      HEO_POST_LIST_COVER: true,
-      HEO_HOME_POST_TWO_COLS: false,
-      HEO_POST_LIST_COVER_HOVER_ENLARGE: true,
-      POST_TITLE_ICON: false
-    }
-    return config[key] ?? false
-  })
+  siteConfig: jest.fn(key => mockThemeConfig[key] ?? false)
 }))
 
 jest.mock('@/components/LazyImage', () => {
-  return function LazyImage(props) {
+  return function LazyImage({ priority: _priority, ...props }) {
     return <img alt={props.alt || 'cover'} {...props} />
   }
 })
@@ -46,6 +46,10 @@ jest.mock('@/themes/heo/components/NotionIcon', () => () => null)
 
 describe('heo post cover fallback', () => {
   const siteInfo = { pageCover: '/site-cover.jpg' }
+
+  beforeEach(() => {
+    mockThemeConfig.HEO_POST_LIST_COVER_HOVER_ENLARGE = true
+  })
 
   function createPost() {
     return {
@@ -92,6 +96,35 @@ describe('heo post cover fallback', () => {
 
     expect(content).toHaveClass('w-full')
     expect(content).not.toHaveClass('md:w-7/12')
+  })
+
+  it('reverses odd post cards when cover crossover is enabled', () => {
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { container } = render(
+      <BlogPostCard index={1} post={post} siteInfo={siteInfo} />
+    )
+
+    expect(container.querySelector('[data-wow-delay]')).toHaveClass(
+      'md:flex-row-reverse'
+    )
+  })
+
+  it('does not enlarge the cover when hover enlargement is disabled', () => {
+    mockThemeConfig.HEO_POST_LIST_COVER_HOVER_ENLARGE = false
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { getByAltText } = render(
+      <BlogPostCard index={0} post={post} siteInfo={siteInfo} />
+    )
+
+    expect(getByAltText('Post title')).not.toHaveClass('group-hover:scale-105')
   })
 
   it('does not mutate a post when BlogPostArchive uses the site default cover', () => {

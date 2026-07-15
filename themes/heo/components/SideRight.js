@@ -1,4 +1,8 @@
 import dynamic from 'next/dynamic'
+import { siteConfig } from '@/lib/config'
+import { useGlobal } from '@/lib/global'
+import CONFIG from '../config'
+import { isHeoCommentServiceConfigured } from '../utils/commentEnabled'
 import { AnalyticsCard } from './AnalyticsCard'
 import Card from './Card'
 import Catalog from './Catalog'
@@ -26,7 +30,19 @@ const Live2D = dynamic(() => import('@/components/Live2D'), { ssr: false })
  */
 export default function SideRight(props) {
   const { post, lock, tagOptions, currentTag, rightAreaSlot } = props
+  const { fullWidth } = useGlobal()
   const toc = useArticleToc(post?.toc, Boolean(post) && !lock)
+  const showLatestPosts = siteConfig(
+    'HEO_WIDGET_LATEST_POSTS',
+    true,
+    CONFIG
+  )
+  const showAnalytics = siteConfig('HEO_WIDGET_ANALYTICS', true, CONFIG)
+  const showCommentButton = Boolean(
+    !fullWidth &&
+      siteConfig('HEO_WIDGET_TO_COMMENT', true, CONFIG) &&
+      isHeoCommentServiceConfigured()
+  )
 
   // 只摘取标签的前60个，防止右侧过长
   const sortedTags = tagOptions?.slice(0, 60) || []
@@ -47,7 +63,7 @@ export default function SideRight(props) {
         {!lock && post && toc.length > 0 && (
           <div id='sideRightCatalog'>
             <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
-              <Catalog toc={toc} />
+              <Catalog toc={toc} showCommentButton={showCommentButton} />
             </Card>
           </div>
         )}
@@ -58,12 +74,14 @@ export default function SideRight(props) {
         </div>
 
         {/* 最新文章列表 */}
-        <div
-          className={
-            'border hover:border-indigo-600  dark:hover:border-yellow-600 duration-200 dark:border-gray-700 dark:bg-[#1e1e1e] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-white'
-          }>
-          <LatestPostsGroupMini {...props} />
-        </div>
+        {showLatestPosts && (
+          <div
+            className={
+              'border hover:border-indigo-600  dark:hover:border-yellow-600 duration-200 dark:border-gray-700 dark:bg-[#1e1e1e] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-white'
+            }>
+            <LatestPostsGroupMini {...props} />
+          </div>
+        )}
 
         {rightAreaSlot}
 
@@ -76,8 +94,12 @@ export default function SideRight(props) {
             'bg-white dark:bg-[#1e1e1e] dark:text-white hover:border-indigo-600  dark:hover:border-yellow-600 duration-200'
           }>
           <TagGroups tags={sortedTags} currentTag={currentTag} />
-          <hr className='mx-1 flex border-dashed relative my-4' />
-          <AnalyticsCard {...props} />
+          {showAnalytics && (
+            <>
+              <hr className='mx-1 flex border-dashed relative my-4' />
+              <AnalyticsCard {...props} />
+            </>
+          )}
         </Card>
       </div>
     </div>

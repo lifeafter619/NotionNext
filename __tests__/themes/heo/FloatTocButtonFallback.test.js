@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import FloatTocButton from '@/themes/heo/components/FloatTocButton'
 
+const mockThemeConfig = {}
+
 jest.mock('notion-utils', () => ({
   uuidToId: id => id
 }))
@@ -15,10 +17,19 @@ jest.mock('@/lib/global', () => ({
   })
 }))
 
+jest.mock('@/lib/config', () => ({
+  siteConfig: jest.fn((key, defaultValue) =>
+    Object.prototype.hasOwnProperty.call(mockThemeConfig, key)
+      ? mockThemeConfig[key]
+      : defaultValue
+  )
+}))
+
 describe('heo FloatTocButton fallback toc', () => {
   const defaultMatchMedia = window.matchMedia
 
   beforeEach(() => {
+    Object.keys(mockThemeConfig).forEach(key => delete mockThemeConfig[key])
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
       writable: true,
@@ -139,6 +150,64 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(tocFixedGroup).toHaveClass('flex')
     expect(tocFixedGroup).toHaveClass('flex-col')
     expect(tocFixedGroup).toHaveClass('gap-3')
+  })
+
+  it('hides the comment action when comment support is unavailable', async () => {
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+        commentEnabled={false}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-button')).toBeInTheDocument()
+    })
+    expect(screen.queryByLabelText('跳转评论')).not.toBeInTheDocument()
+  })
+
+  it('keeps the comment action available when the toc widget is disabled', async () => {
+    mockThemeConfig.HEO_WIDGET_TOC = false
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+        commentEnabled={true}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('跳转评论')).toBeInTheDocument()
+    })
+    expect(document.getElementById('toc-button')).not.toBeInTheDocument()
+  })
+
+  it('hides the comment action when its widget flag is disabled', async () => {
+    mockThemeConfig.HEO_WIDGET_TO_COMMENT = false
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+        commentEnabled={true}
+      />
+    )
+
+    await waitFor(() => {
+      expect(document.getElementById('toc-button')).toBeInTheDocument()
+    })
+    expect(screen.queryByLabelText('跳转评论')).not.toBeInTheDocument()
   })
 
   it('jumps the mobile comment button to the heo comment anchor', async () => {
@@ -473,7 +542,7 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(window.MutationObserver).not.toHaveBeenCalled()
   })
 
-  it('uses the desktop floating toc at high browser zoom on desktop screens', async () => {
+  it('keeps the mobile controls when browser zoom reduces the CSS viewport below xl', async () => {
     window.innerWidth = 960
     window.innerHeight = 900
     window.devicePixelRatio = 2
@@ -508,10 +577,73 @@ describe('heo FloatTocButton fallback toc', () => {
     )
 
     await waitFor(() => {
+      expect(document.getElementById('toc-button')).toBeInTheDocument()
+    })
+
+    expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
+  })
+
+  it('keeps a dragged desktop toc inside the viewport after resize', async () => {
+    window.innerWidth = 1600
+    window.innerHeight = 900
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"></div></div></aside>'
+    )
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(element => {
+        callback([
+          {
+            target: element,
+            isIntersecting: false,
+            boundingClientRect: { top: -620, bottom: 40 }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [{ id: 'heading-one', text: 'Heading One', indentLevel: 0 }]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
       expect(document.getElementById('float-toc-button')).toBeInTheDocument()
     })
 
-    expect(document.getElementById('toc-button')).not.toBeInTheDocument()
+    const floatingToc = document.getElementById('float-toc-button')
+    Object.defineProperty(floatingToc, 'offsetWidth', {
+      configurable: true,
+      value: 288
+    })
+    Object.defineProperty(floatingToc, 'offsetHeight', {
+      configurable: true,
+      value: 120
+    })
+
+    fireEvent.mouseDown(floatingToc.firstElementChild, {
+      clientX: 120,
+      clientY: 160
+    })
+    fireEvent.mouseMove(window, { clientX: -1100, clientY: -400 })
+    fireEvent.mouseUp(window)
+
+    window.innerWidth = 1300
+    window.innerHeight = 600
+    fireEvent(window, new Event('resize'))
+
+    await waitFor(() => {
+      expect(floatingToc).toHaveStyle({
+        right: '1012px',
+        bottom: '480px'
+      })
+    })
   })
 
   it('cleans up desktop drag listeners when unmounted during a drag', async () => {

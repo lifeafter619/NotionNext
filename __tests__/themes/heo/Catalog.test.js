@@ -51,6 +51,35 @@ describe('heo Catalog', () => {
     expect(scrollToMock.mock.calls[0][0].top).toBeGreaterThanOrEqual(0)
   })
 
+  it('rebinds the scroll spy when the toc changes', () => {
+    const addEventListenerSpy = jest.spyOn(window, 'addEventListener')
+    const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener')
+    const firstToc = [
+      { id: 'known', text: 'Known heading', indentLevel: 0 }
+    ]
+    const secondToc = [
+      { id: 'next', text: 'Next heading', indentLevel: 0 }
+    ]
+
+    const { rerender } = render(<Catalog forceSpy toc={firstToc} />)
+    const firstScrollHandler = addEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'scroll'
+    )?.[1]
+
+    rerender(<Catalog forceSpy toc={secondToc} />)
+
+    const scrollHandlers = addEventListenerSpy.mock.calls
+      .filter(([eventName]) => eventName === 'scroll')
+      .map(([, handler]) => handler)
+
+    expect(scrollHandlers).toHaveLength(2)
+    expect(scrollHandlers[1]).not.toBe(firstScrollHandler)
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'scroll',
+      firstScrollHandler
+    )
+  })
+
   it('jumps a catalog item to its heading with the heo nav offset', async () => {
     window.scrollTo = jest.fn()
     Object.defineProperty(window, 'scrollY', {
