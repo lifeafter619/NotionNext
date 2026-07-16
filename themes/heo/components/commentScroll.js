@@ -6,8 +6,11 @@ export function getHeoCommentAnchor() {
   }
 
   return (
-    document.getElementById('comment') ||
-    document.getElementById('post-comments')
+    // HEO mounts #comment inside a temporarily hidden lazy-loading wrapper.
+    // Measure the always-laid-out theme anchor first so a zero-sized hidden
+    // comment node cannot turn the jump into an upward 80px scroll.
+    document.getElementById('post-comments') ||
+    document.getElementById('comment')
   )
 }
 

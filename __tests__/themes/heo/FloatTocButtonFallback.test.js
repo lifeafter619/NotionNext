@@ -250,7 +250,7 @@ describe('heo FloatTocButton fallback toc', () => {
     fireEvent.click(screen.getByLabelText('跳转评论'))
 
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 640,
+      top: 560,
       behavior: 'smooth'
     })
 
@@ -315,7 +315,7 @@ describe('heo FloatTocButton fallback toc', () => {
     fireEvent.click(screen.getByText('跳转评论'))
 
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 640,
+      top: 560,
       behavior: 'smooth'
     })
 

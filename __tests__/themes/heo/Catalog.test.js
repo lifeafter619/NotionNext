@@ -54,12 +54,8 @@ describe('heo Catalog', () => {
   it('rebinds the scroll spy when the toc changes', () => {
     const addEventListenerSpy = jest.spyOn(window, 'addEventListener')
     const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener')
-    const firstToc = [
-      { id: 'known', text: 'Known heading', indentLevel: 0 }
-    ]
-    const secondToc = [
-      { id: 'next', text: 'Next heading', indentLevel: 0 }
-    ]
+    const firstToc = [{ id: 'known', text: 'Known heading', indentLevel: 0 }]
+    const secondToc = [{ id: 'next', text: 'Next heading', indentLevel: 0 }]
 
     const { rerender } = render(<Catalog forceSpy toc={firstToc} />)
     const firstScrollHandler = addEventListenerSpy.mock.calls.find(
@@ -181,7 +177,7 @@ describe('heo Catalog', () => {
     expect(window.location.hash).toBe('#child')
   })
 
-  it('jumps to the heo comment anchor from the catalog comment action', async () => {
+  it('uses the visible heo comment wrapper while the inner comment is hidden', async () => {
     window.scrollTo = jest.fn()
     document.body.insertAdjacentHTML(
       'beforeend',
@@ -196,12 +192,12 @@ describe('heo Catalog', () => {
       height: 120
     })
     document.getElementById('comment').getBoundingClientRect = () => ({
-      top: 720,
-      bottom: 840,
+      top: 0,
+      bottom: 0,
       left: 0,
-      right: 320,
-      width: 320,
-      height: 120
+      right: 0,
+      width: 0,
+      height: 0
     })
 
     render(
@@ -220,7 +216,7 @@ describe('heo Catalog', () => {
     fireEvent.click(screen.getByText('跳转到评论区'))
 
     expect(window.scrollTo).toHaveBeenCalledWith({
-      top: 640,
+      top: 560,
       behavior: 'smooth'
     })
 
