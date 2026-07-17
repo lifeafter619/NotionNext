@@ -254,6 +254,7 @@ export default defineConfig({
               text: '文字添加链接',
               link: '/user-guide/notion/how-to-add-link-for-text-in-notion'
             },
+            { text: '文章状态', link: '/user-guide/notion/post-status' },
             {
               text: '隐藏页面',
               link: '/user-guide/notion/notionnext-hidden-page'
