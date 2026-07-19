@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unknown-property */
+import CONFIG from './config'
+import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 /**
  * 此处样式只对当前主题生效
  * 此处不支持tailwindCSS的 @apply 语法
@@ -45,7 +47,9 @@ const Style = () => {
         height: auto !important;
         aspect-ratio: 2/1 !important;
       }
-    `}</style>
+
+      ${themeConsoleStyle('movie', CONFIG)}
+  `}</style>
   )
 }
 

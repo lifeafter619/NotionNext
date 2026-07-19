@@ -14,7 +14,7 @@
 
 - **定位**：卡片式列表与 Material 质感组件。
 - **适用场景**：Material 卡片封面列表
-- **配置前缀**：`MATERY_*`（共 **22** 项，见下方配置表）
+- **配置前缀**：`MATERY_*`（共 **25** 项，见下方配置表）
 - **在线预览**：[preview.tangly1024.com/?theme=matery](https://preview.tangly1024.com/?theme=matery)
 
 ## 适用场景
@@ -31,6 +31,18 @@ Material 卡片封面列表
 
 配置文件：[`themes/matery/config.js`](https://github.com/notionnext-org/NotionNext/blob/main/themes/matery/config.js)  
 也可在 **Notion Config** 表中填写同名键（对象/数组用 JSON）。
+
+### Matery 主题调色
+
+Matery 支持通过语义色变量调整主色、浅主色和页面背景：
+
+```js
+MATERY_COLOR_PRIMARY: '#4338ca',
+MATERY_COLOR_PRIMARY_LIGHT: '#818cf8',
+MATERY_COLOR_BG: '#f5f5f5'
+```
+
+主题工具中的调色板会展示当前值，并可直接复制配置项到 Notion Config。
 
 <!-- theme-config-table -->
 

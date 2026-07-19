@@ -32,8 +32,20 @@ V4.4.4 2024-04-25更新
 
 ### gitbook支持的相关配置
 
+### GitBook 主题调色
+
+GitBook 支持通过语义色变量调整主色：
+
+```js
+GITBOOK_COLOR_PRIMARY: '#16a34a'
+```
+
+主题工具中的调色板会展示当前值，并可直接复制配置项到 Notion Config。
+
 ```JavaScript
 const CONFIG = {
+  GITBOOK_COLOR_PRIMARY: '#16a34a',
+
   GITBOOK_INDEX_PAGE: 'about', // 文档首页显示的文章，请确此路径包含在您的notion数据库中
 
   GITBOOK_AUTO_SORT: process.env.NEXT_PUBLIC_GITBOOK_AUTO_SORT || true, // 是否自动按分类名 归组排序文章；自动归组可能会打乱您Notion中的文章顺序

@@ -14,7 +14,7 @@
 
 - **定位**：轻阅读向时间线与 Latest 卡片，单列列表与文章卡片排版。
 - **适用场景**：时间线首页、Latest 卡片
-- **配置前缀**：`THOUGHTLITE_*`（共 **12** 项，见下方配置表）
+- **配置前缀**：`THOUGHTLITE_*`（共 **18** 项，见下方配置表）
 - **在线预览**：[preview.tangly1024.com/?theme=thoughtlite](https://preview.tangly1024.com/?theme=thoughtlite)
 
 ## 适用场景
@@ -35,6 +35,21 @@
 
 配置文件：[`themes/thoughtlite/config.js`](https://github.com/notionnext-org/NotionNext/blob/main/themes/thoughtlite/config.js)  
 也可在 **Notion Config** 表中填写同名键（对象/数组用 JSON）。
+
+### ThoughtLite 主题调色
+
+ThoughtLite 支持通过语义色变量调整背景、卡片、文字、边框和强调色：
+
+```js
+THOUGHTLITE_COLOR_BG: '#faf9f7',
+THOUGHTLITE_COLOR_SURFACE: '#ffffff',
+THOUGHTLITE_COLOR_TEXT: '#1a1a1a',
+THOUGHTLITE_COLOR_MUTED: '#6b6b6b',
+THOUGHTLITE_COLOR_BORDER: '#e8e6e3',
+THOUGHTLITE_COLOR_ACCENT: '#2563eb'
+```
+
+主题工具中的调色板会展示当前值，并可直接复制配置项到 Notion Config。
 
 <!-- theme-config-table -->
 

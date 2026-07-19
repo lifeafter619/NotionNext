@@ -19,6 +19,8 @@ const SocialButton = () => {
   const ENABLE_RSS = siteConfig('ENABLE_RSS')
   const CONTACT_BILIBILI = siteConfig('CONTACT_BILIBILI')
   const CONTACT_YOUTUBE = siteConfig('CONTACT_YOUTUBE')
+  const iconClass =
+    'transform hover:scale-125 duration-150 dark:hover:text-[var(--heo-color-accent)] hover:text-[var(--heo-color-primary)]'
 
   const handleEmailKeyDown = e => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -36,7 +38,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'github'}
             href={CONTACT_GITHUB}>
-            <i className='transform hover:scale-125 duration-150 fab fa-github dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-github`} />
           </a>
         )}
         {CONTACT_TWITTER && (
@@ -45,7 +47,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'twitter'}
             href={CONTACT_TWITTER}>
-            <i className='transform hover:scale-125 duration-150 fab fa-twitter dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-twitter`} />
           </a>
         )}
         {CONTACT_TELEGRAM && (
@@ -54,7 +56,7 @@ const SocialButton = () => {
             rel='noreferrer'
             href={CONTACT_TELEGRAM}
             title={'telegram'}>
-            <i className='transform hover:scale-125 duration-150 fab fa-telegram dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-telegram`} />
           </a>
         )}
         {CONTACT_LINKEDIN && (
@@ -63,7 +65,7 @@ const SocialButton = () => {
             rel='noreferrer'
             href={CONTACT_LINKEDIN}
             title={'linkIn'}>
-            <i className='transform hover:scale-125 duration-150 fab fa-linkedin dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-linkedin`} />
           </a>
         )}
         {CONTACT_WEIBO && (
@@ -72,7 +74,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'weibo'}
             href={CONTACT_WEIBO}>
-            <i className='transform hover:scale-125 duration-150 fab fa-weibo dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-weibo`} />
           </a>
         )}
         {CONTACT_INSTAGRAM && (
@@ -81,7 +83,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'instagram'}
             href={CONTACT_INSTAGRAM}>
-            <i className='transform hover:scale-125 duration-150 fab fa-instagram dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-instagram`} />
           </a>
         )}
         {CONTACT_EMAIL && (
@@ -102,7 +104,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'RSS'}
             href={'/rss/feed.xml'}>
-            <i className='transform hover:scale-125 duration-150 fas fa-rss dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fas fa-rss`} />
           </a>
         )}
         {CONTACT_BILIBILI && (
@@ -111,7 +113,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'bilibili'}
             href={CONTACT_BILIBILI}>
-            <i className='transform hover:scale-125 duration-150 fab fa-bilibili dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-bilibili`} />
           </a>
         )}
         {CONTACT_YOUTUBE && (
@@ -120,7 +122,7 @@ const SocialButton = () => {
             rel='noreferrer'
             title={'youtube'}
             href={CONTACT_YOUTUBE}>
-            <i className='transform hover:scale-125 duration-150 fab fa-youtube dark:hover:text-indigo-400 hover:text-indigo-600' />
+            <i className={`${iconClass} fab fa-youtube`} />
           </a>
         )}
       </div>

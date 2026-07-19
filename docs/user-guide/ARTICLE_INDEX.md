@@ -57,6 +57,7 @@
 | 🛠 站点配置 | `notion-next-site-combine` | [config/notion-next-site-combine.md](./config/notion-next-site-combine.md) |
 | 🛠 站点配置 | `notion-next-api_base_url` | [config/notion-next-api_base_url.md](./config/notion-next-api_base_url.md) |
 | ⭐ 主题参数 | `notion-next-themes` | [themes/overview.md](./themes/overview.md) |
+| ⭐ 主题参数 | `notion-next-theme-console` | [themes/theme-console.md](./themes/theme-console.md) |
 | ⭐ 主题参数 | `notion-next-typography` | [themes/typography.md](./themes/typography.md) |
 | ⭐ 主题参数 | `notion-next-magzine` | [themes/magzine.md](./themes/magzine.md) |
 | ⭐ 主题参数 | `notion-next-proxio` | [themes/proxio.md](./themes/proxio.md) |

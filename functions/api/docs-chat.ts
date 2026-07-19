@@ -59,7 +59,7 @@ const SYSTEM_PROMPT = `你是 NotionNext 文档助手。
 - /user-guide/themes/THEMES_CATALOG
 - /user-guide/reference/features
 - /user-guide/comments/overview
-- /user-guide/deploy/cloudflare-pages-docs`
+- /user-guide/deploy/cloudflare-pages`
 
 const json = (body: unknown, init: ResponseInit = {}) =>
   new Response(JSON.stringify(body), {

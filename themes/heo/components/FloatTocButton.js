@@ -520,7 +520,10 @@ export default function FloatTocButton(props) {
   const showMobileControls = !isDesktopTocMode
   const showDesktopFloatingToc = isDesktopTocMode && hasToc && showOnDesktop
   const showDesktopCommentOnly =
-    isDesktopTocMode && !hasToc && commentWidgetEnabled
+    isDesktopTocMode &&
+    !hasToc &&
+    commentWidgetEnabled &&
+    (!canUseToc || showOnDesktop)
   const mobileActionStyle = {
     right: buttonPos.x !== null ? buttonPos.x + 'px' : undefined,
     bottom:

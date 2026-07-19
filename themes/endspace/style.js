@@ -1,3 +1,6 @@
+import CONFIG from './config'
+import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
+
 /**
  * Endspace Theme - Global Styles (JSX)
  * Light Industrial / Endfield-inspired aesthetic
@@ -11,12 +14,20 @@ export const Style = () => {
          ============================================ */
       :root {
         /* Ethereal Whites & Grays */
+        --endspace-bg-base-light: #fafafa;
+        --endspace-bg-base-dark: #09090b;
+        --endspace-bg-primary-light: #ffffff;
+        --endspace-bg-primary-dark: #18181b;
         --endspace-bg-base: #fafafa;
         --endspace-bg-primary: #ffffff;
         --endspace-bg-secondary: #f4f4f5;
         --endspace-bg-tertiary: #e4e4e7;
 
         /* Dark Text (High Contrast) */
+        --endspace-text-primary-light: #18181b;
+        --endspace-text-primary-dark: #f4f4f5;
+        --endspace-text-secondary-light: #52525b;
+        --endspace-text-secondary-dark: #d4d4d8;
         --endspace-text-primary: #18181b;
         --endspace-text-secondary: #52525b;
         --endspace-text-muted: #a1a1aa;
@@ -33,6 +44,8 @@ export const Style = () => {
         ); /* OVERRIDE: Cyan dim -> Yellow dim */
 
         /* Borders & Lines */
+        --endspace-border-base-light: #e4e4e7;
+        --endspace-border-base-dark: #3f3f46;
         --endspace-border-base: #e4e4e7;
         --endspace-border-active: #fbfb45; /* Active border -> Yellow */
         --endspace-grid-color: rgba(0, 0, 0, 0.03);
@@ -66,7 +79,31 @@ export const Style = () => {
       /* ============================================
          Global Base Styles
          ============================================ */
+      .dark #theme-endspace {
+        --endspace-bg-base: var(--endspace-bg-base-dark);
+        --endspace-bg-primary: var(--endspace-bg-primary-dark);
+        --endspace-bg-secondary: #27272a;
+        --endspace-bg-tertiary: #3f3f46;
+        --endspace-text-primary: var(--endspace-text-primary-dark);
+        --endspace-text-secondary: var(--endspace-text-secondary-dark);
+        --endspace-text-muted: #a1a1aa;
+        --endspace-border-base: var(--endspace-border-base-dark);
+        --endspace-accent-yellow: var(--endspace-accent-yellow-dark);
+        --endspace-accent-yellow-dim: var(--endspace-accent-yellow-dim-dark);
+        --endspace-grid-color: rgba(255, 255, 255, 0.04);
+      }
+
       #theme-endspace {
+        --endspace-bg-base: var(--endspace-bg-base-light);
+        --endspace-bg-primary: var(--endspace-bg-primary-light);
+        --endspace-text-primary: var(--endspace-text-primary-light);
+        --endspace-text-secondary: var(--endspace-text-secondary-light);
+        --endspace-border-base: var(--endspace-border-base-light);
+        --endspace-accent-yellow: var(--endspace-accent-yellow-light);
+        --endspace-accent-yellow-dim: var(--endspace-accent-yellow-dim-light);
+        --endspace-accent-cyan: var(--endspace-accent-yellow);
+        --endspace-accent-cyan-dim: var(--endspace-accent-yellow-dim);
+        --endspace-border-active: var(--endspace-accent-yellow);
         background-color: var(--endspace-bg-base);
         color: var(--endspace-text-primary);
         font-family:
@@ -314,12 +351,11 @@ export const Style = () => {
       #theme-endspace #notion-article .notion-table,
       #theme-endspace #notion-article .notion-code,
       #theme-endspace #notion-article .notion-equation {
-        color: var(--endspace-text-primary) !important;
+        color: var(--endspace-text-primary);
       }
 
       #theme-endspace #notion-article p,
       #theme-endspace #notion-article li,
-      #theme-endspace #notion-article span,
       #theme-endspace #notion-article figcaption,
       #theme-endspace #notion-article .notion-text,
       #theme-endspace #notion-article .notion-list,
@@ -330,7 +366,7 @@ export const Style = () => {
       #theme-endspace #notion-article .notion-bookmark-link,
       #theme-endspace #notion-article .notion-collection-row-body,
       #theme-endspace #notion-article .notion-simple-table-cell {
-        color: var(--endspace-text-secondary) !important;
+        color: var(--endspace-text-secondary);
       }
 
       #theme-endspace #notion-article h1,
@@ -339,9 +375,8 @@ export const Style = () => {
       #theme-endspace #notion-article h4,
       #theme-endspace #notion-article h5,
       #theme-endspace #notion-article h6,
-      #theme-endspace #notion-article strong,
       #theme-endspace #notion-article .notion-bookmark-title {
-        color: var(--endspace-text-primary) !important;
+        color: var(--endspace-text-primary);
       }
 
       /* Headers - NieR: Automata Style Dynamic Shadow */
@@ -1152,6 +1187,8 @@ export const Style = () => {
       .archive-filter-btn:hover .ef-btn-text {
         color: #000 !important;
       }
-    `}</style>
+
+      ${themeConsoleStyle('endspace', CONFIG)}
+  `}</style>
   )
 }

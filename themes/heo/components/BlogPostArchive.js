@@ -69,7 +69,7 @@ const BlogPostArchive = ({ posts = [], archiveTitle, siteInfo }) => {
               <div
                 key={post.id || post.slug || index}
                 className={
-                  'cursor-pointer flex flex-row mb-4 h-24 md:flex-row group w-full  dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden'
+                  'cursor-pointer flex flex-row mb-4 h-24 md:flex-row group w-full  dark:border-gray-600 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] duration-300 transition-colors justify-between overflow-hidden'
                 }>
                 {/* 图片封面 */}
                 {showPageCover && (
@@ -108,7 +108,7 @@ const BlogPostArchive = ({ posts = [], archiveTitle, siteInfo }) => {
                       href={postHref}
                       passHref
                       className={
-                        ' group-hover:text-indigo-700 group-hover:dark:text-indigo-400 text-black dark:text-gray-100 dark:group-hover:text-yellow-600 line-clamp-2 replace cursor-pointer text-xl font-extrabold leading-tight'
+                        ' group-hover:text-[var(--heo-color-primary)] group-hover:dark:text-[var(--heo-color-accent)] text-black dark:text-gray-100 dark:group-hover:text-[var(--heo-color-accent)] line-clamp-2 replace cursor-pointer text-xl font-extrabold leading-tight'
                       }>
                       <span className='menu-link '>{title}</span>
                     </SmartLink>

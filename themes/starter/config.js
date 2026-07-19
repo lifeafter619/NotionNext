@@ -4,6 +4,11 @@ import { siteConfig } from '@/lib/config'
  * 另一个落地页主题
  */
 const CONFIG = {
+  STARTER_COLOR_PRIMARY: '#3758f9',
+  STARTER_COLOR_PRIMARY_HOVER: '#1b44c8',
+  STARTER_COLOR_DARK: '#111928',
+  STARTER_COLOR_TEXT_MUTED: '#637381',
+
   // 默认只展示Logo文字，如果设置了logo图片，会在文字左侧显示图标
   STARTER_LOGO: '', // 普通logo图片 示例：/images/starter/logo/logo.svg
   STARTER_LOGO_WHITE: '', // 透明底浅色logo 示例： /images/starter/logo/logo-white.svg

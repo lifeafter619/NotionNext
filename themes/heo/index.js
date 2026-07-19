@@ -144,7 +144,7 @@ const LayoutBase = props => {
   return (
     <div
       id='theme-heo'
-      className={`${siteConfig('FONT_STYLE')} bg-[#f7f9fe] dark:bg-[#18171d] h-full min-h-screen flex flex-col scroll-smooth`}>
+      className={`${siteConfig('FONT_STYLE')} bg-[var(--heo-color-bg)] dark:bg-[var(--heo-color-bg-dark)] h-full min-h-screen flex flex-col scroll-smooth`}>
       <Style />
 
       {/* 顶部嵌入 导航栏，首页放hero，文章页放文章详情 */}
@@ -939,7 +939,7 @@ const LayoutArchive = props => {
   // 归档页顶部显示条，如果是默认归档则不显示。分类详情页显示分类列表，标签详情页显示当前标签
 
   return (
-    <div className='p-5 rounded-xl border dark:border-gray-600 max-w-6xl w-full bg-white dark:bg-[#1e1e1e]'>
+    <div className='p-5 rounded-xl border dark:border-gray-600 max-w-6xl w-full bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)]'>
       {/* 文章分类条 */}
       <CategoryBar {...props} border={false} />
 
@@ -1023,7 +1023,7 @@ const LayoutSlug = props => {
   return (
     <>
       <div
-        className={`article h-full w-full ${fullWidth ? '' : 'xl:max-w-5xl'} ${hasCode ? 'xl:w-[73.15vw]' : ''}  bg-white dark:bg-[#18171d] dark:border-gray-600 lg:hover:shadow lg:border rounded-2xl lg:px-2 lg:py-4 `}>
+        className={`article h-full w-full ${fullWidth ? '' : 'xl:max-w-5xl'} ${hasCode ? 'xl:w-[73.15vw]' : ''}  bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-bg-dark)] dark:border-gray-600 lg:hover:shadow lg:border rounded-2xl lg:px-2 lg:py-4 `}>
         {/* 文章锁 */}
         {lock && <PostLock validPassword={validPassword} />}
 

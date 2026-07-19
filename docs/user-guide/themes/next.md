@@ -14,7 +14,7 @@
 
 - **定位**：经典双栏布局，右侧栏与移动端悬浮目录。
 - **适用场景**：经典双栏 + 移动 TOC
-- **配置前缀**：`NEXT_*`（共 **27** 项，见下方配置表）
+- **配置前缀**：`NEXT_*`（共 **29** 项，见下方配置表）
 - **在线预览**：[preview.tangly1024.com/?theme=next](https://preview.tangly1024.com/?theme=next)
 
 ## 适用场景
@@ -31,6 +31,17 @@
 
 配置文件：[`themes/next/config.js`](https://github.com/notionnext-org/NotionNext/blob/main/themes/next/config.js)  
 也可在 **Notion Config** 表中填写同名键（对象/数组用 JSON）。
+
+### Next 主题调色
+
+Next 支持通过语义色变量调整主色和页面背景：
+
+```js
+NEXT_COLOR_PRIMARY: '#4e80ee',
+NEXT_COLOR_BG: '#eeedee'
+```
+
+主题工具中的调色板会展示当前值，并可直接复制配置项到 Notion Config。
 
 <!-- theme-config-table -->
 

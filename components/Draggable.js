@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from 'react'
  * @param {stick} 是否要吸附
  * @returns
  */
-export const Draggable = ({ children, stick }) => {
+export const Draggable = ({ children, stick, handleClassName }) => {
   const draggableRef = useRef(null)
   const rafRef = useRef(null)
+  const currentObjRef = useRef(null)
+  const offsetRef = useRef({ x: 0, y: 0 })
   const [moving, setMoving] = useState(false)
 
   useEffect(() => {
@@ -92,7 +94,7 @@ export const Draggable = ({ children, stick }) => {
       window.cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
-  }, [stick])
+  }, [stick, handleClassName])
 
   return (
     <div

@@ -14,6 +14,9 @@ const LayoutLoading = () => (
   <div className='min-h-screen w-full bg-[#f6f6f1] dark:bg-black' />
 )
 
+const EmptyBaseLayout = ({ children }) => <>{children}</>
+const EmptyPageLayout = () => null
+
 const IndexLayoutLoading = () => (
   <div className='pt-10 md:pt-18 w-full bg-[#f6f6f1] dark:bg-black'>
     <div className='mx-auto w-full max-w-screen-3xl px-4 py-10 lg:px-0'>
@@ -75,6 +78,22 @@ const normalizeThemeName = themeValue => {
   return THEMES.includes(firstTheme) ? firstTheme : BLOG.THEME
 }
 
+const getFallbackThemeName = themeName => {
+  const preferred = normalizeThemeName(BLOG.THEME)
+  if (preferred && preferred !== themeName) return preferred
+  if (THEMES.includes('example') && themeName !== 'example') return 'example'
+  return THEMES.find(item => item !== themeName) || null
+}
+
+const getThemeExport = (mod, exportName) => {
+  if (mod?.[exportName]) return mod[exportName]
+  if (mod?.default?.[exportName]) return mod.default[exportName]
+  if (exportName === 'LayoutBase' && typeof mod?.default === 'function') {
+    return mod.default
+  }
+  return null
+}
+
 const scheduleFixThemeDOM = (delay = 120) => {
   if (!isBrowser) return () => {}
   const timer = window.setTimeout(() => {
@@ -89,11 +108,44 @@ const scheduleFixThemeDOM = (delay = 120) => {
 async function importThemeConfig(themeFolderName) {
   try {
     const mod = await import(`@/themes/${themeFolderName}`)
-    return mod?.THEME_CONFIG ?? null
+    return getThemeExport(mod, 'THEME_CONFIG')
   } catch (err) {
     console.error(`Failed to load theme config "${themeFolderName}":`, err)
     return null
   }
+}
+
+async function importThemeLayout(themeFolderName, layoutName) {
+  try {
+    const mod = await import(`@/themes/${themeFolderName}`)
+    return (
+      getThemeExport(mod, layoutName) ||
+      getThemeExport(mod, 'LayoutSlug') ||
+      null
+    )
+  } catch (err) {
+    console.error(`Failed to load theme "${themeFolderName}":`, err)
+    return null
+  }
+}
+
+async function resolveThemeLayout(themeName, layoutName, emptyLayout) {
+  let Layout = await importThemeLayout(themeName, layoutName)
+  if (Layout) return Layout
+
+  const fallback = getFallbackThemeName(themeName)
+  if (fallback) {
+    Layout = await importThemeLayout(fallback, layoutName)
+    if (Layout) {
+      console.warn(
+        `[theme] "${themeName}" missing "${layoutName}", using fallback "${fallback}".`
+      )
+      return Layout
+    }
+  }
+
+  console.warn(`[theme] "${themeName}" missing "${layoutName}", using empty layout.`)
+  return emptyLayout
 }
 
 /**
@@ -117,8 +169,8 @@ export const getThemeConfig = async themeQuery => {
       return cfg
     }
   }
-  console.error('[theme] No theme configuration could be loaded.')
-  return null
+  console.warn('[theme] No theme configuration could be loaded, using empty config.')
+  return {}
 }
 
 /**
@@ -146,15 +198,7 @@ export const getBaseLayoutByTheme = theme => {
   }
   const DynamicBaseLayout = dynamic(
     () =>
-      import(`@/themes/${normalizedTheme}`).then(m => {
-        const Base = m['LayoutBase']
-        if (!Base) {
-          throw new Error(
-            `[theme] LayoutBase missing in themes/${normalizedTheme}`
-          )
-        }
-        return Base
-      }),
+      resolveThemeLayout(normalizedTheme, 'LayoutBase', EmptyBaseLayout),
     { ssr: true }
   )
   baseLayoutCache.set(normalizedTheme, DynamicBaseLayout)
@@ -191,16 +235,7 @@ export const useLayoutByTheme = ({ layoutName, theme }) => {
   }
 
   const loadLayout = () =>
-    import(`@/themes/${themeQuery}`).then(componentsSource => {
-      const Selected =
-        componentsSource[layoutName] || componentsSource.LayoutSlug
-      if (!Selected) {
-        throw new Error(
-          `[theme] Layout "${layoutName}" missing in themes/${themeQuery}`
-        )
-      }
-      return Selected
-    })
+    resolveThemeLayout(themeQuery, layoutName, EmptyPageLayout)
   const DynamicLayoutComponent = dynamic(loadLayout, {
     ssr: true,
     loading: getLayoutLoading(layoutName)

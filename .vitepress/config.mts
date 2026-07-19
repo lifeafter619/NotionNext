@@ -15,7 +15,12 @@ const giscusCategoryId = process.env.VITE_GISCUS_CATEGORY_ID || ''
  * 在线站发布用户教程、开发文档与社区文档。
  * 根目录 README 仍作为 GitHub 目录说明，不进入 VitePress。
  */
-const srcExclude = ['**/README.md', '**/README.en.md']
+const hiddenPublicDocPaths = ['user-guide/deploy/cloudflare-pages-docs.md']
+const srcExclude = [
+  '**/README.md',
+  '**/README.en.md',
+  ...hiddenPublicDocPaths.map((path) => `**/${path}`)
+]
 
 function getMarkdownTitle(filePath: string) {
   const content = readFileSync(filePath, 'utf8')
@@ -68,7 +73,8 @@ function getUpdatedDocs() {
         repoPath.endsWith('.md') &&
         !repoPath.endsWith('/README.md') &&
         !repoPath.endsWith('/README.en.md') &&
-        !repoPath.includes('/public/')
+        !repoPath.includes('/public/') &&
+        !hiddenPublicDocPaths.includes(repoPath.replace(/^docs\//, ''))
       )
     })
 
@@ -345,6 +351,7 @@ export default defineConfig({
             { text: '主题目录', link: '/user-guide/themes/' },
             { text: '全览表', link: '/user-guide/themes/THEMES_CATALOG' },
             { text: '主题总览', link: '/user-guide/themes/overview' },
+            { text: '主题控制台', link: '/user-guide/themes/theme-console' },
             ...themeDocLinks
           ]
         },

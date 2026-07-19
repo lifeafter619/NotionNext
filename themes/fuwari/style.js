@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unknown-property */
+import CONFIG from './config'
+import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 
 const Style = () => {
   return (

@@ -12,6 +12,7 @@ describe('HEO style validity', () => {
     'components',
     'DarkModeButton.js'
   )
+  const heroIcons = readSource('components', 'HeroIcons.js')
   const infoCard = readSource('themes', 'heo', 'components', 'InfoCard.js')
   const postHeader = readSource('themes', 'heo', 'components', 'PostHeader.js')
   const postAdjacent = readSource(
@@ -32,8 +33,11 @@ describe('HEO style validity', () => {
 
   it('uses valid Tailwind utility tokens in HEO components', () => {
     expect(darkModeButton).not.toContain('hover: scale-')
-    expect(darkModeButton).toContain('hover:scale-100')
-    expect(darkModeButton).toContain('hover:scale-50')
+    expect(darkModeButton).not.toContain('hover:scale-')
+    expect(darkModeButton).toContain("<Sun className='w-5 h-5' />")
+    expect(darkModeButton).toContain("<Moon className='w-5 h-5' />")
+    expect(heroIcons).toContain('export const Moon = ({ className }) =>')
+    expect(heroIcons).toContain('export const Sun = ({ className }) =>')
 
     expect(infoCard).not.toContain('transitaion-all')
     expect(infoCard).toContain('transition-all')

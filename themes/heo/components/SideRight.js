@@ -91,7 +91,7 @@ export default function SideRight(props) {
         {/* 标签和成绩 */}
         <Card
           className={
-            'bg-white dark:bg-[#1e1e1e] dark:text-white hover:border-indigo-600  dark:hover:border-yellow-600 duration-200'
+            'bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] dark:text-white hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] duration-200'
           }>
           <TagGroups tags={sortedTags} currentTag={currentTag} />
           {showAnalytics && (

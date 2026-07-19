@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react'
 import BlogPostArchive from '@/themes/heo/components/BlogPostArchive'
 import BlogPostCard from '@/themes/heo/components/BlogPostCard'
+import CONFIG from '@/themes/heo/config'
 
 const mockThemeConfig = {
   HEO_POST_LIST_PREVIEW: false,
@@ -8,7 +9,7 @@ const mockThemeConfig = {
   HEO_POST_LIST_COVER: true,
   HEO_HOME_POST_TWO_COLS: false,
   HEO_POST_LIST_COVER_HOVER_ENLARGE: true,
-  HEO_POST_LIST_IMG_CROSSOVER: true,
+  HEO_POST_LIST_IMG_CROSSOVER: false,
   POST_TITLE_ICON: false
 }
 
@@ -49,6 +50,7 @@ describe('heo post cover fallback', () => {
 
   beforeEach(() => {
     mockThemeConfig.HEO_POST_LIST_COVER_HOVER_ENLARGE = true
+    mockThemeConfig.HEO_POST_LIST_IMG_CROSSOVER = false
   })
 
   function createPost() {
@@ -61,6 +63,10 @@ describe('heo post cover fallback', () => {
       tagItems: []
     }
   }
+
+  it('keeps cover crossover disabled in the HEO theme defaults', () => {
+    expect(CONFIG.HEO_POST_LIST_IMG_CROSSOVER).toBe(false)
+  })
 
   it('does not mutate a post when BlogPostCard uses the site default cover', () => {
     const post = createPost()
@@ -98,7 +104,23 @@ describe('heo post cover fallback', () => {
     expect(content).not.toHaveClass('md:w-7/12')
   })
 
-  it('reverses odd post cards when cover crossover is enabled', () => {
+  it('keeps odd post card covers on the left by default', () => {
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { container } = render(
+      <BlogPostCard index={1} post={post} siteInfo={siteInfo} />
+    )
+
+    expect(container.querySelector('[data-wow-delay]')).not.toHaveClass(
+      'md:flex-row-reverse'
+    )
+  })
+
+  it('reverses odd post cards when cover crossover is explicitly enabled', () => {
+    mockThemeConfig.HEO_POST_LIST_IMG_CROSSOVER = true
     const post = {
       ...createPost(),
       pageCoverThumbnail: '/post-cover.jpg'

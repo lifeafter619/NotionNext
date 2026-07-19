@@ -415,6 +415,42 @@ describe('heo FloatTocButton fallback toc', () => {
     expect(document.getElementById('float-toc-button')).not.toBeInTheDocument()
   })
 
+  it('does not show the desktop comment button while the sidebar fallback catalog is visible', async () => {
+    window.innerWidth = 1440
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<aside id="sideRight"><div id="sideRightSticky"><div id="sideRightCatalog"><div data-heo-catalog></div></div></div></aside>'
+    )
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(element => {
+        callback([
+          {
+            target: element,
+            isIntersecting: true,
+            boundingClientRect: { top: 120, bottom: 720 }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{ title: 'Demo article' }}
+        lock={false}
+        commentEnabled={true}
+      />
+    )
+
+    await waitFor(() => {
+      expect(window.IntersectionObserver).toHaveBeenCalled()
+    })
+
+    expect(
+      document.getElementById('float-comment-button')
+    ).not.toBeInTheDocument()
+  })
+
   it('observes the catalog boundary instead of later sidebar blocks', async () => {
     window.innerWidth = 1440
     document.body.insertAdjacentHTML(

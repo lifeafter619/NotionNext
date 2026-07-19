@@ -115,7 +115,7 @@ function Banner(props) {
     <div
       id='banners'
       onClick={handleClickBanner}
-      className='hidden xl:flex xl:flex-col group h-full bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 mb-3 relative overflow-hidden'>
+        className='hidden xl:flex xl:flex-col group h-full bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] rounded-xl border dark:border-gray-700 mb-3 relative overflow-hidden'>
       <div
         id='banner-title'
         className='z-10 flex flex-col absolute top-10 left-10'>
@@ -137,7 +137,7 @@ function Banner(props) {
         id='banner-cover'
         style={{ backdropFilter: 'blur(15px)' }}
         className={
-          'z-20 rounded-xl overflow-hidden opacity-0 group-hover:opacity-100 duration-300 transition-all bg-[#4259efdd] dark:bg-[#dca846] dark:text-white cursor-pointer absolute w-full h-full top-0 flex justify-start items-center'
+          'z-20 rounded-xl overflow-hidden opacity-0 group-hover:opacity-100 duration-300 transition-all bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] dark:text-white cursor-pointer absolute w-full h-full top-0 flex justify-start items-center'
         }>
         <div className='ml-12 -translate-x-32 group-hover:translate-x-0 duration-300 transition-all ease-in'>
           <div className='text-7xl text-white font-extrabold'>{coverTitle}</div>
@@ -307,7 +307,7 @@ function TopGroup(props) {
                   {title}
                 </div>
                 {/* hover 悬浮的 ‘荐’ 字 */}
-                <div className='opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 duration-200 transition-all absolute -top-2 -left-2 bg-indigo-600 dark:bg-yellow-600  text-white rounded-xl overflow-hidden pr-2 pb-2 pl-4 pt-4 text-xs'>
+                <div className='opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 duration-200 transition-all absolute -top-2 -left-2 bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] text-[var(--heo-color-primary-text)] rounded-xl overflow-hidden pr-2 pb-2 pl-4 pt-4 text-xs'>
                   {locale.COMMON.RECOMMEND_BADGES}
                 </div>
               </div>

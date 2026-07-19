@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unknown-property */
+import CONFIG from './config'
+import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 
 /**
  * 此处样式只对当前主题生效

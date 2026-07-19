@@ -14,7 +14,7 @@
 
 - **定位**：致敬Nobelium,极简排版风格。
 - **适用场景**：极简博客
-- **配置前缀**：`NOBELIUM_*`（共 **10** 项，见下方配置表）
+- **配置前缀**：`NOBELIUM_*`（共 **11** 项，见下方配置表）
 - **在线预览**：[preview.tangly1024.com/?theme=nobelium](https://preview.tangly1024.com/?theme=nobelium)
 
 ## 适用场景
@@ -31,6 +31,16 @@
 
 配置文件：[`themes/nobelium/config.js`](https://github.com/notionnext-org/NotionNext/blob/main/themes/nobelium/config.js)  
 也可在 **Notion Config** 表中填写同名键（对象/数组用 JSON）。
+
+### Nobelium 主题调色
+
+Nobelium 支持通过语义色变量调整主色：
+
+```js
+NOBELIUM_COLOR_PRIMARY: '#6b7280'
+```
+
+主题工具中的调色板会展示当前值，并可直接复制配置项到 Notion Config。
 
 <!-- theme-config-table -->
 

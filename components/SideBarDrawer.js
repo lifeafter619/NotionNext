@@ -46,7 +46,7 @@ const SideBarDrawer = ({
       return
     }
     setBackdropInteractive(false)
-    const id = window.setTimeout(() => setBackdropInteractive(true), 450)
+    const id = window.setTimeout(() => setBackdropInteractive(true), 180)
     return () => window.clearTimeout(id)
   }, [isOpen])
 
@@ -142,9 +142,9 @@ const SideBarDrawer = ({
           if (!backdropInteractive) return
           switchSideDrawerVisible(false)
         }}
-        className={`${isOpen ? 'block' : 'hidden'} fixed top-0 left-0 z-20 w-full h-full bg-black/70 transition-opacity duration-300 ${
-          isOpen && !backdropInteractive ? 'pointer-events-none' : ''
-        }`}
+        className={`fixed top-0 left-0 z-[60] h-full w-full bg-black/70 transition-opacity duration-200 ease-out ${
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        } ${isOpen && !backdropInteractive ? 'pointer-events-none' : ''}`}
       />
     </div>
   )

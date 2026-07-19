@@ -32,6 +32,16 @@
 配置文件：[`themes/hexo/config.js`](https://github.com/notionnext-org/NotionNext/blob/main/themes/hexo/config.js)  
 也可在 **Notion Config** 表中填写同名键（对象/数组用 JSON）。
 
+### Hexo 主题调色
+
+Hexo 主题开始使用语义化主色变量，推荐使用 `HEXO_COLOR_PRIMARY` 调整主色：
+
+```js
+HEXO_COLOR_PRIMARY: '#928CEE'
+```
+
+旧配置 `HEXO_THEME_COLOR` 仍然兼容；如果两个配置都存在，`HEXO_COLOR_PRIMARY` 优先生效。主题工具中的调色板会显示当前主色，并可直接复制配置项到 Notion Config。
+
 <!-- theme-config-table -->
 
 ### 主要配置项
