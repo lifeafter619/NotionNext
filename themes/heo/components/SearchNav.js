@@ -1,5 +1,5 @@
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useEffect, useRef } from 'react'
 import Card from './Card'
 import SearchInput from './SearchInput'
@@ -49,9 +49,7 @@ export default function SearchNav(props) {
               return (
                 <SmartLink
                   key={category.name}
-                  href={`/category/${encodeURIComponent(category.name)}`}
-                  passHref
-                  legacyBehavior>
+                  href={`/category/${encodeURIComponent(category.name)}`}>
                   <div
                     className={
                       'flex items-center gap-2 duration-300 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2 cursor-pointer hover:bg-blue-600 hover:text-white dark:hover:bg-yellow-600 transition-all shadow-sm'

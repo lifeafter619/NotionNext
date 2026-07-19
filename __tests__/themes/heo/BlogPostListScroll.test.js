@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import BlogPostListScroll from '@/themes/heo/components/BlogPostListScroll'
 
 jest.mock('@/lib/config', () => ({
@@ -53,6 +53,7 @@ describe('heo BlogPostListScroll', () => {
       expect.any(Function),
       expect.anything()
     )
+    expect(screen.getByRole('button', { name: 'No more' })).toBeDisabled()
   })
 
   it('attaches a scroll listener when more posts are available', () => {

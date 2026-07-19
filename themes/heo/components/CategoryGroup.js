@@ -1,4 +1,4 @@
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 
 const CategoryGroup = ({ currentCategory, categories }) => {
   const safeCategories = Array.isArray(categories)

@@ -1,12 +1,7 @@
-import { useGlobal } from '@/lib/global'
-
 /**
  * 文章波浪动画
  */
 export default function WavesArea() {
-  const { isDarkMode } = useGlobal()
-  const color = isDarkMode ? '#18171d' : '#f7f9fe'
-
   return (
     <section className='main-hero-waves-area waves-area hidden min-[800px]:block w-full absolute left-0 z-10 bottom-0'>
       <svg
@@ -39,25 +34,25 @@ export default function WavesArea() {
           .parallax > use:nth-child(1) {
             animation-delay: -2s;
             animation-duration: 7s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
             opacity: 0.5;
           }
           .parallax > use:nth-child(2) {
             animation-delay: -3s;
             animation-duration: 10s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
             opacity: 0.6;
           }
           .parallax > use:nth-child(3) {
             animation-delay: -4s;
             animation-duration: 13s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
             opacity: 0.7;
           }
           .parallax > use:nth-child(4) {
             animation-delay: -5s;
             animation-duration: 20s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
           }
 
           @keyframes move-forever {
@@ -66,6 +61,16 @@ export default function WavesArea() {
             }
             100% {
               transform: translate3d(85px, 0, 0);
+            }
+          }
+
+          .dark #theme-heo .parallax > use {
+            fill: var(--heo-color-bg-dark);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .parallax > use {
+              animation: none;
             }
           }
         `}

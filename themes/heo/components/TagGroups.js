@@ -1,4 +1,4 @@
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 
 /**

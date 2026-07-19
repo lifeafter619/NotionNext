@@ -1,4 +1,4 @@
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 
 /**
  * 首页导航大按钮组件

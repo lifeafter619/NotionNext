@@ -1,5 +1,5 @@
 import { HashTag } from '@/components/HeroIcons'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 
 const TagItemMini = ({ tag, selected = false }) => {
   return (

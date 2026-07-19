@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import PostAdjacent from '@/themes/heo/components/PostAdjacent'
 
 const mockRouter = {
@@ -99,6 +99,7 @@ describe('heo PostAdjacent responsive controls', () => {
     expect(mobileNavigation).not.toHaveClass('lg:hidden')
     expect(desktopNavigation).toHaveClass('hidden')
     expect(desktopNavigation).toHaveClass('md:flex')
+    expect(screen.getByRole('button', { name: '关闭下一篇推荐' })).toBeInTheDocument()
   })
 
   it('keeps the dragged position when a drag ends', () => {

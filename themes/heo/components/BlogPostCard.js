@@ -1,7 +1,7 @@
 import LazyImage from '@/components/LazyImage'
 import NotionIcon from './NotionIcon'
 import { siteConfig } from '@/lib/config'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import CONFIG from '../config'
 import TagItemMini from './TagItemMini'
 
@@ -78,7 +78,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
       <div data-wow-delay='.2s' className={containerClass}>
         {/* 图片封面 */}
         {showPageCover && (
-          <SmartLink href={postHref} passHref legacyBehavior>
+          <SmartLink href={postHref}>
             <div
               className={
                 (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +

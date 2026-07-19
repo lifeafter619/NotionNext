@@ -1,6 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import CONFIG from '../config'
@@ -304,7 +304,9 @@ export default function PostAdjacent({ prev, next }) {
             </div>
 
             {/* 关闭按钮 */}
-            <div
+            <button
+              type='button'
+              aria-label='关闭下一篇推荐'
               className={`close-btn absolute top-2 right-2 z-20 w-6 h-6 flex items-center justify-center rounded-full cursor-pointer transition-colors backdrop-blur-sm ${
                 next.pageCoverThumbnail
                   ? 'bg-black/20 hover:bg-black/40 text-white'
@@ -314,8 +316,8 @@ export default function PostAdjacent({ prev, next }) {
                 e.stopPropagation()
                 setIsClosed(true)
               }}>
-              <i className='fas fa-times text-xs'></i>
-            </div>
+              <i aria-hidden='true' className='fas fa-times text-xs'></i>
+            </button>
           </div>
         </div>
       )}

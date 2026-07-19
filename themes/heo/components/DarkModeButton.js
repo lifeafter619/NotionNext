@@ -8,7 +8,10 @@ import { useImperativeHandle } from 'react'
  */
 const DarkModeButton = props => {
   const { cRef, className } = props
-  const { isDarkMode, updateDarkMode } = useGlobal()
+  const { isDarkMode, updateDarkMode, locale } = useGlobal()
+  const label = isDarkMode
+    ? locale?.MENU?.LIGHT_MODE || 'Light mode'
+    : locale?.MENU?.DARK_MODE || 'Dark mode'
 
   /**
    * 对外暴露方法
@@ -32,18 +35,21 @@ const DarkModeButton = props => {
   }
 
   return (
-    <div
+    <button
+      type='button'
       onClick={handleChangeDarkMode}
+      aria-label={label}
+      title={label}
       className={`${className || ''} cursor-pointer hover:bg-black hover:bg-opacity-10 rounded-full w-10 h-10 flex justify-center items-center duration-200 transition-all`}>
-      <div id='darkModeButton'>
+      <span id='darkModeButton' aria-hidden='true'>
         {' '}
         {isDarkMode ? (
           <Sun className='w-5 h-5' />
         ) : (
           <Moon className='w-5 h-5' />
         )}
-      </div>
-    </div>
+      </span>
+    </button>
   )
 }
 export default DarkModeButton

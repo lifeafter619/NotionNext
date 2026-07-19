@@ -1,7 +1,7 @@
 import { Home } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 
 const Logo = props => {
   const { siteInfo } = props

@@ -1,7 +1,7 @@
 import DarkModeButton from '@/components/DarkModeButton'
 import { useGlobal } from '@/lib/global'
 import { Dialog, Transition } from '@headlessui/react'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import {
   Fragment,
@@ -12,6 +12,8 @@ import {
 } from 'react'
 import { MenuListSide } from './MenuListSide'
 import TagGroups from './TagGroups'
+import { siteConfig } from '@/lib/config'
+import CONFIG from '../config'
 
 /**
  * 侧边抽屉
@@ -22,6 +24,7 @@ export default function SlideOver(props) {
   const [open, setOpen] = useState(false)
   const { locale } = useGlobal()
   const router = useRouter()
+  const showDarkMode = siteConfig('HEO_WIDGET_DARK_MODE', true, CONFIG)
   /**
    * 函数组件暴露方法useImperativeHandle
    **/
@@ -96,10 +99,12 @@ export default function SlideOver(props) {
                   {/* 内容 */}
                   <div className='flex h-full flex-col overflow-y-scroll bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-bg-dark)] py-6 shadow-xl'>
                     <div className='relative mt-6 flex-1 flex-col space-y-3 px-4 sm:px-6 dark:text-white '>
-                      <section className='space-y-2 flex flex-col'>
-                        {/* 切换深色模式 */}
-                        <DarkModeBlockButton />
-                      </section>
+                      {showDarkMode && (
+                        <section className='space-y-2 flex flex-col'>
+                          {/* 切换深色模式 */}
+                          <DarkModeBlockButton />
+                        </section>
+                      )}
 
                       <section className='space-y-2 flex flex-col'>
                         <div>{locale.COMMON.BLOG}</div>

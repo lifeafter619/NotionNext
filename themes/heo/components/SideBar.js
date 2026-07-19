@@ -3,6 +3,7 @@ import LazyImage from '@/components/LazyImage'
 import { useRouter } from 'next/router'
 import MenuGroupCard from './MenuGroupCard'
 import { MenuListSide } from './MenuListSide'
+import { withHeoSubPath } from '../utils/path'
 
 /**
  * 侧边抽屉
@@ -18,9 +19,11 @@ const SideBar = props => {
     <div id='side-bar'>
       <div className='h-52 w-full flex justify-center'>
         <div>
-          <div
+          <button
+            type='button'
+            aria-label='回到主页'
             onClick={() => {
-              router.push('/')
+              router.push(withHeoSubPath('/'))
             }}
             className='justify-center items-center flex hover:rotate-45 py-6 hover:scale-105 dark:text-gray-100  transform duration-200 cursor-pointer'>
             <LazyImage
@@ -31,7 +34,7 @@ const SideBar = props => {
               sizes='80px'
               alt={siteConfig('AUTHOR')}
             />
-          </div>
+          </button>
           <MenuGroupCard {...props} />
         </div>
       </div>

@@ -1,5 +1,5 @@
 import LazyImage from '@/components/LazyImage'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { siteConfig } from '@/lib/config'
 
 function getPostHref(post) {

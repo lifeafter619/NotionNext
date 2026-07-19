@@ -5,7 +5,7 @@ import WordCount from '@/components/WordCount'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import WavesArea from './WavesArea'
 import { useRouter } from 'next/router'
 import { useEffect, useRef } from 'react'
@@ -176,9 +176,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
               <>
                 <SmartLink
                   href={`/category/${encodeURIComponent(category)}`}
-                  className='mr-4'
-                  passHref
-                  legacyBehavior>
+                  className='mr-4'>
                   <div className='cursor-pointer text-sm font-bold px-3 py-1 rounded-lg  hover:bg-white text-white bg-blue-500 dark:bg-yellow-500 hover:text-blue-500 duration-200 '>
                     {category}
                   </div>
@@ -229,15 +227,13 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                     href={`/archive#${formatDateFmt(post?.publishDate, 'yyyy-MM')}`}
                     passHref
                     className='cursor-pointer hover:underline whitespace-nowrap'>
-                    <i className='fa-regular fa-calendar'></i>{' '}
-                    {publishDay}
+                    <i className='fa-regular fa-calendar'></i> {publishDay}
                   </SmartLink>
                 </>
               )}
 
               <div className='whitespace-nowrap'>
-                <i className='fa-regular fa-calendar-check'></i>{' '}
-                {lastEditedDay}
+                <i className='fa-regular fa-calendar-check'></i> {lastEditedDay}
               </div>
             </div>
 
@@ -279,12 +275,16 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
                     }
                   }}
                 />
-                <i
+                <button
+                  type='button'
+                  aria-label='在文中搜索'
                   className='fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-gray-400 text-xs cursor-pointer'
                   onClick={e => {
                     const input = e.target.previousElementSibling
                     searchInArticle(input.value)
-                  }}></i>
+                  }}>
+                  <span className='sr-only'>在文中搜索</span>
+                </button>
               </div>
             </div>
           </section>

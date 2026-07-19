@@ -2,6 +2,7 @@ import {
   cleanMenuItemsForClient,
   cleanPostListForClient,
   cleanPostListItemForClient,
+  selectCategoryPreviewPostsForClient,
   stripServerOnlyPostFields
 } from '@/lib/utils/clientPost'
 
@@ -131,6 +132,29 @@ describe('client post data cleaning', () => {
       { id: 'post1', title: 'Post 1' },
       null,
       { id: 'post2', title: 'Post 2' }
+    ])
+  })
+
+  it('keeps only lightweight category preview posts within each limit', () => {
+    const posts = [
+      { id: 'a1', category: 'A', status: 'Published', password: 'secret' },
+      { id: 'a2', category: 'A', status: 'Published', content: ['heavy'] },
+      { id: 'a3', category: 'A', status: 'Published' },
+      { id: 'b1', category: 'B', status: 'Published' },
+      { id: 'draft', category: 'B', status: 'Draft' },
+      { id: 'other', category: 'C', status: 'Published' }
+    ]
+
+    expect(
+      selectCategoryPreviewPostsForClient(
+        posts,
+        [{ name: 'A' }, { name: 'B' }],
+        2
+      )
+    ).toEqual([
+      { id: 'a1', category: 'A', status: 'Published' },
+      { id: 'a2', category: 'A', status: 'Published' },
+      { id: 'b1', category: 'B', status: 'Published' }
     ])
   })
 

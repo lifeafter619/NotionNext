@@ -114,14 +114,14 @@ const BlogPostListScroll = ({
 
         {/* 更多按钮 */}
         <div>
-          <div
-            onClick={() => {
-              handleGetMore()
-            }}
-            className='w-full my-4 py-4 text-center cursor-pointer rounded-xl dark:text-gray-200'>
+          <button
+            type='button'
+            disabled={!hasMore}
+            onClick={handleGetMore}
+            className={`w-full my-4 py-4 text-center rounded-xl dark:text-gray-200 ${hasMore ? 'cursor-pointer hover:bg-black/5 dark:hover:bg-white/5' : 'cursor-default opacity-70'}`}>
             {' '}
             {hasMore ? locale.COMMON.MORE : `${locale.COMMON.NO_MORE}`}{' '}
-          </div>
+          </button>
         </div>
       </div>
     )

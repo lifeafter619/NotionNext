@@ -1,7 +1,7 @@
 import { ArrowRightCircle } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import CONFIG from '../config'
@@ -53,7 +53,7 @@ export function InfoCard(props) {
   const url2 = siteConfig('HEO_INFO_CARD_URL2', null, CONFIG)
   const icon2 = siteConfig('HEO_INFO_CARD_ICON2', null, CONFIG)
   return (
-    <Card className='bg-[#4f65f0] dark:bg-yellow-600 text-white flex flex-col w-72 overflow-hidden relative'>
+    <Card className='bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] text-white flex flex-col w-72 overflow-hidden relative'>
       {/* 信息卡牌第一行 */}
       <div className='flex justify-between'>
         {/* 问候语 */}
@@ -147,10 +147,12 @@ function GreetingsWords() {
   }
 
   return (
-    <div
+    <button
+      type='button'
+      aria-label='切换问候语'
       onClick={handleChangeGreeting}
       className=' select-none cursor-pointer py-1 px-2 bg-[var(--heo-color-primary-hover)] hover:bg-[var(--heo-color-card-muted)]  hover:text-[var(--heo-color-text)] dark:bg-[var(--heo-color-accent)] dark:hover:text-white dark:hover:bg-black text-sm rounded-lg  duration-200 transition-colors'>
       {greeting}
-    </div>
+    </button>
   )
 }

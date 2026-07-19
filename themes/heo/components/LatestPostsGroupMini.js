@@ -2,7 +2,7 @@ import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 // import Image from 'next/image'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 
 const getLatestPostKey = (post, index) => {

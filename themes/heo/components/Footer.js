@@ -3,6 +3,7 @@ import CopyRightDate from '@/components/CopyRightDate'
 import PoweredBy from '@/components/PoweredBy'
 import { siteConfig } from '@/lib/config'
 import SocialButton from './SocialButton'
+import SmartLink from './HeoLink'
 /**
  * 页脚
  * @returns
@@ -29,16 +30,16 @@ const Footer = () => {
       {/* 底部页面信息 */}
       <div
         id='footer-bottom'
-        className='w-full h-20 flex flex-col p-3 lg:flex-row justify-between px-6 items-center bg-[#f1f3f7] dark:bg-[#21232A] border-t dark:border-t-[#3D3D3F]'>
+        className='w-full h-20 flex flex-col p-3 lg:flex-row justify-between px-6 items-center bg-[var(--heo-color-card-muted)] dark:bg-[var(--heo-color-card-dark)] border-t dark:border-t-[var(--heo-color-border-dark)]'>
         <div id='footer-bottom-left' className='text-center lg:text-start'>
           <PoweredBy />
           <div className='flex gap-x-1'>
             <CopyRightDate />
-            <a
-              href={'/about'}
+            <SmartLink
+              href='/about'
               className='underline font-semibold dark:text-gray-300 '>
               {siteConfig('AUTHOR')}
-            </a>
+            </SmartLink>
             {BIO && <span className='mx-1'> | {BIO}</span>}
           </div>
         </div>

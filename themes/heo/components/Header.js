@@ -173,20 +173,13 @@ const Header = props => {
             )}
 
             {/* 移动端菜单按钮 */}
-            <div
+            <button
+              type='button'
               onClick={toggleMenuOpen}
               className='flex lg:hidden w-11 justify-center items-center h-11 cursor-pointer rounded-full hover:bg-black hover:bg-opacity-10 transition-colors'
-              role='button'
-              aria-label='打开菜单'
-              tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  toggleMenuOpen()
-                }
-              }}>
-              <i className='fas fa-bars' />
-            </div>
+              aria-label='打开菜单'>
+              <i aria-hidden='true' className='fas fa-bars' />
+            </button>
           </div>
 
           {/* 右边侧拉抽屉 */}

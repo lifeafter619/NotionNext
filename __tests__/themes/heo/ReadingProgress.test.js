@@ -99,6 +99,14 @@ describe('heo ReadingProgress', () => {
       expect(progress).toBeGreaterThanOrEqual(0)
       expect(progress).toBeLessThanOrEqual(100)
       expect(progress).toBe(expectedProgress)
+
+      if (expectedProgress === 0) {
+        expect(progressButton).toBeDisabled()
+        expect(progressButton).toHaveAttribute('tabindex', '-1')
+      } else {
+        expect(progressButton).toBeEnabled()
+        expect(progressButton).toHaveAttribute('tabindex', '0')
+      }
     }
   )
 
@@ -136,10 +144,11 @@ describe('heo ReadingProgress', () => {
 
   it('returns to the top when activated from the keyboard', async () => {
     const user = userEvent.setup()
+    setScrollMetrics({ scrollHeight: 1000, clientHeight: 500, scrollY: 250 })
     render(<ReadingProgress title='Keyboard article' />)
 
     const progressButton = screen.getByRole('button', {
-      name: 'Keyboard article，阅读进度 0%，返回顶部'
+      name: 'Keyboard article，阅读进度 50%，返回顶部'
     })
     progressButton.focus()
     await user.keyboard('{Enter}')

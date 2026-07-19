@@ -1,6 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import SlideOver from '@/themes/heo/components/SlideOver'
 
+const mockSlideOverConfig = {
+  HEO_WIDGET_DARK_MODE: true
+}
+
 jest.mock('next/router', () => ({
   useRouter: () => ({
     query: {},
@@ -50,6 +54,14 @@ jest.mock('@/lib/global', () => ({
   })
 }))
 
+jest.mock('@/lib/config', () => ({
+  siteConfig: jest.fn((key, defaultValue) =>
+    Object.prototype.hasOwnProperty.call(mockSlideOverConfig, key)
+      ? mockSlideOverConfig[key]
+      : defaultValue
+  )
+}))
+
 jest.mock('@/components/DarkModeButton', () => {
   return function DarkModeButton() {
     return null
@@ -76,6 +88,10 @@ jest.mock('@/themes/heo/components/TagGroups', () => {
 })
 
 describe('heo SlideOver open signal', () => {
+  beforeEach(() => {
+    mockSlideOverConfig.HEO_WIDGET_DARK_MODE = true
+  })
+
   it('opens on first mount when the header click increments openSignal', async () => {
     render(
       <SlideOver cRef={{ current: null }} openSignal={1} tagOptions={[]} />
@@ -85,5 +101,17 @@ describe('heo SlideOver open signal', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
     expect(screen.getByText('Side links')).toBeInTheDocument()
+  })
+
+  it('hides the mobile dark mode control when the widget is disabled', async () => {
+    mockSlideOverConfig.HEO_WIDGET_DARK_MODE = false
+    render(
+      <SlideOver cRef={{ current: null }} openSignal={1} tagOptions={[]} />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Dark mode')).not.toBeInTheDocument()
   })
 })

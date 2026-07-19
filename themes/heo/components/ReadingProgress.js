@@ -70,6 +70,8 @@ export default function ReadingProgress({ title }) {
     <>
       <button
         type='button'
+        disabled={scrollPercentage <= 0}
+        tabIndex={scrollPercentage > 0 ? 0 : -1}
         title={accessibleTitle}
         aria-label={`${accessibleTitle}，阅读进度 ${scrollPercentage}%，返回顶部`}
         data-scroll-percentage={scrollPercentage}
@@ -109,11 +111,14 @@ export default function ReadingProgress({ title }) {
               </div>
               <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
                 <button
+                  type='button'
                   onClick={handleBack}
                   className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
                   回到原位置
                 </button>
                 <button
+                  type='button'
+                  aria-label='关闭跳转提示'
                   onClick={e => {
                     e.stopPropagation()
                     setShowToast(false)

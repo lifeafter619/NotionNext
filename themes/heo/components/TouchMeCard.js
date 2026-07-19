@@ -1,5 +1,5 @@
 import { siteConfig } from '@/lib/config'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import CONFIG from '../config'
 
 /**
@@ -18,7 +18,7 @@ export default function TouchMeCard() {
       <SmartLink
         href={siteConfig('HEO_SOCIAL_CARD_URL', null, CONFIG)}
         className='h-full w-full'>
-        <div className='relative h-full w-full lg:p-6 p-4 border rounded-xl bg-[#4f65f0] dark:bg-yellow-600 dark:border-gray-600 overflow-hidden'>
+        <div className='relative h-full w-full lg:p-6 p-4 border rounded-xl bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] dark:border-gray-600 overflow-hidden'>
           {/* 默认显示内容 */}
           <div className='h-full relative z-10 group-hover:opacity-0 transition-opacity duration-300'>
             <h2 className='font-[1000] text-3xl'>
@@ -38,7 +38,7 @@ export default function TouchMeCard() {
             }}></div>
 
           {/* 蒙版效果 - 鼠标悬停显示 */}
-          <div className='absolute inset-0 bg-[#4f65f0] dark:bg-yellow-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20'>
+          <div className='absolute inset-0 bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20'>
             <div className='font-[1000] text-xl text-center'>
               {siteConfig('HEO_SOCIAL_CARD_TITLE_3', null, CONFIG)}
             </div>

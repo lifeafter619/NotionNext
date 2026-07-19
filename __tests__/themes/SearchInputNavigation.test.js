@@ -95,7 +95,8 @@ describe.each([
     const input = container.querySelector('input')
 
     fireEvent.change(input, { target: { value: 'hello 世界' } })
-    fireEvent.keyUp(input, { key: 'Enter', keyCode: 13 })
+    const enterEvent = _theme === 'heo' ? fireEvent.keyDown : fireEvent.keyUp
+    enterEvent(input, { key: 'Enter', keyCode: 13 })
 
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith({

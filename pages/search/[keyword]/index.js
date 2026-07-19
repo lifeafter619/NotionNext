@@ -47,6 +47,7 @@ export async function getStaticProps({ params: { keyword }, locale }) {
     keepResults: true
   })
   props.keyword = keyword
+  props.currentSearch = keyword
   delete props.allPages
   return {
     props,

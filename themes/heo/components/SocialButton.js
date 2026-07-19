@@ -1,6 +1,7 @@
 import { siteConfig } from '@/lib/config'
 import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
 import { useRef } from 'react'
+import SmartLink from './HeoLink'
 
 /**
  * 社交联系方式按钮组
@@ -99,13 +100,13 @@ const SocialButton = () => {
           </a>
         )}
         {ENABLE_RSS && (
-          <a
+          <SmartLink
             target='_blank'
             rel='noreferrer'
-            title={'RSS'}
-            href={'/rss/feed.xml'}>
+            title='RSS'
+            href='/rss/feed.xml'>
             <i className={`${iconClass} fas fa-rss`} />
-          </a>
+          </SmartLink>
         )}
         {CONTACT_BILIBILI && (
           <a

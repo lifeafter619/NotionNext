@@ -1,6 +1,6 @@
 import { ChevronDoubleLeft, ChevronDoubleRight } from '@/components/HeroIcons'
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
@@ -54,8 +54,10 @@ export default function CategoryBar(props) {
       <div
         id='category-bar-next'
         className='flex shrink-0 items-center justify-center'>
-        <div
+        <button
           id='right'
+          type='button'
+          aria-label={scrollRight ? '滚动到分类开头' : '滚动到分类末尾'}
           className='cursor-pointer w-11 h-11 flex items-center justify-center rounded-full dark:text-gray-300 dark:hover:text-yellow-600 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10'
           onClick={handleToggleScroll}>
           {scrollRight ? (
@@ -63,7 +65,7 @@ export default function CategoryBar(props) {
           ) : (
             <ChevronDoubleRight className={'w-5 h-5'} />
           )}
-        </div>
+        </button>
         <SmartLink
           href='/category'
           className='hidden min-[375px]:inline whitespace-nowrap font-bold text-gray-900 dark:text-white transition-colors duration-200 hover:text-indigo-600 dark:hover:text-yellow-600'>
@@ -84,9 +86,10 @@ const MenuItem = ({ href, name }) => {
   const { category } = router.query
   const selected = category === name
   return (
-    <div
+    <SmartLink
+      href={href}
       className={`whitespace-nowrap mr-2 min-h-11 flex items-center duration-200 transition-colors font-bold px-2 py-1 rounded-md text-gray-900 dark:text-white hover:text-white hover:bg-indigo-600 dark:hover:bg-yellow-600 ${selected ? 'text-white bg-indigo-600 dark:bg-yellow-600' : ''}`}>
-      <SmartLink href={href}>{name}</SmartLink>
-    </div>
+      {name}
+    </SmartLink>
   )
 }

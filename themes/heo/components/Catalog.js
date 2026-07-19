@@ -246,11 +246,14 @@ const Catalog = ({
               </div>
               <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
                 <button
+                  type='button'
                   onClick={handleBack}
                   className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
                   回到原位置
                 </button>
                 <button
+                  type='button'
+                  aria-label='关闭跳转提示'
                   onClick={() =>
                     setToastState(prev => ({ ...prev, show: false }))
                   }
@@ -290,12 +293,14 @@ const JumpToCommentButton = ({ onJump }) => {
   }
 
   return (
-    <div
+    <button
+      type='button'
+      aria-label='跳转到评论区'
       onClick={handleJumpClick}
       className='mt-4 p-3 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-indigo-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-yellow-500 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-bold text-sm text-gray-500 dark:text-gray-200'>
-      <i className='fas fa-comments' />
+      <i aria-hidden='true' className='fas fa-comments' />
       跳转到评论区
-    </div>
+    </button>
   )
 }
 

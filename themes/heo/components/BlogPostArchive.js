@@ -1,6 +1,6 @@
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import CONFIG from '../config'
 import TagItemMini from './TagItemMini'
 
@@ -74,7 +74,7 @@ const BlogPostArchive = ({ posts = [], archiveTitle, siteInfo }) => {
                 {/* 图片封面 */}
                 {showPageCover && (
                   <div>
-                    <SmartLink href={postHref} passHref legacyBehavior>
+                    <SmartLink href={postHref}>
                       <LazyImage
                         className={'rounded-xl bg-center bg-cover w-40 h-24'}
                         width={160}

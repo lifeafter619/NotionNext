@@ -1,4 +1,4 @@
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useEffect, useState } from 'react'
 
 /**

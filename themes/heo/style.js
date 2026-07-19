@@ -1,4 +1,5 @@
 import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
+import { siteConfig } from '@/lib/config'
 import CONFIG from './config'
 
 /**
@@ -11,18 +12,34 @@ const Style = () => {
     <style jsx global>{`
       #theme-heo {
         --heo-color-primary: #4f65f0;
-        --heo-color-primary-hover: #4f46e5;
-        --heo-color-primary-text: #ffffff;
-        --heo-color-accent: #ca8a04;
+        --heo-color-primary-hover: ${siteConfig(
+          'HEO_COLOR_PRIMARY_HOVER',
+          '#4f46e5',
+          CONFIG
+        )};
+        --heo-color-primary-text: ${siteConfig(
+          'HEO_COLOR_PRIMARY_TEXT',
+          '#ffffff',
+          CONFIG
+        )};
+        --heo-color-accent: ${siteConfig(
+          'HEO_COLOR_ACCENT',
+          '#ca8a04',
+          CONFIG
+        )};
         --heo-color-bg: #f7f9fe;
         --heo-color-bg-dark: #18171d;
         --heo-color-card: #ffffff;
         --heo-color-card-dark: #1e1e1e;
-        --heo-color-card-muted: #f1f3f8;
+        --heo-color-card-muted: ${siteConfig(
+          'HEO_COLOR_CARD_MUTED',
+          '#f1f3f8',
+          CONFIG
+        )};
         --heo-color-border: #4f46e5;
         --heo-color-border-dark: #ca8a04;
-        --heo-color-text-light: #000000;
-        --heo-color-text-secondary-light: #4b5563;
+        --heo-color-text-light: ${siteConfig('HEO_COLOR_TEXT', '#000000', CONFIG)};
+        --heo-color-text-secondary-light: ${siteConfig('HEO_COLOR_TEXT_SECONDARY', '#4b5563', CONFIG)};
         --heo-color-text-dark: #f3f4f6;
         --heo-color-text-secondary-dark: #d1d5db;
         --heo-color-text: var(--heo-color-text-light);
@@ -32,6 +49,7 @@ const Style = () => {
       }
 
       .dark #theme-heo {
+        --heo-color-primary: var(--heo-color-primary-dark);
         --heo-color-text: var(--heo-color-text-dark);
         --heo-color-text-secondary: var(--heo-color-text-secondary-dark);
         background-color: var(--heo-color-bg-dark);
@@ -111,7 +129,11 @@ const Style = () => {
       }
 
       body {
-        background-color: #f7f9fe;
+        background-color: ${siteConfig('HEO_COLOR_BG', '#f7f9fe', CONFIG)};
+      }
+
+      .dark body {
+        background-color: ${siteConfig('HEO_COLOR_BG_DARK', '#18171d', CONFIG)};
       }
 
       /* 公告栏中的字体固定白色 */
@@ -192,8 +214,25 @@ const Style = () => {
         }
       }
 
+      @media (prefers-reduced-motion: reduce) {
+        .tags-group-wrapper {
+          animation: none;
+          transform: none;
+        }
+      }
+
       ${themeConsoleStyle('heo', CONFIG)}
-  `}</style>
+
+      #theme-heo {
+        --heo-color-text: var(--heo-color-text-light);
+        --heo-color-text-secondary: var(--heo-color-text-secondary-light);
+      }
+
+      .dark #theme-heo {
+        --heo-color-text: var(--heo-color-text-dark);
+        --heo-color-text-secondary: var(--heo-color-text-secondary-dark);
+      }
+    `}</style>
   )
 }
 

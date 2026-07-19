@@ -15,7 +15,7 @@ import { useGlobal } from '@/lib/global'
 import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from '@/themes/heo/components/HeoLink'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
@@ -37,6 +37,7 @@ import CONFIG from './config'
 import { Style } from './style'
 import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
 import { isHeoCommentServiceConfigured } from './utils/commentEnabled'
+import { withHeoSubPath } from './utils/path'
 
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
@@ -306,15 +307,24 @@ function getBodySnippet(content, keyword) {
   }`
 }
 
+function algoliaFieldHasMatch(field) {
+  if (!field) return false
+  if (field.matchLevel && field.matchLevel !== 'none') return true
+  if (Array.isArray(field.matchedWords) && field.matchedWords.length > 0) {
+    return true
+  }
+  return /<span\b[^>]*>/.test(String(field.value || ''))
+}
+
 function getPostHref(post) {
-  if (post?.href) return post.href
+  if (post?.href) return withHeoSubPath(post.href)
   if (!post?.slug) return '#'
   const slug = String(post.slug)
   if (/^https?:\/\//i.test(slug)) return slug
 
   const subPath = siteConfig('SUB_PATH', '') || ''
   const normalizedSlug = slug.startsWith('/') ? slug : `/${slug}`
-  return `${subPath}${normalizedSlug}` || '/'
+  return withHeoSubPath(`${subPath}${normalizedSlug}` || '/')
 }
 
 function postHasTag(post, tagName) {
@@ -349,6 +359,9 @@ function getSearchResultDisplay(post, currentSearch, isAlgolia) {
   let matchLocation = ''
 
   if (isAlgolia) {
+    const contentMatch = algoliaFieldHasMatch(post?._snippetResult?.content)
+    const summaryMatch = algoliaFieldHasMatch(post?._snippetResult?.summary)
+    const titleMatch = algoliaFieldHasMatch(post?._highlightResult?.title)
     const highlightedSummary = sanitizeAlgoliaHighlight(post.summary)
     const highlightedTitle = sanitizeAlgoliaHighlight(post.title)
 
@@ -365,8 +378,14 @@ function getSearchResultDisplay(post, currentSearch, isAlgolia) {
           }}
         />
       ),
-      showJumpButton: true,
-      matchLocation: '文章内容'
+      showJumpButton: contentMatch,
+      matchLocation: contentMatch
+        ? '文章内容'
+        : summaryMatch
+          ? '摘要'
+          : titleMatch
+            ? '标题'
+            : ''
     }
   }
 
@@ -397,10 +416,8 @@ function getSearchResultDisplay(post, currentSearch, isAlgolia) {
     matchLocation = '文章内容'
   } else if (summaryMatch) {
     matchLocation = '摘要'
-    showJumpButton = true
   } else if (titleMatch) {
     matchLocation = '标题'
-    showJumpButton = true
   }
 
   return { displayContent, displayTitle, showJumpButton, matchLocation }
@@ -510,7 +527,10 @@ const LayoutSearch = props => {
           ...hit,
           id: hit.objectID,
           title: hit._highlightResult?.title?.value || hit.title,
-          summary: hit._snippetResult?.content?.value || hit.summary,
+          summary:
+            hit._snippetResult?.summary?.value ||
+            hit._snippetResult?.content?.value ||
+            hit.summary,
           slug: hit.slug,
           href: getPostHref(hit),
           createdTime: hit.createdTime || hit.createdTimestamp
@@ -545,8 +565,7 @@ const LayoutSearch = props => {
       post => post?.slug || post?.objectID || post?.href
     )
   }, [algoliaState, enableAlgolia, posts])
-  const usingAlgoliaResults =
-    enableAlgolia && algoliaState.status === 'success'
+  const usingAlgoliaResults = enableAlgolia && algoliaState.status === 'success'
 
   // 对搜索结果进行排序 - 使用 useMemo 优化性能
   const sortedPosts = useMemo(() => {
@@ -749,6 +768,34 @@ const LayoutSearch = props => {
 /**
  * 搜索结果卡片 - 列表视图
  */
+const SearchMatchIndicator = ({ canJump, matchLocation, onJump }) => {
+  if (!matchLocation) return null
+
+  if (!canJump) {
+    return (
+      <div className='mt-2 inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
+        <i className='fas fa-location-dot' aria-hidden='true' />
+        <span>匹配位置 </span>
+        <span>{`(${matchLocation})`}</span>
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type='button'
+      className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors'
+      onClick={onJump}
+      aria-label={`跳转到搜索位置（${matchLocation}）`}>
+      <i className='fas fa-search-location' aria-hidden='true' />
+      <span>跳转到搜索位置</span>
+      <span className='text-gray-500 dark:text-gray-400'>
+        {` (${matchLocation})`}
+      </span>
+    </button>
+  )
+}
+
 const SearchResultCard = ({
   post,
   index,
@@ -771,25 +818,27 @@ const SearchResultCard = ({
   const category = getSearchText(post?.category)
 
   return (
-    <SmartLink href={postHref}>
-      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex gap-4 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group cursor-pointer'>
-        {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
-        {showCover && (
-          <div className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
-            <LazyImage
-              priority={index === 0}
-              width={180}
-              height={126}
-              sizes='(min-width: 720px) 10rem, 8rem'
-              src={post?.pageCoverThumbnail || siteInfo?.pageCover}
-              alt={titleText}
-              className='max-w-full max-h-full object-contain'
-            />
-          </div>
-        )}
-        {/* 文章信息 */}
-        <div className='flex-1 flex flex-col justify-between min-w-0'>
-          <div>
+    <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex gap-4 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group'>
+      {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+      {showCover && (
+        <SmartLink
+          href={postHref}
+          className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+          <LazyImage
+            priority={index === 0}
+            width={180}
+            height={126}
+            sizes='(min-width: 720px) 10rem, 8rem'
+            src={post?.pageCoverThumbnail || siteInfo?.pageCover}
+            alt={titleText}
+            className='max-w-full max-h-full object-contain'
+          />
+        </SmartLink>
+      )}
+      {/* 文章信息 */}
+      <div className='flex-1 flex flex-col justify-between min-w-0'>
+        <div>
+          <SmartLink href={postHref} className='block'>
             <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500 transition-colors line-clamp-2'>
               {displayTitle}
             </h3>
@@ -798,48 +847,36 @@ const SearchResultCard = ({
                 {displayContent}
               </div>
             )}
-            {canJumpToMatch && (
-              <div
-                className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-3 py-1.5 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors cursor-pointer'
-                onClick={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  router.push(hrefWithKeyword)
-                }}>
-                <i className='fas fa-search-location'></i>
-                <span>跳转到搜索位置</span>
-                {matchLocation && (
-                  <span className='text-gray-500 dark:text-gray-400'>
-                    ({matchLocation})
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
-            {category && (
-              <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
-                <i className='fas fa-folder mr-1'></i>
-                {category}
-              </span>
-            )}
-            {postTags.slice(0, 2).map(tag => (
-              <span
-                key={tag}
-                className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md'>
-                #{tag}
-              </span>
-            ))}
-            {createdDate && (
-              <span>
-                <i className='fas fa-calendar mr-1'></i>
-                {createdDate}
-              </span>
-            )}
-          </div>
+          </SmartLink>
+          <SearchMatchIndicator
+            canJump={canJumpToMatch}
+            matchLocation={matchLocation}
+            onJump={() => void router.push(hrefWithKeyword)}
+          />
         </div>
-      </article>
-    </SmartLink>
+        <div className='flex items-center flex-wrap gap-3 mt-2 text-xs text-gray-500'>
+          {category && (
+            <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
+              <i className='fas fa-folder mr-1'></i>
+              {category}
+            </span>
+          )}
+          {postTags.slice(0, 2).map(tag => (
+            <span
+              key={tag}
+              className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md'>
+              #{tag}
+            </span>
+          ))}
+          {createdDate && (
+            <span>
+              <i className='fas fa-calendar mr-1'></i>
+              {createdDate}
+            </span>
+          )}
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -867,25 +904,27 @@ const SearchResultGridCard = ({
   const category = getSearchText(post?.category)
 
   return (
-    <SmartLink href={hrefWithFragment}>
-      <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group cursor-pointer h-full flex flex-col'>
-        {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
-        {showCover && (
-          <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
-            <LazyImage
-              priority={index === 0}
-              width={360}
-              height={160}
-              sizes='(min-width: 720px) 33vw, 100vw'
-              src={post?.pageCoverThumbnail || siteInfo?.pageCover}
-              alt={titleText}
-              className='max-w-full max-h-full object-contain'
-            />
-          </div>
-        )}
-        {/* 文章信息 */}
-        <div className='p-4 flex-1 flex flex-col justify-between'>
-          <div>
+    <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group h-full flex flex-col'>
+      {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+      {showCover && (
+        <SmartLink
+          href={postHref}
+          className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+          <LazyImage
+            priority={index === 0}
+            width={360}
+            height={160}
+            sizes='(min-width: 720px) 33vw, 100vw'
+            src={post?.pageCoverThumbnail || siteInfo?.pageCover}
+            alt={titleText}
+            className='max-w-full max-h-full object-contain'
+          />
+        </SmartLink>
+      )}
+      {/* 文章信息 */}
+      <div className='p-4 flex-1 flex flex-col justify-between'>
+        <div>
+          <SmartLink href={postHref} className='block'>
             <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-500 transition-colors'>
               {displayTitle}
             </h3>
@@ -894,35 +933,23 @@ const SearchResultGridCard = ({
                 {displayContent}
               </div>
             )}
-            {canJumpToMatch && (
-              <div
-                className='mt-2 inline-flex items-center gap-1 rounded-md bg-yellow-50 px-2 py-1 text-xs font-bold text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-500/10 dark:text-yellow-400 dark:hover:bg-yellow-500/20 transition-colors cursor-pointer'
-                onClick={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  router.push(hrefWithFragment)
-                }}>
-                <i className='fas fa-search-location'></i>
-                <span>跳转到搜索位置</span>
-                {matchLocation && (
-                  <span className='text-gray-500 dark:text-gray-400'>
-                    ({matchLocation})
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
-            {category && (
-              <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
-                {category}
-              </span>
-            )}
-            {createdDate && <span>{createdDate}</span>}
-          </div>
+          </SmartLink>
+          <SearchMatchIndicator
+            canJump={canJumpToMatch}
+            matchLocation={matchLocation}
+            onJump={() => void router.push(hrefWithFragment)}
+          />
         </div>
-      </article>
-    </SmartLink>
+        <div className='flex items-center gap-2 mt-3 text-xs text-gray-500'>
+          {category && (
+            <span className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-md'>
+              {category}
+            </span>
+          )}
+          {createdDate && <span>{createdDate}</span>}
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -1012,7 +1039,7 @@ const LayoutSlug = props => {
             '#article-wrapper #notion-article'
           )
           if (!article) {
-            router.push('/404')
+            router.push(withHeoSubPath('/404'))
           }
         }
       }, waiting404)
@@ -1168,12 +1195,16 @@ const Layout404 = props => {
  * @returns
  */
 const LayoutCategoryIndex = props => {
-  const { categoryOptions, allPages } = props
+  const { categoryOptions, categoryPreviewPosts, allPages } = props
   const { locale } = useGlobal()
   const safeCategoryOptions = Array.isArray(categoryOptions)
     ? categoryOptions.filter(category => category?.name)
     : []
-  const safeAllPages = Array.isArray(allPages) ? allPages : []
+  const safePreviewPosts = Array.isArray(categoryPreviewPosts)
+    ? categoryPreviewPosts
+    : Array.isArray(allPages)
+      ? allPages
+      : []
 
   return (
     <div id='category-outer-wrapper' className='mt-8 px-5 md:px-0'>
@@ -1215,7 +1246,7 @@ const LayoutCategoryIndex = props => {
       {/* 分类文章列表 */}
       <div id='category-list' className='space-y-10'>
         {safeCategoryOptions.map(category => {
-          const posts = safeAllPages
+          const posts = safePreviewPosts
             .filter(
               p => p?.category === category.name && p?.status === 'Published'
             )

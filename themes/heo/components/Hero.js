@@ -3,20 +3,21 @@ import { ArrowSmallRight, PlusSmall } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { memo, useImperativeHandle, useRef, useState } from 'react'
 import CONFIG from '../config'
+import { withHeoSubPath } from '../utils/path'
 
 function getPostHref(post) {
-  if (post?.href) return post.href
+  if (post?.href) return withHeoSubPath(post.href)
   if (!post?.slug) return '#'
   const rawSlug = String(post.slug)
   if (/^https?:\/\//i.test(rawSlug)) return rawSlug
 
   const subPath = siteConfig('SUB_PATH', '') || ''
   const slug = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`
-  return `${subPath}${slug}` || '/'
+  return withHeoSubPath(`${subPath}${slug}` || '/')
 }
 
 function pushPost(router, post) {
@@ -109,13 +110,22 @@ function Banner(props) {
   }
 
   // 遮罩文字
-  const coverTitle = siteConfig('HEO_HERO_COVER_TITLE')
+  const coverTitle = siteConfig('HEO_HERO_COVER_TITLE', null, CONFIG)
 
   return (
     <div
       id='banners'
       onClick={handleClickBanner}
-        className='hidden xl:flex xl:flex-col group h-full bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] rounded-xl border dark:border-gray-700 mb-3 relative overflow-hidden'>
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          handleClickBanner()
+        }
+      }}
+      role='button'
+      tabIndex={0}
+      aria-label='随机打开一篇文章'
+      className='hidden xl:flex xl:flex-col group h-full bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] rounded-xl border dark:border-gray-700 mb-3 relative overflow-hidden'>
       <div
         id='banner-title'
         className='z-10 flex flex-col absolute top-10 left-10'>
@@ -412,9 +422,9 @@ function TodayCard({ cRef, siteInfo }) {
    * 点击卡片跳转的链接
    * @param {*} e
    */
-  function handleCardClick(e) {
+  function handleCardClick() {
     if (link) {
-      router.push(link)
+      router.push(withHeoSubPath(link))
     }
   }
 
@@ -431,16 +441,25 @@ function TodayCard({ cRef, siteInfo }) {
       } overflow-hidden absolute hidden xl:flex flex-1 flex-col h-full top-0 w-full`}>
       <div
         id='card-body'
-        onClick={handleCardClick}
         className={`${
           isCoverUp
-            ? 'opacity-100 cursor-pointer'
+            ? `opacity-100 ${link ? 'cursor-pointer' : 'cursor-default'}`
             : 'opacity-0 transform scale-110 pointer-events-none'
         } shadow transition-all duration-200 today-card h-full bg-black rounded-xl relative overflow-hidden flex items-end`}>
+        {link && (
+          <button
+            type='button'
+            aria-label='打开推荐文章'
+            onClick={handleCardClick}
+            className={`${isCoverUp ? '' : 'hidden pointer-events-none'} absolute inset-0 z-20 cursor-pointer`}>
+            <span className='sr-only'>打开推荐文章</span>
+          </button>
+        )}
+
         {/* 卡片文字信息 */}
         <div
           id='today-card-info'
-          className='z-10 flex justify-between w-full relative text-white p-10 items-end bg-gradient-to-t from-black/70 to-transparent pb-12 pt-24'>
+          className='z-30 pointer-events-none flex justify-between w-full relative text-white p-10 items-end bg-gradient-to-t from-black/70 to-transparent pb-12 pt-24'>
           <div className='flex flex-col drop-shadow-md'>
             <div className='text-xs font-light'>
               {siteConfig('HEO_HERO_TITLE_4', null, CONFIG)}
@@ -450,19 +469,20 @@ function TodayCard({ cRef, siteInfo }) {
             </div>
           </div>
           {/* 查看更多的按钮 */}
-          <div
+          <button
+            type='button'
             onClick={handleClickShowMore}
-            className={`${isCoverUp ? '' : 'hidden pointer-events-none'} z-10 group flex items-center px-3 h-10 justify-center rounded-3xl
+            className={`${isCoverUp ? '' : 'hidden pointer-events-none'} pointer-events-auto z-10 group flex items-center px-3 h-10 justify-center rounded-3xl
             glassmorphism transition-colors duration-100 `}>
             <PlusSmall
               className={
                 'group-hover:rotate-180 duration-500 transition-all w-6 h-6 mr-2 bg-white rounded-full stroke-black'
               }
             />
-            <div id='more' className='select-none'>
+            <span id='more' className='select-none'>
               {locale.COMMON.RECOMMEND_POSTS}
-            </div>
-          </div>
+            </span>
+          </button>
         </div>
 
         {/* 封面图 */}

@@ -21,11 +21,13 @@ const JumpToCommentButton = () => {
   }
 
   return (
-    <div
+    <button
+      type='button'
+      aria-label='跳转到评论区'
       className='flex space-x-1 items-center justify-center transform hover:scale-105 duration-200 w-7 h-7 text-center cursor-pointer'
       onClick={navToComment}>
-      <i className='fas fa-comment text-xs' />
-    </div>
+      <i aria-hidden='true' className='fas fa-comment text-xs' />
+    </button>
   )
 }
 

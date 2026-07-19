@@ -53,9 +53,8 @@ export default function FloatTocButton(props) {
   // 桌面端拖拽状态
   const [desktopPos, setDesktopPos] = useState({ x: 20, y: 300 })
   const [isDraggingDesktop, setIsDraggingDesktop] = useState(false)
-  const [isDesktopTocMode, setIsDesktopTocMode] = useState(() =>
-    shouldUseDesktopTocMode()
-  )
+  const [isDesktopTocMode, setIsDesktopTocMode] = useState(false)
+  const [viewportReady, setViewportReady] = useState(false)
 
   useEffect(() => {
     setDesktopPos(prev => ({
@@ -68,6 +67,7 @@ export default function FloatTocButton(props) {
     const syncViewport = () => {
       const desktopMode = shouldUseDesktopTocMode()
       setIsDesktopTocMode(desktopMode)
+      setViewportReady(true)
 
       if (desktopMode) {
         const floatingElement =
@@ -108,14 +108,8 @@ export default function FloatTocButton(props) {
           window.innerHeight - groupHeight - MOBILE_ACTION_SCREEN_MARGIN
         )
         const next = {
-          x: Math.max(
-            MOBILE_ACTION_SCREEN_MARGIN,
-            Math.min(prev.x, maxRight)
-          ),
-          y: Math.max(
-            MOBILE_ACTION_SCREEN_MARGIN,
-            Math.min(prev.y, maxBottom)
-          )
+          x: Math.max(MOBILE_ACTION_SCREEN_MARGIN, Math.min(prev.x, maxRight)),
+          y: Math.max(MOBILE_ACTION_SCREEN_MARGIN, Math.min(prev.y, maxBottom))
         }
         return next.x === prev.x && next.y === prev.y ? prev : next
       })
@@ -172,7 +166,7 @@ export default function FloatTocButton(props) {
   const canUseToc = tocWidgetEnabled && Boolean(post) && !lock
   const shouldBuildFallbackToc =
     canUseToc &&
-    (hasServerToc || !isDesktopTocMode || showOnDesktop)
+    (hasServerToc || (viewportReady && (!isDesktopTocMode || showOnDesktop)))
   const toc = useArticleToc(post?.toc, shouldBuildFallbackToc)
   const hasToc = tocWidgetEnabled && toc.length > 0
 
@@ -517,7 +511,7 @@ export default function FloatTocButton(props) {
     return <></>
   }
 
-  const showMobileControls = !isDesktopTocMode
+  const showMobileControls = viewportReady && !isDesktopTocMode
   const showDesktopFloatingToc = isDesktopTocMode && hasToc && showOnDesktop
   const showDesktopCommentOnly =
     isDesktopTocMode &&
@@ -544,24 +538,25 @@ export default function FloatTocButton(props) {
           onTouchMove={handleButtonTouchMove}>
           {/* 按钮 */}
           {hasToc && (
-            <div
+            <button
+              type='button'
+              aria-expanded={tocVisible}
+              aria-controls='toc-drawer'
+              aria-label={tocVisible ? '关闭目录导航' : '打开目录导航'}
               onClick={toggleToc}
               className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none`}>
-              <button
+              <i
                 id='toc-button'
-                type='button'
-                aria-label='打开目录导航'
-                className={
-                  'fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
-                }>
-                <span className='sr-only'>目录导航</span>
-              </button>
+                aria-hidden='true'
+                className='fa-list-ol cursor-pointer fas w-7 h-7 flex items-center justify-center shrink-0'
+              />
+              <span className='sr-only'>目录导航</span>
               {isExpandedButton && (
                 <span className='font-bold ml-1 whitespace-nowrap'>
                   目录导航
                 </span>
               )}
-            </div>
+            </button>
           )}
           {commentWidgetEnabled && (
             <JumpToCommentButtonMobile isExpandedButton={isExpandedButton} />
@@ -594,6 +589,7 @@ export default function FloatTocButton(props) {
                 <span>目录导航</span>
               </div>
               <button
+                type='button'
                 onClick={toggleToc}
                 className='w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'
                 aria-label='关闭目录导航'>
@@ -625,44 +621,50 @@ export default function FloatTocButton(props) {
             onMouseDown={handleDesktopMouseDown}>
             {/* 悬浮目录框 */}
             <div
-              onClick={toggleToc}
-              className={`text-sm block p-4 cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
-              <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
-                <div className='flex items-center gap-2'>
-                  <i className='fa-list-ol fas' />
-                  <span>目录导航</span>
-                </div>
-                <i
-                  className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`}
-                />
-              </div>
-
-              <div
-                className={`overflow-hidden transition-all duration-300 ${tocVisible ? 'max-h-[50vh] opacity-100' : 'max-h-12 opacity-80'}`}>
-                {tocVisible && (
-                  <div className='block dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]'>
-                    <Catalog
-                      toc={toc}
-                      onActiveSectionChange={setActiveSectionId}
-                      forceSpy={true}
-                      showCommentButton={commentWidgetEnabled}
-                    />
+              className={`text-sm block p-4 bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow duration-200 ${tocVisible ? '' : 'h-28'}`}>
+              <button
+                type='button'
+                onClick={toggleToc}
+                aria-expanded={tocVisible}
+                aria-controls='desktop-floating-catalog'
+                aria-label={tocVisible ? '关闭目录导航' : '打开目录导航'}
+                className='block w-full cursor-pointer text-left'>
+                <div className='flex items-center justify-between mb-2 text-indigo-600 dark:text-yellow-500 font-bold'>
+                  <div className='flex items-center gap-2'>
+                    <i aria-hidden='true' className='fa-list-ol fas' />
+                    <span>目录导航</span>
                   </div>
-                )}
+                  <i
+                    aria-hidden='true'
+                    className={`fas ${tocVisible ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs`}
+                  />
+                </div>
 
                 {!tocVisible && (
-                  <div className='h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500'>
-                    {(activeSectionId &&
-                      toc.find(t => uuidToId(t.id || '') === activeSectionId)
-                        ?.text) ||
-                      '目录'}
-                  </div>
+                  <>
+                    <div className='h-12 flex items-center justify-center font-bold truncate px-4 text-indigo-600 dark:text-yellow-500'>
+                      {(activeSectionId &&
+                        toc.find(t => uuidToId(t.id || '') === activeSectionId)
+                          ?.text) ||
+                        '目录'}
+                    </div>
+                    <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
+                      点击展开目录
+                    </div>
+                  </>
                 )}
-              </div>
+              </button>
 
-              {!tocVisible && (
-                <div className='text-xs text-gray-400 mt-2 text-center truncate px-2'>
-                  点击展开目录
+              {tocVisible && (
+                <div
+                  id='desktop-floating-catalog'
+                  className='block dark:text-gray-300 text-gray-600 overflow-y-auto max-h-[50vh]'>
+                  <Catalog
+                    toc={toc}
+                    onActiveSectionChange={setActiveSectionId}
+                    forceSpy={true}
+                    showCommentButton={commentWidgetEnabled}
+                  />
                 </div>
               )}
             </div>
@@ -710,12 +712,14 @@ const JumpToCommentButtonDesktop = () => {
 
   return (
     <>
-      <div
-        className='text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 dark:text-gray-200 transition-all duration-200 select-none'
+      <button
+        type='button'
+        aria-label='跳转评论'
+        className='w-full text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 dark:text-gray-200 transition-all duration-200 select-none'
         onClick={handleJump}>
-        <i className='fas fa-comments mr-2' />
+        <i aria-hidden='true' className='fas fa-comments mr-2' />
         跳转评论
-      </div>
+      </button>
 
       {showToast &&
         createPortal(
@@ -741,11 +745,14 @@ const JumpToCommentButtonDesktop = () => {
               </div>
               <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
                 <button
+                  type='button'
                   onClick={handleBack}
                   className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
                   回到原位置
                 </button>
                 <button
+                  type='button'
+                  aria-label='关闭跳转提示'
                   onClick={() => setShowToast(false)}
                   className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
                   <svg
@@ -792,20 +799,19 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
 
   return (
     <>
-      <div
+      <button
+        type='button'
+        aria-label='跳转评论'
         onClick={handleJump}
         className={`${isExpandedButton ? 'w-auto pl-4 pr-3 justify-start rounded-2xl' : 'w-11 h-11 justify-center rounded-full'} border border-gray-200 dark:border-gray-600 shadow-lg transition-all duration-300 select-none hover:scale-110 transform text-black dark:text-gray-200 bg-white flex items-center dark:bg-hexo-black-gray py-2 touch-none cursor-pointer`}>
-        <button
-          type='button'
-          aria-label='跳转评论'
-          className={
-            'fas fa-comments cursor-pointer w-7 h-7 flex items-center justify-center shrink-0'
-          }
+        <i
+          aria-hidden='true'
+          className='fas fa-comments cursor-pointer w-7 h-7 flex items-center justify-center shrink-0'
         />
         {isExpandedButton && (
           <span className='font-bold ml-1 whitespace-nowrap'>跳转评论</span>
         )}
-      </div>
+      </button>
 
       {showToast &&
         createPortal(
@@ -831,11 +837,14 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
               </div>
               <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
                 <button
+                  type='button'
                   onClick={handleBack}
                   className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
                   回到原位置
                 </button>
                 <button
+                  type='button'
+                  aria-label='关闭跳转提示'
                   onClick={() => setShowToast(false)}
                   className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
                   <svg

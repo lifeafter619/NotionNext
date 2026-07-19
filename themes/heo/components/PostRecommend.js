@@ -1,7 +1,7 @@
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import CONFIG from '../config'
 
 function getPostHref(post) {
@@ -44,7 +44,7 @@ export default function PostRecommend({ recommendPosts, siteInfo }) {
   }
 
   return (
-    <div className='pt-8 hidden md:block'>
+    <div className='pt-8'>
       {/* 推荐文章 */}
       <div className=' mb-2 px-1 flex flex-nowrap justify-between'>
         <div className='dark:text-gray-300 text-lg font-bold'>

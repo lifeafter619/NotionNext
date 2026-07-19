@@ -2,7 +2,7 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { Sanitizer } from '@/lib/utils/validation'
 import { RecentComments } from '@waline/client'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useEffect, useState } from 'react'
 
 /**
