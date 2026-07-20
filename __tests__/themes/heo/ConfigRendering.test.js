@@ -114,4 +114,18 @@ describe('heo configuration rendering', () => {
       'https://beian.example.com/custom'
     )
   })
+
+  it('reserves footer space only for a visible music player', () => {
+    mockConfig.MUSIC_PLAYER = true
+    mockConfig.MUSIC_PLAYER_VISIBLE = true
+
+    const { rerender } = render(<Footer />)
+
+    expect(document.getElementById('footer-bottom')).toHaveClass('pb-20')
+
+    mockConfig.MUSIC_PLAYER_VISIBLE = false
+    rerender(<Footer />)
+
+    expect(document.getElementById('footer-bottom')).not.toHaveClass('pb-20')
+  })
 })

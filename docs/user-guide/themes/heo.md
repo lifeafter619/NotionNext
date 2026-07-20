@@ -33,21 +33,21 @@ HEO 主题开始支持语义化颜色配置。早期主题中大量使用 Tailwi
 
 这些配置可以写在 Notion Config、环境变量或 `themes/heo/config.js` 中。Notion Config 优先级更高，适合站长在线调整。
 
-| 配置项 | 默认值 | 影响范围 |
-| --- | --- | --- |
-| `HEO_COLOR_PRIMARY` | `#4f65f0` | 主按钮、选中态、信息卡主背景、重点链接 |
-| `HEO_COLOR_PRIMARY_HOVER` | `#4f46e5` | 主色 hover、信息卡内按钮 |
-| `HEO_COLOR_PRIMARY_TEXT` | `#ffffff` | 主色背景上的文字 |
-| `HEO_COLOR_ACCENT` | `#dca846` | 深色模式强调色、徽标和辅助高亮 |
-| `HEO_COLOR_BG` | `#f7f9fe` | 浅色模式页面背景 |
-| `HEO_COLOR_BG_DARK` | `#18171d` | 深色模式页面背景 |
-| `HEO_COLOR_CARD` | `#ffffff` | 浅色模式卡片背景 |
-| `HEO_COLOR_CARD_DARK` | `#1e1e1e` | 深色模式卡片背景 |
-| `HEO_COLOR_CARD_MUTED` | `#f1f3f8` | 浅色弱背景、计数徽标背景 |
-| `HEO_COLOR_BORDER` | `#4f46e5` | 浅色模式 hover 边框 |
-| `HEO_COLOR_BORDER_DARK` | `#dca846` | 深色模式 hover 边框 |
-| `HEO_COLOR_TEXT` | `#111827` | 主文字色 |
-| `HEO_COLOR_TEXT_SECONDARY` | `#4b5563` | 次级文字色 |
+| 配置项                     | 默认值    | 影响范围                               |
+| -------------------------- | --------- | -------------------------------------- |
+| `HEO_COLOR_PRIMARY`        | `#4f65f0` | 主按钮、选中态、信息卡主背景、重点链接 |
+| `HEO_COLOR_PRIMARY_HOVER`  | `#4f46e5` | 主色 hover、信息卡内按钮               |
+| `HEO_COLOR_PRIMARY_TEXT`   | `#ffffff` | 主色背景上的文字                       |
+| `HEO_COLOR_ACCENT`         | `#dca846` | 深色模式强调色、徽标和辅助高亮         |
+| `HEO_COLOR_BG`             | `#f7f9fe` | 浅色模式页面背景                       |
+| `HEO_COLOR_BG_DARK`        | `#18171d` | 深色模式页面背景                       |
+| `HEO_COLOR_CARD`           | `#ffffff` | 浅色模式卡片背景                       |
+| `HEO_COLOR_CARD_DARK`      | `#1e1e1e` | 深色模式卡片背景                       |
+| `HEO_COLOR_CARD_MUTED`     | `#f1f3f8` | 浅色弱背景、计数徽标背景               |
+| `HEO_COLOR_BORDER`         | `#4f46e5` | 浅色模式 hover 边框                    |
+| `HEO_COLOR_BORDER_DARK`    | `#dca846` | 深色模式 hover 边框                    |
+| `HEO_COLOR_TEXT`           | `#111827` | 主文字色                               |
+| `HEO_COLOR_TEXT_SECONDARY` | `#4b5563` | 次级文字色                             |
 
 示例：
 
@@ -231,6 +231,8 @@ INFOCARD_GREETINGS: [
     '🧱 团队小组发动机'
   ],
 ```
+
+`HEO_INFO_CARD_AVATAR_BLUR` 用于控制文章详情页右侧信息卡头像样式。默认值为 `true`，保留原有的大尺寸模糊装饰头像；设置为 `false` 时，文章页头像会与首页信息卡保持一致，显示为普通小头像。
 
 下方的 Tangly是显示作者名字，在blog.config.js中配置
 

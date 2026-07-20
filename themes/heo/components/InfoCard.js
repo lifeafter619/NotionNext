@@ -38,6 +38,10 @@ export function normalizeInfoCardGreetings(value) {
   return [trimmed]
 }
 
+export function shouldUseInfoCardBlurAvatar(isSlugPage, avatarBlurEnabled) {
+  return Boolean(isSlugPage && avatarBlurEnabled)
+}
+
 /**
  * 社交信息卡
  * @param {*} props
@@ -52,6 +56,15 @@ export function InfoCard(props) {
   const icon1 = siteConfig('HEO_INFO_CARD_ICON1', null, CONFIG)
   const url2 = siteConfig('HEO_INFO_CARD_URL2', null, CONFIG)
   const icon2 = siteConfig('HEO_INFO_CARD_ICON2', null, CONFIG)
+  const avatarBlurEnabled = siteConfig(
+    'HEO_INFO_CARD_AVATAR_BLUR',
+    false,
+    CONFIG
+  )
+  const useBlurAvatar = shouldUseInfoCardBlurAvatar(
+    isSlugPage,
+    avatarBlurEnabled
+  )
   return (
     <Card className='bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] text-white flex flex-col w-72 overflow-hidden relative'>
       {/* 信息卡牌第一行 */}
@@ -60,13 +73,17 @@ export function InfoCard(props) {
         <GreetingsWords />
         {/* 头像 - 禁止点击 */}
         <div
-          className={`${isSlugPage ? 'absolute right-0 -mt-8 -mr-6 hover:opacity-0 hover:scale-150 blur' : 'cursor-default'} pointer-events-none justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
+          className={`${
+            useBlurAvatar
+              ? 'absolute right-0 -mt-8 -mr-6 hover:opacity-0 hover:scale-150 blur'
+              : 'cursor-default'
+          } pointer-events-none justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
           <LazyImage
             src={siteInfo?.icon}
             className='rounded-full'
-            width={isSlugPage ? 100 : 28}
-            height={isSlugPage ? 100 : 28}
-            sizes={isSlugPage ? '100px' : '28px'}
+            width={useBlurAvatar ? 100 : 28}
+            height={useBlurAvatar ? 100 : 28}
+            sizes={useBlurAvatar ? '100px' : '28px'}
             alt={siteConfig('AUTHOR')}
           />
         </div>

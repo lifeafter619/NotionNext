@@ -12,6 +12,8 @@ const Footer = () => {
   const BEI_AN = siteConfig('BEI_AN')
   const BEI_AN_LINK = siteConfig('BEI_AN_LINK')
   const BIO = siteConfig('BIO')
+  const reserveMusicPlayerSpace =
+    siteConfig('MUSIC_PLAYER') && siteConfig('MUSIC_PLAYER_VISIBLE')
   return (
     <footer className='relative flex-shrink-0 bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-bg-dark)] justify-center text-center m-auto w-full leading-6  text-gray-600 dark:text-gray-100 text-sm'>
       {/* 颜色过度区 */}
@@ -30,7 +32,9 @@ const Footer = () => {
       {/* 底部页面信息 */}
       <div
         id='footer-bottom'
-        className='w-full h-20 flex flex-col p-3 lg:flex-row justify-between px-6 items-center bg-[var(--heo-color-card-muted)] dark:bg-[var(--heo-color-card-dark)] border-t dark:border-t-[var(--heo-color-border-dark)]'>
+        className={`w-full min-h-20 flex flex-col p-3 lg:flex-row justify-between px-6 items-center bg-[var(--heo-color-card-muted)] dark:bg-[var(--heo-color-card-dark)] border-t dark:border-t-[var(--heo-color-border-dark)] ${
+          reserveMusicPlayerSpace ? 'pb-20' : ''
+        }`}>
         <div id='footer-bottom-left' className='text-center lg:text-start'>
           <PoweredBy />
           <div className='flex gap-x-1'>

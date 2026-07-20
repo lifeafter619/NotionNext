@@ -6,6 +6,8 @@ const CONFIG = {
   HEO_HOME_BANNER_ENABLE: true,
   HEO_VISITOR_LOCATION_ENABLE: false, // 是否允许请求第三方服务获取访客 IP 属地（涉及隐私，默认关闭）
 
+  HEO_INFO_CARD_AVATAR_BLUR: true, // 文章详情页个人资料卡头像样式。true：显示为模糊装饰头像；false：与首页头像保持一致
+
   HEO_SITE_CREATE_TIME: '2021-08-21', // 建站日期，用于计算网站运行的第几天
 
   // 首页顶部通知条滚动内容，如不需要可以留空 []
