@@ -225,4 +225,23 @@ describe('heo Catalog', () => {
       expect(screen.queryByText('回到原位置')).not.toBeInTheDocument()
     })
   })
+
+  it('stretches the comment jump button across the catalog width', () => {
+    render(
+      <Catalog
+        forceSpy
+        toc={[
+          {
+            id: 'known',
+            text: 'Known heading',
+            indentLevel: 0
+          }
+        ]}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: '跳转到评论区' })).toHaveClass(
+      'w-full'
+    )
+  })
 })

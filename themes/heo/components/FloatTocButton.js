@@ -5,9 +5,11 @@ import { uuidToId } from 'notion-utils'
 import { useArticleToc } from './useArticleToc'
 import { scrollToHeoComment } from './commentScroll'
 import { siteConfig } from '@/lib/config'
+import { findNotionHeadingById } from '@/lib/utils/notionHashScroll'
 import CONFIG from '../config'
 
 const DESKTOP_TOC_BREAKPOINT = 1280
+const ACTIVE_HEADING_VIEWPORT_OFFSET = 150
 const MAX_SIDEBAR_CATALOG_RETRIES = 30
 const MOBILE_DRAWER_DEFAULT_HEIGHT_VH = 58
 const MOBILE_DRAWER_MIN_HEIGHT_VH = 40
@@ -21,6 +23,25 @@ const MOBILE_ACTION_SCREEN_MARGIN = 16
 function shouldUseDesktopTocMode() {
   if (typeof window === 'undefined') return false
   return window.innerWidth >= DESKTOP_TOC_BREAKPOINT
+}
+
+function getActiveTocSectionId(toc) {
+  const tocIds = toc.map(tocItem => uuidToId(tocItem?.id || ''))
+  let activeSectionId = tocIds[0] || null
+
+  for (const id of tocIds) {
+    const heading = findNotionHeadingById(id)
+    if (!heading) continue
+
+    if (heading.getBoundingClientRect().top <= ACTIVE_HEADING_VIEWPORT_OFFSET) {
+      activeSectionId = id
+      continue
+    }
+
+    break
+  }
+
+  return activeSectionId
 }
 
 /**
@@ -169,6 +190,51 @@ export default function FloatTocButton(props) {
     (hasServerToc || (viewportReady && (!isDesktopTocMode || showOnDesktop)))
   const toc = useArticleToc(post?.toc, shouldBuildFallbackToc)
   const hasToc = tocWidgetEnabled && toc.length > 0
+
+  // 折叠态不会挂载 Catalog，因此在父组件中持续追踪当前阅读标题。
+  useEffect(() => {
+    if (!isDesktopTocMode || !hasToc) {
+      setActiveSectionId(null)
+      return
+    }
+
+    let frameId = null
+    let framePending = false
+
+    const syncActiveSection = () => {
+      const nextId = getActiveTocSectionId(toc)
+      setActiveSectionId(currentId =>
+        currentId === nextId ? currentId : nextId
+      )
+    }
+
+    const scheduleActiveSectionSync = () => {
+      if (framePending) return
+      if (typeof window.requestAnimationFrame !== 'function') {
+        syncActiveSection()
+        return
+      }
+
+      framePending = true
+      frameId = window.requestAnimationFrame(() => {
+        framePending = false
+        frameId = null
+        syncActiveSection()
+      })
+    }
+
+    syncActiveSection()
+    window.addEventListener('scroll', scheduleActiveSectionSync, {
+      passive: true
+    })
+    window.addEventListener('resize', scheduleActiveSectionSync)
+
+    return () => {
+      window.removeEventListener('scroll', scheduleActiveSectionSync)
+      window.removeEventListener('resize', scheduleActiveSectionSync)
+      if (frameId !== null) window.cancelAnimationFrame(frameId)
+    }
+  }, [hasToc, isDesktopTocMode, toc])
 
   const toggleToc = () => {
     // 如果正在拖拽，不触发点击

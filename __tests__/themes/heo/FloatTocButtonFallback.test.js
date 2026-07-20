@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react'
 import FloatTocButton from '@/themes/heo/components/FloatTocButton'
 
 const mockThemeConfig = {}
@@ -27,6 +33,8 @@ jest.mock('@/lib/config', () => ({
 
 describe('heo FloatTocButton fallback toc', () => {
   const defaultMatchMedia = window.matchMedia
+  const defaultRequestAnimationFrame = window.requestAnimationFrame
+  const defaultCancelAnimationFrame = window.cancelAnimationFrame
 
   beforeEach(() => {
     Object.keys(mockThemeConfig).forEach(key => delete mockThemeConfig[key])
@@ -72,6 +80,8 @@ describe('heo FloatTocButton fallback toc', () => {
 
   afterEach(() => {
     document.body.innerHTML = ''
+    window.requestAnimationFrame = defaultRequestAnimationFrame
+    window.cancelAnimationFrame = defaultCancelAnimationFrame
     delete window.IntersectionObserver
     delete window.MutationObserver
   })
@@ -531,6 +541,74 @@ describe('heo FloatTocButton fallback toc', () => {
 
     await waitFor(() => {
       expect(document.getElementById('float-toc-button')).toBeInTheDocument()
+    })
+  })
+
+  it('updates the collapsed desktop toc title while the article scrolls', async () => {
+    window.innerWidth = 1440
+    document.body.innerHTML = `
+      <article id="notion-article">
+        <h2 class="notion-h notion-h2" data-id="heading-one">Heading One</h2>
+        <h2 class="notion-h notion-h2" data-id="heading-two">Heading Two</h2>
+      </article>
+      <aside id="sideRight">
+        <div id="sideRightSticky"><div id="sideRightCatalog"></div></div>
+      </aside>
+    `
+
+    let firstHeadingTop = 80
+    let secondHeadingTop = 640
+    document.querySelector('[data-id="heading-one"]').getBoundingClientRect =
+      () => ({ top: firstHeadingTop, bottom: firstHeadingTop + 40 })
+    document.querySelector('[data-id="heading-two"]').getBoundingClientRect =
+      () => ({ top: secondHeadingTop, bottom: secondHeadingTop + 40 })
+
+    window.requestAnimationFrame = jest.fn(callback => {
+      callback()
+      return 1
+    })
+    window.cancelAnimationFrame = jest.fn()
+    window.IntersectionObserver = jest.fn(callback => ({
+      observe: jest.fn(() => {
+        callback([
+          {
+            isIntersecting: false,
+            boundingClientRect: { top: -620, bottom: 40 }
+          }
+        ])
+      }),
+      disconnect: jest.fn()
+    }))
+
+    render(
+      <FloatTocButton
+        post={{
+          title: 'Demo article',
+          toc: [
+            { id: 'heading-one', text: 'Heading One', indentLevel: 0 },
+            { id: 'heading-two', text: 'Heading Two', indentLevel: 0 }
+          ]
+        }}
+        lock={false}
+      />
+    )
+
+    await waitFor(() => {
+      const floatingToc = document.getElementById('float-toc-button')
+      expect(floatingToc).toBeInTheDocument()
+      expect(within(floatingToc).getByText('Heading One')).toBeInTheDocument()
+    })
+
+    firstHeadingTop = -520
+    secondHeadingTop = 80
+    fireEvent.scroll(window)
+
+    await waitFor(() => {
+      expect(
+        within(document.getElementById('float-toc-button')).getByText(
+          'Heading Two'
+        )
+      ).toBeInTheDocument()
     })
   })
 

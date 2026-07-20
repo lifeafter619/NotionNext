@@ -1,4 +1,11 @@
-import { Children, useEffect, useId, useRef, useState } from 'react'
+import {
+  Children,
+  isValidElement,
+  useEffect,
+  useId,
+  useRef,
+  useState
+} from 'react'
 import { siteConfig } from '@/lib/config'
 
 /**
@@ -13,7 +20,7 @@ const Tabs = ({ ariaLabel = 'Tabs', className, children }) => {
 
   const validChildren = []
   Children.forEach(children, child => {
-    if (child !== null && child !== undefined && typeof child !== 'boolean') {
+    if (isValidElement(child)) {
       validChildren.push(child)
     }
   })

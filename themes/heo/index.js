@@ -38,6 +38,7 @@ import { Style } from './style'
 import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
 import { isHeoCommentServiceConfigured } from './utils/commentEnabled'
 import { withHeoSubPath } from './utils/path'
+import usePreserveReadingPositionOnResize from '@/hooks/usePreserveReadingPositionOnResize'
 
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
@@ -992,6 +993,7 @@ const LayoutSlug = props => {
   const { post, lock, validPassword } = props
   const { locale, fullWidth } = useGlobal()
   const postIdentity = post?.id || post?.slug || post?.title
+  usePreserveReadingPositionOnResize(postIdentity)
   const [recommendedPostId, setRecommendedPostId] = useState(null)
   const showRecommended = Boolean(
     postIdentity && recommendedPostId === postIdentity
