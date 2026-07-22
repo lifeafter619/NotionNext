@@ -30,16 +30,28 @@ export const Hero = props => {
                 </p>
                 {/* 按钮组 */}
                 <ul className='mb-10 flex flex-wrap items-center justify-center gap-5'>
-                  {starterConfig('STARTER_HERO_BUTTON_1_TEXT', null, config) && (
+                  {starterConfig(
+                    'STARTER_HERO_BUTTON_1_TEXT',
+                    null,
+                    config
+                  ) && (
                     <li>
                       <SmartLink
                         href={starterConfig('STARTER_HERO_BUTTON_1_URL', '')}
                         className='starterHeroPrimaryBtn inline-flex items-center justify-center rounded-md bg-white px-7 py-[14px] text-center text-base font-medium text-dark shadow-1 transition duration-300 ease-in-out hover:bg-gray-2 hover:text-body-color'>
-                        {starterConfig('STARTER_HERO_BUTTON_1_TEXT', null, config)}
+                        {starterConfig(
+                          'STARTER_HERO_BUTTON_1_TEXT',
+                          null,
+                          config
+                        )}
                       </SmartLink>
                     </li>
                   )}
-                  {starterConfig('STARTER_HERO_BUTTON_2_TEXT', null, config) && (
+                  {starterConfig(
+                    'STARTER_HERO_BUTTON_2_TEXT',
+                    null,
+                    config
+                  ) && (
                     <li>
                       <SmartLink
                         href={starterConfig(
@@ -65,7 +77,11 @@ export const Hero = props => {
                             alt='button icon'
                           />
                         )}
-                        {starterConfig('STARTER_HERO_BUTTON_2_TEXT', null, config)}
+                        {starterConfig(
+                          'STARTER_HERO_BUTTON_2_TEXT',
+                          null,
+                          config
+                        )}
                       </SmartLink>
                     </li>
                   )}

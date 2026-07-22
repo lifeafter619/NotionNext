@@ -425,6 +425,16 @@ describe('formatNotionBlock', () => {
     ).toBe(true)
   })
 
+  it('does not treat signed URLs without an expiration timestamp as expired', () => {
+    expect(
+      hasExpiredSignedUrls({
+        signed_urls: {
+          pdf: 'https://notion.so/signed/file.pdf?table=block&id=pdf'
+        }
+      })
+    ).toBe(false)
+  })
+
   it('uses stable Notion signed entry for pdf preview URLs', () => {
     const recordMap = {
       signed_urls: {
@@ -452,5 +462,26 @@ describe('formatNotionBlock', () => {
     expect(recordMap.signed_urls.pdf).toBe(
       'https://notion.so/signed/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Ffile.pdf?table=block&id=pdf'
     )
+  })
+
+  it('keeps external pdf preview URLs out of the Notion signed URL map', () => {
+    const recordMap = {
+      signed_urls: {},
+      block: {
+        pdf: {
+          value: {
+            id: 'pdf',
+            type: 'pdf',
+            properties: {
+              source: [['https://cdn.example.com/file.pdf']]
+            }
+          }
+        }
+      }
+    }
+
+    preferStablePdfSignedUrls(recordMap)
+
+    expect(recordMap.signed_urls.pdf).toBeUndefined()
   })
 })
