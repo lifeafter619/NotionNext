@@ -5,7 +5,7 @@ import { useGlobal } from '@/lib/global'
 import { getQueryParam } from '@/lib/utils'
 import { THEMES } from '@/themes/theme'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Draggable } from './Draggable'
 import { Moon, Sun } from './HeroIcons'
 import LazyImage from './LazyImage'
@@ -149,6 +149,19 @@ function ThemeConsole ({ meta, onClose }) {
     return value
   }
 
+  const getConsoleAlias = useCallback(item => {
+    const prefix = `${String(meta.id).toUpperCase()}_COLOR_`
+    if (item.key.startsWith(prefix)) {
+      return item.key.slice(prefix.length).toLowerCase().replace(/_/g, '-')
+    }
+    return String(item.cssVar || '').replace(/^--/, '').replace(`${meta.id}-`, '')
+  }, [meta.id])
+
+  const writePreviewColor = useCallback((root, item, value) => {
+    root.style.setProperty(item.cssVar, value)
+    root.style.setProperty(`--${meta.id}-console-${getConsoleAlias(item)}`, value)
+  }, [getConsoleAlias, meta.id])
+
   const getExportValue = item => {
     const value = values[item.key] ?? item.defaultValue
     if (item.key === 'FUWARI_THEME_COLOR_HUE') return hexToHue(value)
@@ -171,10 +184,11 @@ function ThemeConsole ({ meta, onClose }) {
     declaredPalette.forEach(item => {
       nextValues[item.key] =
         styles.getPropertyValue(item.cssVar).trim() || item.defaultValue
+      writePreviewColor(root, item, nextValues[item.key])
     })
     setPalette(declaredPalette)
     setValues(nextValues)
-  }, [meta.id, meta.rootId, declaredPalette])
+  }, [meta.id, meta.rootId, declaredPalette, writePreviewColor])
 
   useEffect(() => () => window.clearTimeout(noticeTimerRef.current), [])
 
@@ -190,7 +204,7 @@ function ThemeConsole ({ meta, onClose }) {
     const previewValue = getPreviewValue(item, value)
     setValues(prev => ({ ...prev, [item.key]: previewValue }))
     const root = getRoot()
-    root.style.setProperty(item.cssVar, previewValue)
+    writePreviewColor(root, item, previewValue)
     if (meta.id === 'fuwari' && item.cssVar === '--fuwari-primary') {
       root.style.setProperty('--fuwari-primary-soft', `color-mix(in oklab, ${previewValue} 14%, transparent)`)
       root.style.setProperty('--fuwari-gradient', `linear-gradient(135deg, ${previewValue} 0%, color-mix(in oklab, ${previewValue} 70%, #ffffff) 100%)`)

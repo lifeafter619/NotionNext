@@ -30,7 +30,7 @@ export const MenuItemDrop = ({ link }) => {
           <div className='items-center flex'>
             {link?.icon && <i className={`${link?.icon} pr-2`} />} {link?.name}
             <i
-              className={`px-1 fas fa-chevron-down duration-500 transition-all ${show ? ' rotate-180' : ''}`}></i>
+              className={`ml-1 fas fa-chevron-down duration-500 transition-all ${show ? ' rotate-180' : ''}`}></i>
           </div>
         </div>
       )}

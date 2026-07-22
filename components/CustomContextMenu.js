@@ -264,28 +264,28 @@ export default function CustomContextMenu(props) {
             role='menuitem'
             aria-label='Back'
             onClick={handleBack}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-arrow-left'
+            className='hover:bg-blue-600 hover:text-white h-10 w-10 flex items-center justify-center leading-none rounded cursor-pointer fa-solid fa-arrow-left'
           />
           <button
             type='button'
             role='menuitem'
             aria-label='Forward'
             onClick={handleForward}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-arrow-right'
+            className='hover:bg-blue-600 hover:text-white h-10 w-10 flex items-center justify-center leading-none rounded cursor-pointer fa-solid fa-arrow-right'
           />
           <button
             type='button'
             role='menuitem'
             aria-label='Refresh'
             onClick={handleRefresh}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-rotate-right'
+            className='hover:bg-blue-600 hover:text-white h-10 w-10 flex items-center justify-center leading-none rounded cursor-pointer fa-solid fa-rotate-right'
           />
           <button
             type='button'
             role='menuitem'
             aria-label='Scroll to top'
             onClick={handleScrollTop}
-            className='hover:bg-blue-600 hover:text-white px-2 py-2 text-center w-10 h-10 rounded cursor-pointer fa-solid fa-arrow-up'
+            className='hover:bg-blue-600 hover:text-white h-10 w-10 flex items-center justify-center leading-none rounded cursor-pointer fa-solid fa-arrow-up'
           />
         </div>
 

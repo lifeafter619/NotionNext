@@ -34,7 +34,7 @@ export const Hero = props => {
                     <li>
                       <SmartLink
                         href={starterConfig('STARTER_HERO_BUTTON_1_URL', '')}
-                        className='inline-flex items-center justify-center rounded-md bg-white px-7 py-[14px] text-center text-base font-medium text-dark shadow-1 transition duration-300 ease-in-out hover:bg-gray-2 hover:text-body-color'>
+                        className='starterHeroPrimaryBtn inline-flex items-center justify-center rounded-md bg-white px-7 py-[14px] text-center text-base font-medium text-dark shadow-1 transition duration-300 ease-in-out hover:bg-gray-2 hover:text-body-color'>
                         {starterConfig('STARTER_HERO_BUTTON_1_TEXT', null, config)}
                       </SmartLink>
                     </li>

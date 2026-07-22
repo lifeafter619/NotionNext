@@ -14,9 +14,14 @@ jest.mock('notion-utils', () => ({
   getBlockValue: jest.fn(entry => entry?.value?.value || entry?.value || entry)
 }))
 
-import { formatNotionBlock } from '@/lib/db/notion/getPostBlocks'
+import {
+  formatNotionBlock,
+  hasExpiredSignedUrls,
+  preferStablePdfSignedUrls
+} from '@/lib/db/notion/getPostBlocks'
 import {
   isAppleMusicEmbedUrl,
+  isExternalVideoEmbedUrl,
   normalizeExternalMediaBlock
 } from '@/lib/db/notion/normalizeExternalMediaBlock'
 
@@ -333,5 +338,119 @@ describe('formatNotionBlock', () => {
     expect(formatted.heading.value.properties.title).toEqual([
       ['Toggle heading']
     ])
+  })
+
+  it('rewrites external video player pages to embeds directly', () => {
+    const url =
+      'https://www.happinessrailway.com/dplayer.htm?n=https%3A%2F%2Fvip.lz-cdn16.com%2F20230312%2F12364_a86fbcc4%2Findex.m3u8'
+    const blockValue = {
+      type: 'video',
+      properties: {
+        source: [[url]]
+      }
+    }
+
+    expect(isExternalVideoEmbedUrl(url)).toBe(true)
+    normalizeExternalMediaBlock(blockValue)
+
+    expect(blockValue.type).toBe('embed')
+  })
+
+  it('normalizes external video player pages from video blocks to embed blocks', () => {
+    const formatted = formatNotionBlock({
+      'external-player': {
+        value: {
+          id: 'external-player',
+          type: 'video',
+          properties: {
+            source: [
+              [
+                'https://www.happinessrailway.com/dplayer.htm?n=https%3A%2F%2Fvip.lz-cdn16.com%2F20230312%2F12364_a86fbcc4%2Findex.m3u8'
+              ]
+            ]
+          }
+        }
+      }
+    })
+
+    expect(formatted['external-player'].value.type).toBe('embed')
+  })
+
+  it('rewrites newer Notion pdf file URLs to signed URLs', () => {
+    const formatted = formatNotionBlock({
+      pdf: {
+        value: {
+          id: 'pdf-block',
+          type: 'pdf',
+          properties: {
+            source: [
+              [
+                'https://prod-files-secure.s3.us-west-2.amazonaws.com/space/file.pdf'
+              ]
+            ]
+          }
+        }
+      }
+    })
+
+    expect(formatted.pdf.value.properties.source[0][0]).toBe(
+      'https://notion.so/signed/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Fspace%2Ffile.pdf?table=block&id=pdf-block'
+    )
+  })
+
+  it('does not rewrite lookalike Notion file URLs', () => {
+    const url = 'https://evil.example/secure.notion-static.com/file.pdf'
+    const formatted = formatNotionBlock({
+      pdf: {
+        value: {
+          id: 'pdf-block',
+          type: 'pdf',
+          properties: {
+            source: [[url]]
+          }
+        }
+      }
+    })
+
+    expect(formatted.pdf.value.properties.source[0][0]).toBe(url)
+  })
+
+  it('detects expired cached Notion signed URLs', () => {
+    expect(
+      hasExpiredSignedUrls({
+        signed_urls: {
+          pdf: 'https://file.notion.so/f/file.pdf?expirationTimestamp=1'
+        }
+      })
+    ).toBe(true)
+  })
+
+  it('uses stable Notion signed entry for pdf preview URLs', () => {
+    const recordMap = {
+      signed_urls: {
+        pdf: 'https://file.notion.so/f/file.pdf?expirationTimestamp=1'
+      },
+      block: {
+        pdf: {
+          value: {
+            id: 'pdf',
+            type: 'pdf',
+            properties: {
+              source: [
+                [
+                  'https://prod-files-secure.s3.us-west-2.amazonaws.com/file.pdf'
+                ]
+              ]
+            }
+          }
+        }
+      }
+    }
+
+    preferStablePdfSignedUrls(recordMap)
+
+    expect(recordMap.signed_urls.pdf).toBe(
+      'https://notion.so/signed/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Ffile.pdf?table=block&id=pdf'
+    )
   })
 })
