@@ -33,16 +33,17 @@ Expected headers for a successful image response:
 
 ```text
 Content-Type: image/*
-X-Notion-Image-Proxy: v5
+X-Notion-Image-Proxy: v6
 X-Notion-Image-Proxy-Origin-Cache: HIT
 ```
 
 File responses additionally preserve `Content-Disposition`, `Content-Length`,
 `Content-Range`, and support `GET`, `HEAD`, `OPTIONS`, and byte ranges. The
 Worker returns `404` for paths outside `/image/`, `/images/`, and `/signed/`,
-rejects other methods, and never caches upstream error pages. Full files are
-cached as `200` responses; Cloudflare slices that cached object into `206`
-range responses at the edge, so subsequent range downloads do not create
-separate origin requests or partial cache entries. Repeat full-asset requests
-should normally show an origin cache `HIT`; the exact Cloudflare cache header
-depends on the zone and plan.
+rejects other methods, and never caches upstream error pages. Full downloads
+remain cacheable, while byte ranges are passed through and marked `no-store`.
+Keep Wrangler's `[cache].enabled` set to `false`: Workers Cache removes the
+incoming `Range` header and would force videos larger than the 512 MB Free-plan
+cache limit into an unusable full-body `200` response. Repeat full-asset
+requests should normally show an origin cache `HIT`; the exact Cloudflare cache
+header depends on the zone and plan.

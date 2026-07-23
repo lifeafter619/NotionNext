@@ -1,7 +1,14 @@
 name = "notion-image-proxy"
 main = "worker.mjs"
-compatibility_date = "2026-07-22"
+compatibility_date = "2026-07-23"
 
-routes = [
-  { pattern = "img.cdn.619.pp.ua", custom_domain = true }
-]
+# 保留网页后台中已经配置的域名和路由
+workers_dev = false
+
+# 保留网页后台已有的变量
+keep_vars = true
+
+# Range 必须原样进入 Worker，才能流式播放超过 512 MB 的视频。
+# 图片和完整文件仍由 worker.mjs 内部的 fetch 缓存策略加速。
+[cache]
+enabled = false

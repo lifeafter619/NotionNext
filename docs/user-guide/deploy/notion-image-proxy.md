@@ -27,7 +27,9 @@ https://cdn.example.com/image/...
 ```
 
 这样图片会先经过你的 Cloudflare Worker，再由 Worker 去 Notion 拿图，并缓存到 Cloudflare。
-Notion 页面里的上传文件也会使用同一个域名的 `/signed/` 稳定入口。文件完整下载走边缘缓存，Cloudflare 会把缓存的完整 `200` 文件在边缘切成浏览器需要的 `206` Range 响应。
+Notion 页面里的上传文件和视频也会使用同一个域名的 `/signed/` 稳定入口。图片与普通完整下载可以缓存；视频的 `Range` 分片会原样透传并禁止缓存，因此超过免费版 512 MB 单对象缓存上限的视频仍能正常播放和拖动。
+
+不要开启 Worker 级别的 Workers Cache。该功能会在请求进入脚本前移除 `Range`，使超过 512 MB 的视频退化成整文件 `200` 下载。仓库的 `wrangler.toml` 已显式设置 `[cache].enabled = false`。
 
 ## 免费套餐边界
 
@@ -319,7 +321,7 @@ X-Notion-Image-Proxy-Origin-Cache: HIT
 同时应看到 Worker 自己加的版本响应头：
 
 ```text
-X-Notion-Image-Proxy: v5
+X-Notion-Image-Proxy: v6
 ```
 
 `CF-Cache-Status` 是否出现取决于域名的缓存规则和 Cloudflare 套餐；本 Worker

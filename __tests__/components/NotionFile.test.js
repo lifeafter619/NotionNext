@@ -5,7 +5,7 @@ import NotionFile, {
 } from '@/components/NotionFile'
 
 describe('NotionFile', () => {
-  it('renders Notion hosted files as same-site download links', () => {
+  it('renders Notion hosted files as direct Worker download links', () => {
     render(
       <NotionFile
         block={{
@@ -26,9 +26,9 @@ describe('NotionFile', () => {
     const link = screen.getByRole('link', { name: /report.zip/i })
     expect(link).toHaveAttribute(
       'href',
-      '/api/notion-file?id=block-id&source=https%3A%2F%2Fnotion.so%2Fsigned%2Fattachment%253Afile-id%253Areport.zip%3Ftable%3Dblock%26id%3Dblock-id&filename=report.zip'
+      'https://img.cdn.619.pp.ua/signed/attachment%3Afile-id%3Areport.zip?table=block&id=block-id'
     )
-    expect(link).not.toHaveAttribute('target')
+    expect(link).toHaveAttribute('target', '_blank')
     expect(screen.getByText('12 KB')).toBeInTheDocument()
   })
 

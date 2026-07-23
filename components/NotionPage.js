@@ -9,7 +9,7 @@ import {
   restoreCompactBlockMapForRender
 } from '@/lib/db/notion/cleanBlockMapForClient'
 import NotionButton from '@/components/NotionButton'
-import NotionFile from '@/components/NotionFile'
+import NotionFile, { buildNotionFileProxyUrl } from '@/components/NotionFile'
 import {
   bindNotionHashScrollHandler,
   scrollToNotionHeading
@@ -225,7 +225,12 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
   }, [post, SPOILER_TEXT_TAG])
 
   const cleanBlockMap = useMemo(() => {
-    return post?.blockMap ? cleanBlocksForRender(post.blockMap) : post?.blockMap
+    return post?.blockMap
+      ? proxyNotionVideoUrls(
+          cleanBlocksForRender(post.blockMap),
+          BLOG.NOTION_HOST
+        )
+      : post?.blockMap
   }, [post?.blockMap])
 
   const enableReadingPosition = useMemo(() => {
@@ -343,6 +348,35 @@ export function cleanBlocksForRender(blockMap) {
     ...restoredBlockMap,
     block: cleanedBlocks
   }
+}
+
+export function proxyNotionVideoUrls(blockMap, notionHost = BLOG.NOTION_HOST) {
+  if (!blockMap?.block || !blockMap?.signed_urls) return blockMap
+
+  let signedUrls = blockMap.signed_urls
+
+  for (const entry of Object.values(blockMap.block)) {
+    const block = getNotionValue(entry)
+    if (block?.type !== 'video' || !block.id) continue
+
+    const stableSource =
+      block.properties?.source?.[0]?.[0] || block.format?.display_source
+    const proxyUrl = buildNotionFileProxyUrl({
+      id: block.id,
+      source: stableSource,
+      notionHost
+    })
+    if (!proxyUrl || proxyUrl === signedUrls[block.id]) continue
+
+    if (signedUrls === blockMap.signed_urls) {
+      signedUrls = { ...blockMap.signed_urls }
+    }
+    signedUrls[block.id] = proxyUrl
+  }
+
+  return signedUrls === blockMap.signed_urls
+    ? blockMap
+    : { ...blockMap, signed_urls: signedUrls }
 }
 
 function normalizeRenderableBlock(block, blockMap) {

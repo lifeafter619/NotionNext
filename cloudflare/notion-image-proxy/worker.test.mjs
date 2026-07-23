@@ -49,7 +49,7 @@ test('sorts query parameters and returns validated image responses', async () =>
   assert.equal(fetchedUrl, 'https://www.notion.so/images/cover.jpg?a=1&z=2')
   assert.equal(response.status, 200)
   assert.equal(response.headers.get('content-type'), 'image/png')
-  assert.equal(response.headers.get('x-notion-image-proxy'), 'v5')
+  assert.equal(response.headers.get('x-notion-image-proxy'), 'v6')
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff')
   assert.match(response.headers.get('cache-control'), /immutable/)
   assert.deepEqual(
@@ -71,7 +71,7 @@ test('does not turn a successful non-image response into a cacheable image', asy
 
   assert.equal(response.status, 502)
   assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
-  assert.equal(response.headers.get('x-notion-image-proxy'), 'v5')
+  assert.equal(response.headers.get('x-notion-image-proxy'), 'v6')
   assert.equal(await response.text(), 'Notion did not return an image')
 })
 
@@ -117,17 +117,19 @@ test('proxies signed Notion files and preserves download metadata', async () => 
   )
 })
 
-test('returns full files for ranges so Cloudflare can slice cached 200s', async () => {
+test('passes file ranges upstream without caching the partial response', async () => {
   let range
   let cacheEverything
   globalThis.fetch = async (_url, options) => {
     range = options.headers.Range
     cacheEverything = options.cf.cacheEverything
     return new Response(new Uint8Array([7, 8]), {
-      status: 200,
+      status: 206,
       headers: {
+        'Accept-Ranges': 'bytes',
         'Content-Type': 'application/octet-stream',
-        'Content-Length': '2'
+        'Content-Length': '2',
+        'Content-Range': 'bytes 0-1/8192'
       }
     })
   }
@@ -141,11 +143,12 @@ test('returns full files for ranges so Cloudflare can slice cached 200s', async 
     )
   )
 
-  assert.equal(range, undefined)
-  assert.equal(cacheEverything, true)
-  assert.equal(response.status, 200)
+  assert.equal(range, 'bytes=0-1')
+  assert.equal(cacheEverything, false)
+  assert.equal(response.status, 206)
   assert.equal(response.headers.get('content-length'), '2')
-  assert.match(response.headers.get('cache-control'), /immutable/)
+  assert.equal(response.headers.get('content-range'), 'bytes 0-1/8192')
+  assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
 })
 
 test('supports CORS preflight for file fallback probing', async () => {

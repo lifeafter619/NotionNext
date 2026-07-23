@@ -11,7 +11,7 @@
 - 新增 `cloudflare/notion-image-proxy` Worker 工程，放行 `/image/`、`/images/` 和 `/signed/`。
 - Worker 支持 Notion 签名图片跳转链路，按图片类型区分缓存策略，并拒绝缓存非图片错误响应。
 - 文件代理保留下载文件名、大小和 Range 响应；动态部署下 CDN 探测失败时回退 `/api/notion-file`，不影响文件可用性。
-- Worker v5 让 Cloudflare 缓存完整 `200` 文件并在边缘切分 Range，避免把 `206` 分片写成独立源站缓存；普通资源请求保持单个 Notion 子请求。
+- Worker v6 对完整下载保留缓存，并将视频 Range 原样透传且标记为 `no-store`；Workers Cache 保持关闭，避免超过免费版 512 MB 缓存上限的视频被错误转换成整文件 `200`。
 - 示例配置使用 Cloudflare Custom Domain，当前仓库的生产绑定为 `img.cdn.619.pp.ua`；部署到其他站点时请替换为自己的域名。
 - 保持 NotionNext 侧接入方式不变：只需配置 `NEXT_PUBLIC_NOTION_HOST=https://你的CDN域名`。
 
@@ -31,7 +31,7 @@
 ### 验证
 
 - `node --check cloudflare/notion-image-proxy/worker.mjs`：通过。
-- `curl -I` 连续请求真实 Notion 图片：后续请求可观察到 `X-Notion-Image-Proxy: v5` 与 `X-Notion-Image-Proxy-Origin-Cache: HIT`。
+- `curl -I` 连续请求真实 Notion 图片：后续请求可观察到 `X-Notion-Image-Proxy: v6` 与 `X-Notion-Image-Proxy-Origin-Cache: HIT`。
 - `git diff --check`：通过，仅保留 Windows 工作区 LF/CRLF 提示。
 
 ## 4.10.7 发布要点

@@ -1,4 +1,7 @@
-import { retryImageWithProxyFallback } from '@/components/NotionPage'
+import {
+  proxyNotionVideoUrls,
+  retryImageWithProxyFallback
+} from '@/components/NotionPage'
 
 jest.mock('react-notion-x', () => ({
   NotionRenderer: () => null
@@ -79,5 +82,46 @@ describe('NotionPage image fallback', () => {
     expect(retried).toBe(false)
     expect(img.getAttribute('src')).toBe(source)
     expect(img.dataset.notionNextProxyRetried).toBeUndefined()
+  })
+})
+
+describe('NotionPage video proxy', () => {
+  it('replaces temporary signed video URLs with the stable Worker URL', () => {
+    const stableSource =
+      'https://notion.so/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fvideo-id%2Fmovie.mp4?table=block&id=video-block'
+    const recordMap = {
+      block: {
+        'video-block': {
+          value: {
+            id: 'video-block',
+            type: 'video',
+            properties: { source: [[stableSource]] }
+          }
+        },
+        'image-block': {
+          value: {
+            id: 'image-block',
+            type: 'image',
+            properties: { source: [['https://example.com/image.png']] }
+          }
+        }
+      },
+      signed_urls: {
+        'video-block': 'https://file.notion.so/temporary-video-url',
+        'image-block': 'https://file.notion.so/temporary-image-url'
+      }
+    }
+
+    const result = proxyNotionVideoUrls(recordMap, 'https://img.cdn.619.pp.ua')
+
+    expect(result.signed_urls['video-block']).toBe(
+      'https://img.cdn.619.pp.ua/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fvideo-id%2Fmovie.mp4?table=block&id=video-block'
+    )
+    expect(result.signed_urls['image-block']).toBe(
+      'https://file.notion.so/temporary-image-url'
+    )
+    expect(recordMap.signed_urls['video-block']).toBe(
+      'https://file.notion.so/temporary-video-url'
+    )
   })
 })

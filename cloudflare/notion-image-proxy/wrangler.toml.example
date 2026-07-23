@@ -1,8 +1,12 @@
 name = "notion-image-proxy"
 main = "worker.mjs"
-compatibility_date = "2026-07-22"
+compatibility_date = "2026-07-23"
 
 # Replace cdn.example.com with your Notion asset CDN domain.
 routes = [
   { pattern = "cdn.example.com", custom_domain = true }
 ]
+
+# Keep this disabled so large video Range requests reach the Worker unchanged.
+[cache]
+enabled = false
