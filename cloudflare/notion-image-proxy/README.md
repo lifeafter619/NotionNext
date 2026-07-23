@@ -33,15 +33,16 @@ Expected headers for a successful image response:
 
 ```text
 Content-Type: image/*
-X-Notion-Image-Proxy: v4
+X-Notion-Image-Proxy: v5
 X-Notion-Image-Proxy-Origin-Cache: HIT
 ```
 
 File responses additionally preserve `Content-Disposition`, `Content-Length`,
 `Content-Range`, and support `GET`, `HEAD`, `OPTIONS`, and byte ranges. The
 Worker returns `404` for paths outside `/image/`, `/images/`, and `/signed/`,
-rejects other methods, and never caches upstream error pages. Full assets are
-edge-cacheable; range requests are deliberately `no-store` so a partial
-response cannot poison the full-file cache. Repeat full-asset requests should
-normally show an origin cache `HIT`; the exact Cloudflare cache header depends
-on the zone and plan.
+rejects other methods, and never caches upstream error pages. Full files are
+cached as `200` responses; Cloudflare slices that cached object into `206`
+range responses at the edge, so subsequent range downloads do not create
+separate origin requests or partial cache entries. Repeat full-asset requests
+should normally show an origin cache `HIT`; the exact Cloudflare cache header
+depends on the zone and plan.

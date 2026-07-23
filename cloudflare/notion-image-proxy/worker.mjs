@@ -56,16 +56,10 @@ export default {
 
     const policy = getCachePolicy(url, routeKind)
     const upstreamUrl = createUpstreamUrl(url)
-    const hasRange = request.headers.has('range')
     const isFileHeadProbe = routeKind === 'file' && request.method === 'HEAD'
-    const isPartialRequest = hasRange || isFileHeadProbe
     const upstreamHeaders = {
       Accept: routeKind === 'image' ? IMAGE_ACCEPT : '*/*',
       'User-Agent': USER_AGENT
-    }
-    if (routeKind === 'file') {
-      copyRequestHeader(request.headers, upstreamHeaders, 'Range')
-      copyRequestHeader(request.headers, upstreamHeaders, 'If-Range')
     }
     if (isFileHeadProbe) upstreamHeaders.Range = 'bytes=0-0'
 
@@ -81,10 +75,10 @@ export default {
         redirect: 'follow',
         headers: upstreamHeaders,
         cf: {
-          // A cached 206 response must never become the cache entry for the
-          // full asset URL. Full file/image responses remain edge-cacheable;
-          // range probes are streamed from the origin for correctness.
-          cacheEverything: !isPartialRequest,
+          // Cloudflare strips client Range headers before invoking a cacheable
+          // Worker response, then slices the cached 200 response at the edge.
+          // Only the synthetic HEAD probe bypasses caching.
+          cacheEverything: !isFileHeadProbe,
           cacheTtlByStatus: {
             '100-199': -1,
             '200-299': policy.edgeTtl,
@@ -142,13 +136,13 @@ export default {
     // exposing the longer edge TTL to browsers or downstream caches.
     const edgeCacheControl = `public, max-age=${policy.edgeTtl}, stale-while-revalidate=${policy.staleWhileRevalidate}, stale-if-error=${policy.staleIfError}`
     headers.set('Cloudflare-CDN-Cache-Control', edgeCacheControl)
-    if (isPartialRequest) {
+    if (isFileHeadProbe) {
       headers.set('Cache-Control', 'no-store, max-age=0')
       headers.set('Cloudflare-CDN-Cache-Control', 'no-store')
     }
     if (isFileHeadProbe) normalizeFileHeadHeaders(headers)
     headers.set('X-Content-Type-Options', 'nosniff')
-    headers.set('X-Notion-Image-Proxy', 'v4')
+    headers.set('X-Notion-Image-Proxy', 'v5')
     Object.entries(CORS_HEADERS).forEach(([name, value]) => {
       headers.set(name, value)
     })
@@ -196,11 +190,6 @@ function createUpstreamUrl(url) {
   // semantically identical URLs onto one cache entry on every Cloudflare plan.
   upstreamUrl.searchParams.sort()
   return upstreamUrl
-}
-
-function copyRequestHeader(sourceHeaders, targetHeaders, name) {
-  const value = sourceHeaders.get(name)
-  if (value) targetHeaders[name] = value
 }
 
 function getCachePolicy(url, routeKind) {
@@ -287,7 +276,7 @@ function normalizeFileHeadHeaders(headers) {
 function proxyErrorResponse(request, status, message) {
   return textResponse(request, status, message, {
     'Cache-Control': 'no-store, max-age=0',
-    'X-Notion-Image-Proxy': 'v4',
+    'X-Notion-Image-Proxy': 'v5',
     'X-Notion-Image-Proxy-Origin-Cache': 'BYPASS',
     ...CORS_HEADERS
   })

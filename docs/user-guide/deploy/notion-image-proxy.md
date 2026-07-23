@@ -27,7 +27,13 @@ https://cdn.example.com/image/...
 ```
 
 这样图片会先经过你的 Cloudflare Worker，再由 Worker 去 Notion 拿图，并缓存到 Cloudflare。
-Notion 页面里的上传文件也会使用同一个域名的 `/signed/` 稳定入口。文件完整下载走边缘缓存，浏览器的 Range 分片请求会保留 `206` 响应，但不会把分片写入整文件缓存。
+Notion 页面里的上传文件也会使用同一个域名的 `/signed/` 稳定入口。文件完整下载走边缘缓存，Cloudflare 会把缓存的完整 `200` 文件在边缘切成浏览器需要的 `206` Range 响应。
+
+## 免费套餐边界
+
+当前 Workers Free 套餐每天最多处理 100,000 次 Worker 请求，每次请求最多 50 个子请求和 10ms CPU。这个 Worker 的普通图片或文件请求只发 1 个 Notion 子请求；文件点击的可用性探测会额外发 1 个 `HEAD` Worker 请求，以保证 CDN 失效时能自动回退到 Vercel。
+
+图片和完整文件会使用 Cloudflare 边缘缓存，但缓存命中仍会经过 Worker，因此仍计入 Worker 请求量。按“页面图片数 × 页面访问量”估算每日请求量；下载文件时再额外计入探测请求。超过 100,000 次/天时，需要升级 Workers Paid，或把稳定静态资源迁移到 R2/Pages 等不经过 Worker 的托管方式。
 
 ## 不会代码怎么办
 
@@ -313,7 +319,7 @@ X-Notion-Image-Proxy-Origin-Cache: HIT
 同时应看到 Worker 自己加的版本响应头：
 
 ```text
-X-Notion-Image-Proxy: v4
+X-Notion-Image-Proxy: v5
 ```
 
 `CF-Cache-Status` 是否出现取决于域名的缓存规则和 Cloudflare 套餐；本 Worker
