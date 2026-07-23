@@ -1,6 +1,6 @@
-# Notion image proxy
+# Notion asset proxy
 
-Cloudflare Worker proxy for NotionNext images.
+Cloudflare Worker proxy for NotionNext images and uploaded files.
 
 ## Deploy
 
@@ -25,6 +25,8 @@ NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
 
 ```bash
 curl -I "https://cdn.example.com/images/page-cover/gradients_11.jpg"
+# For a Notion uploaded file, use its stable /signed/ URL:
+curl -I "https://cdn.example.com/signed/<encoded-source>?table=block&id=<block-id>"
 ```
 
 Expected headers for a successful image response:
@@ -35,7 +37,11 @@ X-Notion-Image-Proxy: v4
 X-Notion-Image-Proxy-Origin-Cache: HIT
 ```
 
-The Worker returns `404` for paths outside `/image/` and `/images/`, rejects
-methods other than `GET` and `HEAD`, and never caches non-image upstream
-responses. Repeat requests should normally show an origin cache `HIT`; the
-exact Cloudflare cache header depends on the zone and plan.
+File responses additionally preserve `Content-Disposition`, `Content-Length`,
+`Content-Range`, and support `GET`, `HEAD`, `OPTIONS`, and byte ranges. The
+Worker returns `404` for paths outside `/image/`, `/images/`, and `/signed/`,
+rejects other methods, and never caches upstream error pages. Full assets are
+edge-cacheable; range requests are deliberately `no-store` so a partial
+response cannot poison the full-file cache. Repeat full-asset requests should
+normally show an origin cache `HIT`; the exact Cloudflare cache header depends
+on the zone and plan.

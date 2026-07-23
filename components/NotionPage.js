@@ -1,4 +1,5 @@
 import { siteConfig } from '@/lib/config'
+import BLOG from '@/blog.config'
 import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import NotionLink from '@/components/NotionLink'
 import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
@@ -532,10 +533,24 @@ const mapPageUrl = id => {
   return '/' + id.replace(/-/g, '')
 }
 
-export function retryImageWithProxyFallback(img) {
+export function retryImageWithProxyFallback(
+  img,
+  notionHost = BLOG.NOTION_HOST
+) {
   const source = getImageSrc(img)
+  if (!source) {
+    return false
+  }
+
+  const originalSource = getOriginalNotionImageSource(source, notionHost)
+  if (originalSource && img?.dataset?.notionNextOriginRetried !== 'true') {
+    img.dataset.notionNextOriginRetried = 'true'
+    img.removeAttribute('srcset')
+    img.setAttribute('src', originalSource)
+    return true
+  }
+
   if (
-    !source ||
     img?.dataset?.notionNextProxyRetried === 'true' ||
     !isProxiableNotionImageSource(source)
   ) {
@@ -546,6 +561,30 @@ export function retryImageWithProxyFallback(img) {
   img.removeAttribute('srcset')
   img.setAttribute('src', `/api/proxy-image?url=${encodeURIComponent(source)}`)
   return true
+}
+
+const DEFAULT_NOTION_IMAGE_HOST = 'https://www.notion.so'
+
+export function getOriginalNotionImageSource(source, notionHost) {
+  if (!source || !notionHost) return null
+
+  try {
+    const sourceUrl = new URL(source)
+    const configuredUrl = new URL(notionHost)
+    if (
+      sourceUrl.origin === configuredUrl.origin &&
+      configuredUrl.origin !== DEFAULT_NOTION_IMAGE_HOST
+    ) {
+      return new URL(
+        sourceUrl.pathname + sourceUrl.search + sourceUrl.hash,
+        DEFAULT_NOTION_IMAGE_HOST
+      ).toString()
+    }
+  } catch {
+    return null
+  }
+
+  return null
 }
 
 const PROXIABLE_NOTION_IMAGE_DOMAINS = [

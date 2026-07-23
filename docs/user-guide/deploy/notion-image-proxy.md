@@ -1,4 +1,4 @@
-# Notion 图片反代加速
+# Notion 图片与文件反代加速
 
 Notion 图片默认会先访问 `www.notion.so`，再跳到 Notion 临时生成的图片地址。这个过程能用，但速度和缓存都不太稳定。
 
@@ -27,6 +27,7 @@ https://cdn.example.com/image/...
 ```
 
 这样图片会先经过你的 Cloudflare Worker，再由 Worker 去 Notion 拿图，并缓存到 Cloudflare。
+Notion 页面里的上传文件也会使用同一个域名的 `/signed/` 稳定入口。文件完整下载走边缘缓存，浏览器的 Range 分片请求会保留 `206` 响应，但不会把分片写入整文件缓存。
 
 ## 不会代码怎么办
 
@@ -47,7 +48,7 @@ https://cdn.example.com/image/...
 适合：
 
 - 博客图片主要上传在 Notion。
-- 不想压缩图片。
+- 不想压缩图片或手动搬运 Notion 文件。
 - 不想手动搬图片到 R2、OSS、七牛云。
 - 想尽快让图片走自己的 Cloudflare 缓存。
 - 同时使用 `yarn start` 和 `yarn export`。
@@ -172,7 +173,7 @@ Cloudflare 这里绑定的是完整域名，不是图片路径。
 
 ### 5. 配置 NotionNext
 
-只需要给 NotionNext 增加一个环境变量：
+只需要给 NotionNext 增加一个公开环境变量：
 
 ```text
 NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
@@ -180,12 +181,12 @@ NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
 
 不同平台的位置如下：
 
-| 平台 | 在哪里填 |
-| --- | --- |
-| Vercel | Project Settings -> Environment Variables |
-| Cloudflare Pages | Settings -> Variables and Secrets |
-| Docker / VPS | `.env` 或容器环境变量 |
-| 本地预览 | `.env.local` 或 PowerShell |
+| 平台             | 在哪里填                                                                           |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| Vercel           | Project Settings -> Environment Variables，Production/Preview/Development 按需勾选 |
+| Cloudflare Pages | Settings -> Variables and Secrets                                                  |
+| Docker / VPS     | `.env` 或容器环境变量                                                              |
+| 本地预览         | `.env.local` 或 PowerShell                                                         |
 
 填的时候注意：
 
@@ -227,7 +228,7 @@ https://cdn.example.com/
 重新执行 yarn export，并重新上传导出的静态文件
 ```
 
-只改环境变量但不重新部署，页面里的图片地址不会变。
+`NEXT_PUBLIC_` 变量会在 Next.js 构建时写入浏览器代码。只改环境变量但不重新部署，页面里的图片和文件地址不会变。
 
 ## 命令行方式
 
@@ -271,6 +272,12 @@ npx wrangler deploy
 https://cdn.example.com/image/...
 ```
 
+文件链接应该长这样：
+
+```text
+https://cdn.example.com/signed/...
+```
+
 不应该还是：
 
 ```text
@@ -279,13 +286,13 @@ https://www.notion.so/image/...
 
 如果还是 `www.notion.so`，通常是：
 
-| 现象 | 处理 |
-| --- | --- |
-| 变量名写错 | 必须是 `NEXT_PUBLIC_NOTION_HOST` |
-| 少了 `https://` | 值必须是 `https://cdn.example.com` |
-| 改完没重新部署 | 重新 Deploy 或重启服务 |
-| 静态站没重新导出 | 重新执行 `yarn export` |
-| 本地缓存影响 | 临时设置 `ENABLE_CACHE=false` |
+| 现象             | 处理                               |
+| ---------------- | ---------------------------------- |
+| 变量名写错       | 必须是 `NEXT_PUBLIC_NOTION_HOST`   |
+| 少了 `https://`  | 值必须是 `https://cdn.example.com` |
+| 改完没重新部署   | 重新 Deploy 或重启服务             |
+| 静态站没重新导出 | 重新执行 `yarn export`             |
+| 本地缓存影响     | 临时设置 `ENABLE_CACHE=false`      |
 
 ## 怎么判断缓存命中
 
@@ -347,6 +354,7 @@ curl.exe -I "你的完整图片URL"
 ```text
 /image/...
 /images/...
+/signed/...
 ```
 
 直接打开：
@@ -428,9 +436,10 @@ www.notion.so/image/...
 
 ```text
 https://cdn.example.com/image/...
+https://cdn.example.com/signed/...
 ```
 
-所以同一篇文章里的同一张图，可以更稳定地命中 Cloudflare 缓存。
+所以同一篇文章里的同一张图或同一个文件，可以更稳定地命中 Cloudflare 缓存。文件链接会先发一个跨域 `HEAD` 探测；在 Vercel、Node.js Server 等动态部署中，如果 CDN 不可用，页面会自动回退到现有的 `/api/notion-file`，刷新 Notion 签名 URL 后流式下载。
 
 ## yarn start 和 yarn export 都支持吗
 
@@ -446,16 +455,18 @@ NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
 
 `yarn export` 是静态导出。只要导出时已经配置这个变量，生成出来的 HTML 里也会是 CDN 图片地址。
 
+静态导出没有 API Routes，因此可以使用图片原图回退和 Worker 文件下载，但不能使用 `/api/proxy-image`、`/api/notion-file` 这两层服务端兜底。需要完整回退链路时，应使用 Vercel 或其他动态部署。
+
 区别只有一个：
 
-| 部署方式 | 改完变量后要做什么 |
-| --- | --- |
-| `yarn start` | 重启服务 |
-| `yarn export` | 重新导出并上传 |
+| 部署方式      | 改完变量后要做什么 |
+| ------------- | ------------------ |
+| `yarn start`  | 重启服务           |
+| `yarn export` | 重新导出并上传     |
 
 ## 访问量很大够用吗
 
-每次图片请求都会先经过 Worker。
+每次图片或文件请求都会先经过 Worker。
 
 粗略估算：
 
@@ -473,7 +484,7 @@ NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
 
 ## 最小维护建议
 
-- CDN 域名只用于 Notion 图片。
+- CDN 域名只用于 Notion 图片和文件。
 - 不要把 Cloudflare API Token 放到前端代码。
 - 不要把 token 提交到 GitHub。
 - 改 Worker 代码后，重新点一次 `Save and deploy`，或重新执行 `npx wrangler deploy`。

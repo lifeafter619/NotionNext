@@ -46,10 +46,7 @@ test('sorts query parameters and returns validated image responses', async () =>
     new Request('https://cdn.example.com/images/cover.jpg?z=2&a=1')
   )
 
-  assert.equal(
-    fetchedUrl,
-    'https://www.notion.so/images/cover.jpg?a=1&z=2'
-  )
+  assert.equal(fetchedUrl, 'https://www.notion.so/images/cover.jpg?a=1&z=2')
   assert.equal(response.status, 200)
   assert.equal(response.headers.get('content-type'), 'image/png')
   assert.equal(response.headers.get('x-notion-image-proxy'), 'v4')
@@ -76,6 +73,129 @@ test('does not turn a successful non-image response into a cacheable image', asy
   assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
   assert.equal(response.headers.get('x-notion-image-proxy'), 'v4')
   assert.equal(await response.text(), 'Notion did not return an image')
+})
+
+test('proxies signed Notion files and preserves download metadata', async () => {
+  let fetchedUrl
+  let fetchedOptions
+  globalThis.fetch = async (url, options) => {
+    fetchedUrl = url.toString()
+    fetchedOptions = options
+    return new Response(new Uint8Array([4, 5, 6]), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': 'attachment; filename="report.zip"',
+        'Content-Length': '3',
+        ETag: '"file-etag"'
+      }
+    })
+  }
+
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/signed/attachment%3Afile-id%3Areport.zip?table=block&id=block-id'
+    )
+  )
+
+  assert.equal(
+    fetchedUrl,
+    'https://www.notion.so/signed/attachment%3Afile-id%3Areport.zip?id=block-id&table=block'
+  )
+  assert.equal(fetchedOptions.headers.Accept, '*/*')
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('content-type'), 'application/zip')
+  assert.equal(
+    response.headers.get('content-disposition'),
+    'attachment; filename="report.zip"'
+  )
+  assert.equal(response.headers.get('access-control-allow-origin'), '*')
+  assert.match(response.headers.get('cache-control'), /immutable/)
+  assert.deepEqual(
+    new Uint8Array(await response.arrayBuffer()),
+    new Uint8Array([4, 5, 6])
+  )
+})
+
+test('forwards byte ranges for signed file downloads', async () => {
+  let range
+  let cacheEverything
+  globalThis.fetch = async (_url, options) => {
+    range = options.headers.Range
+    cacheEverything = options.cf.cacheEverything
+    return new Response(new Uint8Array([7, 8]), {
+      status: 206,
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Range': 'bytes 0-1/10'
+      }
+    })
+  }
+
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/signed/attachment%3Afile-id%3Adata.bin',
+      {
+        headers: { Range: 'bytes=0-1' }
+      }
+    )
+  )
+
+  assert.equal(range, 'bytes=0-1')
+  assert.equal(cacheEverything, false)
+  assert.equal(response.status, 206)
+  assert.equal(response.headers.get('content-range'), 'bytes 0-1/10')
+  assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
+})
+
+test('supports CORS preflight for file fallback probing', async () => {
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/signed/attachment%3Afile-id%3Adata.bin',
+      {
+        method: 'OPTIONS'
+      }
+    )
+  )
+
+  assert.equal(response.status, 204)
+  assert.equal(
+    response.headers.get('access-control-allow-methods'),
+    'GET, HEAD, OPTIONS'
+  )
+})
+
+test('probes signed files with a one-byte GET because Notion rejects HEAD', async () => {
+  let fetchedOptions
+  globalThis.fetch = async (_url, options) => {
+    fetchedOptions = options
+    return new Response(new Uint8Array([7]), {
+      status: 206,
+      headers: {
+        'Accept-Ranges': 'bytes',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': '1',
+        'Content-Range': 'bytes 0-0/8192'
+      }
+    })
+  }
+
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/signed/attachment%3Afile-id%3Adata.bin',
+      {
+        method: 'HEAD'
+      }
+    )
+  )
+
+  assert.equal(fetchedOptions.method, 'GET')
+  assert.equal(fetchedOptions.headers.Range, 'bytes=0-0')
+  assert.equal(fetchedOptions.cf.cacheEverything, false)
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('content-length'), '8192')
+  assert.equal(response.headers.get('content-range'), null)
+  assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
 })
 
 test('honors matching ETag validators', async () => {

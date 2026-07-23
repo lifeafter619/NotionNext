@@ -20,17 +20,32 @@ const USER_AGENT =
 const FORWARDED_RESPONSE_HEADERS = [
   'accept-ranges',
   'content-encoding',
+  'content-disposition',
+  'content-length',
+  'content-range',
   'content-type',
   'etag',
   'last-modified'
 ]
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+  'Access-Control-Expose-Headers':
+    'Accept-Ranges, Content-Disposition, Content-Length, Content-Range, Content-Type, ETag, Last-Modified'
+}
+
 export default {
   async fetch(request) {
     const url = new URL(request.url)
+    const routeKind = getRouteKind(url.pathname)
 
-    if (!isAllowedPath(url.pathname)) {
+    if (!routeKind) {
       return textResponse(request, 404, 'Not found')
+    }
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS })
     }
 
     if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -39,8 +54,20 @@ export default {
       })
     }
 
-    const policy = getCachePolicy(url)
+    const policy = getCachePolicy(url, routeKind)
     const upstreamUrl = createUpstreamUrl(url)
+    const hasRange = request.headers.has('range')
+    const isFileHeadProbe = routeKind === 'file' && request.method === 'HEAD'
+    const isPartialRequest = hasRange || isFileHeadProbe
+    const upstreamHeaders = {
+      Accept: routeKind === 'image' ? IMAGE_ACCEPT : '*/*',
+      'User-Agent': USER_AGENT
+    }
+    if (routeKind === 'file') {
+      copyRequestHeader(request.headers, upstreamHeaders, 'Range')
+      copyRequestHeader(request.headers, upstreamHeaders, 'If-Range')
+    }
+    if (isFileHeadProbe) upstreamHeaders.Range = 'bytes=0-0'
 
     let upstreamResponse
     try {
@@ -48,14 +75,16 @@ export default {
       // lets Cloudflare use its global/tiered cache instead of a local-only
       // caches.default lookup on every request.
       upstreamResponse = await fetch(upstreamUrl, {
-        method: request.method,
+        // Notion's signed file endpoint rejects HEAD. Fetch one byte instead,
+        // then synthesize a standards-compatible HEAD response below.
+        method: isFileHeadProbe ? 'GET' : request.method,
         redirect: 'follow',
-        headers: {
-          Accept: IMAGE_ACCEPT,
-          'User-Agent': USER_AGENT
-        },
+        headers: upstreamHeaders,
         cf: {
-          cacheEverything: true,
+          // A cached 206 response must never become the cache entry for the
+          // full asset URL. Full file/image responses remain edge-cacheable;
+          // range probes are streamed from the origin for correctness.
+          cacheEverything: !isPartialRequest,
           cacheTtlByStatus: {
             '100-199': -1,
             '200-299': policy.edgeTtl,
@@ -64,29 +93,44 @@ export default {
         }
       })
     } catch (_) {
-      return proxyErrorResponse(request, 502, 'Notion image request failed')
+      return proxyErrorResponse(
+        request,
+        502,
+        routeKind === 'image'
+          ? 'Notion image request failed'
+          : 'Notion file request failed'
+      )
     }
 
     const contentType = (
       upstreamResponse.headers.get('content-type') || ''
     ).toLowerCase()
-    const isImage =
-      upstreamResponse.status === 200 && contentType.startsWith('image/')
+    const contentDisposition = (
+      upstreamResponse.headers.get('content-disposition') || ''
+    ).toLowerCase()
+    const isFileResponse =
+      [200, 206].includes(upstreamResponse.status) &&
+      (!contentType.includes('text/html') ||
+        contentDisposition.includes('attachment'))
+    const isValidAsset =
+      routeKind === 'file'
+        ? isFileResponse
+        : upstreamResponse.status === 200 && contentType.startsWith('image/')
 
-    // Never turn an HTML/JSON error page into a cacheable image response.
-    if (!isImage) {
+    // Never turn an upstream error page into a cacheable asset response.
+    if (!isValidAsset) {
       const status = upstreamResponse.ok ? 502 : upstreamResponse.status
       if (upstreamResponse.body) await upstreamResponse.body.cancel()
-      return proxyErrorResponse(
-        request,
-        status,
-        upstreamResponse.ok
-          ? 'Notion did not return an image'
-          : 'Notion image request failed'
-      )
+      const message =
+        routeKind === 'image'
+          ? upstreamResponse.ok
+            ? 'Notion did not return an image'
+            : 'Notion image request failed'
+          : 'Notion file request failed'
+      return proxyErrorResponse(request, status, message)
     }
 
-    const headers = copyImageHeaders(upstreamResponse.headers)
+    const headers = copyAssetHeaders(upstreamResponse.headers)
     headers.set(
       'Cache-Control',
       policy.immutable
@@ -98,8 +142,16 @@ export default {
     // exposing the longer edge TTL to browsers or downstream caches.
     const edgeCacheControl = `public, max-age=${policy.edgeTtl}, stale-while-revalidate=${policy.staleWhileRevalidate}, stale-if-error=${policy.staleIfError}`
     headers.set('Cloudflare-CDN-Cache-Control', edgeCacheControl)
+    if (isPartialRequest) {
+      headers.set('Cache-Control', 'no-store, max-age=0')
+      headers.set('Cloudflare-CDN-Cache-Control', 'no-store')
+    }
+    if (isFileHeadProbe) normalizeFileHeadHeaders(headers)
     headers.set('X-Content-Type-Options', 'nosniff')
     headers.set('X-Notion-Image-Proxy', 'v4')
+    Object.entries(CORS_HEADERS).forEach(([name, value]) => {
+      headers.set(name, value)
+    })
 
     const upstreamCacheStatus =
       upstreamResponse.headers.get('cf-cache-status') || 'UNKNOWN'
@@ -110,6 +162,7 @@ export default {
     // fixing Accept, so the validator always refers to the same image format.
     if (
       request.method === 'GET' &&
+      !request.headers.has('range') &&
       isNotModified(request.headers, upstreamResponse.headers)
     ) {
       if (upstreamResponse.body) await upstreamResponse.body.cancel()
@@ -120,10 +173,14 @@ export default {
     // Cloudflare from applying Content-Encoding a second time while streaming;
     // unencoded formats remain eligible for normal edge compression.
     const encodeBody = headers.has('content-encoding') ? 'manual' : 'automatic'
+    if (request.method === 'HEAD' && upstreamResponse.body) {
+      await upstreamResponse.body.cancel()
+    }
+
     return new Response(
       request.method === 'HEAD' ? null : upstreamResponse.body,
       {
-        status: upstreamResponse.status,
+        status: isFileHeadProbe ? 200 : upstreamResponse.status,
         statusText: upstreamResponse.statusText,
         headers,
         encodeBody
@@ -141,11 +198,17 @@ function createUpstreamUrl(url) {
   return upstreamUrl
 }
 
-function getCachePolicy(url) {
+function copyRequestHeader(sourceHeaders, targetHeaders, name) {
+  const value = sourceHeaders.get(name)
+  if (value) targetHeaders[name] = value
+}
+
+function getCachePolicy(url, routeKind) {
   const decodedPath = safeDecode(url.pathname)
   // Unsplash photo URLs are immutable for the transformed URL shape used by
   // NotionNext (photo id plus explicit width/quality parameters).
   const immutable =
+    routeKind === 'file' ||
     url.pathname.startsWith('/images/') ||
     decodedPath.includes('/image/attachment:') ||
     /secure\.notion-static\.com|prod-files-secure|notionusercontent\.com|file\.notion\.(?:so|com)|images\.unsplash\.com/i.test(
@@ -203,7 +266,7 @@ function normalizeWeakEtag(value) {
   return value.trim().replace(/^W\//i, '')
 }
 
-function copyImageHeaders(sourceHeaders) {
+function copyAssetHeaders(sourceHeaders) {
   const headers = new Headers()
 
   for (const name of FORWARDED_RESPONSE_HEADERS) {
@@ -214,11 +277,19 @@ function copyImageHeaders(sourceHeaders) {
   return headers
 }
 
+function normalizeFileHeadHeaders(headers) {
+  const contentRange = headers.get('content-range')
+  const totalLength = contentRange?.match(/\/([0-9]+)$/)?.[1]
+  if (totalLength) headers.set('Content-Length', totalLength)
+  headers.delete('Content-Range')
+}
+
 function proxyErrorResponse(request, status, message) {
   return textResponse(request, status, message, {
     'Cache-Control': 'no-store, max-age=0',
     'X-Notion-Image-Proxy': 'v4',
-    'X-Notion-Image-Proxy-Origin-Cache': 'BYPASS'
+    'X-Notion-Image-Proxy-Origin-Cache': 'BYPASS',
+    ...CORS_HEADERS
   })
 }
 
@@ -226,6 +297,7 @@ function textResponse(request, status, message, additionalHeaders = {}) {
   const headers = new Headers({
     'Cache-Control': 'no-store, max-age=0',
     'Content-Type': 'text/plain; charset=UTF-8',
+    ...CORS_HEADERS,
     ...additionalHeaders
   })
 
@@ -243,6 +315,10 @@ function safeDecode(value) {
   }
 }
 
-function isAllowedPath(pathname) {
-  return pathname.startsWith('/image/') || pathname.startsWith('/images/')
+function getRouteKind(pathname) {
+  if (pathname.startsWith('/image/') || pathname.startsWith('/images/')) {
+    return 'image'
+  }
+  if (pathname.startsWith('/signed/')) return 'file'
+  return null
 }
