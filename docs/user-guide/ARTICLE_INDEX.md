@@ -21,6 +21,7 @@
 | 🚀 安装部署 | `vercel-deploy-notion-next-static` | [deploy/vercel-static.md](./deploy/vercel-static.md) |
 | 🚀 安装部署 | `vercel-redploy` | [deploy/vercel-redeploy.md](./deploy/vercel-redeploy.md) |
 | 🚀 安装部署 | `notion-next-cloud-flare` | [deploy/cloudflare-pages.md](./deploy/cloudflare-pages.md) |
+| 🚀 安装部署 | `notion-image-proxy` | [deploy/notion-image-proxy.md](./deploy/notion-image-proxy.md) |
 | 🚀 安装部署 | `deploy-notion-next-with-netlify` | [deploy/netlify.md](./deploy/netlify.md) |
 | 🚀 安装部署 | `deploy-notion-next-with-edge-one` | [deploy/edgeone-pages.md](./deploy/edgeone-pages.md) |
 | 🚀 安装部署 | `deploy-notion-next-on-vps` | [deploy/vps.md](./deploy/vps.md) |

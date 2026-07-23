@@ -78,27 +78,26 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
       <div data-wow-delay='.2s' className={containerClass}>
         {/* 图片封面 */}
         {showPageCover && (
-          <SmartLink href={postHref}>
-            <div
-              className={
-                (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +
-                (isDefaultStyle ? ' flex-1 min-h-0 md:flex-none' : '') +
-                ' w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
-              }>
-              <LazyImage
-                priority={index === 0 && Boolean(pageCoverThumbnail)}
-                width={POST_TWO_COLS ? 620 : 460}
-                height={POST_TWO_COLS ? 220 : 208}
-                sizes={
-                  POST_TWO_COLS
-                    ? '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'
-                    : '(min-width: 720px) 42vw, 100vw'
-                }
-                src={pageCoverThumbnail}
-                alt={title}
-                className={`h-full w-full object-cover object-center ${COVER_HOVER_ENLARGE ? 'group-hover:scale-105' : ''} group-hover:brightness-75 transition-all duration-500 ease-in-out`} //宽高都调整为自适应,保证封面居中
-              />
-            </div>
+          <SmartLink
+            href={postHref}
+            className={
+              (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +
+              (isDefaultStyle ? ' flex-1 min-h-0 md:flex-none' : '') +
+              ' block w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
+            }>
+            <LazyImage
+              priority={index === 0 && Boolean(pageCoverThumbnail)}
+              width={POST_TWO_COLS ? 620 : 460}
+              height={POST_TWO_COLS ? 220 : 208}
+              sizes={
+                POST_TWO_COLS
+                  ? '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'
+                  : '(min-width: 720px) 42vw, 100vw'
+              }
+              src={pageCoverThumbnail}
+              alt={title}
+              className={`h-full w-full object-cover object-center ${COVER_HOVER_ENLARGE ? 'group-hover:scale-105' : ''} group-hover:brightness-75 transition-all duration-500 ease-in-out`} //宽高都调整为自适应,保证封面居中
+            />
           </SmartLink>
         )}
 

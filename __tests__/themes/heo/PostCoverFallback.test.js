@@ -93,6 +93,24 @@ describe('heo post cover fallback', () => {
     expect(coverWrapper).toHaveClass('md:flex-none')
   })
 
+  it('applies cover sizing to the direct flex item', () => {
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { container, getByAltText } = render(
+      <BlogPostCard index={0} post={post} siteInfo={siteInfo} />
+    )
+
+    const card = container.querySelector('[data-wow-delay]')
+    const coverLink = getByAltText('Post title').closest('a')
+
+    expect(coverLink).toHaveClass('w-full')
+    expect(coverLink).toHaveClass('md:w-5/12')
+    expect(coverLink?.parentElement).toBe(card)
+  })
+
   it('uses the full content width when no cover can be resolved', () => {
     const { getByText } = render(
       <BlogPostCard index={0} post={createPost()} siteInfo={{}} />
