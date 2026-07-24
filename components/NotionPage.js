@@ -362,7 +362,7 @@ export function proxyNotionVideoUrls(blockMap, notionHost = BLOG.NOTION_HOST) {
 
   for (const entry of Object.values(blockMap.block)) {
     const block = getNotionValue(entry)
-    if (block?.type !== 'video' || !block.id) continue
+    if (!['video', 'audio'].includes(block?.type) || !block.id) continue
 
     const stableSource =
       block.properties?.source?.[0]?.[0] || block.format?.display_source

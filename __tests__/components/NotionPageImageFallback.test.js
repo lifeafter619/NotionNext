@@ -90,7 +90,7 @@ describe('NotionPage image fallback', () => {
   })
 })
 
-describe('NotionPage video proxy', () => {
+describe('NotionPage media proxy', () => {
   it('replaces temporary signed video URLs with the stable Worker URL', () => {
     const stableSource =
       'https://notion.so/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fvideo-id%2Fmovie.mp4?table=block&id=video-block'
@@ -159,5 +159,55 @@ describe('NotionPage video proxy', () => {
     expect(result.signed_urls['video-block']).toBe(
       'https://s3-us-west-2.amazonaws.com/my-public-bucket/movie.mp4'
     )
+  })
+
+  it('replaces temporary signed Notion audio URLs with the stable Worker URL', () => {
+    const stableSource =
+      'https://notion.so/signed/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Faudio-id%2Fpodcast.mp3?table=block&id=audio-block'
+    const recordMap = {
+      block: {
+        'audio-block': {
+          value: {
+            id: 'audio-block',
+            type: 'audio',
+            properties: { source: [[stableSource]] }
+          }
+        }
+      },
+      signed_urls: {
+        'audio-block':
+          'https://file.notion.so/temporary-audio-url?expirationTimestamp=1'
+      }
+    }
+
+    const result = proxyNotionVideoUrls(recordMap, 'https://img.cdn.619.pp.ua')
+
+    expect(result.signed_urls['audio-block']).toBe(
+      'https://img.cdn.619.pp.ua/signed/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Faudio-id%2Fpodcast.mp3?table=block&id=audio-block'
+    )
+    expect(recordMap.signed_urls['audio-block']).toBe(
+      'https://file.notion.so/temporary-audio-url?expirationTimestamp=1'
+    )
+  })
+
+  it('keeps externally hosted audio on its original URL', () => {
+    const source = 'https://media.example.com/podcast.mp3?token=original'
+    const recordMap = {
+      block: {
+        'audio-block': {
+          value: {
+            id: 'audio-block',
+            type: 'audio',
+            properties: { source: [[source]] }
+          }
+        }
+      },
+      signed_urls: { 'audio-block': source }
+    }
+
+    const result = proxyNotionVideoUrls(recordMap, 'https://img.cdn.619.pp.ua')
+
+    expect(result).toBe(recordMap)
+    expect(result.signed_urls['audio-block']).toBe(source)
   })
 })
