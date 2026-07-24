@@ -78,13 +78,13 @@ const ReadingHome = ({
           title={copy.followTitle}
           description={copy.followDescription}
         >
-          <a
+          <SmartLink
             href='/rss/feed.xml'
             className='inline-flex items-center gap-2 font-medium text-indigo-700 hover:text-orange-600 dark:text-indigo-300 dark:hover:text-orange-300'
           >
             <IconRss aria-hidden='true' size={18} stroke={1.8} />
             {copy.rssLabel}
-          </a>
+          </SmartLink>
         </ReadingSection>
       )}
     </div>

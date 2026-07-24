@@ -50,7 +50,9 @@ test('rejects third-party URLs wrapped in the signed file route', async () => {
   const external = 'https://downloads.example.com/report.zip'
 
   const response = await worker.fetch(
-    new Request(`https://cdn.example.com/signed/${encodeURIComponent(external)}`)
+    new Request(
+      `https://cdn.example.com/signed/${encodeURIComponent(external)}`
+    )
   )
 
   assert.equal(response.status, 404)
