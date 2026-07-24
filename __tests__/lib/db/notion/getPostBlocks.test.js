@@ -109,6 +109,42 @@ describe('formatNotionBlock', () => {
     expect(blockValue.type).toBe('video')
   })
 
+  it('rewrites short-link video pages to embeds instead of native video', () => {
+    const url = 'https://b23.tv/v2l2EEX'
+    const blockValue = {
+      type: 'video',
+      properties: {
+        source: [[url]]
+      }
+    }
+
+    expect(isExternalVideoEmbedUrl(url)).toBe(true)
+    normalizeExternalMediaBlock(blockValue)
+
+    expect(blockValue.type).toBe('embed')
+  })
+
+  it('keeps direct media URLs as native video blocks', () => {
+    const urls = [
+      'https://cdn.example.com/videos/demo.mp4?token=abc',
+      'https://cdn.example.com/videos/demo.webm',
+      'https://cdn.example.com/videos/stream.m3u8'
+    ]
+
+    for (const url of urls) {
+      const blockValue = {
+        type: 'video',
+        properties: {
+          source: [[url]]
+        }
+      }
+
+      expect(isExternalVideoEmbedUrl(url)).toBe(false)
+      normalizeExternalMediaBlock(blockValue)
+      expect(blockValue.type).toBe('video')
+    }
+  })
+
   it('normalizes Apple Music song embeds from video blocks to embed blocks', () => {
     const formatted = formatNotionBlock({
       'apple-music-song': {
