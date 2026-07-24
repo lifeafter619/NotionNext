@@ -3,6 +3,7 @@ import {
   proxyNotionVideoUrls,
   retryImageWithProxyFallback
 } from '@/components/NotionPage'
+import { retryNotionAssetElement } from '@/lib/notionAssetFallback'
 import { render, screen } from '@testing-library/react'
 
 jest.mock('react-notion-x', () => ({
@@ -259,5 +260,63 @@ describe('NotionPage media proxy', () => {
 
     expect(result).toBe(recordMap)
     expect(result.signed_urls['audio-block']).toBe(source)
+  })
+})
+
+// 集成测试：验证 proxyNotionVideoUrls（SSR 阶段改写媒体 URL）的输出能被
+// 客户端回退链正确解析。若 buildNotionFileProxyUrl 的 URL 格式与
+// parseNotionMediaProxyUrl 不匹配，媒体回退会静默失败——这个用例捕获该回归。
+describe('NotionPage media fallback (video/audio)', () => {
+  const NOTION_HOST = 'https://img.cdn.619.pp.ua'
+
+  it('falls a real proxied video back to /api/notion-file when the Worker fails', () => {
+    const stableSource =
+      'https://notion.so/signed/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fvid%2Fmovie.mp4?table=block&id=video-block'
+    const recordMap = {
+      block: {
+        'video-block': {
+          value: {
+            id: 'video-block',
+            type: 'video',
+            properties: { source: [[stableSource]] }
+          }
+        }
+      },
+      signed_urls: { 'video-block': 'https://file.notion.so/temp' }
+    }
+
+    const proxied = proxyNotionVideoUrls(recordMap, NOTION_HOST)
+    const workerUrl = proxied.signed_urls['video-block']
+
+    // 这是 react-notion-x <video src> 实际拿到的 URL。
+    const video = document.createElement('video')
+    video.setAttribute('src', workerUrl)
+
+    // 第1次失败 → no-referrer 重试（绕过 hotlink）。
+    expect(
+      retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
+    ).toBe(true)
+    // 第2次失败 → /api/notion-file（携带 blockId + 原始 source，服务端现签）。
+    expect(
+      retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
+    ).toBe(true)
+    const src = video.getAttribute('src')
+    expect(src.startsWith('/api/notion-file?')).toBe(true)
+    const url = new URL(src, 'https://notionnext.local')
+    expect(url.searchParams.get('id')).toBe('video-block')
+    expect(url.searchParams.get('source')).toContain('movie.mp4')
+
+    // 第3次失败 → www.notion.so 原域名直连（最后兜底）。
+    expect(
+      retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
+    ).toBe(true)
+    expect(video.getAttribute('src').startsWith('https://www.notion.so/')).toBe(
+      true
+    )
+
+    // 候选耗尽。
+    expect(
+      retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
+    ).toBe(false)
   })
 })

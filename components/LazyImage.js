@@ -1,4 +1,6 @@
 import { siteConfig } from '@/lib/config'
+import BLOG from '@/blog.config'
+import { buildNotionAssetFallbackCandidates } from '@/lib/notionAssetFallback'
 import Head from 'next/head'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -56,7 +58,15 @@ export default function LazyImage({
     const fallbackCandidates = getFallbackCandidates([
       fallbackSrc,
       placeholderSrc,
-      defaultPlaceholderSrc
+      defaultPlaceholderSrc,
+      // 追加 Notion 代理回退候选：让封面图也能在 CDN/hotlink 403 时逐级回退
+      // （no-referrer 重试 → 服务端代理 → notion.so 直连）。用原始 src 生成，
+      // 不受 currentSrc 已切换的影响。
+      ...buildNotionAssetFallbackCandidates({
+        src: optimizedImageSrc || src,
+        kind: 'image',
+        notionHost: BLOG.NOTION_HOST
+      }).map(c => c.url)
     ])
     let nextFallbackSrc = null
 
@@ -79,7 +89,15 @@ export default function LazyImage({
     if (typeof onError === 'function') {
       onError()
     }
-  }, [currentSrc, defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
+  }, [
+    currentSrc,
+    defaultPlaceholderSrc,
+    fallbackSrc,
+    onError,
+    optimizedImageSrc,
+    placeholderSrc,
+    src
+  ])
 
   const handleImageLoaded = useCallback(
     event => {

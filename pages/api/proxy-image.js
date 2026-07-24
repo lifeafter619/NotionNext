@@ -1,7 +1,11 @@
 import { Readable } from 'stream'
 import { pipeline } from 'stream/promises'
-import { isNotionHostedAssetSource } from '@/lib/notionAssetUrl'
+import {
+  getNotionAssetDownloadSource,
+  isNotionHostedAssetSource
+} from '@/lib/notionAssetUrl'
 import { isWalineEmojiAssetSource } from '@/lib/walineEmojiProxy'
+import BLOG from '@/blog.config'
 
 const MAX_REDIRECTS = 3
 function createReadableStream(reader) {
@@ -46,7 +50,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Protocol not allowed' })
     }
 
-    const response = await fetchAllowedImage(targetUrl)
+    // 把自定义 CDN/Worker 包装的 URL 映射回 www.notion.so 原始源再 fetch，
+    // 让服务端代理直接回源 Notion，完全跳过自定义 CDN（避免其 hotlink 防护、
+    // Worker 故障等问题）。无法映射时（已是 notion.so 源或第三方源）原样使用。
+    const downloadSource = getNotionAssetDownloadSource(
+      targetUrl.toString(),
+      BLOG.NOTION_HOST
+    )
+    const fetchUrl = downloadSource ? new URL(downloadSource) : targetUrl
+
+    const response = await fetchAllowedImage(fetchUrl)
 
     if (!response.ok) {
       // If the upstream request failed, return JSON error, do not stream body as image

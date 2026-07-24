@@ -13,9 +13,12 @@ import LazyImage from '@/components/LazyImage'
 import NotionFile, { buildNotionFileProxyUrl } from '@/components/NotionFile'
 import {
   DEFAULT_NOTION_ORIGIN,
+  getNotionAssetDownloadSource,
+  getOriginalNotionImageSource,
   isNotionHostedAssetSource,
   unwrapExternalNotionImageSource
 } from '@/lib/notionAssetUrl'
+import { retryNotionAssetElement } from '@/lib/notionAssetFallback'
 import {
   bindNotionHashScrollHandler,
   scrollToNotionHeading
@@ -160,16 +163,24 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
     const article = document.getElementById(contentId)
     if (!article) return
 
-    const handleArticleImageError = event => {
+    // capture 阶段监听 error：媒体（<video>/<audio>）的 error 事件不冒泡，
+    // 只有 capture 才能捕获到；图片（<img>）也会被捕获。
+    const handleArticleMediaError = event => {
       const target = event.target
-      if (target?.tagName === 'IMG') {
-        retryImageWithProxyFallback(target)
+      const tagName = target?.tagName
+      if (tagName === 'IMG') {
+        retryImageWithProxyFallback(target, BLOG.NOTION_HOST)
+      } else if (tagName === 'VIDEO' || tagName === 'AUDIO') {
+        // 视频/音频加载失败（CDN hotlink 403、Worker 故障、signed URL 过期等）
+        // 时，逐级回退：no-referrer 重试 → /api/notion-file 服务端现签代理 →
+        // www.notion.so 原域名直连。
+        retryNotionAssetElement(target, { notionHost: BLOG.NOTION_HOST })
       }
     }
 
-    article.addEventListener('error', handleArticleImageError, true)
+    article.addEventListener('error', handleArticleMediaError, true)
     return () => {
-      article.removeEventListener('error', handleArticleImageError, true)
+      article.removeEventListener('error', handleArticleMediaError, true)
     }
   }, [contentId, post])
 
@@ -606,37 +617,19 @@ export function retryImageWithProxyFallback(
 
   img.dataset.notionNextProxyRetried = 'true'
   img.removeAttribute('srcset')
-  img.setAttribute('src', `/api/proxy-image?url=${encodeURIComponent(source)}`)
+  img.referrerPolicy = 'no-referrer'
+  // 让服务端代理直接回源 Notion（getNotionAssetDownloadSource 把自定义 CDN
+  // 包装 URL 映射回 www.notion.so），完全跳过自定义 CDN 的 hotlink 防护。
+  // 若无法映射（例如 source 已是 notion.so 原域名），则原样交给代理。
+  const proxyTarget =
+    getNotionAssetDownloadSource(source, notionHost) || source
+  img.setAttribute('src', `/api/proxy-image?url=${encodeURIComponent(proxyTarget)}`)
   return true
 }
 
-const DEFAULT_NOTION_IMAGE_HOST = DEFAULT_NOTION_ORIGIN
-
-export function getOriginalNotionImageSource(source, notionHost) {
-  if (!source || !notionHost) return null
-
-  const externalSource = unwrapExternalNotionImageSource(source, notionHost)
-  if (externalSource) return externalSource
-
-  try {
-    const sourceUrl = new URL(source)
-    const configuredUrl = new URL(notionHost)
-    if (
-      sourceUrl.origin === configuredUrl.origin &&
-      configuredUrl.origin !== DEFAULT_NOTION_IMAGE_HOST
-    ) {
-      const originalUrl = new URL(
-        sourceUrl.pathname + sourceUrl.search + sourceUrl.hash,
-        DEFAULT_NOTION_IMAGE_HOST
-      ).toString()
-      return isNotionHostedAssetSource(originalUrl) ? originalUrl : null
-    }
-  } catch {
-    return null
-  }
-
-  return null
-}
+// getOriginalNotionImageSource 已迁移到 @/lib/notionAssetUrl（纯 URL 工具，
+// 供客户端回退链复用），上方 import 处 re-export 以保持向后兼容。
+export { getOriginalNotionImageSource }
 
 function isProxiableNotionImageSource(source) {
   return isNotionHostedAssetSource(source)
