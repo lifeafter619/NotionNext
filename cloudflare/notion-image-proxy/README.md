@@ -1,6 +1,7 @@
 # Notion asset proxy
 
-Cloudflare Worker proxy for NotionNext images and uploaded files.
+Cloudflare Worker proxy for Notion-hosted images, video, audio, and uploaded
+files used by NotionNext. Ordinary external URLs are deliberately excluded.
 
 ## Deploy
 
@@ -33,15 +34,17 @@ Expected headers for a successful image response:
 
 ```text
 Content-Type: image/*
-X-Notion-Image-Proxy: v6
+X-Notion-Image-Proxy: v7
 X-Notion-Image-Proxy-Origin-Cache: HIT
 ```
 
 File responses additionally preserve `Content-Disposition`, `Content-Length`,
 `Content-Range`, and support `GET`, `HEAD`, `OPTIONS`, and byte ranges. The
 Worker returns `404` for paths outside `/image/`, `/images/`, and `/signed/`,
-rejects other methods, and never caches upstream error pages. Full downloads
-remain cacheable, while byte ranges are passed through and marked `no-store`.
+and also rejects `/image/` or `/signed/` URLs whose encoded source is not a
+Notion-owned asset. It rejects other methods and never caches upstream error
+pages. Full downloads remain cacheable, while byte ranges are passed through
+and marked `no-store`.
 Keep Wrangler's `[cache].enabled` set to `false`: Workers Cache removes the
 incoming `Range` header and would force videos larger than the 512 MB Free-plan
 cache limit into an unusable full-body `200` response. Repeat full-asset

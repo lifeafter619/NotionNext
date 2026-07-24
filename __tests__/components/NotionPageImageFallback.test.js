@@ -8,7 +8,7 @@ jest.mock('react-notion-x', () => ({
 }))
 
 describe('NotionPage image fallback', () => {
-  it('restores the original Notion image when the configured proxy fails', () => {
+  it('unwraps an external image from a legacy configured-proxy URL', () => {
     const img = document.createElement('img')
     const source =
       'https://img.cdn.619.pp.ua/image/https%3A%2F%2Fimages.unsplash.com%2Fphoto.jpg?width=800'
@@ -22,17 +22,15 @@ describe('NotionPage image fallback', () => {
 
     expect(retried).toBe(true)
     expect(img.getAttribute('src')).toBe(
-      'https://www.notion.so/image/https%3A%2F%2Fimages.unsplash.com%2Fphoto.jpg?width=800'
+      'https://images.unsplash.com/photo.jpg'
     )
     expect(img.hasAttribute('srcset')).toBe(false)
     expect(img.dataset.notionNextOriginRetried).toBe('true')
     expect(img.dataset.notionNextProxyRetried).toBeUndefined()
   })
 
-  it('falls back to the local proxy if the restored original also fails', () => {
+  it('never sends an unwrapped external image through the local proxy', () => {
     const img = document.createElement('img')
-    const original =
-      'https://www.notion.so/image/https%3A%2F%2Fimages.unsplash.com%2Fphoto.jpg?width=800'
     img.setAttribute(
       'src',
       'https://img.cdn.619.pp.ua/image/https%3A%2F%2Fimages.unsplash.com%2Fphoto.jpg?width=800'
@@ -41,21 +39,17 @@ describe('NotionPage image fallback', () => {
     expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
       true
     )
-    expect(img.getAttribute('src')).toBe(original)
-
-    expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
-      true
-    )
     expect(img.getAttribute('src')).toBe(
-      `/api/proxy-image?url=${encodeURIComponent(original)}`
+      'https://images.unsplash.com/photo.jpg'
     )
-    expect(img.dataset.notionNextProxyRetried).toBe('true')
+
     expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
       false
     )
+    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
   })
 
-  it('retries failed Notion article images through the local image proxy', () => {
+  it('unwraps a third-party image from a Notion image URL', () => {
     const img = document.createElement('img')
     const source =
       'https://www.notion.so/image/https%3A%2F%2Fgithub.com%2Ffavicon.ico?table=block&id=block-id'
@@ -65,10 +59,21 @@ describe('NotionPage image fallback', () => {
     const retried = retryImageWithProxyFallback(img)
 
     expect(retried).toBe(true)
+    expect(img.getAttribute('src')).toBe('https://github.com/favicon.ico')
+    expect(img.hasAttribute('srcset')).toBe(false)
+    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
+  })
+
+  it('retries failed Notion attachment images through the local proxy', () => {
+    const img = document.createElement('img')
+    const source =
+      'https://www.notion.so/image/attachment%3Aimage-id%3Acover.png?table=block&id=block-id'
+    img.setAttribute('src', source)
+
+    expect(retryImageWithProxyFallback(img)).toBe(true)
     expect(img.getAttribute('src')).toBe(
       `/api/proxy-image?url=${encodeURIComponent(source)}`
     )
-    expect(img.hasAttribute('srcset')).toBe(false)
     expect(img.dataset.notionNextProxyRetried).toBe('true')
   })
 
@@ -122,6 +127,37 @@ describe('NotionPage video proxy', () => {
     )
     expect(recordMap.signed_urls['video-block']).toBe(
       'https://file.notion.so/temporary-video-url'
+    )
+  })
+
+  it('keeps externally hosted videos on their original signed URL', () => {
+    const recordMap = {
+      block: {
+        'video-block': {
+          value: {
+            id: 'video-block',
+            type: 'video',
+            properties: {
+              source: [
+                [
+                  'https://s3-us-west-2.amazonaws.com/my-public-bucket/movie.mp4'
+                ]
+              ]
+            }
+          }
+        }
+      },
+      signed_urls: {
+        'video-block':
+          'https://s3-us-west-2.amazonaws.com/my-public-bucket/movie.mp4'
+      }
+    }
+
+    const result = proxyNotionVideoUrls(recordMap, 'https://img.cdn.619.pp.ua')
+
+    expect(result).toBe(recordMap)
+    expect(result.signed_urls['video-block']).toBe(
+      'https://s3-us-west-2.amazonaws.com/my-public-bucket/movie.mp4'
     )
   })
 })

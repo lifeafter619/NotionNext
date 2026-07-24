@@ -23,6 +23,61 @@ test('rejects paths outside the Notion image routes', async () => {
   assert.equal(fetched, false)
 })
 
+test('rejects third-party URLs wrapped in the image route', async () => {
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+  const external = 'https://images.example.com/cover.jpg'
+
+  const response = await worker.fetch(
+    new Request(
+      `https://cdn.example.com/image/${encodeURIComponent(external)}?table=block&id=block-id`
+    )
+  )
+
+  assert.equal(response.status, 404)
+  assert.equal(fetched, false)
+})
+
+test('rejects third-party URLs wrapped in the signed file route', async () => {
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+  const external = 'https://downloads.example.com/report.zip'
+
+  const response = await worker.fetch(
+    new Request(
+      `https://cdn.example.com/signed/${encodeURIComponent(external)}`
+    )
+  )
+
+  assert.equal(response.status, 404)
+  assert.equal(fetched, false)
+})
+
+test('allows legacy Notion S3 image paths through the image route', async () => {
+  let fetchedUrl
+  globalThis.fetch = async url => {
+    fetchedUrl = url.toString()
+    return imageResponse()
+  }
+  const source =
+    'https://s3-us-west-2.amazonaws.com/secure.notion-static.com/image-id/cover.png'
+
+  const response = await worker.fetch(
+    new Request(
+      `https://cdn.example.com/image/${encodeURIComponent(source)}?table=block&id=block-id`
+    )
+  )
+
+  assert.equal(response.status, 200)
+  assert.match(fetchedUrl, /^https:\/\/www\.notion\.so\/image\//)
+})
+
 test('only allows GET and HEAD requests', async () => {
   const response = await worker.fetch(
     new Request('https://cdn.example.com/images/cover.jpg', {
@@ -49,7 +104,7 @@ test('sorts query parameters and returns validated image responses', async () =>
   assert.equal(fetchedUrl, 'https://www.notion.so/images/cover.jpg?a=1&z=2')
   assert.equal(response.status, 200)
   assert.equal(response.headers.get('content-type'), 'image/png')
-  assert.equal(response.headers.get('x-notion-image-proxy'), 'v6')
+  assert.equal(response.headers.get('x-notion-image-proxy'), 'v7')
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff')
   assert.match(response.headers.get('cache-control'), /immutable/)
   assert.deepEqual(
@@ -71,7 +126,7 @@ test('does not turn a successful non-image response into a cacheable image', asy
 
   assert.equal(response.status, 502)
   assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
-  assert.equal(response.headers.get('x-notion-image-proxy'), 'v6')
+  assert.equal(response.headers.get('x-notion-image-proxy'), 'v7')
   assert.equal(await response.text(), 'Notion did not return an image')
 })
 

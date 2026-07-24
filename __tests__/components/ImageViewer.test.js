@@ -94,6 +94,49 @@ describe('ImageViewer Component', () => {
     expect(screen.getByLabelText('Download')).toBeInTheDocument()
   })
 
+  it('downloads ordinary external images without the local proxy', () => {
+    let clickedHref
+    const clickSpy = jest
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function () {
+        clickedHref = this.getAttribute('href')
+      })
+    const source = 'https://images.example.com/photo.jpg?token=original'
+
+    render(
+      <ImageViewer
+        {...defaultProps}
+        images={[{ src: source, alt: 'External photo' }]}
+      />
+    )
+    fireEvent.click(screen.getByLabelText('Download'))
+
+    expect(clickedHref).toBe(source)
+    clickSpy.mockRestore()
+  })
+
+  it('uses the local proxy only for Notion-hosted image downloads', () => {
+    let clickedHref
+    const clickSpy = jest
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function () {
+        clickedHref = this.getAttribute('href')
+      })
+    const source = 'https://secure.notion-static.com/image-id/photo.jpg'
+
+    render(
+      <ImageViewer
+        {...defaultProps}
+        images={[{ src: source, alt: 'Notion photo' }]}
+      />
+    )
+    fireEvent.click(screen.getByLabelText('Download'))
+
+    expect(clickedHref).toContain('/api/proxy-image?url=')
+    expect(clickedHref).toContain(encodeURIComponent(source))
+    clickSpy.mockRestore()
+  })
+
   it('shows 100% zoom by default', () => {
     render(<ImageViewer {...defaultProps} />)
 

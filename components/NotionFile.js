@@ -1,22 +1,9 @@
 import NotionLink from '@/components/NotionLink'
 import BLOG from '@/blog.config'
+import { isNotionHostedAssetSource } from '@/lib/notionAssetUrl'
 
 const DEFAULT_NOTION_HOST = 'https://www.notion.so'
 const FILE_PROXY_PROBE_TIMEOUT_MS = 3500
-
-const NOTION_FILE_SOURCE_DOMAINS = [
-  'notion.so',
-  'file.notion.so',
-  'file.notion.com',
-  'notionusercontent.com',
-  'secure.notion-static.com',
-  's3-us-west-2.amazonaws.com',
-  's3.us-west-2.amazonaws.com',
-  'prod-files-secure.s3.us-west-2.amazonaws.com',
-  'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
-  'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
-  'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
-]
 
 export function buildNotionFileDownloadUrl({
   id,
@@ -155,20 +142,7 @@ async function probeNotionFileProxy({ event, proxyHref, fallbackHref }) {
 }
 
 function isNotionHostedFileSource(source) {
-  if (typeof source !== 'string') return false
-  if (source.startsWith('attachment:')) return true
-
-  try {
-    const url = new URL(source)
-    if (url.protocol !== 'https:') return false
-
-    const hostname = url.hostname.toLowerCase()
-    return NOTION_FILE_SOURCE_DOMAINS.some(
-      domain => hostname === domain || hostname.endsWith(`.${domain}`)
-    )
-  } catch {
-    return false
-  }
+  return isNotionHostedAssetSource(source)
 }
 
 function getPlainText(value) {
