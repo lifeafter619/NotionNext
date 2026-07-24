@@ -1,7 +1,8 @@
 # Notion asset proxy
 
-Cloudflare Worker proxy for Notion-hosted images, video, audio, and uploaded
-files used by NotionNext. Ordinary external URLs are deliberately excluded.
+Cloudflare Worker proxy for Notion-hosted images, video, audio, uploaded files,
+and allowlisted Waline emoji assets used by NotionNext. Ordinary external URLs
+are deliberately excluded.
 
 ## Deploy
 
@@ -28,23 +29,28 @@ NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
 curl -I "https://cdn.example.com/images/page-cover/gradients_11.jpg"
 # For a Notion uploaded file, use its stable /signed/ URL:
 curl -I "https://cdn.example.com/signed/<encoded-source>?table=block&id=<block-id>"
+# Waline emoji images and picker metadata use a strict package route:
+curl -I "https://cdn.example.com/external/waline-emojis/1.2.0/tieba/tieba_agree.png"
+curl -I "https://cdn.example.com/external/waline-emojis/1.2.0/tieba/info.json"
 ```
 
 Expected headers for a successful image response:
 
 ```text
 Content-Type: image/*
-X-Notion-Image-Proxy: v7
+X-Notion-Image-Proxy: v8
 X-Notion-Image-Proxy-Origin-Cache: HIT
 ```
 
 File responses additionally preserve `Content-Disposition`, `Content-Length`,
 `Content-Range`, and support `GET`, `HEAD`, `OPTIONS`, and byte ranges. The
-Worker returns `404` for paths outside `/image/`, `/images/`, and `/signed/`,
-and also rejects `/image/` or `/signed/` URLs whose encoded source is not a
-Notion-owned asset. It rejects other methods and never caches upstream error
-pages. Full downloads remain cacheable, while byte ranges are passed through
-and marked `no-store`.
+Worker returns `404` for paths outside `/image/`, `/images/`, `/signed/`, and
+the strict `/external/waline-emojis/<version>/<pack>/<file>` route. The Waline
+route accepts only the official `qq`, `tieba`, `weibo`, and `bilibili` packs,
+and only image files or `info.json`. `/image/` and `/signed/` still require a
+Notion-owned asset, so the Worker cannot be used as an open proxy. It rejects
+other methods and never caches upstream error pages. Full downloads remain
+cacheable, while byte ranges are passed through and marked `no-store`.
 Keep Wrangler's `[cache].enabled` set to `false`: Workers Cache removes the
 incoming `Range` header and would force videos larger than the 512 MB Free-plan
 cache limit into an unusable full-body `200` response. Repeat full-asset

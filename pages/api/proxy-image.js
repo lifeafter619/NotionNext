@@ -1,6 +1,7 @@
 import { Readable } from 'stream'
 import { pipeline } from 'stream/promises'
 import { isNotionHostedAssetSource } from '@/lib/notionAssetUrl'
+import { isWalineEmojiAssetSource } from '@/lib/walineEmojiProxy'
 
 const MAX_REDIRECTS = 3
 function createReadableStream(reader) {
@@ -149,7 +150,10 @@ function validateImageUrl(targetUrl) {
     return { ok: false, error: 'Protocol not allowed' }
   }
 
-  if (!isNotionHostedAssetSource(targetUrl.toString())) {
+  if (
+    !isNotionHostedAssetSource(targetUrl.toString()) &&
+    !isWalineEmojiAssetSource(targetUrl.toString())
+  ) {
     return { ok: false, error: 'Domain not allowed' }
   }
 

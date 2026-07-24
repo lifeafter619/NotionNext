@@ -9,6 +9,7 @@ import {
   restoreCompactBlockMapForRender
 } from '@/lib/db/notion/cleanBlockMapForClient'
 import NotionButton from '@/components/NotionButton'
+import LazyImage from '@/components/LazyImage'
 import NotionFile, { buildNotionFileProxyUrl } from '@/components/NotionFile'
 import {
   DEFAULT_NOTION_ORIGIN,
@@ -252,6 +253,7 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
           recordMap={cleanBlockMap}
           mapPageUrl={mapPageUrl}
           mapImageUrl={mapImgUrl}
+          forceCustomImages
           components={{
             Button: NotionButton,
             Code,
@@ -259,6 +261,7 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
             Embed: NotionEmbed,
             Equation,
             File: NotionFile,
+            Image: NotionImage,
             Link: NotionLink,
             Modal,
             Pdf,
@@ -273,6 +276,10 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
       <ReadingPositionSaver postId={post?.id} enabled={enableReadingPosition} />
     </>
   )
+}
+
+export function NotionImage(props) {
+  return <LazyImage {...props} referrerPolicy='no-referrer' />
 }
 
 function shouldEnableReadingPositionSaver(post, enabled) {

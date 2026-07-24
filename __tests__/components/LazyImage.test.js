@@ -174,6 +174,37 @@ describe('LazyImage Component', () => {
     expect(image).toHaveAttribute('decoding', 'async')
   })
 
+  it('does not send the blog referrer to any image domain', () => {
+    render(
+      <LazyImage
+        {...defaultProps}
+        src='https://image.66619.eu.org/file/example.png'
+        priority
+      />
+    )
+
+    const image = screen.getByAltText('Test image')
+    const preload = document.querySelector('link[rel="preload"][as="image"]')
+
+    expect(image).toHaveAttribute('referrerpolicy', 'no-referrer')
+    expect(preload).toHaveAttribute('referrerpolicy', 'no-referrer')
+  })
+
+  it('keeps no-referrer behavior independent of Vercel image domains', () => {
+    render(
+      <LazyImage
+        {...defaultProps}
+        src='https://example-project.vercel.app/image.png'
+        priority
+      />
+    )
+
+    expect(screen.getByAltText('Test image')).toHaveAttribute(
+      'referrerpolicy',
+      'no-referrer'
+    )
+  })
+
   it('handles missing src gracefully', () => {
     const { container } = render(<LazyImage alt='Test image' />)
 

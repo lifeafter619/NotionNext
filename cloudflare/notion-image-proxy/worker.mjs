@@ -1,4 +1,6 @@
 const NOTION_ORIGIN = 'https://www.notion.so'
+const WALINE_EMOJI_ORIGIN = 'https://unpkg.com'
+const PROXY_VERSION = 'v8'
 
 // Notion uploaded assets have stable, ID-based URLs. Keep those warm longer.
 const IMMUTABLE_EDGE_TTL = 60 * 60 * 24 * 30
@@ -57,7 +59,12 @@ export default {
     const isPartialRequest =
       routeKind === 'file' && (hasRange || isFileHeadProbe)
     const upstreamHeaders = {
-      Accept: routeKind === 'image' ? IMAGE_ACCEPT : '*/*',
+      Accept:
+        routeKind === 'image' || routeKind === 'waline-emoji-image'
+          ? IMAGE_ACCEPT
+          : routeKind === 'waline-emoji-info'
+            ? 'application/json'
+            : '*/*',
       'User-Agent': USER_AGENT
     }
     if (routeKind === 'file') {
@@ -93,9 +100,7 @@ export default {
       return proxyErrorResponse(
         request,
         502,
-        routeKind === 'image'
-          ? 'Notion image request failed'
-          : 'Notion file request failed'
+        getUpstreamFailureMessage(routeKind)
       )
     }
 
@@ -110,20 +115,20 @@ export default {
       (!contentType.includes('text/html') ||
         contentDisposition.includes('attachment'))
     const isValidAsset =
-      routeKind === 'file'
-        ? isFileResponse
-        : upstreamResponse.status === 200 && contentType.startsWith('image/')
+      routeKind === 'waline-emoji-info'
+        ? upstreamResponse.status === 200 &&
+          contentType.includes('application/json')
+        : routeKind === 'file'
+          ? isFileResponse
+          : upstreamResponse.status === 200 && contentType.startsWith('image/')
 
     // Never turn an upstream error page into a cacheable asset response.
     if (!isValidAsset) {
       const status = upstreamResponse.ok ? 502 : upstreamResponse.status
       if (upstreamResponse.body) await upstreamResponse.body.cancel()
-      const message =
-        routeKind === 'image'
-          ? upstreamResponse.ok
-            ? 'Notion did not return an image'
-            : 'Notion image request failed'
-          : 'Notion file request failed'
+      const message = upstreamResponse.ok
+        ? getInvalidUpstreamMessage(routeKind)
+        : getUpstreamFailureMessage(routeKind)
       return proxyErrorResponse(request, status, message)
     }
 
@@ -145,7 +150,7 @@ export default {
     }
     if (isFileHeadProbe) normalizeFileHeadHeaders(headers)
     headers.set('X-Content-Type-Options', 'nosniff')
-    headers.set('X-Notion-Image-Proxy', 'v7')
+    headers.set('X-Notion-Image-Proxy', PROXY_VERSION)
     Object.entries(CORS_HEADERS).forEach(([name, value]) => {
       headers.set(name, value)
     })
@@ -187,6 +192,14 @@ export default {
 }
 
 function createUpstreamUrl(url) {
+  const walineAsset = parseWalineEmojiProxyPath(url.pathname)
+  if (walineAsset) {
+    return new URL(
+      `/@waline/emojis@${walineAsset.version}/${walineAsset.pack}/${walineAsset.filename}`,
+      WALINE_EMOJI_ORIGIN
+    )
+  }
+
   const upstreamUrl = new URL(url.pathname + url.search, NOTION_ORIGIN)
 
   // Query order does not change Notion's image result. Sorting it collapses
@@ -204,6 +217,7 @@ function getCachePolicy(url, routeKind) {
   const decodedPath = safeDecode(url.pathname)
   const immutable =
     routeKind === 'file' ||
+    url.pathname.startsWith('/external/waline-emojis/') ||
     url.pathname.startsWith('/images/') ||
     decodedPath.includes('/image/attachment:') ||
     /secure\.notion-static\.com|prod-files-secure|notionusercontent\.com|file\.notion\.(?:so|com)/i.test(
@@ -272,7 +286,7 @@ function normalizeFileHeadHeaders(headers) {
 function proxyErrorResponse(request, status, message) {
   return textResponse(request, status, message, {
     'Cache-Control': 'no-store, max-age=0',
-    'X-Notion-Image-Proxy': 'v7',
+    'X-Notion-Image-Proxy': PROXY_VERSION,
     'X-Notion-Image-Proxy-Origin-Cache': 'BYPASS',
     ...CORS_HEADERS
   })
@@ -292,6 +306,27 @@ function textResponse(request, status, message, additionalHeaders = {}) {
   })
 }
 
+function getUpstreamFailureMessage(routeKind) {
+  if (routeKind.startsWith('waline-emoji-')) {
+    return 'Waline emoji request failed'
+  }
+  return routeKind === 'file'
+    ? 'Notion file request failed'
+    : 'Image request failed'
+}
+
+function getInvalidUpstreamMessage(routeKind) {
+  if (routeKind === 'waline-emoji-info') {
+    return 'Waline did not return emoji metadata'
+  }
+  if (routeKind === 'waline-emoji-image') {
+    return 'Waline did not return an emoji image'
+  }
+  return routeKind === 'file'
+    ? 'Notion did not return a file'
+    : 'Notion did not return an image'
+}
+
 function safeDecode(value) {
   try {
     return decodeURIComponent(value)
@@ -301,6 +336,12 @@ function safeDecode(value) {
 }
 
 function getRouteKind(pathname) {
+  const walineAsset = parseWalineEmojiProxyPath(pathname)
+  if (walineAsset) {
+    return walineAsset.filename === 'info.json'
+      ? 'waline-emoji-info'
+      : 'waline-emoji-image'
+  }
   if (pathname.startsWith('/images/')) return 'image'
   if (
     pathname.startsWith('/image/') &&
@@ -315,6 +356,14 @@ function getRouteKind(pathname) {
     return 'file'
   }
   return null
+}
+
+function parseWalineEmojiProxyPath(pathname) {
+  const match = pathname.match(
+    /^\/external\/waline-emojis\/(\d+\.\d+\.\d+)\/(qq|tieba|weibo|bilibili)\/(info\.json|[a-zA-Z0-9_-]+\.(?:gif|jpe?g|png|webp))$/
+  )
+  if (!match) return null
+  return { version: match[1], pack: match[2], filename: match[3] }
 }
 
 function isAllowedWrappedNotionAsset(pathname, prefix) {

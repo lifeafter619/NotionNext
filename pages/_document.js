@@ -84,6 +84,9 @@ class MyDocument extends Document {
     return (
       <Html lang={BLOG.LANG}>
         <Head>
+          {/* Keep image requests domain-agnostic and compatible with CDNs that
+              enable generic hotlink protection. */}
+          <meta name='referrer' content='no-referrer' />
           {preconnectOrigins.map(origin => (
             <link key={`preconnect-${origin}`} rel='preconnect' href={origin} />
           ))}

@@ -1,13 +1,30 @@
 import {
+  NotionImage,
   proxyNotionVideoUrls,
   retryImageWithProxyFallback
 } from '@/components/NotionPage'
+import { render, screen } from '@testing-library/react'
 
 jest.mock('react-notion-x', () => ({
   NotionRenderer: () => null
 }))
 
 describe('NotionPage image fallback', () => {
+  it('loads the initial Notion image without a referrer', () => {
+    render(
+      <NotionImage
+        src='https://img.cdn.619.pp.ua/image/attachment%3Aimage-id'
+        alt='Notion image'
+        priority
+      />
+    )
+
+    expect(screen.getByAltText('Notion image')).toHaveAttribute(
+      'referrerpolicy',
+      'no-referrer'
+    )
+  })
+
   it('unwraps an external image from a legacy configured-proxy URL', () => {
     const img = document.createElement('img')
     const source =

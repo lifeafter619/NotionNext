@@ -201,6 +201,59 @@ describe('/api/proxy-image', () => {
     expect(global.fetch).not.toHaveBeenCalled()
   })
 
+  it('allows official Waline emoji images from unpkg', async () => {
+    const res = createResponse()
+    const url = 'https://unpkg.com/@waline/emojis@1.2.0/tieba/tieba_agree.png'
+
+    await handler({ query: { url } }, res)
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      url,
+      expect.objectContaining({ redirect: 'manual' })
+    )
+    expect(res.statusCode).toBe(200)
+  })
+
+  it('allows unpkg to redirect an unversioned Waline emoji to a versioned URL', async () => {
+    const initialUrl = 'https://unpkg.com/@waline/emojis/tieba/tieba_agree.png'
+    const versionedUrl =
+      'https://unpkg.com/@waline/emojis@1.4.0/tieba/tieba_agree.png'
+    global.fetch
+      .mockResolvedValueOnce(createRedirectResponse(versionedUrl))
+      .mockResolvedValueOnce(createImageResponse())
+    const res = createResponse()
+
+    await handler({ query: { url: initialUrl } }, res)
+
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      initialUrl,
+      expect.objectContaining({ redirect: 'manual' })
+    )
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      versionedUrl,
+      expect.objectContaining({ redirect: 'manual' })
+    )
+    expect(res.statusCode).toBe(200)
+  })
+
+  it('rejects other packages hosted by unpkg', async () => {
+    const res = createResponse()
+
+    await handler(
+      {
+        query: {
+          url: 'https://unpkg.com/private-package/image.png'
+        }
+      },
+      res
+    )
+
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
   it('rejects Notion image wrappers whose inner source is third-party', async () => {
     const external = 'https://images.example.com/photo.png'
     const res = createResponse()

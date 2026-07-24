@@ -78,6 +78,67 @@ test('allows legacy Notion S3 image paths through the image route', async () => 
   assert.match(fetchedUrl, /^https:\/\/www\.notion\.so\/image\//)
 })
 
+test('proxies only allowlisted Waline emoji package images', async () => {
+  let fetchedUrl
+  globalThis.fetch = async url => {
+    fetchedUrl = url.toString()
+    return imageResponse()
+  }
+
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/external/waline-emojis/1.2.0/tieba/tieba_agree.png'
+    )
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(
+    fetchedUrl,
+    'https://unpkg.com/@waline/emojis@1.2.0/tieba/tieba_agree.png'
+  )
+})
+
+test('proxies Waline emoji metadata needed by the picker', async () => {
+  let fetchedUrl
+  globalThis.fetch = async url => {
+    fetchedUrl = url.toString()
+    return new Response('{"name":"Tieba","icon":"agree","items":[]}', {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/external/waline-emojis/1.2.0/tieba/info.json'
+    )
+  )
+
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('content-type'), 'application/json')
+  assert.equal(
+    fetchedUrl,
+    'https://unpkg.com/@waline/emojis@1.2.0/tieba/info.json'
+  )
+})
+
+test('rejects non-Waline packages on the external proxy route', async () => {
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+
+  const response = await worker.fetch(
+    new Request(
+      'https://cdn.example.com/external/waline-emojis/1.2.0/other/private.png'
+    )
+  )
+
+  assert.equal(response.status, 404)
+  assert.equal(fetched, false)
+})
+
 test('only allows GET and HEAD requests', async () => {
   const response = await worker.fetch(
     new Request('https://cdn.example.com/images/cover.jpg', {
@@ -104,7 +165,7 @@ test('sorts query parameters and returns validated image responses', async () =>
   assert.equal(fetchedUrl, 'https://www.notion.so/images/cover.jpg?a=1&z=2')
   assert.equal(response.status, 200)
   assert.equal(response.headers.get('content-type'), 'image/png')
-  assert.equal(response.headers.get('x-notion-image-proxy'), 'v7')
+  assert.equal(response.headers.get('x-notion-image-proxy'), 'v8')
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff')
   assert.match(response.headers.get('cache-control'), /immutable/)
   assert.deepEqual(
@@ -126,7 +187,7 @@ test('does not turn a successful non-image response into a cacheable image', asy
 
   assert.equal(response.status, 502)
   assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
-  assert.equal(response.headers.get('x-notion-image-proxy'), 'v7')
+  assert.equal(response.headers.get('x-notion-image-proxy'), 'v8')
   assert.equal(await response.text(), 'Notion did not return an image')
 })
 

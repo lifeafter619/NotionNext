@@ -3,6 +3,13 @@ import { init } from '@waline/client'
 import { useRouter } from 'next/router'
 import '@waline/client/style'
 import { siteConfig } from '@/lib/config'
+import {
+  fetchWalineEmojiInfoWithFallback,
+  isWalineEmojiInfoSource,
+  retryWalineEmojiImage,
+  WALINE_EMOJI_PRIMARY_PRESETS,
+  WALINE_REACTION_PRIMARY_URLS
+} from '@/lib/walineEmojiProxy'
 
 const path = ''
 let waline = null
@@ -73,6 +80,17 @@ const WalineComponent = props => {
     let observer = null
     let routeListenerRegistered = false
     let cancelled = false
+    const notionHost = siteConfig('NOTION_HOST')
+    const walineContainer = containerRef.current
+
+    const handleWalineEmojiError = event => {
+      const target = event.target
+      if (target?.tagName === 'IMG') {
+        retryWalineEmojiImage(target, notionHost)
+      }
+    }
+
+    walineContainer?.addEventListener('error', handleWalineEmojiError, true)
 
     const clearWaline = () => {
       if (waline) {
@@ -171,6 +189,15 @@ const WalineComponent = props => {
 
     if (originalFetch && serverURL) {
       guardedFetch = async (...args) => {
+        if (isWalineEmojiInfoSource(args[0]?.url || args[0], notionHost)) {
+          return fetchWalineEmojiInfoWithFallback(
+            originalFetch,
+            args[0],
+            args[1],
+            notionHost
+          )
+        }
+
         try {
           return await originalFetch(...args)
         } catch (error) {
@@ -201,14 +228,11 @@ const WalineComponent = props => {
           serverURL,
           lang: siteConfig('LANG'),
           locale,
-          reaction: true,
+          reaction: WALINE_REACTION_PRIMARY_URLS,
           dark: 'html.dark',
           emoji: [
             '//cdn.jsdelivr.net/npm/sticker-heo@2022.7.5/Sticker-100/',
-            '//npm.elemecdn.com/@waline/emojis@1.2.0/qq',
-            '//npm.elemecdn.com/@waline/emojis@1.2.0/tieba',
-            '//npm.elemecdn.com/@waline/emojis@1.2.0/weibo',
-            '//npm.elemecdn.com/@waline/emojis@1.2.0/bilibili',
+            ...WALINE_EMOJI_PRIMARY_PRESETS,
             '//file.66619.eu.org/beluga-emoji',
             '//file.66619.eu.org/ikun-emoji'
           ]
@@ -278,6 +302,11 @@ const WalineComponent = props => {
     return () => {
       cancelled = true
       observer?.disconnect()
+      walineContainer?.removeEventListener(
+        'error',
+        handleWalineEmojiError,
+        true
+      )
       clearWaline()
       window.removeEventListener(
         'unhandledrejection',

@@ -36,7 +36,8 @@ export default function LazyImage({
   onClick,
   style,
   sizes,
-  loading
+  loading,
+  referrerPolicy = 'no-referrer'
 }) {
   const maxWidth = siteConfig('IMAGE_COMPRESS_WIDTH')
   const targetImageWidth = getImageTargetWidth(width, maxWidth)
@@ -80,18 +81,21 @@ export default function LazyImage({
     }
   }, [currentSrc, defaultPlaceholderSrc, fallbackSrc, onError, placeholderSrc])
 
-  const handleImageLoaded = useCallback(() => {
-    if (currentSrc !== optimizedImageSrc) return
+  const handleImageLoaded = useCallback(
+    event => {
+      if (currentSrc !== optimizedImageSrc) return
 
-    fallbackIndexRef.current = 0
-    if (typeof onLoad === 'function') {
-      onLoad()
-    }
-    setImageLoaded(true)
-    if (imageRef.current) {
-      imageRef.current.classList.remove('lazy-image-placeholder')
-    }
-  }, [currentSrc, onLoad, optimizedImageSrc])
+      fallbackIndexRef.current = 0
+      if (typeof onLoad === 'function') {
+        onLoad(event)
+      }
+      setImageLoaded(true)
+      if (imageRef.current) {
+        imageRef.current.classList.remove('lazy-image-placeholder')
+      }
+    },
+    [currentSrc, onLoad, optimizedImageSrc]
+  )
 
   useEffect(() => {
     const adjustedImageSrc = optimizedImageSrc || defaultPlaceholderSrc
@@ -191,6 +195,9 @@ export default function LazyImage({
     loading: priority ? 'eager' : loading || 'lazy',
     fetchpriority: priority ? 'high' : undefined,
     decoding: 'async',
+    // Do not leak the blog domain to image hosts. This also prevents generic
+    // hotlink-protection rules from blocking custom CDN and Vercel domains.
+    referrerPolicy,
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
     ...(siteConfig('AVIF_SUPPORT') && { 'data-avif': true })
@@ -219,6 +226,7 @@ export default function LazyImage({
             imageSrcSet={srcSet}
             imageSizes={imgProps.sizes}
             fetchpriority='high'
+            referrerPolicy={referrerPolicy}
           />
         </Head>
       )}

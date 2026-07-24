@@ -345,12 +345,16 @@ const nextConfig = {
                 key: 'Access-Control-Allow-Headers',
                 value:
                   'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+              },
+              { key: 'Referrer-Policy', value: 'no-referrer' },
+              {
+                key: 'Speculation-Rules',
+                value: '"/speculation-rules.json"'
               }
               // 安全头部 相关配置，谨慎开启
               //   { key: 'X-Frame-Options', value: 'DENY' },
               //   { key: 'X-Content-Type-Options', value: 'nosniff' },
               //   { key: 'X-XSS-Protection', value: '1; mode=block' },
-              //   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
               //   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
               //   {
               //     key: 'Strict-Transport-Security',

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import WalineComponent from '@/components/WalineComponent'
 import { init } from '@waline/client'
 
@@ -12,6 +12,7 @@ jest.mock('@/lib/config', () => ({
   siteConfig: jest.fn(key => {
     const config = {
       COMMENT_WALINE_SERVER_URL: 'https://comments.example.com',
+      NOTION_HOST: 'https://img.cdn.619.pp.ua',
       LANG: 'zh-CN'
     }
     return config[key]
@@ -145,5 +146,46 @@ describe('WalineComponent', () => {
     expect(styleText).toContain('#waline-comment')
     expect(styleText).toContain('.wl-reply .wl-item')
     expect(styleText).toContain('grid-template-columns')
+  })
+
+  it('configures elemecdn before the proxy for emoji and reactions', async () => {
+    fetch.mockResolvedValue({ ok: true })
+    init.mockReturnValue({
+      update: jest.fn(),
+      destroy: jest.fn()
+    })
+
+    render(<WalineComponent />)
+
+    await waitFor(() => expect(init).toHaveBeenCalled())
+    const options = init.mock.calls[0][0]
+
+    expect(options.emoji).toContain(
+      'https://npm.elemecdn.com/@waline/emojis@1.2.0/tieba'
+    )
+    expect(options.reaction[0]).toBe(
+      'https://npm.elemecdn.com/@waline/emojis@1.2.0/tieba/tieba_agree.png'
+    )
+  })
+
+  it('moves failed Waline images to the Worker as the second layer', async () => {
+    fetch.mockResolvedValue({ ok: true })
+    init.mockReturnValue({
+      update: jest.fn(),
+      destroy: jest.fn()
+    })
+
+    render(<WalineComponent />)
+    await waitFor(() => expect(init).toHaveBeenCalled())
+
+    const image = document.createElement('img')
+    image.src =
+      'https://npm.elemecdn.com/@waline/emojis@1.2.0/tieba/tieba_agree.png'
+    document.getElementById('waline-comment').appendChild(image)
+    fireEvent.error(image)
+
+    expect(image.src).toBe(
+      'https://img.cdn.619.pp.ua/external/waline-emojis/1.2.0/tieba/tieba_agree.png'
+    )
   })
 })
