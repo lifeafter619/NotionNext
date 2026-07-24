@@ -44,9 +44,38 @@ describe('NotionPage image fallback', () => {
     )
 
     expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
+      true
+    )
+    expect(img.getAttribute('src')).toBe(
+      'https://images.unsplash.com/photo.jpg'
+    )
+    expect(img.referrerPolicy).toBe('no-referrer')
+    expect(img.dataset.notionNextNoReferrerRetried).toBe('true')
+    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
+
+    expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
       false
     )
+  })
+
+  it('retries a failed third-party image directly without a referrer', () => {
+    const img = document.createElement('img')
+    const source = 'https://image.66619.eu.org/file/example.png'
+    img.setAttribute('src', source)
+    img.setAttribute('srcset', `${source} 1x`)
+
+    expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
+      true
+    )
+    expect(img.getAttribute('src')).toBe(source)
+    expect(img.hasAttribute('srcset')).toBe(false)
+    expect(img.referrerPolicy).toBe('no-referrer')
+    expect(img.dataset.notionNextNoReferrerRetried).toBe('true')
     expect(img.dataset.notionNextProxyRetried).toBeUndefined()
+
+    expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
+      false
+    )
   })
 
   it('unwraps a third-party image from a Notion image URL', () => {
@@ -77,16 +106,20 @@ describe('NotionPage image fallback', () => {
     expect(img.dataset.notionNextProxyRetried).toBe('true')
   })
 
-  it('does not retry arbitrary prod-files-secure hostnames', () => {
+  it('does not proxy arbitrary prod-files-secure hostnames', () => {
     const img = document.createElement('img')
     const source = 'https://prod-files-secure.evil.example/image.png'
     img.setAttribute('src', source)
 
     const retried = retryImageWithProxyFallback(img)
 
-    expect(retried).toBe(false)
+    expect(retried).toBe(true)
     expect(img.getAttribute('src')).toBe(source)
+    expect(img.referrerPolicy).toBe('no-referrer')
+    expect(img.dataset.notionNextNoReferrerRetried).toBe('true')
     expect(img.dataset.notionNextProxyRetried).toBeUndefined()
+
+    expect(retryImageWithProxyFallback(img)).toBe(false)
   })
 })
 

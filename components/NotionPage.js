@@ -589,10 +589,11 @@ export function retryImageWithProxyFallback(
     return true
   }
 
-  if (
-    img?.dataset?.notionNextProxyRetried === 'true' ||
-    !isProxiableNotionImageSource(source)
-  ) {
+  if (!isProxiableNotionImageSource(source)) {
+    return retryExternalImageWithoutReferrer(img, source)
+  }
+
+  if (img?.dataset?.notionNextProxyRetried === 'true') {
     return false
   }
 
@@ -632,6 +633,30 @@ export function getOriginalNotionImageSource(source, notionHost) {
 
 function isProxiableNotionImageSource(source) {
   return isNotionHostedAssetSource(source)
+}
+
+function retryExternalImageWithoutReferrer(img, source) {
+  if (
+    img?.dataset?.notionNextNoReferrerRetried === 'true' ||
+    !isHttpImageSource(source)
+  ) {
+    return false
+  }
+
+  img.dataset.notionNextNoReferrerRetried = 'true'
+  img.referrerPolicy = 'no-referrer'
+  img.removeAttribute('srcset')
+  img.setAttribute('src', source)
+  return true
+}
+
+function isHttpImageSource(source) {
+  try {
+    const url = new URL(source)
+    return url.protocol === 'https:' || url.protocol === 'http:'
+  } catch {
+    return false
+  }
 }
 
 // 代码
