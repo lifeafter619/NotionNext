@@ -20,6 +20,7 @@ export const TitleBar = ({ post }) => {
             src={post.pageCoverThumbnail}
             alt={post.title || 'Cover'}
             className='w-full h-full object-cover'
+            referrerPolicy='no-referrer'
           />
           {/* Dark overlay for better contrast */}
           <div className='absolute inset-0 bg-black/40' />

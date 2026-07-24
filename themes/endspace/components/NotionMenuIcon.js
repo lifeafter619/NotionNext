@@ -115,6 +115,7 @@ export default function NotionMenuIcon({
         } ${className}`}
         aria-hidden='true'
         onError={() => setImageFailed(true)}
+        referrerPolicy='no-referrer'
       />
     )
   }

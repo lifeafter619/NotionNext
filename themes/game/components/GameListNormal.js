@@ -76,6 +76,7 @@ const GameItem = ({ item }) => {
         className='w-full h-full absolute object-cover'
         src={img}
         alt={title}
+        referrerPolicy='no-referrer'
       />
     </SmartLink>
   )

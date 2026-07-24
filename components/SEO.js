@@ -76,11 +76,6 @@ const SEO = props => {
     null,
     NOTION_CONFIG
   )
-  const ANALYTICS_BUSUANZI_ENABLE = siteConfig(
-    'ANALYTICS_BUSUANZI_ENABLE',
-    null,
-    NOTION_CONFIG
-  )
 
   const FACEBOOK_PAGE = siteConfig('FACEBOOK_PAGE', null, NOTION_CONFIG)
   const TWITTER_SITE = siteConfig('TWITTER_SITE', '', NOTION_CONFIG)
@@ -179,9 +174,6 @@ const SEO = props => {
         </>
       )}
 
-      {ANALYTICS_BUSUANZI_ENABLE && (
-        <meta name='referrer' content='no-referrer-when-downgrade' />
-      )}
       {/* 文章特定元数据 */}
       {meta?.type === 'Post' && (
         <>

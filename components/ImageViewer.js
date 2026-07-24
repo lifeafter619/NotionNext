@@ -587,6 +587,9 @@ const ImageViewer = ({
           draggable={false}
           loading='eager'
           decoding='sync'
+          // Notion 图片走自定义 CDN 反代，对端启用了 hotlink 防护，
+          // 必须空 Referer 才能正常加载。
+          referrerPolicy='no-referrer'
         />
       </div>
 
@@ -677,6 +680,7 @@ const ImageViewer = ({
                   alt={`Thumbnail ${i + 1}`}
                   className='w-full h-full object-cover'
                   loading='lazy'
+                  referrerPolicy='no-referrer'
                 />
               </button>
             ))}

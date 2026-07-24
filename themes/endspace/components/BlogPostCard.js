@@ -27,6 +27,7 @@ export const BlogPostCard = ({ post, showSummary = true }) => {
               loading='lazy'
               decoding='async'
               className='w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700'
+              referrerPolicy='no-referrer'
             />
             {/* Minimalist marker overlay */}
             <div className='absolute top-3 right-3 w-2 h-2 bg-[var(--endspace-accent-yellow)] opacity-0 group-hover:opacity-100 transition-opacity' />

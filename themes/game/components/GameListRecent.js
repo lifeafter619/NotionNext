@@ -125,6 +125,7 @@ const GameItem = ({ item }) => {
         className='w-full h-full absolute object-cover group-hover:scale-105 duration-100 transition-all'
         src={img}
         alt={title}
+        referrerPolicy='no-referrer'
       />
     </div>
   )

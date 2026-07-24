@@ -122,6 +122,7 @@ const PostCard = ({ post }) => {
                   alt={post.title}
                   className='w-full aspect-[2/1] max-h-52 md:aspect-auto md:max-h-none md:h-full md:min-h-[168px] object-cover rounded-2xl'
                   onError={() => setCoverFailed(true)}
+                  referrerPolicy='no-referrer'
                 />
               </div>
             </SmartLink>

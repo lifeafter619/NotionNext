@@ -166,6 +166,7 @@ export default function GameEmbed({ post, siteInfo }) {
             <img
               src={game?.pageCoverThumbnail}
               className='w-full h-full object-cover blur-md absolute top-0 left-0 z-0'
+              referrerPolicy='no-referrer'
             />
           )}
         </div>

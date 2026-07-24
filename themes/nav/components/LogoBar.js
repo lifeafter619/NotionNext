@@ -22,6 +22,7 @@ export default function LogoBar(props) {
           alt={siteConfig('AUTHOR') + ' - ' + siteConfig('NEXT_PUBLIC_BIO')}
           className='md:block transition-all hover:scale-110 duration-150'
           placeholderSrc=''
+          referrerPolicy='no-referrer'
         />
         {siteConfig('NAV_SHOW_TITLE_TEXT', null, CONFIG) && siteConfig('TITLE')}
       </SmartLink>
