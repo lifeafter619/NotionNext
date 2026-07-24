@@ -28,7 +28,7 @@
 
 ## 主题开发者文档
 
-站长向 25 篇说明在 [`../user-guide/themes/`](../user-guide/themes/README.md)。
+站长向 26 篇说明在 [`../user-guide/themes/`](../user-guide/themes/README.md)。
 
 | 目录                                             | 说明                        |
 | ------------------------------------------------ | --------------------------- |

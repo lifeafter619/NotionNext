@@ -112,7 +112,7 @@ export default function Header(props) {
             autoFocus
             id='simple-search'
             onKeyUp={onKeyUp}
-            className='outline-none dark:bg-hexo-black-gray dark:text flex flex-row text-base relative w-full border-b py-2'
+            className='outline-none dark:bg-hexo-black-gray dark:text-gray-200 flex flex-row text-base relative w-full border-b py-2'
             aria-label='Submit search'
             type='search'
             name='s'

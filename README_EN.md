@@ -79,7 +79,7 @@ To help new contributors get started quickly, the project keeps docs bilingual w
 ## Themes & preview
 
 - **Live theme switcher**: [preview.tangly1024.com](https://preview.tangly1024.com/)
-- **All 25 themes**: [THEMES_CATALOG.md](./docs/user-guide/themes/THEMES_CATALOG.md)
+- **All 26 themes**: [THEMES_CATALOG.md](./docs/user-guide/themes/THEMES_CATALOG.md)
 - New theme? See [CONTRIBUTING.md](./CONTRIBUTING.md) and [Theme Migration Guide](./docs/developer/THEME_MIGRATION_GUIDE.md)
 
 ## Acknowledgements

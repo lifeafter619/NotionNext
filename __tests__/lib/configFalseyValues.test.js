@@ -16,6 +16,7 @@ const { siteConfig } = require('@/lib/config')
 
 describe('siteConfig explicit falsey values', () => {
   beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_THEME_SWITCH
     mockGetGlobalSnapshot.mockReturnValue({
       NOTION_CONFIG: {},
       THEME_CONFIG: {},
@@ -116,5 +117,16 @@ describe('siteConfig explicit falsey values', () => {
     })
 
     expect(siteConfig('COMMENT_WALINE_RECENT', true)).toBe(false)
+  })
+
+  test('lets an explicit environment value disable the theme switch', () => {
+    process.env.NEXT_PUBLIC_THEME_SWITCH = 'false'
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { THEME_SWITCH: true },
+      THEME_CONFIG: { THEME_SWITCH: true },
+      siteInfo: {}
+    })
+
+    expect(siteConfig('THEME_SWITCH', true)).toBe(false)
   })
 })

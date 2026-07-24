@@ -104,7 +104,7 @@ describe('/api/proxy-image', () => {
       {
         query: {
           url: [
-            'https://images.unsplash.com/photo.png',
+            'https://secure.notion-static.com/image-id/photo.png',
             'https://evil.test/a.png'
           ]
         }
@@ -123,7 +123,7 @@ describe('/api/proxy-image', () => {
     await handler(
       {
         query: {
-          url: 'https://images.unsplash.com/photo.png',
+          url: 'https://secure.notion-static.com/image-id/photo.png',
           filename: ['cover', 'ignored']
         }
       },
@@ -146,7 +146,7 @@ describe('/api/proxy-image', () => {
     await handler(
       {
         query: {
-          url: 'https://images.unsplash.com/photo.png'
+          url: 'https://secure.notion-static.com/image-id/photo.png'
         }
       },
       res
@@ -154,7 +154,7 @@ describe('/api/proxy-image', () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(1)
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://images.unsplash.com/photo.png',
+      'https://secure.notion-static.com/image-id/photo.png',
       expect.objectContaining({ redirect: 'manual' })
     )
     expect(res.status).toHaveBeenCalledWith(403)
@@ -174,7 +174,7 @@ describe('/api/proxy-image', () => {
       handler(
         {
           query: {
-            url: 'https://images.unsplash.com/photo.png'
+            url: 'https://secure.notion-static.com/image-id/photo.png'
           }
         },
         res
@@ -183,5 +183,38 @@ describe('/api/proxy-image', () => {
 
     expect(destroySpy).toHaveBeenCalled()
     expect(res.json).not.toHaveBeenCalled()
+  })
+
+  it('rejects ordinary third-party image URLs', async () => {
+    const res = createResponse()
+
+    await handler(
+      {
+        query: {
+          url: 'https://images.unsplash.com/photo.png'
+        }
+      },
+      res
+    )
+
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects Notion image wrappers whose inner source is third-party', async () => {
+    const external = 'https://images.example.com/photo.png'
+    const res = createResponse()
+
+    await handler(
+      {
+        query: {
+          url: `https://www.notion.so/image/${encodeURIComponent(external)}?table=block&id=block-id`
+        }
+      },
+      res
+    )
+
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(global.fetch).not.toHaveBeenCalled()
   })
 })

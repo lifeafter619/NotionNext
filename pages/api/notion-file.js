@@ -1,22 +1,9 @@
 import { Readable } from 'stream'
 import { pipeline } from 'stream/promises'
 import notionAPI from '@/lib/db/notion/getNotionAPI'
+import { isNotionHostedAssetSource } from '@/lib/notionAssetUrl'
 
 const MAX_REDIRECTS = 3
-const ALLOWED_FILE_DOMAINS = [
-  'notion.so',
-  'file.notion.so',
-  'file.notion.com',
-  'notionusercontent.com',
-  'secure.notion-static.com',
-  's3-us-west-2.amazonaws.com',
-  's3.us-west-2.amazonaws.com',
-  'prod-files-secure.s3.us-west-2.amazonaws.com',
-  'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
-  'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
-  'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
-]
-
 export const config = {
   api: {
     responseLimit: false
@@ -217,12 +204,9 @@ function validateAllowedFileUrl(targetUrl) {
     return { ok: false, error: 'Protocol not allowed' }
   }
 
-  const hostname = targetUrl.hostname.toLowerCase()
-  const isAllowed = ALLOWED_FILE_DOMAINS.some(
-    domain => hostname === domain || hostname.endsWith(`.${domain}`)
-  )
-
-  if (!isAllowed) return { ok: false, error: 'Domain not allowed' }
+  if (!isNotionHostedAssetSource(targetUrl.toString())) {
+    return { ok: false, error: 'Domain not allowed' }
+  }
   return { ok: true }
 }
 

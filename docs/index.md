@@ -24,7 +24,7 @@ features:
     details: 文章、分类、标签、菜单和页面仍在 Notion 中维护，网站自动读取并渲染。
   - title: 从模板到上线
     details: 复制 Notion 模板、Fork 仓库、连接 Vercel，新手也能按步骤完成上线。
-  - title: 25 个内置主题
+  - title: 26 个内置主题
     details: 覆盖博客、文档、作品集、官网、相册、导航站和视觉展示等场景。
   - title: 面向长期运营
     details: 支持独立域名、SEO、Sitemap、RSS、评论、统计、搜索、广告和邮件订阅。

@@ -211,7 +211,7 @@ LINK: process.env.NEXT_PUBLIC_LINK || 'https://qq.com', // 修改后
 
 #### 内置主题名称一览（与仓库同步）
 
-`NEXT_PUBLIC_THEME` / `THEME` 的取值需与仓库 `[themes/](https://github.com/tangly1024/NotionNext/tree/main/themes)` 下的**文件夹名**一致（`next.config.js` 会在构建时扫描该目录）。以当前 **main** 分支为例，内置主题包括：**claude**、**commerce**、**example**、**fukasawa**、**fuwari**、**game**、**gitbook**、**heo**、**hexo**、**landing**、**magzine**、**matery**、**medium**、**movie**、**nav**、**next**、**nobelium**、**photo**、**plog**、**proxio**、**simple**、**starter**、**typography**。
+`NEXT_PUBLIC_THEME` / `THEME` 的取值需与仓库 `[themes/](https://github.com/tangly1024/NotionNext/tree/main/themes)` 下的**文件夹名**一致（`next.config.js` 会在构建时扫描该目录）。以当前 **main** 分支为例，内置主题包括：**claude**、**commerce**、**example**、**fukasawa**、**fuwari**、**game**、**gitbook**、**heo**、**hexo**、**landing**、**magzine**、**matery**、**medium**、**movie**、**nav**、**next**、**nobelium**、**opc**、**photo**、**plog**、**proxio**、**simple**、**starter**、**typography**。
 
 - **默认**一般为 **simple**；与 `blog.config.js` 中 `THEME` 的写法保持一致即可。
 

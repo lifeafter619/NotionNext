@@ -25,7 +25,7 @@ export const MenuItemDrop = ({ link }) => {
             'px-2 h-full whitespace-nowrap duration-300 justify-between dark:text-gray-300 cursor-pointer flex flex-nowrap items-center ' +
             (selected
               ? 'bg-gray-600 text-white hover:text-white'
-              : 'hover:text-gray-600')
+              : 'hover:text-gray-600 dark:hover:text-white')
           }>
           <div className='items-center flex'>
             {link?.icon && <i className={`${link?.icon} pr-2`} />} {link?.name}
@@ -41,7 +41,7 @@ export const MenuItemDrop = ({ link }) => {
             'px-3 gap-x-1 h-full whitespace-nowrap duration-300 text-md justify-between dark:text-gray-300 cursor-pointer flex flex-nowrap items-center ' +
             (selected
               ? 'bg-gray-600 text-white hover:text-white'
-              : 'hover:text-gray-600')
+              : 'hover:text-gray-600 dark:hover:text-white')
           }>
           <SmartLink href={link?.href} target={link?.target}>
             {link?.icon && <i className={link?.icon} />} {link?.name}

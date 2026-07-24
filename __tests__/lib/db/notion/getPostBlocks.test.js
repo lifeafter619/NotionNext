@@ -451,6 +451,24 @@ describe('formatNotionBlock', () => {
     expect(formatted.pdf.value.properties.source[0][0]).toBe(url)
   })
 
+  it('does not rewrite arbitrary S3 media URLs as Notion signed URLs', () => {
+    const url =
+      'https://s3-us-west-2.amazonaws.com/my-public-bucket/podcast.mp3'
+    const formatted = formatNotionBlock({
+      audio: {
+        value: {
+          id: 'audio-block',
+          type: 'audio',
+          properties: {
+            source: [[url]]
+          }
+        }
+      }
+    })
+
+    expect(formatted.audio.value.properties.source[0][0]).toBe(url)
+  })
+
   it('detects expired cached Notion signed URLs', () => {
     expect(
       hasExpiredSignedUrls({
@@ -511,6 +529,27 @@ describe('formatNotionBlock', () => {
             properties: {
               source: [['https://cdn.example.com/file.pdf']]
             }
+          }
+        }
+      }
+    }
+
+    preferStablePdfSignedUrls(recordMap)
+
+    expect(recordMap.signed_urls.pdf).toBeUndefined()
+  })
+
+  it('keeps Notion wrappers around external pdfs out of the signed URL map', () => {
+    const external = 'https://cdn.example.com/file.pdf'
+    const source = `https://notion.so/signed/${encodeURIComponent(external)}?table=block&id=pdf`
+    const recordMap = {
+      signed_urls: {},
+      block: {
+        pdf: {
+          value: {
+            id: 'pdf',
+            type: 'pdf',
+            properties: { source: [[source]] }
           }
         }
       }

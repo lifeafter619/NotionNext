@@ -61,6 +61,18 @@ describe('NotionFile', () => {
     expect(href).toBe('https://cdn.example.com/report.zip')
   })
 
+  it('does not treat an arbitrary S3 URL as a Notion-hosted file', () => {
+    const source =
+      'https://s3-us-west-2.amazonaws.com/my-public-bucket/report.zip'
+    const href = buildNotionFileDownloadUrl({
+      id: 'block-id',
+      source,
+      filename: 'report.zip'
+    })
+
+    expect(href).toBe(source)
+  })
+
   it('builds a direct CDN download URL for a custom Notion host', () => {
     const href = buildNotionFileDownloadUrl({
       id: 'block-id',

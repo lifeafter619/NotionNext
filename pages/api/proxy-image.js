@@ -1,21 +1,8 @@
 import { Readable } from 'stream'
 import { pipeline } from 'stream/promises'
+import { isNotionHostedAssetSource } from '@/lib/notionAssetUrl'
 
 const MAX_REDIRECTS = 3
-const ALLOWED_DOMAINS = [
-  'notion.so',
-  'notionusercontent.com',
-  'file.notion.so',
-  'file.notion.com',
-  's3-us-west-2.amazonaws.com',
-  's3.us-west-2.amazonaws.com',
-  'images.unsplash.com',
-  'prod-files-secure.s3.us-west-2.amazonaws.com',
-  'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
-  'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
-  'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
-]
-
 function createReadableStream(reader) {
   return new Readable({
     read() {
@@ -162,12 +149,7 @@ function validateImageUrl(targetUrl) {
     return { ok: false, error: 'Protocol not allowed' }
   }
 
-  const isAllowed = ALLOWED_DOMAINS.some(
-    domain =>
-      targetUrl.hostname === domain || targetUrl.hostname.endsWith('.' + domain)
-  )
-
-  if (!isAllowed) {
+  if (!isNotionHostedAssetSource(targetUrl.toString())) {
     return { ok: false, error: 'Domain not allowed' }
   }
 

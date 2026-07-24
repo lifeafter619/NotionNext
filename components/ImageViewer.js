@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import BLOG from '@/blog.config'
+import { getNotionAssetDownloadSource } from '@/lib/notionAssetUrl'
 
 /**
  * 图片查看器组件
@@ -412,11 +414,17 @@ const ImageViewer = ({
         fileName += '.png'
       }
 
-      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(currentSrc)}&filename=${encodeURIComponent(fileName)}`
+      const notionSource = getNotionAssetDownloadSource(
+        currentSrc,
+        BLOG.NOTION_HOST
+      )
+      const downloadUrl = notionSource
+        ? `/api/proxy-image?url=${encodeURIComponent(notionSource)}&filename=${encodeURIComponent(fileName)}`
+        : currentSrc
 
       // 创建隐藏的 link 来触发下载
       const link = document.createElement('a')
-      link.href = proxyUrl
+      link.href = downloadUrl
       link.download = fileName
       link.style.display = 'none'
       document.body.appendChild(link)

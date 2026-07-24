@@ -17,6 +17,7 @@ const THEMES = [
   'nav',
   'next',
   'nobelium',
+  'opc',
   'photo',
   'plog',
   'proxio',

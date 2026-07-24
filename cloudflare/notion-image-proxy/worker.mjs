@@ -1,12 +1,8 @@
 const NOTION_ORIGIN = 'https://www.notion.so'
 
 // Notion uploaded assets have stable, ID-based URLs. Keep those warm longer.
-// Wrapped external/bookmark images can change at the same URL, so use shorter
-// browser and edge lifetimes for them.
 const IMMUTABLE_EDGE_TTL = 60 * 60 * 24 * 30
 const IMMUTABLE_BROWSER_TTL = 60 * 60 * 24 * 7
-const MUTABLE_EDGE_TTL = 60 * 60 * 24
-const MUTABLE_BROWSER_TTL = 60 * 60
 
 // A fixed format preference maximizes cache sharing between browsers. Notion
 // currently returns WebP for the site's image URLs while keeping the original
@@ -149,7 +145,7 @@ export default {
     }
     if (isFileHeadProbe) normalizeFileHeadHeaders(headers)
     headers.set('X-Content-Type-Options', 'nosniff')
-    headers.set('X-Notion-Image-Proxy', 'v6')
+    headers.set('X-Notion-Image-Proxy', 'v7')
     Object.entries(CORS_HEADERS).forEach(([name, value]) => {
       headers.set(name, value)
     })
@@ -206,32 +202,20 @@ function copyRequestHeader(sourceHeaders, targetHeaders, name) {
 
 function getCachePolicy(url, routeKind) {
   const decodedPath = safeDecode(url.pathname)
-  // Unsplash photo URLs are immutable for the transformed URL shape used by
-  // NotionNext (photo id plus explicit width/quality parameters).
   const immutable =
     routeKind === 'file' ||
     url.pathname.startsWith('/images/') ||
     decodedPath.includes('/image/attachment:') ||
-    /secure\.notion-static\.com|prod-files-secure|notionusercontent\.com|file\.notion\.(?:so|com)|images\.unsplash\.com/i.test(
+    /secure\.notion-static\.com|prod-files-secure|notionusercontent\.com|file\.notion\.(?:so|com)/i.test(
       decodedPath
     )
 
-  if (immutable) {
-    return {
-      immutable: true,
-      edgeTtl: IMMUTABLE_EDGE_TTL,
-      browserTtl: IMMUTABLE_BROWSER_TTL,
-      staleWhileRevalidate: 60 * 60 * 24 * 7,
-      staleIfError: 60 * 60 * 24 * 30
-    }
-  }
-
   return {
-    immutable: false,
-    edgeTtl: MUTABLE_EDGE_TTL,
-    browserTtl: MUTABLE_BROWSER_TTL,
-    staleWhileRevalidate: 60 * 60,
-    staleIfError: 60 * 60 * 24 * 7
+    immutable,
+    edgeTtl: IMMUTABLE_EDGE_TTL,
+    browserTtl: IMMUTABLE_BROWSER_TTL,
+    staleWhileRevalidate: 60 * 60 * 24 * 7,
+    staleIfError: 60 * 60 * 24 * 30
   }
 }
 
@@ -288,7 +272,7 @@ function normalizeFileHeadHeaders(headers) {
 function proxyErrorResponse(request, status, message) {
   return textResponse(request, status, message, {
     'Cache-Control': 'no-store, max-age=0',
-    'X-Notion-Image-Proxy': 'v6',
+    'X-Notion-Image-Proxy': 'v7',
     'X-Notion-Image-Proxy-Origin-Cache': 'BYPASS',
     ...CORS_HEADERS
   })
@@ -317,9 +301,85 @@ function safeDecode(value) {
 }
 
 function getRouteKind(pathname) {
-  if (pathname.startsWith('/image/') || pathname.startsWith('/images/')) {
+  if (pathname.startsWith('/images/')) return 'image'
+  if (
+    pathname.startsWith('/image/') &&
+    isAllowedWrappedNotionAsset(pathname, '/image/')
+  ) {
     return 'image'
   }
-  if (pathname.startsWith('/signed/')) return 'file'
+  if (
+    pathname.startsWith('/signed/') &&
+    isAllowedWrappedNotionAsset(pathname, '/signed/')
+  ) {
+    return 'file'
+  }
   return null
+}
+
+function isAllowedWrappedNotionAsset(pathname, prefix) {
+  return isNotionHostedAssetSource(safeDecode(pathname.slice(prefix.length)), 0)
+}
+
+function isNotionHostedAssetSource(source, depth) {
+  if (typeof source !== 'string' || !source || depth > 2) return false
+  if (source.startsWith('attachment:')) return true
+
+  try {
+    const url = new URL(source)
+    if (url.protocol !== 'https:') return false
+
+    const hostname = url.hostname.toLowerCase()
+    const pathname = url.pathname
+
+    if (isDomainOrSubdomain(hostname, 'notionusercontent.com')) return true
+    if (isDomainOrSubdomain(hostname, 'secure.notion-static.com')) return true
+    if (hostname === 'file.notion.so' || hostname === 'file.notion.com') {
+      return true
+    }
+    if (
+      /^prod-files-secure(?:-[a-z0-9]+)?\.s3(?:[.-][a-z0-9-]+)*\.amazonaws\.com$/.test(
+        hostname
+      )
+    ) {
+      return true
+    }
+
+    if (/^s3(?:[.-][a-z0-9-]+)*\.amazonaws\.com$/.test(hostname)) {
+      const decodedPath = safeDecode(pathname).toLowerCase()
+      return (
+        decodedPath.startsWith('/secure.notion-static.com/') ||
+        decodedPath.startsWith('/prod-files-secure/')
+      )
+    }
+
+    if (isNotionHostname(hostname)) {
+      if (pathname.startsWith('/images/')) return true
+
+      const prefix = ['/image/', '/signed/'].find(item =>
+        pathname.startsWith(item)
+      )
+      if (!prefix) return false
+
+      return isNotionHostedAssetSource(
+        safeDecode(pathname.slice(prefix.length)),
+        depth + 1
+      )
+    }
+
+    return (
+      isDomainOrSubdomain(hostname, 'notion.site') &&
+      pathname.startsWith('/images/page-cover/')
+    )
+  } catch (_) {
+    return false
+  }
+}
+
+function isNotionHostname(hostname) {
+  return hostname === 'notion.so' || hostname.endsWith('.notion.so')
+}
+
+function isDomainOrSubdomain(hostname, domain) {
+  return hostname === domain || hostname.endsWith(`.${domain}`)
 }

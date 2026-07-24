@@ -11,6 +11,11 @@ import {
 import NotionButton from '@/components/NotionButton'
 import NotionFile, { buildNotionFileProxyUrl } from '@/components/NotionFile'
 import {
+  DEFAULT_NOTION_ORIGIN,
+  isNotionHostedAssetSource,
+  unwrapExternalNotionImageSource
+} from '@/lib/notionAssetUrl'
+import {
   bindNotionHashScrollHandler,
   scrollToNotionHeading
 } from '@/lib/utils/notionHashScroll'
@@ -597,10 +602,13 @@ export function retryImageWithProxyFallback(
   return true
 }
 
-const DEFAULT_NOTION_IMAGE_HOST = 'https://www.notion.so'
+const DEFAULT_NOTION_IMAGE_HOST = DEFAULT_NOTION_ORIGIN
 
 export function getOriginalNotionImageSource(source, notionHost) {
   if (!source || !notionHost) return null
+
+  const externalSource = unwrapExternalNotionImageSource(source, notionHost)
+  if (externalSource) return externalSource
 
   try {
     const sourceUrl = new URL(source)
@@ -609,10 +617,11 @@ export function getOriginalNotionImageSource(source, notionHost) {
       sourceUrl.origin === configuredUrl.origin &&
       configuredUrl.origin !== DEFAULT_NOTION_IMAGE_HOST
     ) {
-      return new URL(
+      const originalUrl = new URL(
         sourceUrl.pathname + sourceUrl.search + sourceUrl.hash,
         DEFAULT_NOTION_IMAGE_HOST
       ).toString()
+      return isNotionHostedAssetSource(originalUrl) ? originalUrl : null
     }
   } catch {
     return null
@@ -621,33 +630,8 @@ export function getOriginalNotionImageSource(source, notionHost) {
   return null
 }
 
-const PROXIABLE_NOTION_IMAGE_DOMAINS = [
-  'notion.so',
-  'notionusercontent.com',
-  'file.notion.so',
-  'file.notion.com',
-  's3-us-west-2.amazonaws.com',
-  's3.us-west-2.amazonaws.com',
-  'images.unsplash.com',
-  'prod-files-secure.s3.us-west-2.amazonaws.com',
-  'prod-files-secure-euc1.s3.eu-central-1.amazonaws.com',
-  'prod-files-secure-apne1.s3.ap-northeast-1.amazonaws.com',
-  'prod-files-secure-apne2.s3.ap-northeast-2.amazonaws.com'
-]
-
 function isProxiableNotionImageSource(source) {
-  try {
-    const url = new URL(source, 'https://notionnext.local')
-    if (url.protocol !== 'https:') return false
-    if (url.pathname === '/api/proxy-image') return false
-
-    const hostname = url.hostname.toLowerCase()
-    return PROXIABLE_NOTION_IMAGE_DOMAINS.some(
-      domain => hostname === domain || hostname.endsWith(`.${domain}`)
-    )
-  } catch {
-    return false
-  }
+  return isNotionHostedAssetSource(source)
 }
 
 // 代码
