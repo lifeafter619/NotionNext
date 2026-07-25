@@ -26,8 +26,16 @@ const isTenantAdminRoute = createRouteMatcher([
   '/admin/(.*)/domain'
 ])
 
+// 浏览器与未知代理：只允许 5 分钟
 const PUBLIC_PAGE_CACHE_CONTROL =
-  'public, max-age=300, s-maxage=86400, stale-while-revalidate=604800'
+  'public, max-age=300, stale-while-revalidate=86400'
+// Vercel 边缘：每次部署自动失效，可安全缓存 24 小时；该头被 Vercel 消费，不会下发
+const VERCEL_CDN_CACHE_CONTROL =
+  'public, s-maxage=86400, stale-while-revalidate=604800'
+// Cloudflare 边缘（66619.eu.org 橙云代理）：感知不到 Vercel 的重新部署，
+// HTML 缓存过久会继续引用旧构建的 /_next/static/<buildId>/ 资源（已 404 导致白屏），
+// 因此只允许 5 分钟，过期回源自愈
+const CLOUDFLARE_CDN_CACHE_CONTROL = 'public, s-maxage=300'
 
 const NON_PUBLIC_PAGE_ROOTS = new Set([
   'api',
@@ -68,6 +76,11 @@ function shouldCachePublicPage(req: NextRequest) {
 function withPublicPageCache(req: NextRequest, response: NextResponse) {
   if (shouldCachePublicPage(req)) {
     response.headers.set('Cache-Control', PUBLIC_PAGE_CACHE_CONTROL)
+    response.headers.set('Vercel-CDN-Cache-Control', VERCEL_CDN_CACHE_CONTROL)
+    response.headers.set(
+      'Cloudflare-CDN-Cache-Control',
+      CLOUDFLARE_CDN_CACHE_CONTROL
+    )
   }
   return response
 }
