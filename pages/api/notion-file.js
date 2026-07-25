@@ -25,6 +25,13 @@ function createReadableStream(reader) {
         .catch(error => {
           this.destroy(error)
         })
+    },
+    // 客户端中断（视频拖动进度条会产生大量随即中止的 Range 请求）时，
+    // 必须取消上游 reader，否则连接会一直挂到上游传输完毕。
+    destroy(error, callback) {
+      Promise.resolve(reader.cancel())
+        .catch(() => {})
+        .then(() => callback(error))
     }
   })
 }
@@ -62,7 +69,13 @@ export default async function handler(req, res) {
         .json({ error: validation.error })
     }
 
-    const response = await fetchAllowedFile(targetUrl)
+    const isHeadRequest = req.method === 'HEAD'
+    const upstreamHeaders = getUpstreamFileHeaders(req.headers)
+    // Notion's signed endpoint may reject HEAD. Probe one byte with GET and
+    // synthesize a normal HEAD response, matching the Worker behavior.
+    if (isHeadRequest) upstreamHeaders.Range = 'bytes=0-0'
+
+    const response = await fetchAllowedFile(targetUrl, upstreamHeaders)
     if (!response.ok) {
       return res
         .status(response.status)
@@ -71,18 +84,29 @@ export default async function handler(req, res) {
 
     const contentType =
       response.headers.get('content-type') || 'application/octet-stream'
-    const contentLength = response.headers.get('content-length')
+    const contentRange = response.headers.get('content-range')
+    const contentLength = isHeadRequest
+      ? getTotalContentLength(contentRange) ||
+        response.headers.get('content-length')
+      : response.headers.get('content-length')
     const finalFilename = normalizeFilename(
       filename?.value,
       inferFilename(normalizedSource) || inferFilename(signedUrl) || 'download'
     )
 
+    res.status(isHeadRequest ? 200 : response.status)
     res.setHeader('Content-Type', contentType)
     if (contentLength) res.setHeader('Content-Length', contentLength)
+    copyResponseHeader(response.headers, res, 'Accept-Ranges')
+    if (!isHeadRequest) {
+      copyResponseHeader(response.headers, res, 'Content-Range')
+    }
+    copyResponseHeader(response.headers, res, 'ETag')
+    copyResponseHeader(response.headers, res, 'Last-Modified')
     res.setHeader('Content-Disposition', getContentDisposition(finalFilename))
     res.setHeader('Cache-Control', 'private, no-store, max-age=0')
 
-    if (req.method === 'HEAD') {
+    if (isHeadRequest) {
       if (response.body) {
         await response.body.cancel().catch(() => {})
       }
@@ -131,11 +155,14 @@ async function getFreshSignedUrl(blockId, source) {
   return signedUrl
 }
 
-async function fetchAllowedFile(initialUrl) {
+async function fetchAllowedFile(initialUrl, headers = {}) {
   let currentUrl = initialUrl
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
-    const response = await fetch(currentUrl.toString(), { redirect: 'manual' })
+    const response = await fetch(currentUrl.toString(), {
+      redirect: 'manual',
+      headers
+    })
 
     if (![301, 302, 303, 307, 308].includes(response.status)) {
       return response
@@ -157,6 +184,24 @@ async function fetchAllowedFile(initialUrl) {
   const error = new Error('Too many redirects')
   error.statusCode = 400
   throw error
+}
+
+function getUpstreamFileHeaders(requestHeaders = {}) {
+  const headers = {}
+  const range = requestHeaders.range
+  const ifRange = requestHeaders['if-range']
+  if (typeof range === 'string' && range) headers.Range = range
+  if (typeof ifRange === 'string' && ifRange) headers['If-Range'] = ifRange
+  return headers
+}
+
+function copyResponseHeader(sourceHeaders, res, name) {
+  const value = sourceHeaders.get(name)
+  if (value) res.setHeader(name, value)
+}
+
+function getTotalContentLength(contentRange) {
+  return contentRange?.match(/\/([0-9]+)$/)?.[1] || null
 }
 
 function getSingleQueryValue(value) {

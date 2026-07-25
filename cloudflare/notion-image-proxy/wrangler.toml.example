@@ -7,6 +7,14 @@ routes = [
   { pattern = "cdn.example.com", custom_domain = true }
 ]
 
+# Optional but recommended: R2 persistence layer. Create the bucket first
+# (free tier: 10 GB) — a colo that has never seen an asset reads it from R2
+# in ~100ms instead of going back to Notion in seconds.
+#   npx wrangler r2 bucket create notion-image-proxy-cache
+[[r2_buckets]]
+binding = "ASSET_BUCKET"
+bucket_name = "notion-image-proxy-cache"
+
 # Keep this disabled so large video Range requests reach the Worker unchanged.
 [cache]
 enabled = false

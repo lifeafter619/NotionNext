@@ -140,6 +140,20 @@ describe('heo PostHeader article search', () => {
     )
   })
 
+  it('uses the page background for the cover backdrop in dark mode', () => {
+    const { container } = render(
+      <PostHeader
+        post={post}
+        siteInfo={{ pageCover: '/cover.jpg' }}
+        isDarkMode={true}
+      />
+    )
+
+    expect(container.querySelector('#post-bg')).toHaveStyle(
+      '--heo-post-bg-accent: var(--heo-color-bg-dark)'
+    )
+  })
+
   it('coalesces article font size updates into one animation frame', () => {
     let animationFrameCallback
     const requestAnimationFrameSpy = jest

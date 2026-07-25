@@ -30,6 +30,7 @@ describe('LazyImage Component', () => {
     const image = screen.getByAltText('Test image')
     expect(image).toBeInTheDocument()
     expect(image).toHaveAttribute('alt', 'Test image')
+    expect(image).toHaveAttribute('data-notion-next-fallback-managed', 'true')
   })
 
   it('applies custom className', () => {
@@ -235,6 +236,20 @@ describe('LazyImage Component', () => {
     expect(image).toHaveAttribute('srcset')
     expect(image.getAttribute('srcset')).toContain('320w')
     expect(image.getAttribute('srcset')).toContain('640w')
+  })
+
+  it('falls a failed priority Notion image back to the server proxy without retaining the failed srcset', () => {
+    const notionSrc =
+      'https://img.cdn.619.pp.ua/image/attachment%3Aimage-id%3Acover.jpg?table=block&id=block-id&width=1200'
+    render(<LazyImage {...defaultProps} src={notionSrc} priority />)
+
+    const image = screen.getByAltText('Test image')
+    expect(image).toHaveAttribute('srcset')
+
+    fireEvent.error(image)
+
+    expect(image.getAttribute('src')).toMatch(/^\/api\/proxy-image\?url=/)
+    expect(image).not.toHaveAttribute('srcset')
   })
 
   it('adds srcset after a lazy image enters the viewport', async () => {

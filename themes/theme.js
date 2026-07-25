@@ -278,80 +278,109 @@ const fixThemeDOM = () => {
   }
 }
 
+export const APPEARANCE_MODE = Object.freeze({
+  LIGHT: 'light',
+  SYSTEM: 'system',
+  DARK: 'dark'
+})
+
 /**
- * 初始化主题 , 优先级 query > cookies > systemPrefer
- * @param isDarkMode
- * @param updateDarkMode 更改主题ChangeState函数
- * @description 读取cookie中存的用户主题
+ * Normalize legacy boolean/auto values into the three supported UI modes.
  */
-export const initDarkMode = (updateDarkMode, defaultDarkMode) => {
-  let newDarkMode = getDefaultDarkMode(defaultDarkMode)
+export const normalizeAppearanceMode = (
+  value,
+  fallback = APPEARANCE_MODE.SYSTEM
+) => {
+  if (value === true) return APPEARANCE_MODE.DARK
+  if (value === false) return APPEARANCE_MODE.LIGHT
 
-  // 查看localStorage中用户记录的是否深色模式
-  const userDarkMode = loadDarkModeFromLocalStorage()
-  if (userDarkMode) {
-    newDarkMode = userDarkMode === 'dark' || userDarkMode === 'true'
-    saveDarkModeToLocalStorage(newDarkMode) // 用户手动的才保存
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (normalized === 'true' || normalized === APPEARANCE_MODE.DARK) {
+      return APPEARANCE_MODE.DARK
+    }
+    if (normalized === 'false' || normalized === APPEARANCE_MODE.LIGHT) {
+      return APPEARANCE_MODE.LIGHT
+    }
+    if (normalized === 'auto' || normalized === APPEARANCE_MODE.SYSTEM) {
+      return APPEARANCE_MODE.SYSTEM
+    }
   }
 
-  // url查询条件中是否深色模式
-  const queryMode = getQueryVariable('mode')
-  if (queryMode) {
-    newDarkMode = queryMode === 'dark'
-  }
+  return fallback
+}
 
-  updateDarkMode(newDarkMode)
+const applyResolvedDarkMode = (isDarkMode, updateDarkMode) => {
+  updateDarkMode(Boolean(isDarkMode))
   const htmlElement = document.documentElement
   htmlElement.classList.remove('dark', 'light')
-  htmlElement.classList.add(newDarkMode ? 'dark' : 'light')
+  htmlElement.classList.add(isDarkMode ? 'dark' : 'light')
 }
 
-function getDefaultDarkMode(defaultDarkMode) {
-  if (defaultDarkMode === true) return true
-  if (defaultDarkMode === false) return false
-
-  if (typeof defaultDarkMode === 'string') {
-    const normalizedDefault = defaultDarkMode.toLowerCase()
-    if (normalizedDefault === 'true' || normalizedDefault === 'dark') {
-      return true
-    }
-    if (normalizedDefault === 'false' || normalizedDefault === 'light') {
-      return false
-    }
-  }
-
-  // 查看用户设备浏览器是否深色模型
-  return isPreferDark()
+export const applyAppearanceMode = (appearanceMode, updateDarkMode) => {
+  const normalizedMode = normalizeAppearanceMode(appearanceMode)
+  const isDarkMode =
+    normalizedMode === APPEARANCE_MODE.DARK ||
+    (normalizedMode === APPEARANCE_MODE.SYSTEM && isPreferDark())
+  applyResolvedDarkMode(isDarkMode, updateDarkMode)
+  return normalizedMode
 }
 
 /**
- * 是否优先深色模式， 根据系统深色模式以及当前时间判断
- * @returns {*}
+ * Initialize appearance with query > saved preference > configured default.
+ */
+export const initDarkMode = (
+  updateDarkMode,
+  defaultDarkMode,
+  updateAppearanceMode
+) => {
+  let appearanceMode = normalizeAppearanceMode(defaultDarkMode)
+  const savedMode = loadDarkModeFromLocalStorage()
+  if (savedMode !== null) {
+    appearanceMode = normalizeAppearanceMode(savedMode, appearanceMode)
+  }
+
+  const queryMode = getQueryVariable('mode')
+  if (queryMode) {
+    appearanceMode = normalizeAppearanceMode(queryMode, appearanceMode)
+  }
+
+  applyAppearanceMode(appearanceMode, updateDarkMode)
+  updateAppearanceMode?.(appearanceMode)
+  return appearanceMode
+}
+
+/**
+ * Follow operating-system changes while system mode is selected.
+ */
+export const subscribeToSystemAppearance = updateDarkMode => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return () => {}
+  }
+
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  const handleChange = event => {
+    applyResolvedDarkMode(Boolean(event.matches), updateDarkMode)
+  }
+
+  if (typeof mediaQuery.addEventListener === 'function') {
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener?.('change', handleChange)
+  }
+
+  mediaQuery.addListener?.(handleChange)
+  return () => mediaQuery.removeListener?.(handleChange)
+}
+
+/**
+ * Whether the operating system currently prefers a dark color scheme.
  */
 export function isPreferDark() {
-  if (BLOG.APPEARANCE === 'dark') {
-    return true
-  }
-  if (BLOG.APPEARANCE === 'auto') {
-    // 系统深色模式或时间是夜间时，强行置为夜间模式
-    const date = new Date()
-    const prefersDarkMode = window.matchMedia(
-      '(prefers-color-scheme: dark)'
-    ).matches
-    const darkTime = Array.isArray(BLOG.APPEARANCE_DARK_TIME)
-      ? BLOG.APPEARANCE_DARK_TIME
-      : null
-    const darkTimeStart = Number(darkTime?.[0])
-    const darkTimeEnd = Number(darkTime?.[1])
-    const isDarkTime =
-      darkTime &&
-      Number.isFinite(darkTimeStart) &&
-      Number.isFinite(darkTimeEnd) &&
-      (date.getHours() >= darkTimeStart || date.getHours() < darkTimeEnd)
-
-    return prefersDarkMode || Boolean(isDarkTime)
-  }
-  return false
+  return Boolean(
+    typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+  )
 }
 
 /**
@@ -372,6 +401,6 @@ export const loadDarkModeFromLocalStorage = () => {
  */
 export const saveDarkModeToLocalStorage = newTheme => {
   try {
-    localStorage.setItem('darkMode', newTheme)
+    localStorage.setItem('darkMode', normalizeAppearanceMode(newTheme))
   } catch {}
 }

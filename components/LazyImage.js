@@ -1,6 +1,7 @@
 import { siteConfig } from '@/lib/config'
 import BLOG from '@/blog.config'
 import { buildNotionAssetFallbackCandidates } from '@/lib/notionAssetFallback'
+import { enqueueImagePrefetch } from '@/lib/utils/imagePrefetchQueue'
 import Head from 'next/head'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -57,16 +58,15 @@ export default function LazyImage({
   const handleImageError = useCallback(() => {
     const fallbackCandidates = getFallbackCandidates([
       fallbackSrc,
-      placeholderSrc,
-      defaultPlaceholderSrc,
-      // 追加 Notion 代理回退候选：让封面图也能在 CDN/hotlink 403 时逐级回退
-      // （no-referrer 重试 → 服务端代理 → notion.so 直连）。用原始 src 生成，
-      // 不受 currentSrc 已切换的影响。
+      // 让 Notion 图片先走可恢复的真实资源，再使用视觉占位图。否则占位图
+      // 一旦加载成功，服务端代理和 notion.so 兜底永远不会被尝试。
       ...buildNotionAssetFallbackCandidates({
         src: optimizedImageSrc || src,
         kind: 'image',
         notionHost: BLOG.NOTION_HOST
-      }).map(c => c.url)
+      }).map(c => c.url),
+      placeholderSrc,
+      defaultPlaceholderSrc
     ])
     let nextFallbackSrc = null
 
@@ -147,7 +147,7 @@ export default function LazyImage({
         })
       },
       {
-        rootMargin: siteConfig('LAZY_LOAD_THRESHOLD', '200px'),
+        rootMargin: siteConfig('LAZY_LOAD_THRESHOLD', '600px'),
         threshold: 0.1
       }
     )
@@ -164,33 +164,27 @@ export default function LazyImage({
   }, [optimizedImageSrc, priority, defaultPlaceholderSrc, placeholderImageSrc])
 
   // 构造 srcset 以支持响应式图片加载
-  const generateSrcSet = imageSrc => {
-    if (
-      !imageSrc ||
-      (!imageSrc.includes('width=') && !imageSrc.includes('w='))
-    ) {
-      return undefined
-    }
+  const generateSrcSet = imageSrc => buildResponsiveSrcSet(imageSrc, maxWidth)
 
-    const breakpoints = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840]
-    const maxImageWidth = normalizeImageWidth(maxWidth)
-
-    return breakpoints
-      .filter(w => w <= maxImageWidth)
-      .map(w => {
-        const newSrc = replaceImageWidthParam(imageSrc, w)
-        return `${newSrc} ${w}w`
-      })
-      .join(', ')
-  }
-
-  const shouldAttachRealSources = priority || currentSrc === optimizedImageSrc
+  const shouldAttachRealSources = currentSrc === optimizedImageSrc
   const srcSet = shouldAttachRealSources
     ? generateSrcSet(optimizedImageSrc)
     : undefined
   const normalizedWidth = normalizeDimensionAttribute(width)
   const normalizedHeight = normalizeDimensionAttribute(height)
   const imageSizes = sizes || getDefaultImageSizes(normalizedWidth)
+
+  // 非优先图片加入空闲预取队列：首屏加载完成后由队列以受限并发在后台预热，
+  // 用户滚动到时直接命中 HTTP 缓存即时显示；组件卸载（路由切换）时自动取消
+  useEffect(() => {
+    if (priority || !optimizedImageSrc) return undefined
+    return enqueueImagePrefetch({
+      src: optimizedImageSrc,
+      srcSet: buildResponsiveSrcSet(optimizedImageSrc, maxWidth),
+      sizes: imageSizes,
+      referrerPolicy
+    })
+  }, [priority, optimizedImageSrc, maxWidth, imageSizes, referrerPolicy])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
@@ -216,6 +210,9 @@ export default function LazyImage({
     // Do not leak the blog domain to image hosts. This also prevents generic
     // hotlink-protection rules from blocking custom CDN and Vercel domains.
     referrerPolicy,
+    // NotionPage has a capture-phase fallback for raw images. Mark this image
+    // so the React state machine remains its single owner.
+    'data-notion-next-fallback-managed': 'true',
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
     ...(siteConfig('AVIF_SUPPORT') && { 'data-avif': true })
@@ -290,6 +287,23 @@ function normalizeImageWidth(width) {
     return numericWidth
   }
   return 1080
+}
+
+function buildResponsiveSrcSet(imageSrc, maxWidth) {
+  if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
+    return undefined
+  }
+
+  const breakpoints = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840]
+  const maxImageWidth = normalizeImageWidth(maxWidth)
+
+  return breakpoints
+    .filter(w => w <= maxImageWidth)
+    .map(w => {
+      const newSrc = replaceImageWidthParam(imageSrc, w)
+      return `${newSrc} ${w}w`
+    })
+    .join(', ')
 }
 
 function replaceImageWidthParam(imageSrc, width) {

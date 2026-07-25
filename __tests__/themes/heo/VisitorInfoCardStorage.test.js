@@ -57,7 +57,9 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
     render(<VisitorInfoCard />)
 
     expect(screen.getByText('加载中...')).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText('Shanghai')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByText('Shanghai')).toBeInTheDocument()
+    )
     expect(fetch).toHaveBeenNthCalledWith(
       1,
       'https://api.vore.top/api/IPdata',
@@ -100,8 +102,8 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
     expect(screen.queryByText(/今天的第/)).not.toBeInTheDocument()
   })
 
-  it('keeps visitor location opt-in in the HEO project config', () => {
-    expect(CONFIG.HEO_VISITOR_LOCATION_ENABLE).toBe(false)
+  it('shows visitor location by default in the HEO project config', () => {
+    expect(CONFIG.HEO_VISITOR_LOCATION_ENABLE).toBe(true)
   })
 
   it('falls back to zero minutes when stored reading time is invalid', async () => {

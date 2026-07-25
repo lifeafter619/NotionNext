@@ -69,7 +69,7 @@ export default function PostRecommend({ recommendPosts, siteInfo }) {
               title={title}
               href={href}
               passHref
-              className='flex h-40 cursor-pointer overflow-hidden rounded-2xl'>
+              className='heo-post-cover flex cursor-pointer overflow-hidden rounded-2xl'>
               <div className='h-full w-full relative group bg-gray-800'>
                 <div className='flex items-center justify-center w-full h-full duration-300 '>
                   <div className='z-10 text-lg px-4 font-bold text-white text-center shadow-text select-none'>
@@ -80,8 +80,8 @@ export default function PostRecommend({ recommendPosts, siteInfo }) {
                   <LazyImage
                     src={headerImage}
                     alt={title}
-                    width={360}
-                    height={160}
+                    width={505}
+                    height={220}
                     sizes='(min-width: 720px) 33vw, 100vw'
                     className='absolute top-0 w-full h-full object-cover object-center group-hover:scale-110 group-hover:brightness-50 transform duration-200'
                   />

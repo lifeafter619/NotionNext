@@ -27,10 +27,25 @@ jest.mock('@clerk/nextjs', () => ({
 }))
 
 jest.mock('@/themes/theme', () => ({
+  APPEARANCE_MODE: {
+    LIGHT: 'light',
+    SYSTEM: 'system',
+    DARK: 'dark'
+  },
   THEMES: ['heo'],
+  applyAppearanceMode: jest.fn((mode, updateDarkMode) =>
+    updateDarkMode(mode === 'dark')
+  ),
   getThemeConfig: jest.fn(async () => ({})),
-  initDarkMode: jest.fn(updateDarkMode => updateDarkMode(false)),
-  saveDarkModeToLocalStorage: jest.fn()
+  initDarkMode: jest.fn((updateDarkMode, defaultMode, updateMode) => {
+    updateDarkMode(false)
+    updateMode?.('system')
+  }),
+  normalizeAppearanceMode: jest.fn(mode =>
+    mode === 'dark' || mode === 'light' ? mode : 'system'
+  ),
+  saveDarkModeToLocalStorage: jest.fn(),
+  subscribeToSystemAppearance: jest.fn(() => () => {})
 }))
 
 jest.mock('@/lib/utils/lang', () => ({

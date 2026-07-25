@@ -23,11 +23,22 @@ function createReadableStream(reader) {
         .catch(error => {
           this.destroy(error)
         })
+    },
+    // 客户端中断请求时取消上游 reader，避免连接一直挂到上游传输完毕。
+    destroy(error, callback) {
+      Promise.resolve(reader.cancel())
+        .catch(() => {})
+        .then(() => callback(error))
     }
   })
 }
 
 export default async function handler(req, res) {
+  if (req.method && req.method !== 'GET' && req.method !== 'HEAD') {
+    res.setHeader('Allow', 'GET, HEAD')
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
   const { url, filename } = req.query
 
   if (!url) {
@@ -41,23 +52,24 @@ export default async function handler(req, res) {
   try {
     const targetUrl = new URL(url)
 
-    const validation = validateImageUrl(targetUrl)
-    if (!validation.ok) {
-      if (validation.error === 'Domain not allowed') {
-        console.warn(`Blocked proxy attempt to: ${targetUrl.hostname}`)
-        return res.status(403).json({ error: validation.error })
-      }
-      return res.status(400).json({ error: 'Protocol not allowed' })
-    }
-
-    // 把自定义 CDN/Worker 包装的 URL 映射回 www.notion.so 原始源再 fetch，
-    // 让服务端代理直接回源 Notion，完全跳过自定义 CDN（避免其 hotlink 防护、
-    // Worker 故障等问题）。无法映射时（已是 notion.so 源或第三方源）原样使用。
+    // A configured custom proxy is trusted only as a wrapper format. Map it
+    // back to the canonical Notion origin before allowlist validation; an
+    // arbitrary host or a wrapper around a third-party URL maps to null and is
+    // still rejected below.
     const downloadSource = getNotionAssetDownloadSource(
       targetUrl.toString(),
       BLOG.NOTION_HOST
     )
     const fetchUrl = downloadSource ? new URL(downloadSource) : targetUrl
+
+    const validation = validateImageUrl(fetchUrl)
+    if (!validation.ok) {
+      if (validation.error === 'Domain not allowed') {
+        console.warn(`Blocked proxy attempt to: ${fetchUrl.hostname}`)
+        return res.status(403).json({ error: validation.error })
+      }
+      return res.status(400).json({ error: 'Protocol not allowed' })
+    }
 
     const response = await fetchAllowedImage(fetchUrl)
 
@@ -102,8 +114,19 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', contentType)
     res.setHeader('Content-Disposition', contentDisposition)
+    // 允许浏览器与 CDN 缓存：目标只能是允许清单里的 Notion 资源 / Waline
+    // 表情，对同一 url 参数内容视为不可变，避免重复回源拖慢二次访问。
+    res.setHeader(
+      'Cache-Control',
+      'public, max-age=86400, stale-while-revalidate=604800'
+    )
 
     // Stream response
+    if (req.method === 'HEAD') {
+      if (response.body) await response.body.cancel().catch(() => {})
+      return res.end()
+    }
+
     if (response.body) {
       // Check if body is a web stream (Next.js environment)
       const reader = response.body.getReader()

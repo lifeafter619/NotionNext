@@ -820,19 +820,19 @@ const SearchResultCard = ({
 
   return (
     <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 p-4 flex gap-4 hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group'>
-      {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+      {/* 封面图 */}
       {showCover && (
         <SmartLink
           href={postHref}
-          className='w-32 h-24 md:w-40 md:h-28 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+          className='heo-post-cover w-40 md:w-48 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800'>
           <LazyImage
             priority={index === 0}
-            width={180}
-            height={126}
-            sizes='(min-width: 720px) 10rem, 8rem'
+            width={505}
+            height={220}
+            sizes='(min-width: 720px) 12rem, 10rem'
             src={post?.pageCoverThumbnail || siteInfo?.pageCover}
             alt={titleText}
-            className='max-w-full max-h-full object-contain'
+            className='w-full h-full object-cover object-center'
           />
         </SmartLink>
       )}
@@ -906,19 +906,19 @@ const SearchResultGridCard = ({
 
   return (
     <article className='replace bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-yellow-500 dark:hover:border-yellow-500 transition-colors duration-200 group h-full flex flex-col'>
-      {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+      {/* 封面图 */}
       {showCover && (
         <SmartLink
           href={postHref}
-          className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+          className='heo-post-cover w-full overflow-hidden bg-gray-100 dark:bg-gray-800'>
           <LazyImage
             priority={index === 0}
-            width={360}
-            height={160}
+            width={505}
+            height={220}
             sizes='(min-width: 720px) 33vw, 100vw'
             src={post?.pageCoverThumbnail || siteInfo?.pageCover}
             alt={titleText}
-            className='max-w-full max-h-full object-contain'
+            className='w-full h-full object-cover object-center'
           />
         </SmartLink>
       )}
@@ -1141,7 +1141,7 @@ const Layout404 = props => {
       {/* 主区块 */}
       <main
         id='wrapper-outer'
-        className={`flex-grow ${fullWidth ? '' : 'max-w-4xl'} w-screen mx-auto px-5`}>
+        className={`flex-grow ${fullWidth ? '' : 'max-w-4xl'} w-full mx-auto px-5`}>
         <div id='error-wrapper' className={'w-full mx-auto justify-center'}>
           <Transition
             show={!onLoading}
@@ -1319,17 +1319,17 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
   return (
     <SmartLink href={postHref}>
       <article className='flex flex-col md:flex-row gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-300 group cursor-pointer'>
-        {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
+        {/* 大封面图 */}
         {showCover && (
-          <div className='w-full md:w-48 h-32 md:h-36 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+          <div className='heo-post-cover w-full md:w-64 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800'>
             <LazyImage
               priority={index === 0}
-              width={240}
-              height={144}
-              sizes='(min-width: 720px) 12rem, 100vw'
+              width={505}
+              height={220}
+              sizes='(min-width: 720px) 16rem, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={title}
-              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+              className='w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500'
             />
           </div>
         )}
@@ -1546,17 +1546,17 @@ const TagPostCard = ({ post, index, siteInfo }) => {
   return (
     <SmartLink href={postHref}>
       <article className='group cursor-pointer rounded-xl overflow-hidden border dark:border-gray-700 hover:shadow-lg hover:border-emerald-500 dark:hover:border-teal-500 transition-all duration-300'>
-        {/* 大封面图 - 使用 object-contain 保证图片完整显示 */}
+        {/* 大封面图 */}
         {showCover && (
-          <div className='w-full h-40 overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center'>
+          <div className='heo-post-cover w-full overflow-hidden bg-gray-100 dark:bg-gray-800'>
             <LazyImage
               priority={index === 0}
-              width={360}
-              height={160}
+              width={505}
+              height={220}
               sizes='(min-width: 720px) 33vw, 100vw'
               src={post?.pageCoverThumbnail || siteInfo?.pageCover}
               alt={title}
-              className='max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500'
+              className='w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500'
             />
           </div>
         )}

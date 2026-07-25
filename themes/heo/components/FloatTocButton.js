@@ -54,8 +54,8 @@ export default function FloatTocButton(props) {
   const [showMobileActions, setShowMobileActions] = useState(false)
   const [activeSectionId, setActiveSectionId] = useState(null)
 
-  // 移动端按钮展开状态
-  const [isExpandedButton, setIsExpandedButton] = useState(false)
+  // 移动端按钮展开状态：保持紧凑（仅图标），避免文字标签遮挡正文。
+  const [isExpandedButton] = useState(false)
   // 移动端按钮位置偏移 {x: right, y: bottom}
   const [buttonPos, setButtonPos] = useState(
     /** @type {{x: number | null, y: number | null}} */ ({
@@ -241,14 +241,6 @@ export default function FloatTocButton(props) {
     if (isDraggingDesktop) return
     changeTocVisible(!tocVisible)
   }
-
-  // 初始加载后确保移动端按钮保持紧凑，避免遮挡正文。
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsExpandedButton(false)
-    }, 6000)
-    return () => clearTimeout(timer)
-  }, [])
 
   // 移动端拖动按钮逻辑
   const handleButtonTouchStart = e => {
@@ -781,7 +773,7 @@ const JumpToCommentButtonDesktop = () => {
       <button
         type='button'
         aria-label='跳转评论'
-        className='w-full text-sm p-3 text-center cursor-pointer bg-white dark:bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-500 dark:text-gray-200 transition-all duration-200 select-none'
+        className='w-full text-sm p-3 text-center cursor-pointer bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:text-indigo-600 dark:hover:text-yellow-300 transition-all duration-200 select-none'
         onClick={handleJump}>
         <i aria-hidden='true' className='fas fa-comments mr-2' />
         跳转评论

@@ -1,6 +1,7 @@
 import {
   NotionImage,
   proxyNotionVideoUrls,
+  retryNotionArticleAsset,
   retryImageWithProxyFallback
 } from '@/components/NotionPage'
 import { retryNotionAssetElement } from '@/lib/notionAssetFallback'
@@ -26,6 +27,20 @@ describe('NotionPage image fallback', () => {
     )
   })
 
+  it('leaves a LazyImage fallback to its React state owner', () => {
+    const img = document.createElement('img')
+    const source =
+      'https://img.cdn.619.pp.ua/image/attachment%3Aimage-id?table=block&id=block-id'
+    img.setAttribute('src', source)
+    img.dataset.notionNextFallbackManaged = 'true'
+
+    expect(retryNotionArticleAsset(img, 'https://img.cdn.619.pp.ua')).toBe(
+      false
+    )
+    expect(img.getAttribute('src')).toBe(source)
+    expect(img.dataset.notionNextFallbackCandidates).toBeUndefined()
+  })
+
   it('unwraps an external image from a legacy configured-proxy URL', () => {
     const img = document.createElement('img')
     const source =
@@ -43,8 +58,7 @@ describe('NotionPage image fallback', () => {
       'https://images.unsplash.com/photo.jpg'
     )
     expect(img.hasAttribute('srcset')).toBe(false)
-    expect(img.dataset.notionNextOriginRetried).toBe('true')
-    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
+    expect(img.dataset.notionNextFallbackCursor).toBe('1')
   })
 
   it('never sends an unwrapped external image through the local proxy', () => {
@@ -62,38 +76,21 @@ describe('NotionPage image fallback', () => {
     )
 
     expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
-      true
-    )
-    expect(img.getAttribute('src')).toBe(
-      'https://images.unsplash.com/photo.jpg'
-    )
-    expect(img.referrerPolicy).toBe('no-referrer')
-    expect(img.dataset.notionNextNoReferrerRetried).toBe('true')
-    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
-
-    expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
       false
     )
   })
 
-  it('retries a failed third-party image directly without a referrer', () => {
+  it('does not duplicate a failed third-party request already covered by the global referrer policy', () => {
     const img = document.createElement('img')
     const source = 'https://image.66619.eu.org/file/example.png'
     img.setAttribute('src', source)
     img.setAttribute('srcset', `${source} 1x`)
 
     expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
-      true
-    )
-    expect(img.getAttribute('src')).toBe(source)
-    expect(img.hasAttribute('srcset')).toBe(false)
-    expect(img.referrerPolicy).toBe('no-referrer')
-    expect(img.dataset.notionNextNoReferrerRetried).toBe('true')
-    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
-
-    expect(retryImageWithProxyFallback(img, 'https://img.cdn.619.pp.ua')).toBe(
       false
     )
+    expect(img.getAttribute('src')).toBe(source)
+    expect(img.hasAttribute('srcset')).toBe(true)
   })
 
   it('unwraps a third-party image from a Notion image URL', () => {
@@ -121,7 +118,7 @@ describe('NotionPage image fallback', () => {
     expect(img.getAttribute('src')).toBe(
       `/api/proxy-image?url=${encodeURIComponent(source)}`
     )
-    expect(img.dataset.notionNextProxyRetried).toBe('true')
+    expect(img.dataset.notionNextFallbackCursor).toBe('1')
   })
 
   it('does not proxy arbitrary prod-files-secure hostnames', () => {
@@ -131,13 +128,8 @@ describe('NotionPage image fallback', () => {
 
     const retried = retryImageWithProxyFallback(img)
 
-    expect(retried).toBe(true)
+    expect(retried).toBe(false)
     expect(img.getAttribute('src')).toBe(source)
-    expect(img.referrerPolicy).toBe('no-referrer')
-    expect(img.dataset.notionNextNoReferrerRetried).toBe('true')
-    expect(img.dataset.notionNextProxyRetried).toBeUndefined()
-
-    expect(retryImageWithProxyFallback(img)).toBe(false)
   })
 })
 
@@ -290,13 +282,10 @@ describe('NotionPage media fallback (video/audio)', () => {
 
     // 这是 react-notion-x <video src> 实际拿到的 URL。
     const video = document.createElement('video')
+    video.load = jest.fn()
     video.setAttribute('src', workerUrl)
 
-    // 第1次失败 → no-referrer 重试（绕过 hotlink）。
-    expect(
-      retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
-    ).toBe(true)
-    // 第2次失败 → /api/notion-file（携带 blockId + 原始 source，服务端现签）。
+    // 第1次失败 → /api/notion-file（携带 blockId + 原始 source，服务端现签）。
     expect(
       retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
     ).toBe(true)
@@ -306,7 +295,7 @@ describe('NotionPage media fallback (video/audio)', () => {
     expect(url.searchParams.get('id')).toBe('video-block')
     expect(url.searchParams.get('source')).toContain('movie.mp4')
 
-    // 第3次失败 → www.notion.so 原域名直连（最后兜底）。
+    // 第2次失败 → www.notion.so 原域名直连（最后兜底）。
     expect(
       retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
     ).toBe(true)

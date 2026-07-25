@@ -8,6 +8,12 @@ workers_dev = false
 # 保留网页后台已有的变量
 keep_vars = true
 
+# R2 持久层：任何机房本地缓存未命中时，从 R2 毫秒级取回资产，
+# 而不是花 1~2 秒回源 Notion。只在全球第一次请求某资产时回源。
+[[r2_buckets]]
+binding = "ASSET_BUCKET"
+bucket_name = "notion-image-proxy-cache"
+
 # Range 必须原样进入 Worker，才能流式播放超过 512 MB 的视频。
 # 图片和完整文件仍由 worker.mjs 内部的 fetch 缓存策略加速。
 [cache]

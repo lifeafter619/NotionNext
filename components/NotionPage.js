@@ -11,13 +11,6 @@ import {
 import NotionButton from '@/components/NotionButton'
 import LazyImage from '@/components/LazyImage'
 import NotionFile, { buildNotionFileProxyUrl } from '@/components/NotionFile'
-import {
-  DEFAULT_NOTION_ORIGIN,
-  getNotionAssetDownloadSource,
-  getOriginalNotionImageSource,
-  isNotionHostedAssetSource,
-  unwrapExternalNotionImageSource
-} from '@/lib/notionAssetUrl'
 import { retryNotionAssetElement } from '@/lib/notionAssetFallback'
 import {
   bindNotionHashScrollHandler,
@@ -166,16 +159,7 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
     // capture 阶段监听 error：媒体（<video>/<audio>）的 error 事件不冒泡，
     // 只有 capture 才能捕获到；图片（<img>）也会被捕获。
     const handleArticleMediaError = event => {
-      const target = event.target
-      const tagName = target?.tagName
-      if (tagName === 'IMG') {
-        retryImageWithProxyFallback(target, BLOG.NOTION_HOST)
-      } else if (tagName === 'VIDEO' || tagName === 'AUDIO') {
-        // 视频/音频加载失败（CDN hotlink 403、Worker 故障、signed URL 过期等）
-        // 时，逐级回退：no-referrer 重试 → /api/notion-file 服务端现签代理 →
-        // www.notion.so 原域名直连。
-        retryNotionAssetElement(target, { notionHost: BLOG.NOTION_HOST })
-      }
+      retryNotionArticleAsset(event.target, BLOG.NOTION_HOST)
     }
 
     article.addEventListener('error', handleArticleMediaError, true)
@@ -594,70 +578,26 @@ export function retryImageWithProxyFallback(
   img,
   notionHost = BLOG.NOTION_HOST
 ) {
-  const source = getImageSrc(img)
-  if (!source) {
-    return false
-  }
-
-  const originalSource = getOriginalNotionImageSource(source, notionHost)
-  if (originalSource && img?.dataset?.notionNextOriginRetried !== 'true') {
-    img.dataset.notionNextOriginRetried = 'true'
-    img.removeAttribute('srcset')
-    img.setAttribute('src', originalSource)
-    return true
-  }
-
-  if (!isProxiableNotionImageSource(source)) {
-    return retryExternalImageWithoutReferrer(img, source)
-  }
-
-  if (img?.dataset?.notionNextProxyRetried === 'true') {
-    return false
-  }
-
-  img.dataset.notionNextProxyRetried = 'true'
-  img.removeAttribute('srcset')
-  img.referrerPolicy = 'no-referrer'
-  // 让服务端代理直接回源 Notion（getNotionAssetDownloadSource 把自定义 CDN
-  // 包装 URL 映射回 www.notion.so），完全跳过自定义 CDN 的 hotlink 防护。
-  // 若无法映射（例如 source 已是 notion.so 原域名），则原样交给代理。
-  const proxyTarget =
-    getNotionAssetDownloadSource(source, notionHost) || source
-  img.setAttribute('src', `/api/proxy-image?url=${encodeURIComponent(proxyTarget)}`)
-  return true
+  return retryNotionAssetElement(img, { kind: 'image', notionHost })
 }
 
-// getOriginalNotionImageSource 已迁移到 @/lib/notionAssetUrl（纯 URL 工具，
-// 供客户端回退链复用），上方 import 处 re-export 以保持向后兼容。
-export { getOriginalNotionImageSource }
-
-function isProxiableNotionImageSource(source) {
-  return isNotionHostedAssetSource(source)
-}
-
-function retryExternalImageWithoutReferrer(img, source) {
-  if (
-    img?.dataset?.notionNextNoReferrerRetried === 'true' ||
-    !isHttpImageSource(source)
-  ) {
-    return false
+export function retryNotionArticleAsset(target, notionHost = BLOG.NOTION_HOST) {
+  const tagName = target?.tagName
+  if (tagName === 'IMG') {
+    // LazyImage owns its React state and handles its own ordered fallback. The
+    // capture listener only covers raw images from third-party renderers.
+    if (target.dataset.notionNextFallbackManaged === 'true') return false
+    return retryImageWithProxyFallback(target, notionHost)
   }
 
-  img.dataset.notionNextNoReferrerRetried = 'true'
-  img.referrerPolicy = 'no-referrer'
-  img.removeAttribute('srcset')
-  img.setAttribute('src', source)
-  return true
+  if (tagName === 'VIDEO' || tagName === 'AUDIO') {
+    return retryNotionAssetElement(target, { kind: 'media', notionHost })
+  }
+
+  return false
 }
 
-function isHttpImageSource(source) {
-  try {
-    const url = new URL(source)
-    return url.protocol === 'https:' || url.protocol === 'http:'
-  } catch {
-    return false
-  }
-}
+export { getOriginalNotionImageSource } from '@/lib/notionAssetUrl'
 
 // 代码
 const Code = dynamic(

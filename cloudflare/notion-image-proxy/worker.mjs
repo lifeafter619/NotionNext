@@ -1,10 +1,18 @@
 const NOTION_ORIGIN = 'https://www.notion.so'
 const WALINE_EMOJI_ORIGIN = 'https://unpkg.com'
-const PROXY_VERSION = 'v8'
+const PROXY_VERSION = 'v11'
+
+// 图床直读路由前缀：/f/<key> 直接返回 R2 桶中手动上传的对象
+const R2_FILE_ROUTE_PREFIX = '/f/'
 
 // Notion uploaded assets have stable, ID-based URLs. Keep those warm longer.
 const IMMUTABLE_EDGE_TTL = 60 * 60 * 24 * 30
 const IMMUTABLE_BROWSER_TTL = 60 * 60 * 24 * 7
+
+// Cap what a single asset may occupy in the R2 persistence layer so a few
+// large videos cannot exhaust the free 10 GB storage tier. Range-streamed
+// video bypasses storage anyway; this only bounds rare full downloads.
+const R2_MAX_OBJECT_BYTES = 100 * 1024 * 1024
 
 // A fixed format preference maximizes cache sharing between browsers. Notion
 // currently returns WebP for the site's image URLs while keeping the original
@@ -33,8 +41,12 @@ const CORS_HEADERS = {
     'Accept-Ranges, Content-Disposition, Content-Length, Content-Range, Content-Type, ETag, Last-Modified'
 }
 
+// cf-cache-status values that mean the response body came from Cloudflare's
+// cache rather than a live origin round trip.
+const CACHE_HIT_STATUSES = ['HIT', 'STALE', 'UPDATING', 'REVALIDATED']
+
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url)
     const routeKind = getRouteKind(url.pathname)
 
@@ -58,6 +70,63 @@ export default {
     const isFileHeadProbe = routeKind === 'file' && request.method === 'HEAD'
     const isPartialRequest =
       routeKind === 'file' && (hasRange || isFileHeadProbe)
+
+    // Only complete GET responses participate in any storage layer. Ranges
+    // and HEAD probes always stream through untouched.
+    const wantsStoredResponse = request.method === 'GET' && !hasRange
+
+    // Layer 1: the per-colo Cache API — fastest, fully Worker-controlled, and
+    // identical on every plan. Only validated asset responses are ever stored.
+    const edgeCache = wantsStoredResponse ? getEdgeCache() : null
+    const edgeCacheKey = edgeCache ? createEdgeCacheKey(url) : null
+    if (edgeCache) {
+      let cached = null
+      try {
+        cached = await edgeCache.match(edgeCacheKey)
+      } catch (_) {}
+      if (cached) {
+        const headers = new Headers(cached.headers)
+        headers.set('X-Notion-Image-Proxy-Edge-Cache', 'HIT')
+        if (isNotModified(request.headers, cached.headers)) {
+          if (cached.body) await cached.body.cancel()
+          return new Response(null, { status: 304, headers })
+        }
+        return new Response(cached.body, {
+          status: cached.status,
+          statusText: cached.statusText,
+          headers
+        })
+      }
+    }
+
+    // 图床直读路由：绕过 Notion 上游逻辑，直接读取 R2 中的上传文件。
+    // 放在 L1 之后，重复请求仍由本机房缓存直接返回。
+    if (routeKind === 'r2-file') {
+      return serveBucketFile(request, env, ctx, url, policy, {
+        edgeCache,
+        edgeCacheKey
+      })
+    }
+
+    // Layer 2: R2 persistence — global and durable. A colo that has never
+    // seen an asset reads it from R2 in ~100ms instead of going back to
+    // Notion in seconds, then repopulates its local Cache API copy.
+    const bucket = wantsStoredResponse ? getAssetBucket(env) : null
+    const r2Key = bucket ? await createR2Key(url) : null
+    if (bucket && r2Key) {
+      let stored = null
+      try {
+        stored = await bucket.get(r2Key)
+      } catch (_) {}
+      if (stored) {
+        return respondFromR2(stored, request, policy, {
+          edgeCache,
+          edgeCacheKey,
+          ctx
+        })
+      }
+    }
+
     const upstreamHeaders = {
       Accept:
         routeKind === 'image' || routeKind === 'waline-emoji-image'
@@ -75,9 +144,12 @@ export default {
 
     let upstreamResponse
     try {
-      // This Worker is middleware around Notion. Using fetch() caching here
-      // lets Cloudflare use its global/tiered cache instead of a local-only
-      // caches.default lookup on every request.
+      // Layer 3: fetch() subrequest caching (benefits from Tiered Cache when
+      // enabled for the zone). cacheTtl — unlike cacheEverything alone — also
+      // overrides upstream no-store/private directives, which Notion's signed
+      // asset endpoints send; without the override every request goes back to
+      // Notion. A negative TTL disables storage for partial responses so a
+      // range slice can never become the cache entry for the full asset.
       upstreamResponse = await fetch(upstreamUrl, {
         // Notion's signed file endpoint rejects HEAD. Fetch one byte instead,
         // then synthesize a standards-compatible HEAD response below.
@@ -85,15 +157,8 @@ export default {
         redirect: 'follow',
         headers: upstreamHeaders,
         cf: {
-          // A partial response must never become the cache entry for the full
-          // asset. Full downloads remain cacheable, while video ranges stream
-          // directly so assets above Cloudflare's cache-size limit still play.
           cacheEverything: !isPartialRequest,
-          cacheTtlByStatus: {
-            '100-199': -1,
-            '200-299': policy.edgeTtl,
-            '300-599': -1
-          }
+          cacheTtl: isPartialRequest ? -1 : policy.edgeTtl
         }
       })
     } catch (_) {
@@ -104,26 +169,40 @@ export default {
       )
     }
 
-    const contentType = (
-      upstreamResponse.headers.get('content-type') || ''
-    ).toLowerCase()
-    const contentDisposition = (
-      upstreamResponse.headers.get('content-disposition') || ''
-    ).toLowerCase()
-    const isFileResponse =
-      [200, 206].includes(upstreamResponse.status) &&
-      (!contentType.includes('text/html') ||
-        contentDisposition.includes('attachment'))
-    const isValidAsset =
-      routeKind === 'waline-emoji-info'
-        ? upstreamResponse.status === 200 &&
-          contentType.includes('application/json')
-        : routeKind === 'file'
-          ? isFileResponse
-          : upstreamResponse.status === 200 && contentType.startsWith('image/')
+    let upstreamCacheStatus =
+      upstreamResponse.headers.get('cf-cache-status') || 'UNKNOWN'
+    let validation = validateUpstreamResponse(upstreamResponse, routeKind)
+
+    // Self-heal a poisoned subrequest cache entry: if a cached response turns
+    // out to be invalid (an upstream error stored before it could be vetted),
+    // bypass the cache once and use the live answer instead. Real, uncached
+    // upstream errors are not retried, so failures are never amplified.
+    if (
+      !validation.isValidAsset &&
+      !isPartialRequest &&
+      CACHE_HIT_STATUSES.includes(upstreamCacheStatus)
+    ) {
+      if (upstreamResponse.body) await upstreamResponse.body.cancel()
+      try {
+        upstreamResponse = await fetch(upstreamUrl, {
+          method: request.method,
+          redirect: 'follow',
+          headers: upstreamHeaders,
+          cf: { cacheEverything: false, cacheTtl: -1 }
+        })
+      } catch (_) {
+        return proxyErrorResponse(
+          request,
+          502,
+          getUpstreamFailureMessage(routeKind)
+        )
+      }
+      upstreamCacheStatus = 'BYPASS-RETRY'
+      validation = validateUpstreamResponse(upstreamResponse, routeKind)
+    }
 
     // Never turn an upstream error page into a cacheable asset response.
-    if (!isValidAsset) {
+    if (!validation.isValidAsset) {
       const status = upstreamResponse.ok ? 502 : upstreamResponse.status
       if (upstreamResponse.body) await upstreamResponse.body.cancel()
       const message = upstreamResponse.ok
@@ -133,17 +212,11 @@ export default {
     }
 
     const headers = copyAssetHeaders(upstreamResponse.headers)
-    headers.set(
-      'Cache-Control',
-      policy.immutable
-        ? `public, max-age=${policy.browserTtl}, immutable`
-        : `public, max-age=${policy.browserTtl}`
-    )
+    headers.set('Cache-Control', browserCacheControl(policy))
 
     // This controls Workers Caching when it is enabled for the Worker, without
     // exposing the longer edge TTL to browsers or downstream caches.
-    const edgeCacheControl = `public, max-age=${policy.edgeTtl}, stale-while-revalidate=${policy.staleWhileRevalidate}, stale-if-error=${policy.staleIfError}`
-    headers.set('Cloudflare-CDN-Cache-Control', edgeCacheControl)
+    headers.set('Cloudflare-CDN-Cache-Control', edgeCacheControl(policy))
     if (isPartialRequest) {
       headers.set('Cache-Control', 'no-store, max-age=0')
       headers.set('Cloudflare-CDN-Cache-Control', 'no-store')
@@ -155,8 +228,6 @@ export default {
       headers.set(name, value)
     })
 
-    const upstreamCacheStatus =
-      upstreamResponse.headers.get('cf-cache-status') || 'UNKNOWN'
     headers.set('X-Notion-Image-Proxy-Origin-Cache', upstreamCacheStatus)
 
     // Honor browser validators without transferring an unchanged image again.
@@ -179,6 +250,65 @@ export default {
       await upstreamResponse.body.cancel()
     }
 
+    // Store the validated response. Encoded bodies are skipped so stored bytes
+    // always match their headers, and only complete 200 responses are ever
+    // stored — errors and ranges never enter any cache layer.
+    const storableUpstream =
+      wantsStoredResponse &&
+      upstreamResponse.status === 200 &&
+      !isFileHeadProbe &&
+      !headers.has('content-encoding') &&
+      Boolean(upstreamResponse.body)
+
+    if (storableUpstream) {
+      let clientBody = upstreamResponse.body
+
+      if (edgeCache && edgeCacheKey) {
+        const [nextClientBody, cacheBody] = clientBody.tee()
+        clientBody = nextClientBody
+        const cachePut = edgeCache
+          .put(
+            edgeCacheKey,
+            new Response(cacheBody, {
+              status: 200,
+              headers: coloCacheHeaders(headers, policy)
+            })
+          )
+          .catch(() => {})
+        if (ctx && typeof ctx.waitUntil === 'function') {
+          ctx.waitUntil(cachePut)
+        }
+      }
+
+      const contentLength = Number(headers.get('content-length'))
+      if (
+        bucket &&
+        r2Key &&
+        Number.isFinite(contentLength) &&
+        contentLength > 0 &&
+        contentLength <= R2_MAX_OBJECT_BYTES
+      ) {
+        const [nextClientBody, r2Body] = clientBody.tee()
+        clientBody = nextClientBody
+        const r2Put = putInR2(bucket, r2Key, r2Body, contentLength, headers)
+        if (ctx && typeof ctx.waitUntil === 'function') {
+          ctx.waitUntil(r2Put)
+        }
+      }
+
+      headers.set('X-Notion-Image-Proxy-Edge-Cache', 'MISS')
+      return new Response(clientBody, {
+        status: 200,
+        statusText: upstreamResponse.statusText,
+        headers,
+        encodeBody
+      })
+    }
+
+    if (wantsStoredResponse) {
+      headers.set('X-Notion-Image-Proxy-Edge-Cache', 'MISS')
+    }
+
     return new Response(
       request.method === 'HEAD' ? null : upstreamResponse.body,
       {
@@ -189,6 +319,281 @@ export default {
       }
     )
   }
+}
+
+function getEdgeCache() {
+  try {
+    return typeof caches !== 'undefined' && caches?.default
+      ? caches.default
+      : null
+  } catch (_) {
+    return null
+  }
+}
+
+function getAssetBucket(env) {
+  return env && env.ASSET_BUCKET ? env.ASSET_BUCKET : null
+}
+
+// Same-normalization as the upstream URL: sorting the query collapses
+// semantically identical eyeball URLs onto one Cache API entry.
+function createEdgeCacheKey(url) {
+  const normalized = new URL(url.toString())
+  normalized.searchParams.sort()
+  normalized.hash = ''
+  return new Request(normalized.toString(), { method: 'GET' })
+}
+
+// R2 keys hash the normalized path+query (host excluded, so every hostname
+// bound to this Worker shares one stored copy). Hashing keeps keys well under
+// the 1024-byte R2 limit no matter how long the encoded Notion URL is.
+async function createR2Key(url) {
+  const normalized = new URL(url.toString())
+  normalized.searchParams.sort()
+  normalized.hash = ''
+  const material = new TextEncoder().encode(
+    normalized.pathname + normalized.search
+  )
+  const digest = await crypto.subtle.digest('SHA-256', material)
+  const hex = [...new Uint8Array(digest)]
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('')
+  return `v1/${hex}`
+}
+
+function browserCacheControl(policy) {
+  return policy.immutable
+    ? `public, max-age=${policy.browserTtl}, immutable`
+    : `public, max-age=${policy.browserTtl}`
+}
+
+function edgeCacheControl(policy) {
+  return `public, max-age=${policy.edgeTtl}, stale-while-revalidate=${policy.staleWhileRevalidate}, stale-if-error=${policy.staleIfError}`
+}
+
+// The stored colo-cache copy carries s-maxage so the Cache API keeps it for
+// the long edge TTL while browsers keep using the shorter max-age.
+function coloCacheHeaders(headers, policy) {
+  const cacheHeaders = new Headers(headers)
+  cacheHeaders.set(
+    'Cache-Control',
+    `public, s-maxage=${policy.edgeTtl}, max-age=${policy.browserTtl}${policy.immutable ? ', immutable' : ''}`
+  )
+  cacheHeaders.set('X-Notion-Image-Proxy-Edge-Cache', 'MISS')
+  return cacheHeaders
+}
+
+function buildForwardedHeaderSnapshot(headers) {
+  const snapshot = {}
+  for (const name of FORWARDED_RESPONSE_HEADERS) {
+    if (name === 'content-encoding' || name === 'content-range') continue
+    const value = headers.get(name)
+    if (value) snapshot[name] = value
+  }
+  return snapshot
+}
+
+function putInR2(bucket, key, body, contentLength, headers) {
+  const options = {
+    httpMetadata: {
+      contentType: headers.get('content-type') || undefined,
+      contentDisposition: headers.get('content-disposition') || undefined
+    },
+    customMetadata: {
+      fwd: JSON.stringify(buildForwardedHeaderSnapshot(headers))
+    }
+  }
+
+  // R2 needs a known body length. FixedLengthStream provides it in the
+  // Workers runtime; elsewhere (tests) the stream is passed through as-is.
+  if (typeof FixedLengthStream === 'function') {
+    const fixed = new FixedLengthStream(contentLength)
+    const pipePromise = body.pipeTo(fixed.writable).catch(() => {})
+    const putPromise = bucket.put(key, fixed.readable, options).catch(() => {})
+    return Promise.all([pipePromise, putPromise])
+  }
+  return Promise.resolve(bucket.put(key, body, options)).catch(() => {})
+}
+
+function respondFromR2(stored, request, policy, { edgeCache, edgeCacheKey, ctx }) {
+  const headers = new Headers()
+  try {
+    const forwarded = JSON.parse(stored.customMetadata?.fwd || '{}')
+    for (const [name, value] of Object.entries(forwarded)) {
+      if (typeof value === 'string' && value) headers.set(name, value)
+    }
+  } catch (_) {}
+  if (!headers.has('content-type') && stored.httpMetadata?.contentType) {
+    headers.set('Content-Type', stored.httpMetadata.contentType)
+  }
+  if (stored.size !== undefined && stored.size !== null) {
+    headers.set('Content-Length', String(stored.size))
+  }
+  headers.set('Cache-Control', browserCacheControl(policy))
+  headers.set('Cloudflare-CDN-Cache-Control', edgeCacheControl(policy))
+  headers.set('X-Content-Type-Options', 'nosniff')
+  headers.set('X-Notion-Image-Proxy', PROXY_VERSION)
+  Object.entries(CORS_HEADERS).forEach(([name, value]) => {
+    headers.set(name, value)
+  })
+  headers.set('X-Notion-Image-Proxy-Origin-Cache', 'R2')
+  headers.set('X-Notion-Image-Proxy-Edge-Cache', 'R2-HIT')
+
+  if (isNotModified(request.headers, headers)) {
+    if (stored.body) {
+      Promise.resolve(stored.body.cancel?.()).catch(() => {})
+    }
+    return new Response(null, { status: 304, headers })
+  }
+
+  let clientBody = stored.body
+  // Repopulate this colo's Cache API so the next local request is an L1 hit.
+  if (edgeCache && edgeCacheKey && clientBody) {
+    const [nextClientBody, cacheBody] = clientBody.tee()
+    clientBody = nextClientBody
+    const cachePut = edgeCache
+      .put(
+        edgeCacheKey,
+        new Response(cacheBody, {
+          status: 200,
+          headers: coloCacheHeaders(headers, policy)
+        })
+      )
+      .catch(() => {})
+    if (ctx && typeof ctx.waitUntil === 'function') {
+      ctx.waitUntil(cachePut)
+    }
+  }
+
+  return new Response(clientBody, { status: 200, headers })
+}
+
+// 图床直读：/f/<key> 返回 R2 桶内手动上传的对象。上传通过控制台、
+// wrangler 或 S3 兼容 API 完成，本路由只读，不提供写入端点。
+async function serveBucketFile(
+  request,
+  env,
+  ctx,
+  url,
+  policy,
+  { edgeCache, edgeCacheKey }
+) {
+  const bucket = getAssetBucket(env)
+  if (!bucket) {
+    return textResponse(request, 404, 'File storage is not configured')
+  }
+
+  const key = safeDecode(url.pathname.slice(R2_FILE_ROUTE_PREFIX.length))
+  // v1/ 是缓存层的内部命名空间，不通过图床路由暴露
+  if (!key || key.startsWith('v1/')) {
+    return textResponse(request, 404, 'Not found')
+  }
+
+  let object = null
+  try {
+    object = await bucket.get(key)
+  } catch (_) {}
+  if (!object || !object.body) {
+    return textResponse(request, 404, 'Not found')
+  }
+
+  const headers = new Headers()
+  headers.set(
+    'Content-Type',
+    object.httpMetadata?.contentType || guessContentType(key)
+  )
+  if (object.size !== undefined && object.size !== null) {
+    headers.set('Content-Length', String(object.size))
+  }
+  if (object.httpEtag) {
+    headers.set('ETag', object.httpEtag)
+  }
+  if (object.httpMetadata?.contentDisposition) {
+    headers.set('Content-Disposition', object.httpMetadata.contentDisposition)
+  }
+  headers.set('Cache-Control', browserCacheControl(policy))
+  headers.set('Cloudflare-CDN-Cache-Control', edgeCacheControl(policy))
+  headers.set('X-Content-Type-Options', 'nosniff')
+  headers.set('X-Notion-Image-Proxy', PROXY_VERSION)
+  Object.entries(CORS_HEADERS).forEach(([name, value]) => {
+    headers.set(name, value)
+  })
+  headers.set('X-Notion-Image-Proxy-Origin-Cache', 'R2-FILE')
+  headers.set('X-Notion-Image-Proxy-Edge-Cache', 'MISS')
+
+  if (isNotModified(request.headers, headers)) {
+    Promise.resolve(object.body.cancel?.()).catch(() => {})
+    return new Response(null, { status: 304, headers })
+  }
+
+  if (request.method === 'HEAD') {
+    Promise.resolve(object.body.cancel?.()).catch(() => {})
+    return new Response(null, { status: 200, headers })
+  }
+
+  let clientBody = object.body
+  if (edgeCache && edgeCacheKey) {
+    const [nextClientBody, cacheBody] = clientBody.tee()
+    clientBody = nextClientBody
+    const cachePut = edgeCache
+      .put(
+        edgeCacheKey,
+        new Response(cacheBody, {
+          status: 200,
+          headers: coloCacheHeaders(headers, policy)
+        })
+      )
+      .catch(() => {})
+    if (ctx && typeof ctx.waitUntil === 'function') {
+      ctx.waitUntil(cachePut)
+    }
+  }
+
+  return new Response(clientBody, { status: 200, headers })
+}
+
+function guessContentType(key) {
+  const extension = key.slice(key.lastIndexOf('.') + 1).toLowerCase()
+  const types = {
+    avif: 'image/avif',
+    bmp: 'image/bmp',
+    gif: 'image/gif',
+    ico: 'image/x-icon',
+    jpeg: 'image/jpeg',
+    jpg: 'image/jpeg',
+    json: 'application/json',
+    mp3: 'audio/mpeg',
+    mp4: 'video/mp4',
+    pdf: 'application/pdf',
+    png: 'image/png',
+    svg: 'image/svg+xml',
+    txt: 'text/plain; charset=utf-8',
+    webm: 'video/webm',
+    webp: 'image/webp'
+  }
+  return types[extension] || 'application/octet-stream'
+}
+
+function validateUpstreamResponse(upstreamResponse, routeKind) {
+  const contentType = (
+    upstreamResponse.headers.get('content-type') || ''
+  ).toLowerCase()
+  const contentDisposition = (
+    upstreamResponse.headers.get('content-disposition') || ''
+  ).toLowerCase()
+  const isFileResponse =
+    [200, 206].includes(upstreamResponse.status) &&
+    (!contentType.includes('text/html') ||
+      contentDisposition.includes('attachment'))
+  const isValidAsset =
+    routeKind === 'waline-emoji-info'
+      ? upstreamResponse.status === 200 &&
+        contentType.includes('application/json')
+      : routeKind === 'file'
+        ? isFileResponse
+        : upstreamResponse.status === 200 && contentType.startsWith('image/')
+
+  return { isValidAsset }
 }
 
 function createUpstreamUrl(url) {
@@ -214,6 +619,18 @@ function copyRequestHeader(sourceHeaders, targetHeaders, name) {
 }
 
 function getCachePolicy(url, routeKind) {
+  // 图床文件可能被同名覆盖：浏览器与边缘各缓存一天，覆盖后最迟
+  // 一天内全网生效；ETag 让浏览器可以低成本重验证。
+  if (routeKind === 'r2-file') {
+    return {
+      immutable: false,
+      edgeTtl: 60 * 60 * 24,
+      browserTtl: 60 * 60 * 24,
+      staleWhileRevalidate: 60 * 60 * 24,
+      staleIfError: 60 * 60 * 24 * 30
+    }
+  }
+
   const decodedPath = safeDecode(url.pathname)
   const immutable =
     routeKind === 'file' ||
@@ -341,6 +758,12 @@ function getRouteKind(pathname) {
     return walineAsset.filename === 'info.json'
       ? 'waline-emoji-info'
       : 'waline-emoji-image'
+  }
+  if (
+    pathname.startsWith(R2_FILE_ROUTE_PREFIX) &&
+    pathname.length > R2_FILE_ROUTE_PREFIX.length
+  ) {
+    return 'r2-file'
   }
   if (pathname.startsWith('/images/')) return 'image'
   if (

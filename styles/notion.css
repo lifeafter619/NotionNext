@@ -2168,7 +2168,11 @@ tbody tr {
 }
 
 pre[class*='language-mermaid'] {
-  @apply bg-gray-50 dark:bg-gray-200 !important;
+  background-color: #f9fafb !important;
+}
+
+.dark pre[class*='language-mermaid'] {
+  background-color: #1e1e1e !important;
 }
 
 /* mermaid 原文隐藏 */

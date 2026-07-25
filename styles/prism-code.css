@@ -28,6 +28,7 @@
    -------------------------------------------------------------------------- */
 pre.notion-code[class*='language-'] {
   position: relative;
+  border: 1px solid rgba(31, 35, 40, 0.12);
   /* 未被 .code-toolbar 包裹前（水合初期）与包裹后的容器保持同样的外边距，避免布局跳动 */
   margin: 0.9rem 0 1.1rem !important;
   padding: 2.5rem 1rem 1.25rem !important;
@@ -42,9 +43,14 @@ pre.notion-code[class*='language-'] {
   text-shadow: none;
 }
 
+:where(.dark) pre.notion-code[class*='language-'] {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
 /* 被工具栏容器包裹后，外边距交由容器管理 */
 .code-toolbar > pre.notion-code[class*='language-'] {
   margin: 0 !important;
+  border: 0;
 }
 
 pre.notion-code[class*='language-'] > code {

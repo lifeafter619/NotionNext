@@ -85,7 +85,7 @@ const PrismMac = () => {
       )
       stopLineNumbers = typeof dispose === 'function' ? dispose : () => {}
       if (mermaidBlocks.length > 0) {
-        const stopObserver = renderMermaid(mermaidCDN)
+        const stopObserver = renderMermaid(mermaidCDN, isDarkMode)
         stopMermaidObserver =
           typeof stopObserver === 'function' ? stopObserver : () => {}
       }
@@ -310,118 +310,115 @@ const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
 /**
  * 将mermaid语言 渲染成图片
  */
-const renderMermaid = mermaidCDN => {
+const renderMermaid = (mermaidCDN, isDarkMode) => {
   const articles = getNotionArticles()
   if (!articles || articles.length === 0) return () => {}
+  const interactionCleanups = new Set()
+  let disposed = false
+  let rendering = false
+  let mermaidLoadPromise = null
 
-  // 优化：仅在有mermaid块时加载，避免不必要的观察
   const getMermaidBlocks = () =>
-    articles.flatMap(article =>
-      Array.from(article.querySelectorAll('.language-mermaid'))
-    )
+    articles.flatMap(article => {
+      const blocks = Array.from(
+        article.querySelectorAll('pre.language-mermaid')
+      )
+      for (const code of article.querySelectorAll('code.language-mermaid')) {
+        const pre = code.closest('pre')
+        if (pre && !blocks.includes(pre)) blocks.push(pre)
+      }
+      return blocks
+    })
 
   if (getMermaidBlocks().length === 0) return () => {}
 
-  const processMermaid = () => {
-    const mermaidBlocks = getMermaidBlocks()
-    const mermaidsSvg = articles.flatMap(article =>
-      Array.from(article.querySelectorAll('.mermaid'))
-    )
-    if (mermaidsSvg) {
-      let needLoad = false
-      for (const e of mermaidsSvg) {
-        if (e?.firstChild?.nodeName !== 'svg') {
-          needLoad = true
-        }
+  const resetGeneratedMermaid = () => {
+    for (const article of articles) {
+      article
+        .querySelectorAll('.mermaid-container[data-mermaid-generated="true"]')
+        .forEach(container => container.remove())
+      article.querySelectorAll('.mermaid').forEach(node => node.remove())
+      for (const block of getMermaidBlocks()) {
+        delete block.dataset.mermaidRendered
+        delete block.dataset.mermaidRendering
       }
-      // 如果已经渲染过，跳过
-      if (!needLoad && mermaidsSvg.length > 0) return
     }
-
-    // 查找未处理的 mermaid 块
-    mermaidBlocks.forEach(el => {
-      const codeEl = el.querySelector('code')
-      if (codeEl && !el.querySelector('.mermaid')) {
-        const chart = codeEl.textContent
-        if (chart) {
-          const mermaidChart = document.createElement('div')
-          mermaidChart.className = 'mermaid'
-          mermaidChart.textContent = chart // 使用 textContent 而不是 innerHTML 避免 XSS
-          el.appendChild(mermaidChart)
-        }
-      }
-    })
-
-    // 加载脚本并渲染
-    loadExternalResource(mermaidCDN, 'js')
-      .then(() => {
-        for (const article of articles) {
-          setTimeout(() => {
-            const mermaid = window.mermaid
-            if (mermaid) {
-              try {
-                // Mermaid v10+ 需要先初始化
-                mermaid.initialize({
-                  startOnLoad: false,
-                  theme: document.documentElement.classList.contains('dark')
-                    ? 'dark'
-                    : 'default',
-                  securityLevel: 'loose', // 允许链接点击
-                  flowchart: { useMaxWidth: true, htmlLabels: true },
-                  sequence: { useMaxWidth: true },
-                  gantt: { useMaxWidth: true }
-                })
-
-                // 使用 mermaid.run() 渲染所有 .mermaid 元素
-                const mermaidElements = articles.flatMap(article =>
-                  Array.from(article.querySelectorAll('.mermaid'))
-                )
-                if (mermaidElements.length > 0) {
-                  // Mermaid v10+ API: pass the nodes directly or use querySelector
-                  mermaid
-                    .run({ nodes: article.querySelectorAll('.mermaid') })
-                    .then(() => {
-                      // 渲染完成后添加容器和控制
-                      setTimeout(() => {
-                        const svgs = article.querySelectorAll('.mermaid svg')
-                        svgs.forEach(svg => {
-                          if (!svg.closest('.mermaid-container')) {
-                            wrapMermaid(svg)
-                          }
-                        })
-                      }, 300)
-                    })
-                    .catch(err => {
-                      console.error('Mermaid render error:', err)
-                    })
-                }
-              } catch (err) {
-                console.error('Mermaid initialization error:', err)
-                // 降级：尝试旧版 API
-                try {
-                  mermaid.contentLoaded()
-                  setTimeout(() => {
-                    const svgs = document.querySelectorAll('.mermaid svg')
-                    svgs.forEach(svg => {
-                      if (!svg.closest('.mermaid-container')) {
-                        wrapMermaid(svg)
-                      }
-                    })
-                  }, 300)
-                } catch (e) {
-                  console.error('Mermaid fallback error:', e)
-                }
-              }
-            }
-          }, 100)
-        }
-      })
-      .catch(err => {
-        console.error('Failed to load Mermaid CDN:', err)
-      })
   }
 
-  processMermaid()
+  // Mermaid marks rendered nodes with data-processed and skips them on later
+  // run() calls. Rebuild from the hidden source whenever this effect restarts.
+  resetGeneratedMermaid()
+
+  const getLoadPromise = () => {
+    if (!mermaidLoadPromise) {
+      mermaidLoadPromise = loadExternalResource(mermaidCDN, 'js')
+    }
+    return mermaidLoadPromise
+  }
+
+  const processMermaid = async () => {
+    if (disposed || rendering) return
+
+    const pending = []
+    for (const block of getMermaidBlocks()) {
+      if (block.dataset.mermaidRendered || block.dataset.mermaidRendering) {
+        continue
+      }
+      const code = block.querySelector('code.language-mermaid, code')
+      const chart = code?.textContent
+      if (!chart?.trim()) continue
+
+      block.querySelector('.mermaid')?.remove()
+      const node = document.createElement('div')
+      node.className = 'mermaid'
+      node.textContent = chart
+      block.dataset.mermaidRendering = 'true'
+      block.appendChild(node)
+      pending.push({ block, node })
+    }
+
+    if (pending.length === 0) return
+    rendering = true
+
+    try {
+      await getLoadPromise()
+      if (disposed) return
+      const mermaid = window.mermaid
+      if (!mermaid) throw new Error('Mermaid runtime is unavailable')
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDarkMode ? 'dark' : 'default',
+        securityLevel: 'loose',
+        flowchart: { useMaxWidth: true, htmlLabels: true },
+        sequence: { useMaxWidth: true },
+        gantt: { useMaxWidth: true }
+      })
+
+      await mermaid.run({ nodes: pending.map(item => item.node) })
+      if (disposed) return
+
+      for (const { block, node } of pending) {
+        const svg = node.querySelector('svg')
+        if (svg && !svg.closest('.mermaid-container')) {
+          const cleanup = wrapMermaid(svg)
+          if (typeof cleanup === 'function') interactionCleanups.add(cleanup)
+        }
+        delete block.dataset.mermaidRendering
+        block.dataset.mermaidRendered = 'true'
+      }
+    } catch (err) {
+      console.error('Mermaid render error:', err)
+      for (const { block, node } of pending) {
+        delete block.dataset.mermaidRendering
+        node.remove()
+      }
+    } finally {
+      rendering = false
+    }
+  }
+
+  void processMermaid()
 
   // 观察后续变化（例如动态加载），但进行去抖动或限制范围
   const observer = new MutationObserver(mutationsList => {
@@ -439,7 +436,7 @@ const renderMermaid = mermaidCDN => {
       }
     }
     if (shouldProcess) {
-      processMermaid()
+      void processMermaid()
     }
   })
 
@@ -451,7 +448,11 @@ const renderMermaid = mermaidCDN => {
   }
 
   return () => {
+    disposed = true
     observer.disconnect()
+    interactionCleanups.forEach(cleanup => cleanup())
+    interactionCleanups.clear()
+    resetGeneratedMermaid()
   }
 }
 
@@ -460,6 +461,7 @@ const renderMermaid = mermaidCDN => {
  */
 const wrapMermaid = svg => {
   const container = document.createElement('div')
+  container.dataset.mermaidGenerated = 'true'
   container.className =
     'mermaid-container relative overflow-hidden bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 my-4 shadow-sm'
   container.style.height = '400px' // 默认高度
@@ -657,6 +659,17 @@ const wrapMermaid = svg => {
     contentY = 0
     updateTransform()
     updateZoomIndicator()
+  }
+
+  return () => {
+    window.removeEventListener('mousemove', mouseMoveHandler)
+    window.removeEventListener('mouseup', mouseUpHandler)
+    container.onmousedown = null
+    container.ontouchstart = null
+    container.ontouchmove = null
+    container.ontouchend = null
+    container.onwheel = null
+    container.ondblclick = null
   }
 }
 

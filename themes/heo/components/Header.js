@@ -160,7 +160,7 @@ const Header = props => {
           </div>
 
           {/* 右侧固定 */}
-          <div className='flex flex-shrink-0 justify-end items-center w-auto lg:w-48 gap-1'>
+          <div className='flex flex-shrink-0 justify-end items-center w-auto lg:min-w-48 gap-1'>
             <RandomPostButton {...props} />
             <SearchButton {...props} />
             {!siteConfig('THEME_SWITCH') && showDarkMode && (

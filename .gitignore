@@ -77,3 +77,4 @@ quality-report.json
 health-report.json
 *.pyc
 __pycache__/
+.zcode/

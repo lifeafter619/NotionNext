@@ -14,6 +14,9 @@ export function isHeoCommentServiceConfigured() {
       siteConfig('COMMENT_CUSDIS_APP_ID') ||
       siteConfig('COMMENT_UTTERRANCES_REPO') ||
       siteConfig('COMMENT_GITALK_CLIENT_ID') ||
-      siteConfig('COMMENT_WEBMENTION_ENABLE')
+      siteConfig('COMMENT_WEBMENTION_ENABLE') ||
+      // 与 Comment.js 的判定保持一致（布尔或字符串 'true'）
+      siteConfig('COMMENT_NOTION_ENABLE') === true ||
+      siteConfig('COMMENT_NOTION_ENABLE') === 'true'
   )
 }

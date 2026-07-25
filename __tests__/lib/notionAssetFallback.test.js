@@ -19,23 +19,19 @@ describe('buildNotionAssetFallbackCandidates', () => {
       })
 
       const tiers = candidates.map(c => c.tier)
-      // NoReferrer 始终保留；随后是服务端代理、origin 直连。
-      expect(tiers).toEqual(['NoReferrer', 'Proxy', 'Origin'])
-
-      // 第1层 = 原 URL（配合 no-referrer 重试）。
-      expect(candidates[0].url).toBe(src)
+      expect(tiers).toEqual(['Proxy', 'Origin'])
 
       // 服务端代理回源到 notion.so（getNotionAssetDownloadSource 映射）。
-      const proxyUrl = new URL(candidates[1].url, 'https://notionnext.local')
+      const proxyUrl = new URL(candidates[0].url, 'https://notionnext.local')
       expect(proxyUrl.pathname).toBe('/api/proxy-image')
       const proxied = proxyUrl.searchParams.get('url')
       expect(proxied.startsWith('https://www.notion.so/')).toBe(true)
 
       // 第3层是 notion.so 原域名直连。
-      expect(candidates[2].url.startsWith('https://www.notion.so/')).toBe(true)
+      expect(candidates[1].url.startsWith('https://www.notion.so/')).toBe(true)
     })
 
-    it('unwraps a Notion-wrapped third-party image into its real external URL', () => {
+    it('unwraps a Notion-wrapped third-party image without sending it through the restricted proxy', () => {
       const src =
         'https://img.cdn.619.pp.ua/image/https%3A%2F%2Fimages.unsplash.com%2Fphoto.jpg?width=800'
       const candidates = buildNotionAssetFallbackCandidates({
@@ -45,28 +41,18 @@ describe('buildNotionAssetFallbackCandidates', () => {
       })
 
       const tiers = candidates.map(c => c.tier)
-      expect(tiers).toEqual(['NoReferrer', 'Proxy', 'Origin'])
-
-      // 服务端代理层指向真实第三方源。
-      const proxyUrl = new URL(candidates[1].url, 'https://notionnext.local')
-      expect(proxyUrl.searchParams.get('url')).toBe(
-        'https://images.unsplash.com/photo.jpg'
-      )
-      // 第3层直连第三方源。
-      expect(candidates[2].url).toBe('https://images.unsplash.com/photo.jpg')
+      expect(tiers).toEqual(['Origin'])
+      expect(candidates[0].url).toBe('https://images.unsplash.com/photo.jpg')
     })
 
-    it('keeps the no-referrer tier for a third-party image', () => {
-      // 第三方图床可能也有 hotlink 防护，no-referrer 重试有意义。
+    it('does not retry an ordinary third-party image through a Notion proxy', () => {
       const src = 'https://image.66619.eu.org/file/example.png'
       const candidates = buildNotionAssetFallbackCandidates({
         src,
         kind: 'image',
         notionHost: NOTION_HOST
       })
-      // 无法映射出服务端代理 / origin，但 no-referrer 重试仍然保留。
-      expect(candidates.map(c => c.tier)).toEqual(['NoReferrer'])
-      expect(candidates[0].url).toBe(src)
+      expect(candidates).toEqual([])
     })
   })
 
@@ -91,9 +77,9 @@ describe('buildNotionAssetFallbackCandidates', () => {
 
       const tiers = candidates.map(c => c.tier)
       // NoReferrer 始终保留；随后是服务端代理（FileApi）、origin 直连。
-      expect(tiers).toEqual(['NoReferrer', 'FileApi', 'Origin'])
+      expect(tiers).toEqual(['FileApi', 'Origin'])
 
-      const fileApiUrl = new URL(candidates[1].url, 'https://notionnext.local')
+      const fileApiUrl = new URL(candidates[0].url, 'https://notionnext.local')
       expect(fileApiUrl.pathname).toBe('/api/notion-file')
       expect(fileApiUrl.searchParams.get('id')).toBe('audio-block')
       expect(fileApiUrl.searchParams.get('source')).toBe(
@@ -101,8 +87,8 @@ describe('buildNotionAssetFallbackCandidates', () => {
       )
 
       // 第3层把 host 换回 www.notion.so。
-      expect(candidates[2].url.startsWith('https://www.notion.so/')).toBe(true)
-      expect(candidates[2].url).toContain('/signed/')
+      expect(candidates[1].url.startsWith('https://www.notion.so/')).toBe(true)
+      expect(candidates[1].url).toContain('/signed/')
     })
 
     it('ignores /signed/ URLs from unknown hosts', () => {
@@ -113,15 +99,13 @@ describe('buildNotionAssetFallbackCandidates', () => {
       expect(parsed).toBeNull()
     })
 
-    it('returns only the no-referrer tier for an externally hosted media URL', () => {
-      // 外部托管的媒体（无 /signed/ 包装）：无法走服务端代理/origin，
-      // 但 no-referrer 重试仍有意义。
+    it('does not proxy an externally hosted media URL', () => {
       const candidates = buildNotionAssetFallbackCandidates({
         src: 'https://media.example.com/podcast.mp3?token=original',
         kind: 'media',
         notionHost: NOTION_HOST
       })
-      expect(candidates.map(c => c.tier)).toEqual(['NoReferrer'])
+      expect(candidates).toEqual([])
     })
   })
 })
@@ -161,37 +145,32 @@ describe('retryNotionAssetElement', () => {
     const originalSrc = `${NOTION_HOST}/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Fabc%2Fpic.png?table=block&id=b1`
     img.setAttribute('src', originalSrc)
 
-    // 第1次失败 → 切到 NoReferrer（以空 Referer 重试原 URL）。候选已在此刻固化。
-    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(true)
-    expect(img.getAttribute('src')).toBe(originalSrc)
-    expect(img.referrerPolicy).toBe('no-referrer')
-
-    // 第2次失败 → 切到服务端代理（基于固化的原始候选，不因 src 变化而重算）。
+    // 第1次失败 → 服务端代理。候选已在此刻固化。
     expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(true)
     expect(img.getAttribute('src').startsWith('/api/proxy-image?')).toBe(true)
+    expect(img.referrerPolicy).toBe('no-referrer')
 
-    // 第3次失败 → 切到 notion.so 原域名。
+    // 第2次失败 → 切到 notion.so 原域名。
     expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(true)
     expect(img.getAttribute('src').startsWith('https://www.notion.so/')).toBe(
       true
     )
 
     // 候选耗尽。
-    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(false)
+    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(
+      false
+    )
   })
 
-  it('advances a video element through no-referrer then /api/notion-file', () => {
+  it('advances a video element through /api/notion-file', () => {
     const video = document.createElement('video')
+    video.load = jest.fn()
     video.setAttribute(
       'src',
       `${NOTION_HOST}/signed/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2Fvid%2Fclip.mp4?table=block&id=video-block`
     )
 
-    // 第1次 → no-referrer 重试原 URL。
-    expect(
-      retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
-    ).toBe(true)
-    // 第2次 → /api/notion-file。
+    // 第1次 → /api/notion-file。
     expect(
       retryNotionAssetElement(video, { kind: 'media', notionHost: NOTION_HOST })
     ).toBe(true)
@@ -201,7 +180,28 @@ describe('retryNotionAssetElement', () => {
   it('returns false for an unsupported src', () => {
     const img = document.createElement('img')
     img.setAttribute('src', '/local/relative.png')
-    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(false)
+    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(
+      false
+    )
+  })
+
+  it('rebuilds fallback state when a reused element receives a new source', () => {
+    const img = document.createElement('img')
+    const first = `${NOTION_HOST}/image/attachment%3Afirst.png?table=block&id=first`
+    const second = `${NOTION_HOST}/image/attachment%3Asecond.png?table=block&id=second`
+
+    img.setAttribute('src', first)
+    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(true)
+
+    img.setAttribute('src', second)
+    expect(retryNotionAssetElement(img, { notionHost: NOTION_HOST })).toBe(true)
+
+    const proxyUrl = new URL(
+      img.getAttribute('src'),
+      'https://notionnext.local'
+    )
+    expect(proxyUrl.searchParams.get('url')).toContain(
+      'attachment%3Asecond.png'
+    )
   })
 })
-

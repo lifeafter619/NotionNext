@@ -34,13 +34,14 @@ describe('HEO style validity', () => {
   it('uses valid Tailwind utility tokens in HEO components', () => {
     expect(darkModeButton).not.toContain('hover: scale-')
     expect(darkModeButton).not.toContain('hover:scale-')
-    expect(darkModeButton).toContain("<Sun className='w-5 h-5' />")
-    expect(darkModeButton).toContain("<Moon className='w-5 h-5' />")
+    expect(darkModeButton).toContain('AppearanceModeSwitch')
     expect(heroIcons).toContain('export const Moon = ({ className }) =>')
     expect(heroIcons).toContain('export const Sun = ({ className }) =>')
 
     expect(infoCard).not.toContain('transitaion-all')
     expect(infoCard).toContain('transition-all')
+    expect(infoCard).toContain('dark:text-gray-950')
+    expect(infoCard).toContain('dark:hover:text-white')
 
     expect(postHeader).not.toContain('font-sm')
     expect(postHeader).toContain('text-sm')

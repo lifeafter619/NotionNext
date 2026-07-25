@@ -56,15 +56,15 @@ const LatestPostsGroup = ({ latestPosts, siteInfo }) => {
             title={title}
             href={href}
             className={'my-3 flex flex-col w-full'}>
-            <div className='w-full h-24 md:h-60 overflow-hidden relative rounded-lg mb-2 pointer-events-none'>
+            <div className='heo-post-cover w-full overflow-hidden relative rounded-lg mb-2 pointer-events-none'>
               {headerImage ? (
                 <LazyImage
                   src={headerImage}
                   alt={title}
-                  width={360}
-                  height={240}
+                  width={1010}
+                  height={440}
                   sizes='(min-width: 720px) 20rem, 50vw'
-                  className='object-cover w-full h-full'
+                  className='object-cover object-center w-full h-full'
                 />
               ) : (
                 <div className='w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400'>

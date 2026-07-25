@@ -272,12 +272,12 @@ export default function PostAdjacent({ prev, next }) {
           <div className='relative w-80 min-h-24 bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden flex flex-col'>
             {/* 顶部图片部分 */}
             {next.pageCoverThumbnail && (
-              <div className='h-32 w-full relative overflow-hidden group'>
+              <div className='heo-post-cover w-full relative overflow-hidden group'>
                 <LazyImage
                   src={next.pageCoverThumbnail}
                   alt={nextTitle}
-                  width={320}
-                  height={128}
+                  width={505}
+                  height={220}
                   sizes='320px'
                   className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                 />

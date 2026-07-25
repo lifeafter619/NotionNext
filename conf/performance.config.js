@@ -14,7 +14,20 @@ module.exports = {
 
   // 懒加载配置
   LAZY_LOAD_IMAGES: process.env.NEXT_PUBLIC_LAZY_LOAD_IMAGES || true,
-  LAZY_LOAD_THRESHOLD: process.env.NEXT_PUBLIC_LAZY_LOAD_THRESHOLD || '200px',
+  // 懒加载图片提前加载的视口边距：距离进入视口还有 600px 时就开始加载，
+  // 减少用户滚动时看到占位图的概率
+  LAZY_LOAD_THRESHOLD: process.env.NEXT_PUBLIC_LAZY_LOAD_THRESHOLD || '600px',
+
+  // 空闲图片预取：首屏加载完成后，在浏览器空闲时以受限并发预热
+  // 尚未进入视口的懒加载图片（含文章内配图），滚动到时即时显示。
+  // 弱网（2g）或用户开启省流模式（Save-Data）时自动禁用。
+  IMAGE_PREFETCH_ENABLE: parseBoolean(
+    process.env.NEXT_PUBLIC_IMAGE_PREFETCH_ENABLE,
+    true
+  ),
+  // 预取并发上限，避免占满连接池、对低端设备造成解码压力
+  IMAGE_PREFETCH_CONCURRENCY:
+    process.env.NEXT_PUBLIC_IMAGE_PREFETCH_CONCURRENCY || 4,
 
   // 代码分割配置
   ENABLE_CODE_SPLITTING: process.env.NEXT_PUBLIC_ENABLE_CODE_SPLITTING || true,

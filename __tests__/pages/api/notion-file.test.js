@@ -67,6 +67,25 @@ function createFileResponse(body = createSuccessfulBody()) {
   }
 }
 
+function createPartialFileResponse() {
+  return {
+    ok: true,
+    status: 206,
+    statusText: 'Partial Content',
+    headers: {
+      get: jest.fn(name => {
+        const normalized = name.toLowerCase()
+        if (normalized === 'content-type') return 'video/mp4'
+        if (normalized === 'content-length') return '32'
+        if (normalized === 'accept-ranges') return 'bytes'
+        if (normalized === 'content-range') return 'bytes 0-31/8192'
+        return null
+      })
+    },
+    body: createSuccessfulBody()
+  }
+}
+
 function createSuccessfulBody() {
   return new ReadableStream({
     start(controller) {
@@ -213,6 +232,48 @@ describe('/api/notion-file', () => {
     expect(res.json).not.toHaveBeenCalled()
   })
 
+  it('cancels the upstream body when the client disconnects mid-stream', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    const cancel = jest.fn()
+    const body = new ReadableStream({
+      pull(controller) {
+        controller.enqueue(new Uint8Array([1]))
+      },
+      cancel
+    })
+    global.fetch.mockResolvedValueOnce(createFileResponse(body))
+    const res = new Writable({
+      write(_chunk, _encoding, callback) {
+        res.headersSent = true
+        callback(new Error('client disconnected'))
+      }
+    })
+    res.statusCode = 200
+    res.headers = {}
+    res.headersSent = false
+    res.setHeader = jest.fn((name, value) => {
+      res.headers[name.toLowerCase()] = value
+    })
+    res.status = jest.fn(code => {
+      res.statusCode = code
+      return res
+    })
+    res.json = jest.fn(() => res)
+
+    await handler(
+      {
+        method: 'GET',
+        query: {
+          id: 'block-id',
+          source: 'attachment:file-id:report.zip'
+        }
+      },
+      res
+    )
+
+    expect(cancel).toHaveBeenCalledTimes(1)
+  })
+
   it('cancels the upstream body after serving a HEAD request', async () => {
     const cancel = jest.fn()
     const body = new ReadableStream({ cancel })
@@ -231,5 +292,42 @@ describe('/api/notion-file', () => {
     )
 
     expect(cancel).toHaveBeenCalledTimes(1)
+  })
+
+  it('forwards media range requests and preserves the partial response contract', async () => {
+    global.fetch.mockResolvedValueOnce(createPartialFileResponse())
+    const res = createResponse()
+
+    await handler(
+      {
+        method: 'GET',
+        headers: {
+          range: 'bytes=0-31',
+          'if-range': '"video-etag"'
+        },
+        query: {
+          id: 'video-block',
+          source: 'attachment:video-id:movie.mp4'
+        }
+      },
+      res
+    )
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://prod-files-secure.s3.us-west-2.amazonaws.com/file.zip',
+      expect.objectContaining({
+        redirect: 'manual',
+        headers: {
+          Range: 'bytes=0-31',
+          'If-Range': '"video-etag"'
+        }
+      })
+    )
+    expect(res.status).toHaveBeenCalledWith(206)
+    expect(res.setHeader).toHaveBeenCalledWith('Accept-Ranges', 'bytes')
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Range',
+      'bytes 0-31/8192'
+    )
   })
 })

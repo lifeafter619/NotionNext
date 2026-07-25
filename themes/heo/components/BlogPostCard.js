@@ -69,8 +69,8 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
   const isDefaultStyle = !className
   const containerClass = className
     ? `wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col group w-full dark:border-gray-600 hover:border-indigo-600 dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl ${className}`
-    : (POST_TWO_COLS ? '2xl:h-96 2xl:flex-col' : '') +
-      ` wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col h-[23rem] md:h-52 md:flex-row ${reverseCover ? 'md:flex-row-reverse' : ''} group w-full dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl`
+    : (POST_TWO_COLS ? '2xl:h-auto 2xl:flex-col' : '') +
+      ` wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col md:h-52 md:flex-row ${reverseCover ? 'md:flex-row-reverse' : ''} group w-full dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl`
 
   return (
     <article
@@ -81,14 +81,18 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
           <SmartLink
             href={postHref}
             className={
-              (isDefaultStyle && POST_TWO_COLS ? ' 2xl:w-full' : '') +
-              (isDefaultStyle ? ' flex-1 min-h-0 md:flex-none' : '') +
+              (isDefaultStyle && POST_TWO_COLS
+                ? ' heo-post-cover-two-cols 2xl:w-full 2xl:h-auto'
+                : '') +
+              (isDefaultStyle
+                ? ' heo-post-cover-card flex-none md:h-full'
+                : ' heo-post-cover') +
               ' block w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
             }>
             <LazyImage
-              priority={index === 0 && Boolean(pageCoverThumbnail)}
-              width={POST_TWO_COLS ? 620 : 460}
-              height={POST_TWO_COLS ? 220 : 208}
+              priority={index < 2 && Boolean(pageCoverThumbnail)}
+              width={POST_TWO_COLS ? 1010 : 505}
+              height={POST_TWO_COLS ? 440 : 220}
               sizes={
                 POST_TWO_COLS
                   ? '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'

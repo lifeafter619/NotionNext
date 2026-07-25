@@ -11,6 +11,7 @@ const Style = () => {
   return (
     <style jsx global>{`
       #theme-heo {
+        --heo-post-cover-aspect-ratio: 505 / 220;
         --heo-color-primary: #4f65f0;
         --heo-color-primary-hover: ${siteConfig(
           'HEO_COLOR_PRIMARY_HOVER',
@@ -158,6 +159,23 @@ const Style = () => {
 
       #theme-heo #notion-article {
         overflow: visible;
+      }
+
+      #theme-heo .heo-post-cover,
+      #theme-heo .heo-post-cover-card {
+        aspect-ratio: var(--heo-post-cover-aspect-ratio);
+      }
+
+      @media (min-width: 768px) {
+        #theme-heo .heo-post-cover-card {
+          aspect-ratio: auto;
+        }
+      }
+
+      @media (min-width: 1536px) {
+        #theme-heo .heo-post-cover-card.heo-post-cover-two-cols {
+          aspect-ratio: var(--heo-post-cover-aspect-ratio);
+        }
       }
 
       #theme-heo #notion-article .notion-text,

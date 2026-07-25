@@ -71,13 +71,13 @@ export function InfoCard(props) {
       <div className='flex justify-between'>
         {/* 问候语 */}
         <GreetingsWords />
-        {/* 头像 - 禁止点击 */}
+        {/* 头像 - 禁止点击；模糊模式下需要接收 hover 才能触发淡出效果 */}
         <div
           className={`${
             useBlurAvatar
               ? 'absolute right-0 -mt-8 -mr-6 hover:opacity-0 hover:scale-150 blur'
-              : 'cursor-default'
-          } pointer-events-none justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
+              : 'cursor-default pointer-events-none'
+          } justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
           <LazyImage
             src={siteInfo?.icon}
             className='rounded-full'
@@ -168,7 +168,7 @@ function GreetingsWords() {
       type='button'
       aria-label='切换问候语'
       onClick={handleChangeGreeting}
-      className=' select-none cursor-pointer py-1 px-2 bg-[var(--heo-color-primary-hover)] hover:bg-[var(--heo-color-card-muted)]  hover:text-[var(--heo-color-text)] dark:bg-[var(--heo-color-accent)] dark:hover:text-white dark:hover:bg-black text-sm rounded-lg  duration-200 transition-colors'>
+      className='select-none cursor-pointer py-1 px-2 bg-[var(--heo-color-primary-hover)] hover:bg-[var(--heo-color-card-muted)] hover:text-[var(--heo-color-text)] dark:bg-[var(--heo-color-accent)] dark:text-gray-950 dark:hover:text-white dark:hover:bg-black text-sm rounded-lg duration-200 transition-colors'>
       {greeting}
     </button>
   )

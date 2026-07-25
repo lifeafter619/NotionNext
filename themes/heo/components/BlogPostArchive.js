@@ -69,17 +69,19 @@ const BlogPostArchive = ({ posts = [], archiveTitle, siteInfo }) => {
               <div
                 key={post.id || post.slug || index}
                 className={
-                  'cursor-pointer flex flex-row mb-4 h-24 md:flex-row group w-full  dark:border-gray-600 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] duration-300 transition-colors justify-between overflow-hidden'
+                  'cursor-pointer flex flex-row items-center mb-4 min-h-24 md:flex-row group w-full dark:border-gray-600 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] duration-300 transition-colors justify-between overflow-hidden'
                 }>
                 {/* 图片封面 */}
                 {showPageCover && (
-                  <div>
-                    <SmartLink href={postHref}>
+                  <div className='flex-shrink-0'>
+                    <SmartLink
+                      href={postHref}
+                      className='heo-post-cover block w-44 md:w-52 rounded-xl overflow-hidden'>
                       <LazyImage
-                        className={'rounded-xl bg-center bg-cover w-40 h-24'}
-                        width={160}
-                        height={96}
-                        sizes='160px'
+                        className='w-full h-full object-cover object-center'
+                        width={505}
+                        height={220}
+                        sizes='(min-width: 768px) 13rem, 11rem'
                         alt={title}
                         src={pageCoverThumbnail}
                       />

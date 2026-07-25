@@ -18,47 +18,38 @@ const getUrlOrigin = value => {
   }
 }
 
-const darkTime = Array.isArray(BLOG.APPEARANCE_DARK_TIME)
-  ? BLOG.APPEARANCE_DARK_TIME
-  : null
-const darkTimeStart = Number(darkTime?.[0])
-const darkTimeEnd = Number(darkTime?.[1])
-const hasDarkTime = Boolean(
-  darkTime && Number.isFinite(darkTimeStart) && Number.isFinite(darkTimeEnd)
-)
-
 // 预先设置深色模式的脚本内容
 export const darkModeScript = `
 (function() {
-  let darkMode = null
+  let savedMode = null
   try {
-    darkMode = localStorage.getItem('darkMode')
+    savedMode = localStorage.getItem('darkMode')
   } catch (err) {}
 
   const prefersDark =
     window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
 
-  const defaultAppearance = '${BLOG.APPEARANCE || 'auto'}'
-
-  let shouldBeDark = darkMode === 'true' || darkMode === 'dark'
-
-  if (darkMode === null) {
-    if (defaultAppearance === 'dark') {
-      shouldBeDark = true
-    } else if (defaultAppearance === 'auto') {
-      // 检查是否在深色模式时间范围内
-      const date = new Date()
-      const hours = date.getHours()
-      const useDarkTime = ${Boolean(hasDarkTime)}
-      const darkTimeStart = ${hasDarkTime ? darkTimeStart : 'null'}
-      const darkTimeEnd = ${hasDarkTime ? darkTimeEnd : 'null'}
-      
-      shouldBeDark =
-        prefersDark || (useDarkTime && (hours >= darkTimeStart || hours < darkTimeEnd))
-    }
+  const normalizeMode = function(value) {
+    if (value === true || value === 'true' || value === 'dark') return 'dark'
+    if (value === false || value === 'false' || value === 'light') return 'light'
+    if (value === 'auto' || value === 'system') return 'system'
+    return null
   }
-  
+
+  const queryMode = normalizeMode(
+    new URLSearchParams(window.location.search).get('mode')
+  )
+  const defaultAppearance = normalizeMode(${JSON.stringify(
+    BLOG.APPEARANCE || 'system'
+  )}) || 'system'
+  const appearanceMode =
+    queryMode || normalizeMode(savedMode) || defaultAppearance
+  const shouldBeDark =
+    appearanceMode === 'dark' ||
+    (appearanceMode === 'system' && prefersDark)
+
   // 立即设置 html 元素的类
+  document.documentElement.classList.remove('dark', 'light')
   document.documentElement.classList.add(shouldBeDark ? 'dark' : 'light')
 })()
 `
@@ -92,21 +83,37 @@ class MyDocument extends Document {
           ))}
           <link rel='dns-prefetch' href='//images.unsplash.com' />
 
-          {/* 预加载字体样式表 */}
-          {BLOG.FONT_PRELOAD &&
-            fontUrls.map((url, index) => (
-              <link
-                key={`preload-font-${index}`}
-                rel='preload'
-                href={url}
-                as='style'
-              />
-            ))}
-
-          {/* 加载字体样式表 */}
+          {/* 网页字体样式表：preload 后异步启用，不阻塞首屏渲染。
+              中文 Web 字体样式走第三方 CDN，同步加载会显著推迟首次绘制；
+              异步启用后先用系统字体渲染文字，字体就绪后再平滑替换。 */}
           {fontUrls.map((url, index) => (
-            <link key={`font-${index}`} rel='stylesheet' href={url} />
+            <link
+              key={`font-css-${index}`}
+              id={`web-font-css-${index}`}
+              rel='preload'
+              as='style'
+              href={url}
+            />
           ))}
+          {fontUrls.length > 0 && (
+            <>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html:
+                    "requestAnimationFrame(function(){for(var i=0;;i++){var l=document.getElementById('web-font-css-'+i);if(!l)break;l.rel='stylesheet'}})"
+                }}
+              />
+              <noscript>
+                {fontUrls.map((url, index) => (
+                  <link
+                    key={`font-noscript-${index}`}
+                    rel='stylesheet'
+                    href={url}
+                  />
+                ))}
+              </noscript>
+            </>
+          )}
 
           {/* 预加载 Font Awesome */}
           {BLOG.FONT_AWESOME && (

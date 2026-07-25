@@ -78,6 +78,39 @@ function createFailingBody(error) {
   })
 }
 
+function createNeverEndingBody(cancel) {
+  return new ReadableStream({
+    pull(controller) {
+      controller.enqueue(new Uint8Array([1]))
+    },
+    cancel
+  })
+}
+
+// 模拟客户端在收到首个数据块后断开连接的响应对象。
+function createDisconnectingResponse() {
+  const res = new Writable({
+    write(_chunk, _encoding, callback) {
+      res.headersSent = true
+      callback(new Error('client disconnected'))
+    }
+  })
+
+  res.statusCode = 200
+  res.headers = {}
+  res.headersSent = false
+  res.setHeader = jest.fn((name, value) => {
+    res.headers[name.toLowerCase()] = value
+  })
+  res.status = jest.fn(code => {
+    res.statusCode = code
+    return res
+  })
+  res.json = jest.fn(() => res)
+
+  return res
+}
+
 function createRedirectResponse(location) {
   return {
     ok: false,
@@ -269,5 +302,53 @@ describe('/api/proxy-image', () => {
 
     expect(res.status).toHaveBeenCalledWith(403)
     expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('maps an allowlisted custom Notion proxy URL back to the Notion origin before validation', async () => {
+    const source =
+      'https://img.cdn.619.pp.ua/image/attachment%3Aimage-id%3Acover.png?table=block&id=block-id'
+    const res = createResponse()
+
+    await handler({ method: 'GET', query: { url: source } }, res)
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://www.notion.so/image/attachment%3Aimage-id%3Acover.png?table=block&id=block-id',
+      expect.objectContaining({ redirect: 'manual' })
+    )
+    expect(res.statusCode).toBe(200)
+  })
+
+  it('sends public cache headers so repeated views reuse the proxied image', async () => {
+    const res = createResponse()
+
+    await handler(
+      {
+        method: 'GET',
+        query: { url: 'https://secure.notion-static.com/image-id/photo.png' }
+      },
+      res
+    )
+
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['cache-control']).toContain('public')
+  })
+
+  it('cancels the upstream body when the client disconnects mid-stream', async () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    const cancel = jest.fn()
+    global.fetch.mockResolvedValueOnce(
+      createImageResponse(createNeverEndingBody(cancel))
+    )
+    const res = createDisconnectingResponse()
+
+    await handler(
+      {
+        method: 'GET',
+        query: { url: 'https://secure.notion-static.com/image-id/photo.png' }
+      },
+      res
+    )
+
+    expect(cancel).toHaveBeenCalledTimes(1)
   })
 })

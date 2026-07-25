@@ -4,7 +4,7 @@ const CONFIG = {
   HEO_ANIMATE_ON_SCROLL: false, // 是否开启滚动动画，关闭可降低设备消耗
 
   HEO_HOME_BANNER_ENABLE: true,
-  HEO_VISITOR_LOCATION_ENABLE: false, // 是否允许请求第三方服务获取访客 IP 属地（涉及隐私，默认关闭）
+  HEO_VISITOR_LOCATION_ENABLE: true, // 默认展示访客 IP 属地；设为 false 可关闭第三方属地查询
 
   HEO_INFO_CARD_AVATAR_BLUR: true, // 文章详情页个人资料卡头像样式。true：显示为模糊装饰头像；false：与首页头像保持一致
 

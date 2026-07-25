@@ -6,8 +6,8 @@ import { getQueryParam } from '@/lib/utils'
 import { THEMES } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import AppearanceModeSwitch from './AppearanceModeSwitch'
 import { Draggable } from './Draggable'
-import { Moon, Sun } from './HeroIcons'
 import LazyImage from './LazyImage'
 import SideBarDrawer from './SideBarDrawer'
 
@@ -638,7 +638,7 @@ function ThemeConsole({ meta, onClose }) {
  * @returns 主题切换
  */
 const ThemeSwitch = () => {
-  const { theme, locale, isDarkMode, toggleDarkMode } = useGlobal()
+  const { theme, locale, isDarkMode } = useGlobal()
   const router = useRouter()
   const currentTheme = getQueryParam(router.asPath, 'theme') || theme
   const [sideBarVisible, setSideBarVisible] = useState(false)
@@ -685,7 +685,7 @@ const ThemeSwitch = () => {
             <button
               id='themeSelect'
               type='button'
-              className={`flex h-9 min-w-0 max-w-[9.5rem] cursor-pointer items-center gap-2 rounded-lg px-2 text-left transition active:scale-[0.98] ${
+              className={`flex h-9 min-w-0 max-w-10 cursor-pointer items-center gap-2 rounded-lg px-2 text-left transition active:scale-[0.98] sm:max-w-[9.5rem] ${
                 isDarkMode
                   ? 'text-gray-100 hover:bg-gray-800'
                   : 'text-gray-900 hover:bg-gray-100'
@@ -706,7 +706,7 @@ const ThemeSwitch = () => {
                   aria-hidden
                 />
               </span>
-              <span className='min-w-0 truncate text-sm font-semibold leading-none'>
+              <span className='hidden min-w-0 truncate text-sm font-semibold leading-none sm:block'>
                 {currentMeta.name}
               </span>
             </button>
@@ -728,20 +728,7 @@ const ThemeSwitch = () => {
                 aria-hidden
               />
             </button>
-            <button
-              type='button'
-              onClick={toggleDarkMode}
-              className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition active:scale-95 ${
-                isDarkMode
-                  ? 'text-amber-300 hover:bg-gray-800'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-              }`}
-              title={isDarkMode ? '切换浅色模式' : '切换深色模式'}
-              aria-label={isDarkMode ? '切换浅色模式' : '切换深色模式'}>
-              <span className='h-4 w-4 [&_svg]:h-4 [&_svg]:w-4'>
-                {isDarkMode ? <Sun /> : <Moon />}
-              </span>
-            </button>
+            <AppearanceModeSwitch className='!border-0 !bg-transparent !p-0 !shadow-none dark:!bg-transparent [&_button]:h-9 [&_button]:w-9 [&_svg]:h-4 [&_svg]:w-4' />
           </div>
         </div>
       </Draggable>
@@ -787,39 +774,18 @@ const ThemeSwitch = () => {
           </div>
 
           <div className='space-y-6 px-5 pb-10 pt-6'>
-            {/* 明暗切换：整行可点，仍为 toggleDarkMode */}
-            <button
-              type='button'
-              onClick={toggleDarkMode}
-              aria-label={isDarkMode ? '切换为浅色模式' : '切换为深色模式'}
-              className='flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-r from-sky-50 via-white to-violet-50 px-4 py-3.5 text-left shadow-sm ring-1 ring-indigo-100/80 transition hover:border-indigo-400 hover:shadow-md active:scale-[0.99] dark:border-indigo-500/40 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/60 dark:ring-indigo-500/20 dark:hover:border-indigo-400/70'>
-              <span className='flex min-w-0 flex-1 items-center gap-3'>
-                <span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-indigo-600 shadow-md ring-1 ring-gray-200 dark:bg-gray-800 dark:text-amber-300 dark:ring-gray-600 [&_svg]:h-7 [&_svg]:w-7'>
-                  {isDarkMode ? <Sun /> : <Moon />}
-                </span>
-                <span className='min-w-0'>
-                  <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-                    {isDarkMode
-                      ? locale.MENU.LIGHT_MODE
-                      : locale.MENU.DARK_MODE}
-                  </span>
-                  <span className='mt-0.5 block text-xs text-gray-600 dark:text-gray-400'>
-                    {isDarkMode ? '点击切换为浅色模式' : '点击切换为深色模式'}
-                  </span>
-                </span>
-              </span>
-              <span
-                className={`relative inline-flex h-9 w-[3.35rem] shrink-0 items-center rounded-full border border-transparent shadow-inner transition-colors ${
-                  isDarkMode ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
-                }`}
-                aria-hidden>
-                <span
-                  className={`pointer-events-none absolute top-1 left-1 h-7 w-7 rounded-full bg-white shadow ring-1 ring-black/10 transition-transform duration-200 ease-out ${
-                    isDarkMode ? 'translate-x-[1.35rem]' : 'translate-x-0'
-                  }`}
-                />
-              </span>
-            </button>
+            <section className='rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-r from-sky-50 via-white to-violet-50 px-4 py-3.5 shadow-sm ring-1 ring-indigo-100/80 dark:border-indigo-500/40 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/60 dark:ring-indigo-500/20'>
+              <p className='text-sm font-semibold text-gray-900 dark:text-white'>
+                {locale?.MENU?.APPEARANCE || '外观模式'}
+              </p>
+              <p className='mt-0.5 text-xs text-gray-600 dark:text-gray-400'>
+                浅色、跟随系统或深色
+              </p>
+              <AppearanceModeSwitch
+                fullWidth
+                className='mt-3 !bg-white/70 dark:!bg-gray-950/70'
+              />
+            </section>
 
             <div>
               <p className='text-sm font-medium text-gray-900 dark:text-gray-100'>

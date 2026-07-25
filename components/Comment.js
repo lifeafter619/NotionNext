@@ -36,26 +36,50 @@ const Comment = ({ frontMatter, className }) => {
   useEffect(() => {
     const target = commentRef.current
     // Check if the component is visible in the viewport
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setLoadedCommentId(articleId)
-          observer.unobserve(entry.target)
-        }
-      })
-    })
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setLoadedCommentId(articleId)
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      // 提前 500px 触发，用户接近评论区之前就开始加载
+      { rootMargin: '500px' }
+    )
 
     if (target) {
       observer.observe(target)
     }
 
-    // 预加载：2秒后自动加载评论
-    const timer = setTimeout(() => {
-      setLoadedCommentId(articleId)
-    }, 2000)
+    // 预加载：等待页面 load 完成且浏览器空闲后再挂载评论区，
+    // 避免评论资源（脚本、表情包、头像）与首屏内容和文章图片抢带宽
+    let idleId = null
+    let timerId = null
+    const preload = () => setLoadedCommentId(articleId)
+    const scheduleIdlePreload = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        idleId = window.requestIdleCallback(preload, { timeout: 5000 })
+      } else {
+        timerId = setTimeout(preload, 2000)
+      }
+    }
+    const onWindowLoad = () => scheduleIdlePreload()
+    if (document.readyState === 'complete') {
+      scheduleIdlePreload()
+    } else {
+      window.addEventListener('load', onWindowLoad, { once: true })
+    }
 
     return () => {
-      clearTimeout(timer)
+      window.removeEventListener('load', onWindowLoad)
+      if (idleId !== null && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId)
+      }
+      if (timerId !== null) {
+        clearTimeout(timerId)
+      }
       observer.disconnect()
     }
   }, [articleId])
@@ -77,6 +101,8 @@ const Comment = ({ frontMatter, className }) => {
         .catch(() => {})
     }
     if (scrollComment || hasGiscus) {
+      // 深链直达评论区时立即挂载，不等待空闲预加载
+      setLoadedCommentId(articleId)
       const t = window.setTimeout(() => {
         document
           ?.getElementById('comment')
@@ -84,7 +110,7 @@ const Comment = ({ frontMatter, className }) => {
       }, 400)
       return () => window.clearTimeout(t)
     }
-  }, [router.isReady, router.asPath, router.query])
+  }, [router.isReady, router.asPath, router.query, articleId])
 
   if (!frontMatter) {
     return null

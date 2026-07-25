@@ -301,15 +301,15 @@ function TopGroup(props) {
                 {headerImage ? (
                   <LazyImage
                     priority={index === 0 && Boolean(headerImage)}
-                    width={420}
-                    height={160}
+                    width={505}
+                    height={220}
                     sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, 100vw'
-                    className='h-24 object-cover'
+                    className='heo-post-cover w-full flex-none object-cover object-center'
                     alt={title}
                     src={headerImage}
                   />
                 ) : (
-                  <div className='h-24 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400'>
+                  <div className='heo-post-cover w-full flex-none bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400'>
                     <i className='fas fa-file-lines text-2xl' />
                   </div>
                 )}

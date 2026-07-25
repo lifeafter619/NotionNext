@@ -240,8 +240,10 @@ describe('heo Catalog', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: '跳转到评论区' })).toHaveClass(
-      'w-full'
-    )
+    const button = screen.getByRole('button', { name: '跳转到评论区' })
+    expect(button).toHaveClass('w-full')
+    expect(button).toHaveClass('bg-white')
+    expect(button).toHaveClass('dark:bg-gray-800')
+    expect(button).toHaveClass('dark:text-gray-100')
   })
 })

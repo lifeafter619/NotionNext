@@ -1,4 +1,3 @@
-import DarkModeButton from '@/components/DarkModeButton'
 import { useGlobal } from '@/lib/global'
 import { Dialog, Transition } from '@headlessui/react'
 import SmartLink from './HeoLink'
@@ -7,13 +6,13 @@ import {
   Fragment,
   useEffect,
   useImperativeHandle,
-  useRef,
   useState
 } from 'react'
 import { MenuListSide } from './MenuListSide'
 import TagGroups from './TagGroups'
 import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
+import DarkModeButton from './DarkModeButton'
 
 /**
  * 侧边抽屉
@@ -101,8 +100,8 @@ export default function SlideOver(props) {
                     <div className='relative mt-6 flex-1 flex-col space-y-3 px-4 sm:px-6 dark:text-white '>
                       {showDarkMode && (
                         <section className='space-y-2 flex flex-col'>
-                          {/* 切换深色模式 */}
-                          <DarkModeBlockButton />
+                          <div>{locale?.MENU?.APPEARANCE || '外观模式'}</div>
+                          <DarkModeButton fullWidth />
                         </section>
                       )}
 
@@ -130,32 +129,6 @@ export default function SlideOver(props) {
         </div>
       </Dialog>
     </Transition.Root>
-  )
-}
-
-/**
- * 一个包含图标的按钮
- */
-function DarkModeBlockButton() {
-  const darkModeRef = useRef()
-  const { isDarkMode, locale } = useGlobal()
-
-  function handleChangeDarkMode() {
-    darkModeRef?.current?.handleChangeDarkMode()
-  }
-  return (
-    <button
-      type='button'
-      onClick={handleChangeDarkMode}
-      className={
-        'group min-h-11 duration-200 hover:text-white hover:shadow-md hover:bg-blue-600 flex justify-between items-center px-3 py-2 border dark:border-gray-600 bg-white dark:bg-[#ff953e] rounded-lg'
-      }>
-      <DarkModeButton
-        cRef={darkModeRef}
-        className='group-hover:text-white pointer-events-none'
-      />{' '}
-      {isDarkMode ? locale.MENU.LIGHT_MODE : locale.MENU.DARK_MODE}
-    </button>
   )
 }
 

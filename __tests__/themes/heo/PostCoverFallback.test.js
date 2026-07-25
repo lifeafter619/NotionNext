@@ -76,7 +76,7 @@ describe('heo post cover fallback', () => {
     expect(post.pageCoverThumbnail).toBeUndefined()
   })
 
-  it('uses the card flex space for the default mobile cover layout', () => {
+  it('uses the aspect-ratio driven cover layout by default', () => {
     const post = {
       ...createPost(),
       pageCoverThumbnail: '/post-cover.jpg'
@@ -88,9 +88,11 @@ describe('heo post cover fallback', () => {
 
     const coverWrapper = getByAltText('Post title').parentElement
 
-    expect(coverWrapper).toHaveClass('flex-1')
-    expect(coverWrapper).toHaveClass('min-h-0')
-    expect(coverWrapper).toHaveClass('md:flex-none')
+    // 移动端由 style.js 中 .heo-post-cover-card 的 aspect-ratio 控制高度，
+    // 桌面端 md:h-full 占满卡片行高
+    expect(coverWrapper).toHaveClass('heo-post-cover-card')
+    expect(coverWrapper).toHaveClass('flex-none')
+    expect(coverWrapper).toHaveClass('md:h-full')
   })
 
   it('applies cover sizing to the direct flex item', () => {
