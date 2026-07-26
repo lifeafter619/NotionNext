@@ -20,11 +20,22 @@ import ErrorHandler from '@/lib/utils/errorHandler'
 import BLOG from '@/blog.config'
 import ExternalPlugins from '@/components/ExternalPlugins'
 import SEO from '@/components/SEO'
-import { zhCN } from '@clerk/localizations'
 import dynamic from 'next/dynamic'
 // import { ClerkProvider } from '@clerk/nextjs'
+// Clerk 及其中文语言包只在配置了 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY 时才会
+// 被用到；全部走动态加载，避免语言包被打进所有访客的首屏 bundle。
 const ClerkProvider = dynamic(() =>
-  import('@clerk/nextjs').then(m => m.ClerkProvider)
+  Promise.all([
+    import('@clerk/nextjs'),
+    import('@clerk/localizations')
+  ]).then(([clerk, localizations]) => {
+    const ClerkProviderWithLocale = ({ children }) => (
+      <clerk.ClerkProvider localization={localizations.zhCN}>
+        {children}
+      </clerk.ClerkProvider>
+    )
+    return ClerkProviderWithLocale
+  })
 )
 const AppErrorBoundary = ErrorHandler.createErrorBoundary(
   <div
@@ -125,7 +136,7 @@ const MyApp = ({ Component, pageProps }) => {
   return (
     <>
       {enableClerk ? (
-        <ClerkProvider localization={zhCN}>{content}</ClerkProvider>
+        <ClerkProvider>{content}</ClerkProvider>
       ) : (
         content
       )}

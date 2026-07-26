@@ -3,6 +3,7 @@ import { ArrowSmallRight, PlusSmall } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { warmArticleCover } from '@/lib/utils/warmArticleAssets'
 import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { memo, useImperativeHandle, useRef, useState } from 'react'
@@ -184,6 +185,7 @@ const TagsGroupBar = memo(function TagsGroupBar() {
                   width={80}
                   height={80}
                   sizes='80px'
+                  fetchPriority='low'
                   src={g.img_1}
                   alt={g.title_1}
                   title={g.title_1}
@@ -199,6 +201,7 @@ const TagsGroupBar = memo(function TagsGroupBar() {
                   width={80}
                   height={80}
                   sizes='80px'
+                  fetchPriority='low'
                   src={g.img_2}
                   alt={g.title_2}
                   title={g.title_2}
@@ -292,10 +295,13 @@ function TopGroup(props) {
           const href = getPostHref(p)
           const headerImage = p?.pageCoverThumbnail || siteInfo?.pageCover
           const title = getPostTitle(p)
+          const handleWarmArticle = () => warmArticleCover(p)
           return (
             <SmartLink
               href={href}
               key={index}
+              onMouseEnter={handleWarmArticle}
+              onTouchStart={handleWarmArticle}
               className='block shrink-0 w-full min-w-full sm:w-52 sm:min-w-[13rem] xl:min-w-0 xl:w-full snap-start'>
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 {headerImage ? (

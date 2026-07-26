@@ -20,6 +20,13 @@ const getImageTargetWidth = (width, maxWidth) => {
 
 /**
  * 图片懒加载
+ *
+ * 所有图片都在服务端直出真实 src，加载策略交给浏览器原生调度：
+ * - priority / eager 图片：loading=eager（+ priority 时 preload、fetchpriority=high）；
+ * - 其余图片：loading=lazy，浏览器在 HTML 解析阶段就为视口内及附近的图片发起
+ *   并行请求（自带并发与优先级控制），无需等待 JS 下载与 React 水合；
+ * - 远离视口的图片由原生 lazy 推迟，并进入空闲预取队列在首屏就绪后预热，
+ *   用户滚动到时直接命中 HTTP 缓存。
  * @param {*} param0
  * @returns
  */
@@ -40,20 +47,20 @@ export default function LazyImage({
   style,
   sizes,
   loading,
+  fetchPriority,
   referrerPolicy = 'no-referrer'
 }) {
   const maxWidth = siteConfig('IMAGE_COMPRESS_WIDTH')
   const targetImageWidth = getImageTargetWidth(width, maxWidth)
   const defaultPlaceholderSrc = siteConfig('IMG_LAZY_LOAD_PLACEHOLDER')
-  const placeholderImageSrc = placeholderSrc || defaultPlaceholderSrc
   const optimizedImageSrc = adjustImgSize(src, targetImageWidth) || src
   const isEager = Boolean(priority || loading === 'eager')
-  const initialImageSrc = isEager
-    ? optimizedImageSrc || placeholderImageSrc
-    : placeholderImageSrc
   const imageRef = useRef(null)
   const fallbackIndexRef = useRef(0)
-  const [currentSrc, setCurrentSrc] = useState(initialImageSrc)
+  const cancelPrefetchRef = useRef(null)
+  const [currentSrc, setCurrentSrc] = useState(
+    optimizedImageSrc || placeholderSrc || defaultPlaceholderSrc
+  )
   const [imageLoaded, setImageLoaded] = useState(Boolean(isEager && src))
 
   const handleImageError = useCallback(() => {
@@ -105,6 +112,11 @@ export default function LazyImage({
       if (currentSrc !== optimizedImageSrc) return
 
       fallbackIndexRef.current = 0
+      // 图片已由浏览器真实加载，空闲队列中的同图预热不再必要
+      if (cancelPrefetchRef.current) {
+        cancelPrefetchRef.current()
+        cancelPrefetchRef.current = null
+      }
       if (typeof onLoad === 'function') {
         onLoad(event)
       }
@@ -117,52 +129,21 @@ export default function LazyImage({
   )
 
   useEffect(() => {
-    const adjustedImageSrc = optimizedImageSrc || defaultPlaceholderSrc
-    const imageElement = imageRef.current
-
     fallbackIndexRef.current = 0
+    setCurrentSrc(optimizedImageSrc || placeholderSrc || defaultPlaceholderSrc)
 
-    if (isEager) {
-      setCurrentSrc(adjustedImageSrc)
-      setImageLoaded(Boolean(adjustedImageSrc))
-      return
+    // 原生加载可能在 React 水合前就完成（此时不会触发 React 的 onLoad），
+    // 这里用 complete 补一次状态同步，移除占位样式。
+    const imageElement = imageRef.current
+    if (
+      imageElement &&
+      imageElement.complete &&
+      imageElement.naturalWidth > 0
+    ) {
+      setImageLoaded(true)
+      imageElement.classList.remove('lazy-image-placeholder')
     }
-
-    setCurrentSrc(placeholderImageSrc)
-    setImageLoaded(false)
-
-    // 检查浏览器是否支持IntersectionObserver
-    if (typeof window !== 'undefined' && !window.IntersectionObserver) {
-      // 降级处理：直接加载图片
-      setCurrentSrc(adjustedImageSrc)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setCurrentSrc(adjustedImageSrc)
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      {
-        rootMargin: siteConfig('LAZY_LOAD_THRESHOLD', '600px'),
-        threshold: 0.1
-      }
-    )
-
-    if (imageElement) {
-      observer.observe(imageElement)
-    }
-
-    return () => {
-      if (imageElement) {
-        observer.unobserve(imageElement)
-      }
-    }
-  }, [optimizedImageSrc, isEager, defaultPlaceholderSrc, placeholderImageSrc])
+  }, [optimizedImageSrc, defaultPlaceholderSrc, placeholderSrc])
 
   // 构造 srcset 以支持响应式图片加载
   const generateSrcSet = imageSrc => buildResponsiveSrcSet(imageSrc, maxWidth)
@@ -175,16 +156,30 @@ export default function LazyImage({
   const normalizedHeight = normalizeDimensionAttribute(height)
   const imageSizes = sizes || getDefaultImageSizes(normalizedWidth)
 
-  // 非优先图片加入空闲预取队列：首屏加载完成后由队列以受限并发在后台预热，
-  // 用户滚动到时直接命中 HTTP 缓存即时显示；组件卸载（路由切换）时自动取消
+  // 非优先图片加入空闲预取队列：首屏加载完成后由队列以受限并发在后台预热
+  // 尚未被原生 lazy 拉取的远视口图片，用户滚动到时直接命中 HTTP 缓存即时显示；
+  // 图片真实加载完成或组件卸载（路由切换）时自动取消
   useEffect(() => {
     if (isEager || !optimizedImageSrc) return undefined
-    return enqueueImagePrefetch({
+    const imageElement = imageRef.current
+    if (
+      imageElement &&
+      imageElement.complete &&
+      imageElement.naturalWidth > 0
+    ) {
+      return undefined
+    }
+    const cancel = enqueueImagePrefetch({
       src: optimizedImageSrc,
       srcSet: buildResponsiveSrcSet(optimizedImageSrc, maxWidth),
       sizes: imageSizes,
       referrerPolicy
     })
+    cancelPrefetchRef.current = cancel
+    return () => {
+      cancelPrefetchRef.current = null
+      cancel()
+    }
   }, [isEager, optimizedImageSrc, maxWidth, imageSizes, referrerPolicy])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
@@ -206,7 +201,7 @@ export default function LazyImage({
     onClick,
     // 性能优化属性
     loading: isEager ? 'eager' : 'lazy',
-    fetchpriority: priority ? 'high' : undefined,
+    fetchpriority: priority ? 'high' : fetchPriority || undefined,
     decoding: 'async',
     // Do not leak the blog domain to image hosts. This also prevents generic
     // hotlink-protection rules from blocking custom CDN and Vercel domains.
@@ -290,7 +285,7 @@ function normalizeImageWidth(width) {
   return 1080
 }
 
-function buildResponsiveSrcSet(imageSrc, maxWidth) {
+export function buildResponsiveSrcSet(imageSrc, maxWidth) {
   if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
     return undefined
   }

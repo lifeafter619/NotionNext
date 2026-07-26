@@ -5,6 +5,7 @@ import WordCount from '@/components/WordCount'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
+import { ARTICLE_COVER_SIZES } from '@/lib/utils/warmArticleAssets'
 import SmartLink from './HeoLink'
 import WavesArea from './WavesArea'
 import { useRouter } from 'next/router'
@@ -158,7 +159,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
             priority={true}
             width={1600}
             height={900}
-            sizes='100vw'
+            sizes={ARTICLE_COVER_SIZES}
             className='w-full h-full object-cover max-h-[50rem] min-w-[50vw] min-h-[20rem]'
             src={headerImage}
             onLoad={handleCoverLoad}

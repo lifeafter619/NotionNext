@@ -1,9 +1,29 @@
 import LazyImage from '@/components/LazyImage'
 import NotionIcon from './NotionIcon'
 import { siteConfig } from '@/lib/config'
+import { warmArticleCover } from '@/lib/utils/warmArticleAssets'
 import SmartLink from './HeoLink'
 import CONFIG from '../config'
 import TagItemMini from './TagItemMini'
+
+/**
+ * 卡片封面的渲染预设（宽高与 sizes）。
+ * BlogPostListScroll 预热后续分页封面时也使用同一预设，
+ * 保证预热的 URL 与卡片真实渲染时选中的候选完全一致。
+ */
+export function getPostCardCoverPreset(twoCols) {
+  return twoCols
+    ? {
+        width: 1010,
+        height: 440,
+        sizes: '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'
+      }
+    : {
+        width: 505,
+        height: 220,
+        sizes: '(min-width: 720px) 42vw, 100vw'
+      }
+}
 
 function getPostHref(post) {
   if (post?.href) return post.href
@@ -61,6 +81,10 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
   const title = getPostText(post?.title, '未命名')
   const summary = getPostText(post?.summary)
   const category = getPostText(post?.category)
+  const coverPreset = getPostCardCoverPreset(POST_TWO_COLS)
+  // hover / touch 表示即将打开文章：提前预热文章页头图，
+  // 配合 next/link 的悬停路由预取，点击后文章页立即完整呈现
+  const handleWarmArticle = () => warmArticleCover(post)
 
   // 如果传入了className，则使用传入的样式，否则使用默认样式
   // 默认样式为：2xl:h-96 2xl:flex-col h-[23rem] md:h-52 md:flex-row
@@ -80,6 +104,8 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
         {showPageCover && (
           <SmartLink
             href={postHref}
+            onMouseEnter={handleWarmArticle}
+            onTouchStart={handleWarmArticle}
             className={
               (isDefaultStyle && POST_TWO_COLS
                 ? ' 2xl:w-full 2xl:self-auto'
@@ -91,14 +117,10 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             }>
             <LazyImage
               priority={index === 0 && Boolean(pageCoverThumbnail)}
-              loading={index < 2 ? 'eager' : undefined}
-              width={POST_TWO_COLS ? 1010 : 505}
-              height={POST_TWO_COLS ? 440 : 220}
-              sizes={
-                POST_TWO_COLS
-                  ? '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'
-                  : '(min-width: 720px) 42vw, 100vw'
-              }
+              loading={index < 4 ? 'eager' : undefined}
+              width={coverPreset.width}
+              height={coverPreset.height}
+              sizes={coverPreset.sizes}
               src={pageCoverThumbnail}
               alt={title}
               className={`h-full w-full object-cover object-center ${COVER_HOVER_ENLARGE ? 'group-hover:scale-105' : ''} group-hover:brightness-75 transition-all duration-500 ease-in-out`} //宽高都调整为自适应,保证封面居中
@@ -130,6 +152,8 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             <SmartLink
               href={postHref}
               passHref
+              onMouseEnter={handleWarmArticle}
+              onTouchStart={handleWarmArticle}
               className={
                 ' group-hover:text-[var(--heo-color-primary)] dark:hover:text-[var(--heo-color-accent)] dark:group-hover:text-[var(--heo-color-accent)] text-black dark:text-gray-100  line-clamp-2 replace cursor-pointer text-xl font-extrabold leading-tight'
               }>

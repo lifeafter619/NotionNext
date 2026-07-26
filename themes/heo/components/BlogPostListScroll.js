@@ -1,9 +1,11 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { getListByPage } from '@/lib/utils'
+import { adjustImgSize, buildResponsiveSrcSet } from '@/components/LazyImage'
+import { enqueueImagePrefetch } from '@/lib/utils/imagePrefetchQueue'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import CONFIG from '../config'
-import BlogPostCard from './BlogPostCard'
+import BlogPostCard, { getPostCardCoverPreset } from './BlogPostCard'
 import BlogPostListEmpty from './BlogPostListEmpty'
 
 /**
@@ -91,6 +93,40 @@ const BlogPostListScroll = ({
   }, [hasMore, scrollTrigger])
 
   const POST_TWO_COLS = siteConfig('HEO_HOME_POST_TWO_COLS', true, CONFIG)
+
+  // 预热尚未渲染的后续分页封面：当前页图片就绪后，空闲预取队列以受限并发
+  // 把下一页（点击“加载更多”或滚动触发后才会渲染）的封面提前拉进 HTTP 缓存，
+  // 分页展开时封面直接显示，无需再等网络。预设与卡片渲染共用，
+  // 保证预热 URL 与真实渲染时选中的候选一致。
+  const IMAGE_COMPRESS_WIDTH = siteConfig('IMAGE_COMPRESS_WIDTH')
+  useEffect(() => {
+    const allPosts = Array.isArray(posts) ? posts.filter(Boolean) : []
+    const upcomingPosts = allPosts.slice(page * POSTS_PER_PAGE)
+    if (upcomingPosts.length === 0) return undefined
+
+    const coverPreset = getPostCardCoverPreset(POST_TWO_COLS)
+    const targetWidth = Math.min(
+      coverPreset.width,
+      Number(IMAGE_COMPRESS_WIDTH) || coverPreset.width
+    )
+    const cancels = upcomingPosts
+      .map(post => {
+        const cover = post?.pageCoverThumbnail
+        if (!cover || String(cover).startsWith('data:')) return null
+        const src = adjustImgSize(cover, targetWidth) || cover
+        return enqueueImagePrefetch({
+          src,
+          srcSet: buildResponsiveSrcSet(src, IMAGE_COMPRESS_WIDTH),
+          sizes: coverPreset.sizes,
+          referrerPolicy: 'no-referrer'
+        })
+      })
+      .filter(Boolean)
+
+    return () => {
+      cancels.forEach(cancel => cancel())
+    }
+  }, [posts, page, POSTS_PER_PAGE, POST_TWO_COLS, IMAGE_COMPRESS_WIDTH])
 
   if (!postsToShow || postsToShow.length === 0) {
     return <BlogPostListEmpty currentSearch={currentSearch} />

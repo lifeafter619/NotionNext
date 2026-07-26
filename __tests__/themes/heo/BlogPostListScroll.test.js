@@ -22,8 +22,13 @@ jest.mock('@/lib/global', () => ({
 }))
 
 jest.mock('@/themes/heo/components/BlogPostCard', () => {
-  return function BlogPostCard({ post }) {
-    return <article>{post.title}</article>
+  const actual = jest.requireActual('@/themes/heo/components/BlogPostCard')
+  return {
+    __esModule: true,
+    getPostCardCoverPreset: actual.getPostCardCoverPreset,
+    default: function BlogPostCard({ post }) {
+      return <article>{post.title}</article>
+    }
   }
 })
 
@@ -70,5 +75,24 @@ describe('heo BlogPostListScroll', () => {
       expect.any(Function),
       { passive: true }
     )
+  })
+
+  it('queues covers of not-yet-rendered pages into the idle prefetch queue', () => {
+    const {
+      __imagePrefetchQueueTestHooks
+    } = require('@/lib/utils/imagePrefetchQueue')
+    __imagePrefetchQueueTestHooks.reset()
+
+    // 13 篇文章、每页 10 篇：第 2 页的 3 篇尚未渲染，封面应进入预取队列
+    const posts = Array.from({ length: 13 }, (_, index) => ({
+      id: `post-${index}`,
+      title: `Post ${index}`,
+      pageCoverThumbnail: `https://example.com/cover-${index}.jpg?width=1080`
+    }))
+
+    render(<BlogPostListScroll posts={posts} />)
+
+    expect(__imagePrefetchQueueTestHooks.state().pending).toBe(3)
+    __imagePrefetchQueueTestHooks.reset()
   })
 })

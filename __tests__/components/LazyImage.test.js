@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { act } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server.node'
@@ -236,12 +236,26 @@ describe('LazyImage Component', () => {
     expect(image).toHaveStyle('border: 1px solid red')
   })
 
-  it('does not expose real srcset before lazy image loading starts', () => {
+  it('exposes the real src and srcset immediately for lazy images', () => {
+    // 懒加载图片服务端直出真实资源，浏览器无需等待 JS 水合即可开始加载
     const notionSrc = 'https://example.com/image.jpg?width=1200'
     render(<LazyImage {...defaultProps} src={notionSrc} />)
 
     const image = screen.getByAltText('Test image')
-    expect(image).not.toHaveAttribute('srcset')
+    expect(image.getAttribute('src')).toContain('width=')
+    expect(image.getAttribute('src')).not.toContain('data:image/gif')
+    expect(image).toHaveAttribute('srcset')
+    expect(image.getAttribute('srcset')).toContain('320w')
+    expect(image).toHaveAttribute('loading', 'lazy')
+  })
+
+  it('passes a custom fetchPriority hint through to the img element', () => {
+    render(<LazyImage {...defaultProps} loading='eager' fetchPriority='low' />)
+
+    expect(screen.getByAltText('Test image')).toHaveAttribute(
+      'fetchpriority',
+      'low'
+    )
   })
 
   it('generates srcset for priority Notion-like image URLs', () => {
@@ -268,29 +282,12 @@ describe('LazyImage Component', () => {
     expect(image).not.toHaveAttribute('srcset')
   })
 
-  it('adds srcset after a lazy image enters the viewport', async () => {
-    const OriginalImage = global.Image
+  it('does not observe the viewport for lazy loading', () => {
+    // 加载时机完全交给浏览器原生 loading=lazy，不再自建 IntersectionObserver
     const OriginalIntersectionObserver = global.IntersectionObserver
-
-    global.Image = class MockImage {
-      constructor() {
-        this.onload = null
-      }
-
-      set src(_val) {
-        queueMicrotask(() => {
-          if (this.onload) this.onload()
-        })
-      }
-    }
+    const observe = jest.fn()
     global.IntersectionObserver = class MockIntersectionObserver {
-      constructor(callback) {
-        this.callback = callback
-      }
-
-      observe(target) {
-        this.callback([{ isIntersecting: true, target }])
-      }
+      observe = observe
 
       unobserve() {}
     }
@@ -300,33 +297,18 @@ describe('LazyImage Component', () => {
       render(<LazyImage {...defaultProps} src={notionSrc} />)
 
       const image = screen.getByAltText('Test image')
-      await waitFor(() => {
-        expect(image).toHaveAttribute('srcset')
-      })
+      expect(observe).not.toHaveBeenCalled()
       expect(image.getAttribute('srcset')).toContain('320w')
     } finally {
-      global.Image = OriginalImage
       global.IntersectionObserver = OriginalIntersectionObserver
     }
   })
 
-  it('lets the real img element load lazy images after intersection', async () => {
+  it('lets the real img element carry lazy requests without a JS preloader', () => {
     const OriginalImage = global.Image
-    const OriginalIntersectionObserver = global.IntersectionObserver
     const imageConstructor = jest.fn().mockImplementation(() => ({}))
 
     global.Image = imageConstructor
-    global.IntersectionObserver = class MockIntersectionObserver {
-      constructor(callback) {
-        this.callback = callback
-      }
-
-      observe(target) {
-        this.callback([{ isIntersecting: true, target }])
-      }
-
-      unobserve() {}
-    }
 
     try {
       render(
@@ -336,15 +318,12 @@ describe('LazyImage Component', () => {
         />
       )
 
-      await waitFor(() => {
-        expect(screen.getByAltText('Test image').getAttribute('src')).toContain(
-          'width='
-        )
-      })
+      expect(screen.getByAltText('Test image').getAttribute('src')).toContain(
+        'width='
+      )
       expect(imageConstructor).not.toHaveBeenCalled()
     } finally {
       global.Image = OriginalImage
-      global.IntersectionObserver = OriginalIntersectionObserver
     }
   })
 
