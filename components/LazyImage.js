@@ -47,13 +47,14 @@ export default function LazyImage({
   const defaultPlaceholderSrc = siteConfig('IMG_LAZY_LOAD_PLACEHOLDER')
   const placeholderImageSrc = placeholderSrc || defaultPlaceholderSrc
   const optimizedImageSrc = adjustImgSize(src, targetImageWidth) || src
-  const initialImageSrc = priority
+  const isEager = Boolean(priority || loading === 'eager')
+  const initialImageSrc = isEager
     ? optimizedImageSrc || placeholderImageSrc
     : placeholderImageSrc
   const imageRef = useRef(null)
   const fallbackIndexRef = useRef(0)
   const [currentSrc, setCurrentSrc] = useState(initialImageSrc)
-  const [imageLoaded, setImageLoaded] = useState(Boolean(priority && src))
+  const [imageLoaded, setImageLoaded] = useState(Boolean(isEager && src))
 
   const handleImageError = useCallback(() => {
     const fallbackCandidates = getFallbackCandidates([
@@ -121,7 +122,7 @@ export default function LazyImage({
 
     fallbackIndexRef.current = 0
 
-    if (priority) {
+    if (isEager) {
       setCurrentSrc(adjustedImageSrc)
       setImageLoaded(Boolean(adjustedImageSrc))
       return
@@ -161,7 +162,7 @@ export default function LazyImage({
         observer.unobserve(imageElement)
       }
     }
-  }, [optimizedImageSrc, priority, defaultPlaceholderSrc, placeholderImageSrc])
+  }, [optimizedImageSrc, isEager, defaultPlaceholderSrc, placeholderImageSrc])
 
   // 构造 srcset 以支持响应式图片加载
   const generateSrcSet = imageSrc => buildResponsiveSrcSet(imageSrc, maxWidth)
@@ -177,14 +178,14 @@ export default function LazyImage({
   // 非优先图片加入空闲预取队列：首屏加载完成后由队列以受限并发在后台预热，
   // 用户滚动到时直接命中 HTTP 缓存即时显示；组件卸载（路由切换）时自动取消
   useEffect(() => {
-    if (priority || !optimizedImageSrc) return undefined
+    if (isEager || !optimizedImageSrc) return undefined
     return enqueueImagePrefetch({
       src: optimizedImageSrc,
       srcSet: buildResponsiveSrcSet(optimizedImageSrc, maxWidth),
       sizes: imageSizes,
       referrerPolicy
     })
-  }, [priority, optimizedImageSrc, maxWidth, imageSizes, referrerPolicy])
+  }, [isEager, optimizedImageSrc, maxWidth, imageSizes, referrerPolicy])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
@@ -204,7 +205,7 @@ export default function LazyImage({
     },
     onClick,
     // 性能优化属性
-    loading: priority ? 'eager' : loading || 'lazy',
+    loading: isEager ? 'eager' : 'lazy',
     fetchpriority: priority ? 'high' : undefined,
     decoding: 'async',
     // Do not leak the blog domain to image hosts. This also prevents generic

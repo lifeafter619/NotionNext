@@ -18,8 +18,14 @@ jest.mock('@/lib/config', () => ({
 }))
 
 jest.mock('@/components/LazyImage', () => {
-  return function LazyImage({ priority: _priority, ...props }) {
-    return <img alt={props.alt || 'cover'} {...props} />
+  return function LazyImage({ priority, ...props }) {
+    return (
+      <img
+        alt={props.alt || 'cover'}
+        data-priority={priority ? 'high' : 'normal'}
+        {...props}
+      />
+    )
   }
 })
 
@@ -88,11 +94,41 @@ describe('heo post cover fallback', () => {
 
     const coverWrapper = getByAltText('Post title').parentElement
 
-    // 移动端由 style.js 中 .heo-post-cover-card 的 aspect-ratio 控制高度，
-    // 桌面端 md:h-full 占满卡片行高
+    // 所有断点均由 style.js 中 .heo-post-cover-card 的 aspect-ratio
+    // 保留稳定高度；桌面端只负责在文字较高时垂直居中。
     expect(coverWrapper).toHaveClass('heo-post-cover-card')
     expect(coverWrapper).toHaveClass('flex-none')
-    expect(coverWrapper).toHaveClass('md:h-full')
+    expect(coverWrapper).toHaveClass('md:self-center')
+    expect(coverWrapper).not.toHaveClass('md:h-full')
+  })
+
+  it('gives only the first cover high priority while loading the second eagerly', () => {
+    const firstPost = {
+      ...createPost(),
+      pageCoverThumbnail: '/first-cover.jpg'
+    }
+    const secondPost = {
+      ...createPost(),
+      id: 'post-2',
+      title: 'Second post',
+      href: '/article/second-post',
+      pageCoverThumbnail: '/second-cover.jpg'
+    }
+
+    const { getByAltText, rerender } = render(
+      <BlogPostCard index={0} post={firstPost} siteInfo={siteInfo} />
+    )
+
+    expect(getByAltText('Post title')).toHaveAttribute('data-priority', 'high')
+    expect(getByAltText('Post title')).toHaveAttribute('loading', 'eager')
+
+    rerender(<BlogPostCard index={1} post={secondPost} siteInfo={siteInfo} />)
+
+    expect(getByAltText('Second post')).toHaveAttribute(
+      'data-priority',
+      'normal'
+    )
+    expect(getByAltText('Second post')).toHaveAttribute('loading', 'eager')
   })
 
   it('applies cover sizing to the direct flex item', () => {

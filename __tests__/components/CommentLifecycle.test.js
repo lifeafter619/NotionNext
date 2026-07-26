@@ -65,4 +65,17 @@ describe('Comment lifecycle', () => {
 
     expect(observer.disconnect).toHaveBeenCalledTimes(1)
   })
+
+  it('does not initialize comments merely because the page finished loading', () => {
+    render(<Comment frontMatter={{ id: 'post-a' }} />)
+
+    act(() => {
+      window.dispatchEvent(new Event('load'))
+    })
+
+    expect(
+      screen.queryByTestId('mock-comment-provider')
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+  })
 })

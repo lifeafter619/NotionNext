@@ -48,9 +48,7 @@ const BLOG = {
   BIO: process.env.NEXT_PUBLIC_BIO || '𝓙𝓾𝓼𝓽 𝓪 𝓬𝓵𝓸𝓾𝓭.', // 作者简介
   LINK: process.env.NEXT_PUBLIC_LINK || 'https://619.pp.ua', // 网站地址
   KEYWORDS: process.env.NEXT_PUBLIC_KEYWORD || '生活,技术,619,博客,𝟞𝟙𝟡', // 网站关键词 英文逗号隔开
-  BLOG_FAVICON:
-    process.env.NEXT_PUBLIC_FAVICON ||
-    'https://image.66619.eu.org/file/3db3168b82b1137c0e4d7.png', // blog favicon 配置, 默认使用 /public/favicon.ico，支持在线图片，如 https://img.imesong.com/favicon.png
+  BLOG_FAVICON: process.env.NEXT_PUBLIC_FAVICON || '/images/avatar-96.webp', // blog favicon 配置, 默认使用本地压缩图片，也支持在线图片
   BEI_AN: process.env.NEXT_PUBLIC_BEI_AN || '萌ICP备20225199号', // 备案号 闽ICP备XXXXXX
   BEI_AN_LINK:
     process.env.NEXT_PUBLIC_BEI_AN_LINK ||

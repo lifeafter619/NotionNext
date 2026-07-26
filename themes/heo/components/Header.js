@@ -18,12 +18,15 @@ const SlideOver = dynamic(() => import('./SlideOver'), { ssr: false })
  * @returns
  */
 const Header = props => {
-  const [fixedNav, setFixedNav] = useState(false)
-  const [textWhite, setTextWhite] = useState(false)
+  // LayoutBase renders PostHeader whenever `post` exists, so the server already
+  // knows that the nav overlays #post-bg. Match that geometry during SSR;
+  // otherwise hydration changes relative -> fixed and shifts the page by 64px.
+  const initiallyOverPostCover = Boolean(props.post)
+  const [fixedNav, setFixedNav] = useState(initiallyOverPostCover)
+  const [textWhite, setTextWhite] = useState(initiallyOverPostCover)
   const [navBgWhite, setBgWhite] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
-  // 是否存在文章页背景图（仅客户端检测）
-  const [hasPostBg, setHasPostBg] = useState(false)
+  const [hasPostBg, setHasPostBg] = useState(initiallyOverPostCover)
   const [showSlideOver, setShowSlideOver] = useState(false)
   const [slideOverOpenSignal, setSlideOverOpenSignal] = useState(0)
 

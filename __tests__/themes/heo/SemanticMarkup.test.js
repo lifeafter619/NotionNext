@@ -28,6 +28,7 @@ jest.mock('next/link', () => {
     children,
     legacyBehavior,
     passHref,
+    prefetch: _prefetch,
     ...props
   }) {
     const normalizedHref =
@@ -63,11 +64,9 @@ jest.mock('next/dynamic', () => {
         )
       }
       if (source.includes('@headlessui/react')) {
-        return props.show === false ? null : React.createElement(
-          React.Fragment,
-          null,
-          props.children
-        )
+        return props.show === false
+          ? null
+          : React.createElement(React.Fragment, null, props.children)
       }
       return null
     }
@@ -141,7 +140,9 @@ jest.mock('@/themes/heo/components/Footer', () => () => null)
 jest.mock('@/themes/heo/components/Header', () => () => null)
 jest.mock('@/themes/heo/components/Hero', () => () => null)
 jest.mock('@/themes/heo/components/LatestPostsGroup', () => () => null)
-jest.mock('@/themes/heo/components/NoticeBar', () => ({ NoticeBar: () => null }))
+jest.mock('@/themes/heo/components/NoticeBar', () => ({
+  NoticeBar: () => null
+}))
 jest.mock('@/themes/heo/components/PostHeader', () => () => null)
 jest.mock('@/themes/heo/components/PostLock', () => ({ PostLock: () => null }))
 jest.mock('@/themes/heo/components/SearchNav', () => () => null)
@@ -208,12 +209,7 @@ describe('HEO semantic markup', () => {
 
     const homeLink = screen.getByRole('link', { name: '回到主页' })
     expect(container.querySelector('a button')).toBeNull()
-    expect(homeLink).toHaveClass(
-      'bg-blue-500',
-      'py-2',
-      'px-4',
-      'text-white'
-    )
+    expect(homeLink).toHaveClass('bg-blue-500', 'py-2', 'px-4', 'text-white')
   })
 
   it('keeps NotionPage as the only canonical article ID in announcements', () => {

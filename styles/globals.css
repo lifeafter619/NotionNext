@@ -293,6 +293,19 @@ img {
   background-size: 300% 100%;
   animation: l1 1s infinite linear;
 }
+
+/* 暗色模式下占位遮罩使用接近卡片背景的深色，避免亮块闪烁影响阅读 */
+.dark .lazy-image-placeholder {
+  background: linear-gradient(
+      90deg,
+      #ffffff08 33%,
+      #ffffff14 50%,
+      #ffffff08 66%
+    )
+    #1e1e1e;
+  background-size: 300% 100%;
+  animation: l1 1s infinite linear;
+}
 @keyframes l1 {
   0% {
     background-position: right;

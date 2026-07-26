@@ -120,6 +120,22 @@ describe('LazyImage Component', () => {
     expect(image).toHaveAttribute('loading', 'lazy')
   })
 
+  it('renders eager images with their real source without making them high priority', () => {
+    render(
+      <LazyImage
+        {...defaultProps}
+        src='https://example.com/image.jpg?width=1080'
+        loading='eager'
+      />
+    )
+
+    const image = screen.getByAltText('Test image')
+    expect(image).toHaveAttribute('loading', 'eager')
+    expect(image.getAttribute('src')).toContain('width=')
+    expect(image).not.toHaveAttribute('fetchpriority')
+    expect(document.querySelector('link[rel="preload"][as="image"]')).toBeNull()
+  })
+
   it('handles click events', () => {
     const handleClick = jest.fn()
     render(<LazyImage {...defaultProps} onClick={handleClick} />)

@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react'
+import { renderToString } from 'react-dom/server.node'
 
 let mockSlideOverModuleLoadCount = 0
 let mockSlideOverRenderCount = 0
@@ -97,6 +98,14 @@ describe('heo Header scroll handling', () => {
 
     addSpy.mockRestore()
     removeSpy.mockRestore()
+  })
+
+  it('renders an article nav as fixed in the server markup', () => {
+    const Header = getHeader()
+
+    const markup = renderToString(<Header post={{ id: 'article-id' }} />)
+
+    expect(markup).toMatch(/<nav[^>]*class="[^"]*\bfixed\b/)
   })
 
   it('does not load the mobile drawer module while rendering the header', () => {

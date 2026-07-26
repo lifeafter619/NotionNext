@@ -35,7 +35,12 @@ const Comment = ({ frontMatter, className }) => {
 
   useEffect(() => {
     const target = commentRef.current
-    // Check if the component is visible in the viewport
+    if (typeof IntersectionObserver !== 'function') {
+      setLoadedCommentId(articleId)
+      return undefined
+    }
+
+    // Only initialize the comment provider when the reader approaches it.
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
@@ -53,33 +58,7 @@ const Comment = ({ frontMatter, className }) => {
       observer.observe(target)
     }
 
-    // 预加载：等待页面 load 完成且浏览器空闲后再挂载评论区，
-    // 避免评论资源（脚本、表情包、头像）与首屏内容和文章图片抢带宽
-    let idleId = null
-    let timerId = null
-    const preload = () => setLoadedCommentId(articleId)
-    const scheduleIdlePreload = () => {
-      if (typeof window.requestIdleCallback === 'function') {
-        idleId = window.requestIdleCallback(preload, { timeout: 5000 })
-      } else {
-        timerId = setTimeout(preload, 2000)
-      }
-    }
-    const onWindowLoad = () => scheduleIdlePreload()
-    if (document.readyState === 'complete') {
-      scheduleIdlePreload()
-    } else {
-      window.addEventListener('load', onWindowLoad, { once: true })
-    }
-
     return () => {
-      window.removeEventListener('load', onWindowLoad)
-      if (idleId !== null && typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(idleId)
-      }
-      if (timerId !== null) {
-        clearTimeout(timerId)
-      }
       observer.disconnect()
     }
   }, [articleId])
@@ -130,8 +109,7 @@ const Comment = ({ frontMatter, className }) => {
       key={frontMatter?.id}
       id='comment'
       ref={commentRef}
-      className={`comment mt-5 text-gray-800 dark:text-gray-300 ${className || ''}`}
-    >
+      className={`comment mt-5 text-gray-800 dark:text-gray-300 ${className || ''}`}>
       {/* 延迟加载评论区 */}
       {!shouldLoad && (
         <div className='text-center'>

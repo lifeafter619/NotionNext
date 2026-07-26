@@ -300,7 +300,7 @@ function TopGroup(props) {
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 {headerImage ? (
                   <LazyImage
-                    priority={index === 0 && Boolean(headerImage)}
+                    loading={index < 3 ? 'eager' : undefined}
                     width={505}
                     height={220}
                     sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, 100vw'
@@ -341,11 +341,7 @@ function getTopPosts({ latestPosts, allNavPages }) {
   const navPages = Array.isArray(allNavPages)
     ? allNavPages.filter(isLinkablePost)
     : []
-  const recommendTag = siteConfig(
-    'HEO_HERO_RECOMMEND_POST_TAG',
-    '',
-    CONFIG
-  )
+  const recommendTag = siteConfig('HEO_HERO_RECOMMEND_POST_TAG', '', CONFIG)
 
   // 默认展示最近更新
   if (!recommendTag) {
@@ -356,7 +352,9 @@ function getTopPosts({ latestPosts, allNavPages }) {
   let sortPosts = []
 
   // 排序方式
-  if (siteConfig('HEO_HERO_RECOMMEND_POST_SORT_BY_UPDATE_TIME', false, CONFIG)) {
+  if (
+    siteConfig('HEO_HERO_RECOMMEND_POST_SORT_BY_UPDATE_TIME', false, CONFIG)
+  ) {
     sortPosts = [...navPages].sort((a, b) => {
       const dateA = new Date(a?.lastEditedDate)
       const dateB = new Date(b?.lastEditedDate)
@@ -487,7 +485,7 @@ function TodayCard({ cRef, siteInfo }) {
 
         {/* 封面图 */}
         <LazyImage
-          priority={true}
+          loading='eager'
           width={900}
           height={342}
           sizes='(min-width: 1280px) 44rem, 100vw'

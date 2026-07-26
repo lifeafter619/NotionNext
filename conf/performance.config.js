@@ -55,7 +55,8 @@ module.exports = {
   AVIF_SUPPORT: process.env.NEXT_PUBLIC_AVIF_SUPPORT || true,
 
   // 预取配置
-  PREFETCH_LINKS: process.env.NEXT_PUBLIC_PREFETCH_LINKS || true,
+  // 大列表默认关闭视口自动预取；Next.js Pages Router 仍会在悬停时按意图预取。
+  PREFETCH_LINKS: parseBoolean(process.env.NEXT_PUBLIC_PREFETCH_LINKS, false),
   PREFETCH_IMAGES: process.env.NEXT_PUBLIC_PREFETCH_IMAGES || false,
 
   // 性能监控

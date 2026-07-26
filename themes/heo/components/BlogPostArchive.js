@@ -76,12 +76,12 @@ const BlogPostArchive = ({ posts = [], archiveTitle, siteInfo }) => {
                   <div className='flex-shrink-0'>
                     <SmartLink
                       href={postHref}
-                      className='heo-post-cover block w-44 md:w-52 rounded-xl overflow-hidden'>
+                      className='heo-post-cover block w-48 md:w-64 rounded-xl overflow-hidden'>
                       <LazyImage
                         className='w-full h-full object-cover object-center'
                         width={505}
                         height={220}
-                        sizes='(min-width: 768px) 13rem, 11rem'
+                        sizes='(min-width: 768px) 16rem, 12rem'
                         alt={title}
                         src={pageCoverThumbnail}
                       />

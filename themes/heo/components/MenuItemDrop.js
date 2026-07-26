@@ -76,7 +76,7 @@ export const MenuItemDrop = ({ link }) => {
           role='menu'
           aria-hidden={!show}
           style={{ backdropFilter: 'blur(3px)' }}
-          className={`${show ? 'visible opacity-100 top-14 pointer-events-auto' : 'invisible opacity-0 top-20 pointer-events-none'} drop-shadow-md overflow-hidden rounded-xl bg-white dark:bg-[#1e1e1e] transition-all duration-300 z-20 absolute`}>
+          className={`${show ? 'visible opacity-100 top-14 pointer-events-auto' : 'invisible opacity-0 top-20 pointer-events-none'} drop-shadow-md overflow-hidden rounded-xl bg-white dark:bg-[#2a2a30] border border-transparent dark:border-gray-600 transition-all duration-300 z-20 absolute`}>
           {subMenus.map((sLink, index) => {
             return (
               <li

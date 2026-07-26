@@ -8,7 +8,12 @@ jest.mock('@/lib/config', () => ({
 }))
 
 jest.mock('next/link', () => {
-  return function MockNextLink({ href, children, ...props }) {
+  return function MockNextLink({
+    href,
+    children,
+    prefetch: _prefetch,
+    ...props
+  }) {
     return (
       <a href={typeof href === 'string' ? href : href?.pathname} {...props}>
         {children}

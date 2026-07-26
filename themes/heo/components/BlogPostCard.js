@@ -69,8 +69,8 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
   const isDefaultStyle = !className
   const containerClass = className
     ? `wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col group w-full dark:border-gray-600 hover:border-indigo-600 dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl ${className}`
-    : (POST_TWO_COLS ? '2xl:h-auto 2xl:flex-col' : '') +
-      ` wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col md:h-52 md:flex-row ${reverseCover ? 'md:flex-row-reverse' : ''} group w-full dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl`
+    : (POST_TWO_COLS ? '2xl:flex-col' : '') +
+      ` wow fadeInUp border bg-white dark:bg-[#1e1e1e] flex mb-4 flex-col md:flex-row ${reverseCover ? 'md:flex-row-reverse' : ''} group w-full dark:border-gray-600 hover:border-indigo-600  dark:hover:border-yellow-600 duration-300 transition-colors justify-between overflow-hidden rounded-xl`
 
   return (
     <article
@@ -82,15 +82,16 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             href={postHref}
             className={
               (isDefaultStyle && POST_TWO_COLS
-                ? ' heo-post-cover-two-cols 2xl:w-full 2xl:h-auto'
+                ? ' 2xl:w-full 2xl:self-auto'
                 : '') +
               (isDefaultStyle
-                ? ' heo-post-cover-card flex-none md:h-full'
+                ? ' heo-post-cover-card flex-none md:self-center'
                 : ' heo-post-cover') +
               ' block w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
             }>
             <LazyImage
-              priority={index < 2 && Boolean(pageCoverThumbnail)}
+              priority={index === 0 && Boolean(pageCoverThumbnail)}
+              loading={index < 2 ? 'eager' : undefined}
               width={POST_TWO_COLS ? 1010 : 505}
               height={POST_TWO_COLS ? 440 : 220}
               sizes={
@@ -108,10 +109,8 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
         {/* 文字区块 */}
         <div
           className={
-            (isDefaultStyle && POST_TWO_COLS
-              ? '2xl:p-4 2xl:h-48 2xl:w-full'
-              : '') +
-            ` flex ${isDefaultStyle ? 'p-6' : 'p-3'} flex-col justify-between h-48 md:h-full w-full${showPageCover ? ' md:w-7/12' : ''}`
+            (isDefaultStyle && POST_TWO_COLS ? '2xl:p-4 2xl:w-full' : '') +
+            ` flex ${isDefaultStyle ? 'p-6' : 'p-3'} flex-col justify-between h-48 md:h-auto w-full${showPageCover ? ' md:w-7/12' : ''}`
           }>
           <header>
             {/* 分类 */}

@@ -39,8 +39,16 @@ const Style = () => {
         )};
         --heo-color-border: #4f46e5;
         --heo-color-border-dark: #ca8a04;
-        --heo-color-text-light: ${siteConfig('HEO_COLOR_TEXT', '#000000', CONFIG)};
-        --heo-color-text-secondary-light: ${siteConfig('HEO_COLOR_TEXT_SECONDARY', '#4b5563', CONFIG)};
+        --heo-color-text-light: ${siteConfig(
+          'HEO_COLOR_TEXT',
+          '#000000',
+          CONFIG
+        )};
+        --heo-color-text-secondary-light: ${siteConfig(
+          'HEO_COLOR_TEXT_SECONDARY',
+          '#4b5563',
+          CONFIG
+        )};
         --heo-color-text-dark: #f3f4f6;
         --heo-color-text-secondary-dark: #d1d5db;
         --heo-color-text: var(--heo-color-text-light);
@@ -164,18 +172,6 @@ const Style = () => {
       #theme-heo .heo-post-cover,
       #theme-heo .heo-post-cover-card {
         aspect-ratio: var(--heo-post-cover-aspect-ratio);
-      }
-
-      @media (min-width: 768px) {
-        #theme-heo .heo-post-cover-card {
-          aspect-ratio: auto;
-        }
-      }
-
-      @media (min-width: 1536px) {
-        #theme-heo .heo-post-cover-card.heo-post-cover-two-cols {
-          aspect-ratio: var(--heo-post-cover-aspect-ratio);
-        }
       }
 
       #theme-heo #notion-article .notion-text,

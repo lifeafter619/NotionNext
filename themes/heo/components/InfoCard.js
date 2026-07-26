@@ -79,7 +79,7 @@ export function InfoCard(props) {
               : 'cursor-default pointer-events-none'
           } justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
           <LazyImage
-            src={siteInfo?.icon}
+            src={siteConfig('BLOG_FAVICON') || siteInfo?.icon}
             className='rounded-full'
             width={useBlurAvatar ? 100 : 28}
             height={useBlurAvatar ? 100 : 28}

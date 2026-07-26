@@ -43,9 +43,13 @@ const filterLinkProps = props => {
 // utm 等一次性参数会被复制到页面上所有内链并无限传播
 const PERSISTED_QUERY_KEYS = ['theme', 'locale', 'lang', 'lite']
 
-const SmartLink = ({ href, children, ...rest }) => {
+const SmartLink = ({ href, children, prefetch, ...rest }) => {
   const LINK = siteConfig('LINK')
   const router = useRouter()
+  const shouldPrefetch = normalizeBoolean(
+    prefetch,
+    normalizeBoolean(siteConfig('PREFETCH_LINKS', false), false)
+  )
 
   // 获取 URL 字符串用于判断是否是外链
   let urlString = ''
@@ -154,7 +158,10 @@ const SmartLink = ({ href, children, ...rest }) => {
       : mergePreservedQueryForObjectHref(href)
 
   return (
-    <Link href={mergedHref} {...filterLinkProps(rest)}>
+    <Link
+      href={mergedHref}
+      prefetch={shouldPrefetch}
+      {...filterLinkProps(rest)}>
       {children}
     </Link>
   )
@@ -185,4 +192,10 @@ function getUrlOrigin(value) {
   } catch {
     return null
   }
+}
+
+function normalizeBoolean(value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback
+  if (typeof value === 'boolean') return value
+  return String(value).toLowerCase() === 'true'
 }

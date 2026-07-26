@@ -19,11 +19,18 @@ describe('default feature config', () => {
     expect(analyticsConfig.ANALYTICS_BUSUANZI_ENABLE).toBe(true)
   })
 
-  it('keeps the default Chinese web font stylesheet', () => {
+  it('uses platform fonts by default to keep web fonts off the critical path', () => {
     const fontConfig = require('@/conf/font.config')
 
-    expect(fontConfig.FONT_URL).toContain(
-      'https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css'
-    )
+    expect(fontConfig.FONT_URL).toEqual([])
+  })
+
+  it('allows an explicit web font stylesheet opt-in', () => {
+    process.env.NEXT_PUBLIC_FONT_URL = 'https://example.com/font.css'
+    jest.resetModules()
+
+    const fontConfig = require('@/conf/font.config')
+
+    expect(fontConfig.FONT_URL).toEqual(['https://example.com/font.css'])
   })
 })
