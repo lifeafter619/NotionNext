@@ -28,10 +28,11 @@
 
 ## 站点列表
 
-| 站点                                                     | 用途     | 主题   | 提交人     |
-| -------------------------------------------------------- | -------- | ------ | ---------- |
-| [NotionNext 主题预览站](https://preview.tangly1024.com/) | 主题预览 | 多主题 | NotionNext |
-| [Tangly Blog](https://blog.tangly1024.com/)              | 个人博客 | 未标注 | tangly1024 |
+| 站点                                                     | 用途     | 主题   | 提交人                             |
+| -------------------------------------------------------- | -------- | ------ | ---------------------------------- |
+| [NotionNext 主题预览站](https://preview.tangly1024.com/) | 主题预览 | 多主题 | NotionNext                         |
+| [Tangly Blog](https://blog.tangly1024.com/)              | 个人博客 | 未标注 | tangly1024                         |
+| [茉灵智库](https://blog.88lin.eu.org)                    | 个人博客 | `heo`  | [@88lin](https://github.com/88lin) |
 
 ## 推荐格式
 
