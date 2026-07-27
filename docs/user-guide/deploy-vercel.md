@@ -1,4 +1,4 @@
-# Vercel部署NotionNext
+# Vercel 部署 NotionNext
 
 > 迁移自：[Vercel部署NotionNext](https://docs.tangly1024.com/article/vercel-deploy-notion-next)
 > 发布日期：2023-2-10
@@ -12,7 +12,7 @@
 遵循此教程您将在[Vercel](https://tangly1024.com/article/vercel)上免费搭建一个[NotionNext](/user-guide/intro)博客。
 
 ::: info 问题
-[NotionNext](/user-guide/intro)是一个完全开源免费的建站脚本，将您的[Notion](https://blog.tangly1024.com/article/notion)笔记实时渲染成博客。
+[NotionNext](/user-guide/intro)是一个开源站点系统，可以把你的 Notion 内容发布为博客、作品集、知识库、导航站或产品官网。
 
 Vercel是一个来自国外的在线脚本托管平台，对于个人使用，其免费版已经完全足够，因此您无需购买服务器即可搭建自己的网站。
 :::
@@ -27,13 +27,13 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 
 部署站点只需三步，分别是：
 
-1. 复制我的Notion模板
+1. 复制官方 Notion 模板
 
-1. 复制我的Github源代码
+1. Fork 官方 GitHub 仓库
 
-1. 在Vercel中一键部署
+1. 在 Vercel 中一键部署
 
-部署文档已经过大量网友实践验证，如您实在无法完成独立部署，可以考虑[向我们求助](/user-guide/help/support)。
+部署文档已经过大量站长实践验证。若无法完成独立部署，先查看 [获取帮助](/user-guide/help/) 中的社区支持和付费协助说明。
 
 ### 视频帮助
 
@@ -128,10 +128,8 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 
 1. 请先注册并登陆[Github账号](https://github.com/)，
 
-1. 仅需点击下方链接，即可一键**Fork(复刻)**项目。
-   [Build software better, together](https://github.com/tangly1024/NotionNext/fork)
-
-You can't perform that action at this time. You signed in with another tab or window. You signed out in another tab or window. Reload to refresh your session. Reload to refresh your session.
+1. 仅需点击下方链接，即可一键 **Fork（复刻）** 官方项目。
+   [Fork NotionNext](https://github.com/notionnext-org/NotionNext/fork)
 
 ## 三、Vercel部署
 
@@ -167,11 +165,10 @@ You can't perform that action at this time. You signed in with another tab or wi
 To deploy a new Project, import an existing Git Repository or get started with one of our Templates.
 
 1. 在代码仓库列表中选择导入**NotionNext**
-![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
-::: tip 提示
-注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
-:::
-
+   ![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
+   ::: tip 提示
+   注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
+   :::
 
 ### 配置页面ID并部署
 
@@ -200,14 +197,14 @@ NotionNext会实时抓取Notion笔记内容
 
 ::: warning 注意
 **若您的站点始终无法同步笔记的数据**，请再次检查上面的步骤，或者干脆重来一遍：
+
 1. 在Notion中检查您的`NOTION_PAGE_ID` 格式是否正确、并已开起页面分享。
 2. Vercel后台环境变量中`NOTION_PAGE_ID`是否配置，并重新配置后尝试`Redeploy`。
-如何检查Vercel后台环境变量配置：
-![Untitled](/legacy/27a7df016686481d.png)
-如何重新部署
-![Untitled](/legacy/1f4cae5794779d16.png)
-:::
-
+   如何检查Vercel后台环境变量配置：
+   ![Untitled](/legacy/27a7df016686481d.png)
+   如何重新部署
+   ![Untitled](/legacy/1f4cae5794779d16.png)
+   :::
 
 ## 自定义您的站点
 

@@ -26,7 +26,7 @@ function getPostText(value, fallback = '') {
  * @param {*} param0
  * @returns
  */
-export default function PostHeader({ post, siteInfo, isDarkMode }) {
+export default function PostHeader({ post, siteInfo, isDarkMode, lock }) {
   const { setOnLoading } = useGlobal()
   const router = useRouter()
   const headerImage = post?.pageCover ? post.pageCover : siteInfo?.pageCover
@@ -216,12 +216,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode }) {
           {/* 标题底部补充信息 */}
           <section className='flex flex-wrap items-center gap-x-3 gap-y-2 dark:text-gray-200 text-opacity-70 shadow-text-md text-sm justify-center md:justify-start mt-4 text-white font-light leading-7'>
             <div className='flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-2 min-w-0'>
-              <div className='whitespace-nowrap'>
-                <WordCount
-                  wordCount={post.wordCount}
-                  readTime={post.readTime}
-                />
-              </div>
+              {!lock && (
+                <div className='whitespace-nowrap'>
+                  <WordCount
+                    wordCount={post.wordCount}
+                    readTime={post.readTime}
+                  />
+                </div>
+              )}
               {post?.type !== 'Page' && (
                 <>
                   <SmartLink

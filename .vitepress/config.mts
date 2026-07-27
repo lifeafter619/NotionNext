@@ -19,7 +19,7 @@ const hiddenPublicDocPaths = ['user-guide/deploy/cloudflare-pages-docs.md']
 const srcExclude = [
   '**/README.md',
   '**/README.en.md',
-  ...hiddenPublicDocPaths.map((path) => `**/${path}`)
+  ...hiddenPublicDocPaths.map(path => `**/${path}`)
 ]
 
 function getMarkdownTitle(filePath: string) {
@@ -155,6 +155,7 @@ export default defineConfig({
         link: '/user-guide/themes/THEMES_CATALOG',
         activeMatch: '/user-guide/themes/'
       },
+      { text: '用户作品', link: '/user-guide/showcase' },
       {
         text: '参考手册',
         link: '/user-guide/reference/features',
@@ -178,6 +179,8 @@ export default defineConfig({
           items: [
             { text: '从这里开始', link: '/user-guide/start-here' },
             { text: '介绍', link: '/user-guide/intro' },
+            { text: '用户作品', link: '/user-guide/showcase' },
+            { text: '场景模板', link: '/user-guide/templates' },
             { text: 'Vercel 部署', link: '/user-guide/deploy-vercel' },
             { text: 'Notion 数据库', link: '/user-guide/notion-database' },
             { text: '配置站点', link: '/user-guide/config-site' },
@@ -233,7 +236,10 @@ export default defineConfig({
               text: 'Cloudflare 博客静态',
               link: '/user-guide/deploy/cloudflare-pages'
             },
-            { text: 'Notion 图片反代', link: '/user-guide/deploy/notion-image-proxy' },
+            {
+              text: 'Notion 图片反代',
+              link: '/user-guide/deploy/notion-image-proxy'
+            },
             { text: 'EdgeOne Pages', link: '/user-guide/deploy/edgeone-pages' },
             { text: '构建性能调优', link: '/user-guide/deploy/build-tuning' },
             { text: 'Netlify', link: '/user-guide/deploy/netlify' },
@@ -346,7 +352,7 @@ export default defineConfig({
           ]
         },
         {
-          text: '主题（25）',
+          text: `主题（${themeDocLinks.length}）`,
           collapsed: true,
           items: [
             { text: '主题目录', link: '/user-guide/themes/' },
@@ -375,7 +381,10 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: '评论总览', link: '/user-guide/comments/overview' },
-            { text: '会员与评论可选集成', link: '/developer/MEMBERSHIP_COMMENTS_ROADMAP' },
+            {
+              text: '会员与评论可选集成',
+              link: '/developer/MEMBERSHIP_COMMENTS_ROADMAP'
+            },
             { text: 'Cusdis', link: '/user-guide/comments/cusdis' },
             { text: 'Utterances', link: '/user-guide/comments/utterances' },
             { text: 'Giscus', link: '/user-guide/comments/giscus' },
@@ -383,7 +392,10 @@ export default defineConfig({
             { text: 'Artalk', link: '/user-guide/comments/artalk' },
             { text: 'Gitalk', link: '/user-guide/comments/gitalk' },
             { text: 'Valine', link: '/user-guide/comments/valine' },
-            { text: 'NotionComments', link: '/user-guide/comments/notion-comments' },
+            {
+              text: 'NotionComments',
+              link: '/user-guide/comments/notion-comments'
+            },
             { text: 'Waline', link: '/user-guide/comments/waline' }
           ]
         },
@@ -513,8 +525,15 @@ export default defineConfig({
             { text: '开发文档首页', link: '/developer/' },
             { text: '快速上手', link: '/developer/GETTING_STARTED' },
             { text: '愿景与路线图', link: '/developer/VISION_ROADMAP' },
+            {
+              text: '可持续增长路线图',
+              link: '/developer/GROWTH_ROADMAP.zh-CN'
+            },
             { text: '开放生态长期计划', link: '/developer/LONG_TERM_PLAN' },
-            { text: '会员、权限与评论可选集成', link: '/developer/MEMBERSHIP_COMMENTS_ROADMAP' },
+            {
+              text: '会员、权限与评论可选集成',
+              link: '/developer/MEMBERSHIP_COMMENTS_ROADMAP'
+            },
             { text: '架构总览', link: '/developer/ARCHITECTURE' },
             { text: '目录与模块', link: '/developer/PROJECT_STRUCTURE' },
             { text: '配置体系', link: '/developer/CONFIGURATION' },

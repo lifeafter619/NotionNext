@@ -56,6 +56,12 @@ export function InfoCard(props) {
   const icon1 = siteConfig('HEO_INFO_CARD_ICON1', null, CONFIG)
   const url2 = siteConfig('HEO_INFO_CARD_URL2', null, CONFIG)
   const icon2 = siteConfig('HEO_INFO_CARD_ICON2', null, CONFIG)
+  const orcidUrl = siteConfig('CONTACT_ORCID')
+  const orcidIcon = siteConfig(
+    'HEO_INFO_CARD_ICON_ORCID',
+    'fab fa-orcid',
+    CONFIG
+  )
   const avatarBlurEnabled = siteConfig(
     'HEO_INFO_CARD_AVATAR_BLUR',
     false,
@@ -96,7 +102,7 @@ export function InfoCard(props) {
 
       <div className='flex justify-between'>
         <div className='flex space-x-3  hover:text-black dark:hover:text-white'>
-          {/* 两个社交按钮 */}
+          {/* 社交按钮 */}
           {url1 && (
             <div className='w-10 text-center bg-[var(--heo-color-primary-hover)] p-2 rounded-full  transition-colors duration-200 dark:bg-[var(--heo-color-accent)] dark:hover:bg-black hover:bg-white'>
               <SmartLink href={url1}>
@@ -108,6 +114,13 @@ export function InfoCard(props) {
             <div className='bg-[var(--heo-color-primary-hover)] p-2 rounded-full w-10 items-center flex justify-center transition-colors duration-200 dark:bg-[var(--heo-color-accent)] dark:hover:bg-black hover:bg-white'>
               <SmartLink href={url2}>
                 <i className={icon2} />
+              </SmartLink>
+            </div>
+          )}
+          {orcidUrl && (
+            <div className='bg-[var(--heo-color-primary-hover)] p-2 rounded-full w-10 items-center flex justify-center transition-colors duration-200 dark:bg-[var(--heo-color-accent)] dark:hover:bg-black hover:bg-white'>
+              <SmartLink href={orcidUrl} title='ORCID' aria-label='ORCID'>
+                <i className={orcidIcon} />
               </SmartLink>
             </div>
           )}

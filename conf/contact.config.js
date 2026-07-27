@@ -18,6 +18,7 @@ module.exports = {
   CONTACT_TELEGRAM:
     process.env.NEXT_PUBLIC_CONTACT_TELEGRAM || 'https://t.me/a_sbbot', // 你的telegram 地址 例如 https://t.me/tangly_1024
   CONTACT_LINKEDIN: process.env.NEXT_PUBLIC_CONTACT_LINKEDIN || '', // 你的linkedIn 首页
+  CONTACT_ORCID: process.env.NEXT_PUBLIC_CONTACT_ORCID || '', // ORCID 主页，例如 https://orcid.org/1234-1234-1234-1234
   CONTACT_INSTAGRAM:
     process.env.NEXT_PUBLIC_CONTACT_INSTAGRAM ||
     'https://instagram.com/etherrreal619', // 您的instagram地址

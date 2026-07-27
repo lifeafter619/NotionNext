@@ -21,6 +21,15 @@ const SocialButton = () => {
           <i className='fab fa-github' />
         </a>
       )}
+      {siteConfig('CONTACT_ORCID') && (
+        <a
+          target='_blank'
+          rel='noreferrer'
+          title='ORCID'
+          href={siteConfig('CONTACT_ORCID')}>
+          <i className='fab fa-orcid' />
+        </a>
+      )}
       {siteConfig('CONTACT_TWITTER') && (
         <a
           target='_blank'

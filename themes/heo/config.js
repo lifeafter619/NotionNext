@@ -71,6 +71,7 @@ const CONFIG = {
   HEO_INFO_CARD_ICON1: 'fas fa-user',
   HEO_INFO_CARD_URL2: 'https://github.com/lifeafter619',
   HEO_INFO_CARD_ICON2: 'fab fa-github',
+  HEO_INFO_CARD_ICON_ORCID: 'fab fa-orcid',
 
   // 用户技能图标
   HEO_GROUP_ICONS: [

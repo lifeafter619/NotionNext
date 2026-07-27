@@ -15,6 +15,8 @@
   ·
   <a href="https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG">主题全览</a>
   ·
+  <a href="https://notionnext.tangly1024.com/user-guide/showcase">用户作品</a>
+  ·
   <a href="https://notionnext.tangly1024.com/">文档站</a>
   ·
   <a href="https://github.com/notionnext-org/NotionNext/discussions">讨论区</a>
@@ -87,7 +89,7 @@ NotionNext 是一个基于 **Next.js + Notion API** 的开源站点系统。你�
 | ----------------- | ------------------------------------------ |
 | 个人博客          | `simple`、`hexo`、`nobelium`、`typography` |
 | 文档 / 知识库     | `gitbook`、`claude`、`thoughtlite`         |
-| 作品集 / 个人品牌 | `opc`、`proxio`、`starter`、`landing`       |
+| 作品集 / 个人品牌 | `opc`、`proxio`、`starter`、`landing`      |
 | 产品官网          | `starter`、`landing`、`commerce`           |
 | 图片 / 摄影       | `photo`、`plog`、`magzine`                 |
 | 导航站            | `nav`                                      |
@@ -124,14 +126,16 @@ yarn dev
 
 自 2026 年起，NotionNext 使用仓库内 Markdown 文档作为主要教程来源，并发布为独立文档站。
 
-| 内容       | 链接                                                                                  |
-| ---------- | ------------------------------------------------------------------------------------- |
-| 在线文档站 | [notionnext.tangly1024.com](https://notionnext.tangly1024.com)                        |
-| 新手入口   | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here)                 |
-| 配置索引   | [全站功能与配置索引](https://notionnext.tangly1024.com/user-guide/reference/features) |
-| 主题说明   | [26 个主题说明](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)   |
-| 文档源码   | [docs/](./docs/)                                                                      |
-| 旧版手册   | [docs.tangly1024.com](https://docs.tangly1024.com/)                                   |
+| 内容       | 链接                                                                                      |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| 在线文档站 | [notionnext.tangly1024.com](https://notionnext.tangly1024.com)                            |
+| 新手入口   | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here)                     |
+| 场景模板   | [按目标选择模板](https://notionnext.tangly1024.com/user-guide/templates)                  |
+| 配置索引   | [全站功能与配置索引](https://notionnext.tangly1024.com/user-guide/reference/features)     |
+| 主题说明   | [26 个主题说明](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)       |
+| 用户作品   | [Showcase](https://notionnext.tangly1024.com/user-guide/showcase)：已上线站点欢迎提交作品 |
+| 文档源码   | [docs/](./docs/)                                                                          |
+| 旧版手册   | [docs.tangly1024.com](https://docs.tangly1024.com/)                                       |
 
 ## 参与社区
 

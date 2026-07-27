@@ -22,9 +22,18 @@ import WechatFillIcon from 'remixicon-react/WechatFillIcon'
 import GlobeFillIcon from 'remixicon-react/GlobeFillIcon'
 import MailFillIcon from 'remixicon-react/MailFillIcon'
 
+const OrcidIcon = ({ size = 16 }) => (
+  <i
+    className='fab fa-orcid'
+    aria-hidden='true'
+    style={{ fontSize: size, lineHeight: 1 }}
+  />
+)
+
 // Social icon mapping
 const SocialIconComponents = {
   CONTACT_GITHUB: GithubFillIcon,
+  CONTACT_ORCID: OrcidIcon,
   CONTACT_TWITTER: IconBrandX,
   CONTACT_WEIBO: WeiboFillIcon,
   CONTACT_BILIBILI: BilibiliFillIcon,
@@ -67,6 +76,7 @@ export const SideNav = props => {
   // Social icon config - using contact.config.js settings
   const socialLinks = [
     { key: 'CONTACT_GITHUB', label: 'GitHub' },
+    { key: 'CONTACT_ORCID', label: 'ORCID' },
     { key: 'CONTACT_TWITTER', label: 'Twitter' },
     { key: 'CONTACT_WEIBO', label: 'Weibo' },
     { key: 'CONTACT_BILIBILI', label: 'Bilibili' },

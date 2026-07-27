@@ -9,6 +9,7 @@ import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
  */
 const SocialButton = () => {
   const CONTACT_GITHUB = starterConfig('CONTACT_GITHUB')
+  const CONTACT_ORCID = starterConfig('CONTACT_ORCID')
   const CONTACT_TWITTER = starterConfig('CONTACT_TWITTER')
   const CONTACT_TELEGRAM = starterConfig('CONTACT_TELEGRAM')
   const CONTACT_LINKEDIN = starterConfig('CONTACT_LINKEDIN')
@@ -31,6 +32,15 @@ const SocialButton = () => {
             title={'github'}
             href={CONTACT_GITHUB}>
             <i className='fab fa-github transform hover:scale-125 duration-150' />
+          </a>
+        )}
+        {CONTACT_ORCID && (
+          <a
+            target='_blank'
+            rel='noreferrer'
+            title={'ORCID'}
+            href={CONTACT_ORCID}>
+            <i className='fab fa-orcid transform hover:scale-125 duration-150' />
           </a>
         )}
         {CONTACT_TWITTER && (
