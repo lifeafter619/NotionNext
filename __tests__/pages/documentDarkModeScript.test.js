@@ -37,4 +37,21 @@ describe('document dark mode bootstrap script', () => {
 
     expect(markup).toContain('<meta name="referrer" content="no-referrer"/>')
   })
+
+  it('does not preload the full Font Awesome solid font', () => {
+    const markup = renderToStaticMarkup(new MyDocument().render())
+
+    expect(markup).not.toContain('fa-solid-900.woff2')
+  })
+
+  it('activates Font Awesome only after the window load event', () => {
+    const markup = renderToStaticMarkup(new MyDocument().render())
+
+    const activationScript = markup
+      .split('<script>')
+      .find(chunk => chunk.includes("getElementById('font-awesome-css')"))
+    expect(activationScript).toBeDefined()
+    expect(activationScript).toContain("addEventListener('load'")
+    expect(activationScript).not.toContain('requestAnimationFrame')
+  })
 })

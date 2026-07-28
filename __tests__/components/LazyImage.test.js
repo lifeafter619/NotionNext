@@ -2,7 +2,10 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { act } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server.node'
-import LazyImage from '@/components/LazyImage'
+import LazyImage, {
+  adjustImgSize,
+  buildResponsiveSrcSet
+} from '@/components/LazyImage'
 
 describe('LazyImage Component', () => {
   const defaultProps = {
@@ -61,6 +64,45 @@ describe('LazyImage Component', () => {
 
     const image = screen.getByAltText('Test image')
     expect(image).toHaveAttribute('sizes', '120px')
+  })
+
+  it('requests small Notion proxy images at their rendered width', () => {
+    const source =
+      'https://img.cdn.619.pp.ua/image/attachment%3Apage-icon?table=block&id=page-id'
+    const optimized = adjustImgSize(source, 24)
+
+    expect(optimized).toContain('width=24')
+    expect(buildResponsiveSrcSet(optimized, 24)).toBeUndefined()
+  })
+
+  it('does not expose oversized responsive candidates for fixed icons', () => {
+    const source =
+      'https://img.cdn.619.pp.ua/image/attachment%3Apage-icon?table=block&id=page-id'
+
+    render(
+      <LazyImage
+        src={source}
+        alt='Fixed icon'
+        width={24}
+        height={24}
+      />
+    )
+
+    const image = screen.getByAltText('Fixed icon')
+    expect(image.getAttribute('src')).toContain('width=24')
+    expect(image).not.toHaveAttribute('srcset')
+  })
+
+  it('does not append optimization parameters to unrelated image hosts', () => {
+    const source = 'https://example.com/avatar.jpg'
+
+    expect(adjustImgSize(source, 24)).toBe(source)
+  })
+
+  it('offers an efficient candidate for narrow high-density cards', () => {
+    const source = 'https://example.com/card.jpg?width=1010'
+
+    expect(buildResponsiveSrcSet(source, 1010)).toContain('width=680 680w')
   })
 
   it('omits invalid auto width and height attributes when dimensions are not provided', () => {

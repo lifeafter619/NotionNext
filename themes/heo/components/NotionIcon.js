@@ -5,7 +5,11 @@ import LazyImage from '@/components/LazyImage'
  * 可能是emoji 可能是 svg 也可能是 图片
  * @returns
  */
-const NotionIcon = ({ icon, className = 'w-8 h-8 my-auto inline mr-1' }) => {
+const NotionIcon = ({
+  icon,
+  className = 'w-8 h-8 my-auto inline mr-1',
+  size = 32
+}) => {
   const iconValue = typeof icon === 'string' ? icon.trim() : ''
 
   if (!iconValue) {
@@ -14,7 +18,15 @@ const NotionIcon = ({ icon, className = 'w-8 h-8 my-auto inline mr-1' }) => {
 
   if (iconValue.startsWith('http') || iconValue.startsWith('data:')) {
     // 这里优先使用传入的 className
-    return <LazyImage src={iconValue} className={className} />
+    return (
+      <LazyImage
+        src={iconValue}
+        className={className}
+        width={size}
+        height={size}
+        sizes={`${size}px`}
+      />
+    )
   }
 
   // 对于 emoji 或 svg，设置默认 className，也可以传递不同的样式

@@ -1,6 +1,7 @@
 import { siteConfig } from '@/lib/config'
 import BLOG from '@/blog.config'
 import { buildNotionAssetFallbackCandidates } from '@/lib/notionAssetFallback'
+import { isNotionAssetProxyUrl } from '@/lib/notionAssetUrl'
 import { enqueueImagePrefetch } from '@/lib/utils/imagePrefetchQueue'
 import Head from 'next/head'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -25,8 +26,8 @@ const getImageTargetWidth = (width, maxWidth) => {
  * - priority / eager 图片：loading=eager（+ priority 时 preload、fetchpriority=high）；
  * - 其余图片：loading=lazy，浏览器在 HTML 解析阶段就为视口内及附近的图片发起
  *   并行请求（自带并发与优先级控制），无需等待 JS 下载与 React 水合；
- * - 远离视口的图片由原生 lazy 推迟，并进入空闲预取队列在首屏就绪后预热，
- *   用户滚动到时直接命中 HTTP 缓存。
+ * - 远离视口的图片由原生 lazy 推迟；可选的空闲预取默认关闭，避免在首屏
+ *   完成后立即下载整页图片。
  * @param {*} param0
  * @returns
  */
@@ -146,7 +147,8 @@ export default function LazyImage({
   }, [optimizedImageSrc, defaultPlaceholderSrc, placeholderSrc])
 
   // 构造 srcset 以支持响应式图片加载
-  const generateSrcSet = imageSrc => buildResponsiveSrcSet(imageSrc, maxWidth)
+  const generateSrcSet = imageSrc =>
+    buildResponsiveSrcSet(imageSrc, targetImageWidth)
 
   const shouldAttachRealSources = currentSrc === optimizedImageSrc
   const srcSet = shouldAttachRealSources
@@ -171,7 +173,7 @@ export default function LazyImage({
     }
     const cancel = enqueueImagePrefetch({
       src: optimizedImageSrc,
-      srcSet: buildResponsiveSrcSet(optimizedImageSrc, maxWidth),
+      srcSet: buildResponsiveSrcSet(optimizedImageSrc, targetImageWidth),
       sizes: imageSizes,
       referrerPolicy
     })
@@ -180,7 +182,13 @@ export default function LazyImage({
       cancelPrefetchRef.current = null
       cancel()
     }
-  }, [isEager, optimizedImageSrc, maxWidth, imageSizes, referrerPolicy])
+  }, [
+    isEager,
+    optimizedImageSrc,
+    targetImageWidth,
+    imageSizes,
+    referrerPolicy
+  ])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
@@ -274,7 +282,11 @@ export function adjustImgSize(src, maxWidth) {
     return null
   }
 
-  return replaceImageWidthParam(src, normalizeImageWidth(maxWidth))
+  return replaceImageWidthParam(
+    src,
+    normalizeImageWidth(maxWidth),
+    isNotionAssetProxyUrl(src, BLOG.NOTION_HOST)
+  )
 }
 
 function normalizeImageWidth(width) {
@@ -290,20 +302,38 @@ export function buildResponsiveSrcSet(imageSrc, maxWidth) {
     return undefined
   }
 
-  const breakpoints = [320, 480, 640, 750, 828, 1080, 1200, 1920, 2048, 3840]
+  const breakpoints = [
+    320,
+    480,
+    640,
+    680,
+    750,
+    828,
+    1080,
+    1200,
+    1920,
+    2048,
+    3840
+  ]
   const maxImageWidth = normalizeImageWidth(maxWidth)
+  const candidateWidths = breakpoints.filter(w => w <= maxImageWidth)
 
-  return breakpoints
-    .filter(w => w <= maxImageWidth)
-    .map(w => {
-      const newSrc = replaceImageWidthParam(imageSrc, w)
-      return `${newSrc} ${w}w`
-    })
-    .join(', ')
+  if (maxImageWidth >= breakpoints[0] && !candidateWidths.includes(maxImageWidth)) {
+    candidateWidths.push(maxImageWidth)
+  }
+
+  const candidates = candidateWidths.map(w => {
+    const newSrc = replaceImageWidthParam(imageSrc, w)
+    return `${newSrc} ${w}w`
+  })
+
+  return candidates.length > 0 ? candidates.join(', ') : undefined
 }
 
-function replaceImageWidthParam(imageSrc, width) {
-  if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
+function replaceImageWidthParam(imageSrc, width, appendWidth = false) {
+  const hasWidthParam =
+    imageSrc?.includes('width=') || imageSrc?.includes('w=')
+  if (!imageSrc || (!hasWidthParam && !appendWidth)) {
     return imageSrc
   }
 
@@ -320,11 +350,11 @@ function replaceImageWidthParam(imageSrc, width) {
         ? 'w'
         : null
 
-    if (!widthParam) {
+    if (!widthParam && !appendWidth) {
       return imageSrc
     }
 
-    url.searchParams.set(widthParam, String(width))
+    url.searchParams.set(widthParam || 'width', String(width))
 
     if (isRelativePath) {
       return `${url.pathname}${url.search}${url.hash}`

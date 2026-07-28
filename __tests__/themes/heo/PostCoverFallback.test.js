@@ -102,7 +102,23 @@ describe('heo post cover fallback', () => {
     expect(coverWrapper).not.toHaveClass('md:h-full')
   })
 
-  it('gives only the first cover high priority while loading the second eagerly', () => {
+  it('describes the actual mobile card width to responsive images', () => {
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { getByAltText } = render(
+      <BlogPostCard index={0} post={post} siteInfo={siteInfo} />
+    )
+
+    expect(getByAltText('Post title')).toHaveAttribute(
+      'sizes',
+      '(min-width: 720px) 42vw, calc(100vw - 2.5rem)'
+    )
+  })
+
+  it('loads only the first cover eagerly and with high priority', () => {
     const firstPost = {
       ...createPost(),
       pageCoverThumbnail: '/first-cover.jpg'
@@ -128,7 +144,7 @@ describe('heo post cover fallback', () => {
       'data-priority',
       'normal'
     )
-    expect(getByAltText('Second post')).toHaveAttribute('loading', 'eager')
+    expect(getByAltText('Second post')).not.toHaveAttribute('loading')
   })
 
   it('applies cover sizing to the direct flex item', () => {

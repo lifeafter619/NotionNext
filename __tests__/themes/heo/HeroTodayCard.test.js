@@ -4,6 +4,8 @@ import Hero from '@/themes/heo/components/Hero'
 
 const mockPush = jest.fn()
 const mockSiteConfig = jest.fn()
+const originalMatchMedia = window.matchMedia
+let mockGroupIcons
 
 jest.mock('next/router', () => ({
   useRouter: () => ({ push: mockPush })
@@ -30,7 +32,11 @@ jest.mock('@/components/HeroIcons', () => ({
 }))
 
 jest.mock('@/components/LazyImage', () => {
-  return function MockLazyImage({ priority: _priority, ...props }) {
+  return function MockLazyImage({
+    priority: _priority,
+    fetchPriority: _fetchPriority,
+    ...props
+  }) {
     return <img {...props} />
   }
 })
@@ -48,12 +54,18 @@ jest.mock('@/themes/heo/components/HeoLink', () => {
 describe('heo Hero today card', () => {
   beforeEach(() => {
     mockPush.mockReset()
+    mockGroupIcons = []
+    window.matchMedia = jest.fn().mockReturnValue({
+      matches: true,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    })
     mockSiteConfig.mockImplementation((key, defaultValue) => {
       const config = {
         SUB_PATH: '/blog',
         HEO_HERO_RECOMMEND_COVER_ENABLE: true,
         HEO_HERO_TITLE_LINK: '/featured',
-        HEO_GROUP_ICONS: [],
+        HEO_GROUP_ICONS: mockGroupIcons,
         HEO_HERO_CATEGORY_1: {},
         HEO_HERO_CATEGORY_2: {},
         HEO_HERO_CATEGORY_3: {}
@@ -62,12 +74,17 @@ describe('heo Hero today card', () => {
     })
   })
 
-  function renderHero() {
+  afterEach(() => {
+    window.matchMedia = originalMatchMedia
+  })
+
+  function renderHero(props = {}) {
     return render(
       <Hero
         latestPosts={[]}
         allNavPages={[]}
         siteInfo={{ pageCover: '/cover.jpg' }}
+        {...props}
       />
     )
   }
@@ -99,5 +116,75 @@ describe('heo Hero today card', () => {
 
     expect(mockPush).toHaveBeenCalledTimes(1)
     expect(mockPush).toHaveBeenCalledWith('/blog/featured')
+  })
+
+  it('does not create desktop decoration image requests on mobile', () => {
+    mockGroupIcons = [
+      {
+        img_1: '/desktop-one.png',
+        title_1: 'Desktop one',
+        img_2: '/desktop-two.png',
+        title_2: 'Desktop two'
+      }
+    ]
+    window.matchMedia = jest.fn().mockReturnValue({
+      matches: false,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    })
+
+    renderHero()
+
+    expect(screen.queryByAltText('Desktop one')).not.toBeInTheDocument()
+    expect(screen.queryByAltText('Desktop two')).not.toBeInTheDocument()
+    expect(screen.queryByAltText('Today Card Cover')).not.toBeInTheDocument()
+  })
+
+  it('renders the decoration images on desktop', async () => {
+    mockGroupIcons = [
+      {
+        img_1: '/desktop-one.png',
+        title_1: 'Desktop one',
+        img_2: '/desktop-two.png',
+        title_2: 'Desktop two'
+      }
+    ]
+    window.matchMedia = jest.fn().mockReturnValue({
+      matches: true,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    })
+
+    renderHero()
+
+    expect(await screen.findAllByAltText('Desktop one')).toHaveLength(2)
+    expect(await screen.findAllByAltText('Desktop two')).toHaveLength(2)
+  })
+
+  it('loads only the first recommended cover eagerly', () => {
+    renderHero({
+      latestPosts: [
+        {
+          id: 'post-1',
+          href: '/post-1',
+          title: 'First recommendation',
+          pageCoverThumbnail: '/first.jpg'
+        },
+        {
+          id: 'post-2',
+          href: '/post-2',
+          title: 'Second recommendation',
+          pageCoverThumbnail: '/second.jpg'
+        }
+      ]
+    })
+
+    expect(screen.getByAltText('First recommendation')).toHaveAttribute(
+      'loading',
+      'eager'
+    )
+    expect(screen.getByAltText('Second recommendation')).not.toHaveAttribute(
+      'loading'
+    )
   })
 })

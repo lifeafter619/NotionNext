@@ -77,13 +77,13 @@ describe('heo BlogPostListScroll', () => {
     )
   })
 
-  it('queues covers of not-yet-rendered pages into the idle prefetch queue', () => {
+  it('does not prefetch covers from not-yet-rendered pages', () => {
     const {
       __imagePrefetchQueueTestHooks
     } = require('@/lib/utils/imagePrefetchQueue')
     __imagePrefetchQueueTestHooks.reset()
 
-    // 13 篇文章、每页 10 篇：第 2 页的 3 篇尚未渲染，封面应进入预取队列
+    // 未渲染分页不应在首屏 load 后继续抢占图片带宽。
     const posts = Array.from({ length: 13 }, (_, index) => ({
       id: `post-${index}`,
       title: `Post ${index}`,
@@ -92,7 +92,7 @@ describe('heo BlogPostListScroll', () => {
 
     render(<BlogPostListScroll posts={posts} />)
 
-    expect(__imagePrefetchQueueTestHooks.state().pending).toBe(3)
+    expect(__imagePrefetchQueueTestHooks.state().pending).toBe(0)
     __imagePrefetchQueueTestHooks.reset()
   })
 })

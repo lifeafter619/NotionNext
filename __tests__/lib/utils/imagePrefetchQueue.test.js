@@ -4,8 +4,12 @@ import {
 } from '@/lib/utils/imagePrefetchQueue'
 
 jest.mock('@/lib/config', () => ({
-  siteConfig: jest.fn((_key, fallback) => fallback)
+  siteConfig: jest.fn((key, fallback) =>
+    key === 'IMAGE_PREFETCH_ENABLE' ? imagePrefetchEnabled : fallback
+  )
 }))
+
+let imagePrefetchEnabled
 
 describe('imagePrefetchQueue', () => {
   const OriginalImage = global.Image
@@ -13,6 +17,7 @@ describe('imagePrefetchQueue', () => {
 
   beforeEach(() => {
     hooks.reset()
+    imagePrefetchEnabled = true
     createdImages = []
     global.Image = class MockImage {
       constructor() {
@@ -97,10 +102,29 @@ describe('imagePrefetchQueue', () => {
     expect(hooks.state().pending).toBe(0)
   })
 
+  it('does not prefetch when the feature is disabled', () => {
+    imagePrefetchEnabled = false
+
+    enqueueImagePrefetch({ src: 'https://example.com/disabled.jpg' })
+
+    expect(hooks.state().pending).toBe(0)
+  })
+
   it('does not prefetch on 2g connections', () => {
     Object.defineProperty(navigator, 'connection', {
       configurable: true,
       value: { saveData: false, effectiveType: 'slow-2g' }
+    })
+
+    enqueueImagePrefetch({ src: 'https://example.com/slow.jpg' })
+
+    expect(hooks.state().pending).toBe(0)
+  })
+
+  it('does not prefetch on 3g connections', () => {
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: { saveData: false, effectiveType: '3g' }
     })
 
     enqueueImagePrefetch({ src: 'https://example.com/slow.jpg' })

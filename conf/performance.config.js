@@ -18,12 +18,11 @@ module.exports = {
   // 减少用户滚动时看到占位图的概率
   LAZY_LOAD_THRESHOLD: process.env.NEXT_PUBLIC_LAZY_LOAD_THRESHOLD || '600px',
 
-  // 空闲图片预取：首屏加载完成后，在浏览器空闲时以受限并发预热
-  // 尚未进入视口的懒加载图片（含文章内配图），滚动到时即时显示。
-  // 弱网（2g）或用户开启省流模式（Save-Data）时自动禁用。
+  // 空闲图片预取默认关闭，避免 load 后下载整页图片。需要时可显式开启；
+  // 省流模式和非 4g 网络仍会自动禁用。
   IMAGE_PREFETCH_ENABLE: parseBoolean(
     process.env.NEXT_PUBLIC_IMAGE_PREFETCH_ENABLE,
-    true
+    false
   ),
   // 预取并发上限，避免占满连接池、对低端设备造成解码压力
   IMAGE_PREFETCH_CONCURRENCY:

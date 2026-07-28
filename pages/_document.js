@@ -1,8 +1,6 @@
 import BLOG from '@/blog.config'
 import Document, { Head, Html, Main, NextScript } from 'next/document'
 
-const isLocalFontAwesome = BLOG.FONT_AWESOME?.startsWith('/vendor/fontawesome/')
-
 const normalizeResourceList = value => {
   if (!value) return []
   if (Array.isArray(value)) return value.filter(Boolean)
@@ -115,18 +113,11 @@ class MyDocument extends Document {
             </>
           )}
 
-          {/* 预加载 Font Awesome */}
+          {/* Font Awesome 推迟到 load 后激活：其 font-display:block 决定了
+              字体到达前图标本来就是空白，提前激活只会让 ~280KB 字体
+              抢占首屏图片与 CSS 的带宽 */}
           {BLOG.FONT_AWESOME && (
             <>
-              {isLocalFontAwesome && (
-                <link
-                  rel='preload'
-                  href='/vendor/fontawesome/webfonts/fa-solid-900.woff2'
-                  as='font'
-                  type='font/woff2'
-                  crossOrigin='anonymous'
-                />
-              )}
               <style
                 dangerouslySetInnerHTML={{
                   __html:
@@ -142,7 +133,7 @@ class MyDocument extends Document {
               <script
                 dangerouslySetInnerHTML={{
                   __html:
-                    "requestAnimationFrame(function(){var l=document.getElementById('font-awesome-css');if(l)l.rel='stylesheet'})"
+                    "(function(){var a=function(){var l=document.getElementById('font-awesome-css');if(l)l.rel='stylesheet'};var i=function(){if(window.requestIdleCallback){requestIdleCallback(a,{timeout:2000})}else{setTimeout(a,1)}};if(document.readyState==='complete'){i()}else{window.addEventListener('load',i)}})()"
                 }}
               />
               <noscript>

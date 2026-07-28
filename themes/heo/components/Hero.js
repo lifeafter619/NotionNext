@@ -6,7 +6,7 @@ import { useGlobal } from '@/lib/global'
 import { warmArticleCover } from '@/lib/utils/warmArticleAssets'
 import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
-import { memo, useImperativeHandle, useRef, useState } from 'react'
+import { memo, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import CONFIG from '../config'
 import { withHeoSubPath } from '../utils/path'
 
@@ -39,6 +39,28 @@ function getPostTitle(post) {
     return String(title).trim() || '未命名'
   }
   return '未命名'
+}
+
+function useDesktopImages() {
+  const [showDesktopImages, setShowDesktopImages] = useState(false)
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined
+
+    const mediaQuery = window.matchMedia('(min-width: 1280px)')
+    const syncVisibility = () => setShowDesktopImages(mediaQuery.matches)
+    syncVisibility()
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncVisibility)
+      return () => mediaQuery.removeEventListener('change', syncVisibility)
+    }
+
+    mediaQuery.addListener?.(syncVisibility)
+    return () => mediaQuery.removeListener?.(syncVisibility)
+  }, [])
+
+  return showDesktopImages
 }
 
 /**
@@ -166,10 +188,14 @@ function Banner(props) {
  * 英雄区左上角banner条中斜向滚动的图标
  */
 const TagsGroupBar = memo(function TagsGroupBar() {
+  const showDesktopImages = useDesktopImages()
   const icons = siteConfig('HEO_GROUP_ICONS', null, CONFIG)
   const groupIcons = Array.isArray(icons)
     ? icons.filter(Boolean).concat(icons.filter(Boolean))
     : []
+
+  if (!showDesktopImages) return null
+
   return (
     <div className='tags-group-all flex -rotate-[30deg] h-full'>
       <div className='tags-group-wrapper flex flex-nowrap absolute top-16'>
@@ -306,10 +332,10 @@ function TopGroup(props) {
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 {headerImage ? (
                   <LazyImage
-                    loading={index < 3 ? 'eager' : undefined}
+                    loading={index === 0 ? 'eager' : undefined}
                     width={505}
                     height={220}
-                    sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, 100vw'
+                    sizes='(min-width: 1280px) 18vw, (min-width: 640px) 13rem, calc(100vw - 2.5rem)'
                     className='heo-post-cover w-full flex-none object-cover object-center'
                     alt={title}
                     src={headerImage}
@@ -389,6 +415,7 @@ function getTopPosts({ latestPosts, allNavPages }) {
  */
 function TodayCard({ cRef, siteInfo }) {
   const router = useRouter()
+  const showDesktopImages = useDesktopImages()
   const link = siteConfig('HEO_HERO_TITLE_LINK', null, CONFIG)
   const { locale } = useGlobal()
   // 获取遮罩控制配置
@@ -433,7 +460,7 @@ function TodayCard({ cRef, siteInfo }) {
   }
 
   // 如果配置为不显示遮罩，则不渲染TodayCard
-  if (!coverEnable) {
+  if (!coverEnable || !showDesktopImages) {
     return null
   }
 

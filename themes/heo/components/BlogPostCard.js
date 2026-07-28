@@ -16,12 +16,13 @@ export function getPostCardCoverPreset(twoCols) {
     ? {
         width: 1010,
         height: 440,
-        sizes: '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, 100vw'
+        sizes:
+          '(min-width: 1536px) 43vw, (min-width: 720px) 42vw, calc(100vw - 2.5rem)'
       }
     : {
         width: 505,
         height: 220,
-        sizes: '(min-width: 720px) 42vw, 100vw'
+        sizes: '(min-width: 720px) 42vw, calc(100vw - 2.5rem)'
       }
 }
 
@@ -117,7 +118,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             }>
             <LazyImage
               priority={index === 0 && Boolean(pageCoverThumbnail)}
-              loading={index < 4 ? 'eager' : undefined}
+              loading={index === 0 ? 'eager' : undefined}
               width={coverPreset.width}
               height={coverPreset.height}
               sizes={coverPreset.sizes}
@@ -160,6 +161,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
               {siteConfig('POST_TITLE_ICON') && (
                 <NotionIcon
                   icon={post.pageIcon}
+                  size={24}
                   className='heo-icon w-6 h-6 mr-1 align-middle transform translate-y-[-8%]' // 专门为 Heo 主题的图标设置样式
                 />
               )}
