@@ -27,10 +27,7 @@ type ChatRequestBody = {
 
 const DEFAULT_MODEL = 'gemini-flash-lite-latest'
 const DEFAULT_MAX_TOKENS = 1200
-const DEFAULT_CORS_ORIGINS = [
-  'https://notionnext.tangly1024.com',
-  'https://blog.tangly1024.com'
-]
+const DEFAULT_CORS_ORIGINS = ['https://notionnext.tangly1024.com']
 const MAX_REQUEST_BYTES = 20_000
 const MAX_MESSAGES = 6
 const MAX_USER_TEXT_CHARS = 1000
