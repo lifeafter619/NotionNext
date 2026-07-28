@@ -118,7 +118,9 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
             }>
             <LazyImage
               priority={index === 0 && Boolean(pageCoverThumbnail)}
-              loading={index === 0 ? 'eager' : undefined}
+              // 首屏前两张卡片封面立即并行加载（浏览器原生 eager 调度，自带并发上限）；
+              // 仍只有第 0 张走 <link rel=preload> + fetchpriority=high，不抢占 LCP 优先级。
+              loading={index < 2 ? 'eager' : undefined}
               width={coverPreset.width}
               height={coverPreset.height}
               sizes={coverPreset.sizes}

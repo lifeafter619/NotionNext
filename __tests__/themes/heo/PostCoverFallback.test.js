@@ -118,7 +118,9 @@ describe('heo post cover fallback', () => {
     )
   })
 
-  it('loads only the first cover eagerly and with high priority', () => {
+  it('loads the first two covers eagerly; only the first is high priority', () => {
+    // 首屏前两张卡片封面立即并行加载（loading=eager，浏览器原生调度），
+    // 但只有第 0 张走 fetchpriority=high，避免抢占 LCP 的优先级。
     const firstPost = {
       ...createPost(),
       pageCoverThumbnail: '/first-cover.jpg'
@@ -144,7 +146,8 @@ describe('heo post cover fallback', () => {
       'data-priority',
       'normal'
     )
-    expect(getByAltText('Second post')).not.toHaveAttribute('loading')
+    // 第二张卡片封面也在首屏内，立即并行加载，但不是高优先级
+    expect(getByAltText('Second post')).toHaveAttribute('loading', 'eager')
   })
 
   it('applies cover sizing to the direct flex item', () => {

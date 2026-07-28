@@ -1,3 +1,14 @@
 {
-  "prefetch": []
+  "prefetch": [
+    {
+      "source": "document",
+      "where": {
+        "and": [
+          { "href_matches": ["/*article/*", "/*/article/*"] },
+          { "not": { "href_matches": "/article" } }
+        ]
+      },
+      "eagerness": "moderate"
+    }
+  ]
 }

@@ -274,8 +274,34 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
   )
 }
 
-export function NotionImage(props) {
-  return <LazyImage {...props} referrerPolicy='no-referrer' />
+export function NotionImage({ width, height, style, sizes, ...rest }) {
+  // react-notion-x 的 forceCustomImages 分支在 image 类型下不会把 block 的
+  // 真实尺寸（block_width / block_height）透传给自定义 Image 组件
+  // （见 react-notion-x Asset：image 仅传 assetStyle={objectFit:'cover'}，
+  // width=null、height=null）。这会导致 <img> 没有固有宽高，加载完成后布局跳动（CLS）。
+  //
+  // 这里兜底：当拿不到精确尺寸时，用一个常见的 3:2 比例预留空间，
+  // 既适配大多数 Notion 配图，又让浏览器在图片到达前就为其保留正确高度的占位。
+  // 若上层传入了真实 width/height，则优先遵循。
+  const hasRealDimensions = Number(width) > 0 && Number(height) > 0
+  const mergedStyle = hasRealDimensions
+    ? style
+    : { aspectRatio: '3 / 2', ...style }
+
+  // 文章正文图片在阅读区宽度内渲染，给出合理的 sizes 让浏览器从 srcset
+  // 中挑选合适尺寸，避免下载过大的图。
+  const imageSizes = sizes || '(min-width: 768px) 720px, 100vw'
+
+  return (
+    <LazyImage
+      {...rest}
+      width={width || undefined}
+      height={height || undefined}
+      style={mergedStyle}
+      sizes={imageSizes}
+      referrerPolicy='no-referrer'
+    />
+  )
 }
 
 function shouldEnableReadingPositionSaver(post, enabled) {

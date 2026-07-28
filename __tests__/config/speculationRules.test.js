@@ -13,8 +13,11 @@ function findHeader(headers, key) {
   return headers.find(header => header.key === key)?.value
 }
 
-describe('Cloudflare speculative loading guard', () => {
-  it('serves an empty speculation rules document', () => {
+describe('Speculative loading rules', () => {
+  it('prefetches article navigation on hover (moderate eagerness)', () => {
+    // 文章链接在鼠标悬停时由浏览器 Speculation Rules API 预取，
+    // 点击时近乎秒开。eagerness=moderate 不在 load 后立即预取所有链接，
+    // 避免首页几十篇文章一次性预取浪费带宽。
     const rulesPath = path.join(
       process.cwd(),
       'public',
@@ -22,7 +25,20 @@ describe('Cloudflare speculative loading guard', () => {
     )
     const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8'))
 
-    expect(rules).toEqual({ prefetch: [] })
+    expect(rules).toEqual({
+      prefetch: [
+        {
+          source: 'document',
+          where: {
+            and: [
+              { href_matches: ['/*article/*', '/*/article/*'] },
+              { not: { href_matches: '/article' } }
+            ]
+          },
+          eagerness: 'moderate'
+        }
+      ]
+    })
   })
 
   it('declares the origin rules in Next.js responses', async () => {
