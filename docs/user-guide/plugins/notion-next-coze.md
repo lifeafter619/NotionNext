@@ -1,5 +1,4 @@
 # AI聊天机器人-Coze
-
 > 迁移自：[AI聊天机器人-Coze](https://docs.tangly1024.com/article/notion-next-coze)
 > 发布日期：2024-9-20
 > 最后编辑：2024-9-30
@@ -12,11 +11,13 @@
 ![右下角AI助手](/legacy/7deb8fc1a9bf85e8.png)
 ![提问示例](/legacy/e0486743c1ca076f.png)
 
+
 ### 特点：
 
 Coze支持介入Bing、百度等搜索引擎插件，提问时会自动检索互联网并为你整理答案。
 
 Coze支持将你的文章内容等等来源信息整理为一个知识库，便于在回答问题时检索这个知识库并给出更专业的回答。
+
 
 ## NotionNext如何配置Coze
 
@@ -31,6 +32,20 @@ Coze支持将你的文章内容等等来源信息整理为一个知识库，便�
 ![image.png](/legacy/a5a354cb17f68c5e.png)
 
 这里我们还需要在Coze后台创建自己的机器人，并获得一个`BOT_ID`。
+
+### 常见问题：BOT_ID 后几位变成 0
+
+如果你的 `COZE_BOT_ID` 是很长的数字，不建议填在 Notion_config 的数字类型字段中。过长数字可能超过 JavaScript 安全整数范围，读取后末尾会被改成 `000`。
+
+最简单的做法是用部署环境变量配置，并把值当作字符串保存：
+
+```text
+NEXT_PUBLIC_COZE_BOT_ID=你的 Coze Bot ID
+NEXT_PUBLIC_COZE_TITLE=NotionNext助手
+```
+
+在 Vercel、Netlify、Docker 或服务器环境变量中配置后，重新部署即可。不要把 Coze 的访问令牌、个人 PAT 或长期密钥提交到 Git 仓库；如果 Coze 当前 SDK 要求鉴权，建议先放在服务端或边缘函数中处理。
+
 
 ## 如何创建自己的Coze机器人？
 
@@ -50,6 +65,7 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 
 下文我用国内版Coze来举例。
 
+
 ### 创建机器人
 
 在个人空间，点击右上角创建一个Bot即可
@@ -60,17 +76,20 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 
 ![image.png](/legacy/645369f18b46e154.png)
 
+
 ### 机器人设置页面介绍
 
 从上往下，分别可以设置大语言模型、插件、与知识库。（其它还有很多丰富的设置我们以后再折腾）
 
 ![image.png](/legacy/96f597edf12a1b62.png)
 
+
 #### 关于模型
 
 可以按照你的需求选择模型的参数，我这边选择默认的豆包即可。
 
 ![image.png](/legacy/a312788d48fbde6e.png)
+
 
 #### 插件
 
@@ -88,6 +107,7 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 ![image.png](/legacy/350c05113d2bf451.png)
 :::
 
+
 ### 知识库
 
 在知识这一栏，点击右侧加号，可以将你的知识库绑定到这个机器人上：
@@ -102,11 +122,13 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 
 知识库知识库允许你投喂给AI一些专业知识，以便它们可以更精确地按照你的要求回答问题。它需要另外维护和导入，因此我与这里的Chat插件分开介绍，在后文中我会提到知识库的创建和导入。
 
+
 ### 调试
 
 我们可以直接在右侧的预览和调试中进行测试，和AI进行对话。后续如果更新知识库，或者修改插件、AI参数等等都可以在这里直接调试：
 
 ![image.png](/legacy/35b530c7e9d668c9.png)
+
 
 ### 发布并获取Bot-ID
 
@@ -117,6 +139,7 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 这里会跳出一个引导窗，让你填写开场白和预置的问题，可以按需填写并确认，或者点击跳过并直接发布，我们后面可以再回来修改。
 
 ![image.png](/legacy/d0519b5de5ee8e23.png)
+
 
 ### 发布选项
 
@@ -129,6 +152,7 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 ![0253152c921eca5e3d3b2ad024fac6e.jpg](/legacy/6b06ede34cb353ef.jpg)
 :::
 
+
 ### 获取Bot_Id
 
 发布后点击安装，即可获取你的WebSDK的机器人ID了
@@ -138,6 +162,7 @@ Coze is a next-generation AI application and chatbot developing platform for eve
 复制bot_id后面的这串数字即可，（注意去掉引号）
 
 ![image.png](/legacy/5a28d795538e4d4e.png)
+
 
 ## 知识库
 
@@ -163,6 +188,7 @@ coze主页点击上方知识库标签，并点击右上角的创建知识库。
 
 ![image.png](/legacy/5e5f0b20dd7dd20a.png)
 
+
 ## 最后
 
 知识库配置好，记得回到个人空间下，找到你的机器人，点击他进入机器人配置页面。
@@ -178,6 +204,7 @@ coze主页点击上方知识库标签，并点击右上角的创建知识库。
 ![image.png](/legacy/d55f29b5efbc0854.png)
 
 就到这里了，尝试一下和你的机器人聊天吧，只要是你知识库内相关的内容，它都能给出更精准的回复。
+
 
 ## 附
 
