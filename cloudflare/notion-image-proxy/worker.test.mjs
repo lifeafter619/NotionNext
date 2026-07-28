@@ -905,3 +905,151 @@ function createMockCaches() {
   }
   return { mockCaches: { default: cache }, store, putUrls, matchUrls }
 }
+
+// --- 防盗链 (Referer allow-list) ---
+
+function requestWithReferer(referer, url = 'https://cdn.example.com/images/cover.jpg') {
+  const headers = {}
+  if (referer !== undefined) headers.Referer = referer
+  return new Request(url, { headers })
+}
+
+test('hotlink protection allows requests with no Referer', async () => {
+  // NotionNext 站点请求默认 referrerPolicy='no-referrer'，无 Referer 必须放行
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+
+  const response = await worker.fetch(requestWithReferer(undefined))
+
+  assert.equal(fetched, true)
+  assert.equal(response.status, 200)
+})
+
+test('hotlink protection allows allow-listed domains by default', async () => {
+  for (const referer of [
+    'https://619.pp.ua/',
+    'https://66619.eu.org/article/x',
+    'https://619-project.eu.org/',
+    'http://localhost:3000/',
+    'http://127.0.0.1:3000/'
+  ]) {
+    let fetched = false
+    globalThis.fetch = async () => {
+      fetched = true
+      return imageResponse()
+    }
+
+    const response = await worker.fetch(requestWithReferer(referer))
+
+    assert.equal(fetched, true, `expected fetch for referer ${referer}`)
+    assert.equal(response.status, 200, `expected 200 for referer ${referer}`)
+  }
+})
+
+test('hotlink protection allows subdomains of allow-listed domains', async () => {
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+
+  const response = await worker.fetch(
+    requestWithReferer('https://www.619.pp.ua/')
+  )
+
+  assert.equal(fetched, true)
+  assert.equal(response.status, 200)
+})
+
+test('hotlink protection rejects third-party Referers with 403', async () => {
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+
+  const response = await worker.fetch(
+    requestWithReferer('https://evil.com/blog/stolen.html')
+  )
+
+  assert.equal(fetched, false, 'upstream must not be hit for a blocked referer')
+  assert.equal(response.status, 403)
+  assert.equal(response.headers.get('cache-control'), 'no-store, max-age=0')
+  assert.equal(await response.text(), 'Hotlinking not allowed')
+})
+
+test('hotlink protection does not let a third-party spoof a suffix match', async () => {
+  // evil-619.pp.ua must NOT match the 619.pp.ua rule (no dot boundary)
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+
+  const response = await worker.fetch(
+    requestWithReferer('https://evil-619.pp.ua/')
+  )
+
+  assert.equal(fetched, false)
+  assert.equal(response.status, 403)
+})
+
+test('hotlink protection applies to the /f/ direct-read route too', async () => {
+  // /f/ 路由同样受防盗链保护：无 Referer 放行（本站请求）
+  const { bucket } = createMockBucket()
+  await bucket.put('demo.png', new Uint8Array([1, 2, 3]), {
+    httpMetadata: { contentType: 'image/png' }
+  })
+
+  const response = await worker.fetch(
+    new Request('https://cdn.example.com/f/demo.png'),
+    { ASSET_BUCKET: bucket }
+  )
+
+  assert.equal(response.status, 200)
+})
+
+test('hotlink protection rejects third-party Referers on /f/ route', async () => {
+  const { bucket } = createMockBucket()
+  await bucket.put('demo.png', new Uint8Array([1, 2, 3]), {
+    httpMetadata: { contentType: 'image/png' }
+  })
+
+  const response = await worker.fetch(
+    new Request('https://cdn.example.com/f/demo.png', {
+      headers: { Referer: 'https://evil.com/' }
+    }),
+    { ASSET_BUCKET: bucket }
+  )
+
+  assert.equal(response.status, 403)
+})
+
+test('ALLOWED_DOMAINS env var overrides the default allow-list', async () => {
+  // 配置自定义白名单后，默认域名应被拒、自定义域名应放行
+  const env = { ALLOWED_DOMAINS: 'allowed.example.com,localhost' }
+
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+  const allowed = await worker.fetch(
+    requestWithReferer('https://allowed.example.com/'),
+    env
+  )
+  assert.equal(allowed.status, 200)
+  assert.equal(fetched, true)
+
+  fetched = false
+  const blocked = await worker.fetch(
+    requestWithReferer('https://619.pp.ua/'),
+    env
+  )
+  assert.equal(blocked.status, 403)
+  assert.equal(fetched, false)
+})
+

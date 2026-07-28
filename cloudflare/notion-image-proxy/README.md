@@ -38,7 +38,7 @@ Expected headers for a successful image response:
 
 ```text
 Content-Type: image/*
-X-Notion-Image-Proxy: v10
+X-Notion-Image-Proxy: v11
 X-Notion-Image-Proxy-Edge-Cache: MISS    # first request anywhere
 X-Notion-Image-Proxy-Edge-Cache: R2-HIT  # colo cold, served from R2
 X-Notion-Image-Proxy-Edge-Cache: HIT     # served from the local colo cache
@@ -71,7 +71,43 @@ The `v1/` prefix is the proxy's internal cache namespace: it is hidden from
 rule, so manual uploads are never deleted automatically. Avoid naming your
 own files under `v1/`.
 
-## Caching architecture (works on the Free plan)
+## Hotlink protection (防盗链)
+
+All routes (`/image`, `/signed`, `/images`, `/f`, and the Waline emoji proxy)
+check the request `Referer` against an allow-list:
+
+- **No `Referer` → allowed.** NotionNext sets `referrerPolicy: 'no-referrer'`
+  on every image request, so your own site's requests carry no `Referer` and
+  pass through. Direct opens of an image URL in the address bar also pass.
+- **`Referer` host matches an allow-listed domain (exact or subdomain) →
+  allowed.**
+- **Anything else → `403 Forbidden`.** A third-party site embedding your image
+  sends its own `Referer`, which is rejected.
+
+The allow-list defaults to `619.pp.ua`, `66619.eu.org`,
+`619-project.eu.org`, `localhost`, `127.0.0.1`. Override or extend it with the
+`ALLOWED_DOMAINS` environment variable (comma-separated, case-insensitive).
+Setting it **replaces** the default list, so include all the domains you need:
+
+```bash
+# Dashboard: Workers & Pages → notion-image-proxy → Settings → Variables
+ALLOWED_DOMAINS=619.pp.ua,66619.eu.org,619-project.eu.org,localhost,127.0.0.1
+```
+
+`keep_vars = true` in `wrangler.toml` means a `wrangler deploy` preserves
+dashboard-set variables, so you only set this once. To add a domain later,
+edit the variable in the dashboard (no redeploy needed for a value change;
+the Worker reads `env.ALLOWED_DOMAINS` on every request).
+
+Verify a blocked referer:
+
+```bash
+curl -I "https://cdn.example.com/images/page-cover/gradients_11.jpg" \
+  -H "Referer: https://evil.com/"
+# HTTP/2 403
+```
+
+
 
 Three independent layers, all available on every Cloudflare plan:
 

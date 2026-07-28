@@ -5,6 +5,21 @@ const PROXY_VERSION = 'v11'
 // 图床直读路由前缀：/f/<key> 直接返回 R2 桶中手动上传的对象
 const R2_FILE_ROUTE_PREFIX = '/f/'
 
+// 防盗链白名单：只允许这些域名引用图床资源。命中规则：
+// - 请求无 Referer（站点设了 no-referrer、或用户直接打开图片链接）→ 放行；
+// - 请求的 Referer 主机等于白名单域名，或是其子域名 → 放行；
+// - 其余一律 403。
+// NotionNext 默认把图片请求设为 referrerPolicy: 'no-referrer'，因此本站请求
+// 永远不带 Referer，会落在「无 Referer → 放行」分支，无需改动站点代码。
+// 可通过环境变量 ALLOWED_DOMAINS（逗号分隔）覆盖/扩展；未设置时使用下面的默认值。
+const DEFAULT_ALLOWED_DOMAINS = [
+  '619.pp.ua',
+  '66619.eu.org',
+  '619-project.eu.org',
+  'localhost',
+  '127.0.0.1'
+]
+
 // Notion uploaded assets have stable, ID-based URLs. Keep those warm longer.
 const IMMUTABLE_EDGE_TTL = 60 * 60 * 24 * 30
 const IMMUTABLE_BROWSER_TTL = 60 * 60 * 24 * 7
@@ -62,6 +77,13 @@ export default {
       return textResponse(request, 405, 'Method not allowed', {
         Allow: 'GET, HEAD'
       })
+    }
+
+    // 防盗链：所有路由（/image、/signed、/images、/f、Waline emoji）统一校验
+    // Referer。本站图片请求不带 Referer（no-referrer），故直接放行；
+    // 第三方站点把图嵌到自己页面时，Referer 会是其自身域名，被白名单拒绝。
+    if (!isRefererAllowed(request, env)) {
+      return textResponse(request, 403, 'Hotlinking not allowed')
     }
 
     const policy = getCachePolicy(url, routeKind)
@@ -721,6 +743,42 @@ function textResponse(request, status, message, additionalHeaders = {}) {
     status,
     headers
   })
+}
+
+/**
+ * 防盗链校验。放行规则：
+ * - 无 Referer：站点请求默认 referrerPolicy='no-referrer'，浏览器直接打开图片
+ *   链接、或部分隐私设置剥除 Referer 的场景也在此列，一律放行；
+ * - 有 Referer 且其主机名命中白名单（精确匹配或为白名单域名的子域名）放行；
+ * - 否则拒绝。
+ *
+ * 白名单来源：环境变量 ALLOWED_DOMAINS（逗号分隔）优先；未配置时回落到
+ * DEFAULT_ALLOWED_DOMAINS。未配置时仍按默认白名单校验，而非完全放开，
+ * 保证线上默认即受保护。
+ */
+function isRefererAllowed(request, env) {
+  const referer = request.headers.get('Referer')
+  if (!referer) return true
+
+  let host
+  try {
+    host = new URL(referer).hostname
+  } catch (_) {
+    return false
+  }
+  if (!host) return false
+
+  const allowed = readAllowedDomains(env)
+  return allowed.some(domain => host === domain || host.endsWith(`.${domain}`))
+}
+
+function readAllowedDomains(env) {
+  const fromEnv = env && env.ALLOWED_DOMAINS ? String(env.ALLOWED_DOMAINS) : ''
+  const parsed = fromEnv
+    .split(',')
+    .map(item => item.trim().toLowerCase())
+    .filter(Boolean)
+  return parsed.length > 0 ? parsed : DEFAULT_ALLOWED_DOMAINS
 }
 
 function getUpstreamFailureMessage(routeKind) {
