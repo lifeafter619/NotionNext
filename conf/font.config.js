@@ -28,10 +28,13 @@ const parseBoolean = (value, fallback) => {
   return String(value).toLowerCase() === 'true'
 }
 
-// Keep the critical path on platform fonts by default. The previous stylesheet
-// imported six font families/weights and caused multi-megabyte CJK downloads.
-// Sites that explicitly opt into a web font can still provide one or more URLs.
-const defaultFontUrls = []
+// 默认加载霞鹜文楷（已做 unicode-range 子集化，浏览器只按需下载页面实际渲染
+// 字符的 woff2 子集，单页典型 100-200KB；首屏仍走系统字体 swap，不阻塞渲染）。
+// 如需关闭默认 Web Font 只用系统字体，设 NEXT_PUBLIC_FONT_URLS 为空字符串即可。
+// 如需换用其它 Web Font，在 Vercel 设置 NEXT_PUBLIC_FONT_URLS，多个 URL 用英文逗号分隔，也支持 JSON 数组。
+const defaultFontUrls = [
+  'https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css'
+]
 const customFontUrls =
   process.env.NEXT_PUBLIC_FONT_URLS || process.env.NEXT_PUBLIC_FONT_URL
 
@@ -40,9 +43,7 @@ module.exports = {
   // ['font-serif','font-sans'] 两种可选，分别是衬线和无衬线: 参考 https://www.jianshu.com/p/55e410bd2115
   // 后面空格隔开的font-light的字体粗细，留空是默认粗细；参考 https://www.tailwindcss.cn/docs/font-weight
   FONT_STYLE: process.env.NEXT_PUBLIC_FONT_STYLE || 'font-sans font-light',
-  // 字体CSS 例如 https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css
-  // 默认使用系统中文字体，避免 Web Font 与首屏图片、页面数据争抢带宽。
-  // 如需自定义 Web Font，在 Vercel 设置 NEXT_PUBLIC_FONT_URLS，多个 URL 用英文逗号分隔，也支持 JSON 数组。
+  // 字体CSS 默认使用霞鹜文楷（已子集化、swap 异步加载，详见 _document.js）。
   FONT_URL: customFontUrls ? parseList(customFontUrls) : defaultFontUrls,
 
   // 字体优化配置

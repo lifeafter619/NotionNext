@@ -126,7 +126,7 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
               sizes={coverPreset.sizes}
               src={pageCoverThumbnail}
               alt={title}
-              className={`h-full w-full object-cover object-center ${COVER_HOVER_ENLARGE ? 'group-hover:scale-105' : ''} group-hover:brightness-75 transition-all duration-500 ease-in-out`} //宽高都调整为自适应,保证封面居中
+              className={`h-full w-full object-contain object-center ${COVER_HOVER_ENLARGE ? 'group-hover:scale-105' : ''} group-hover:brightness-75 transition-all duration-500 ease-in-out`} //完整显示原图比例，不被裁剪
             />
           </SmartLink>
         )}

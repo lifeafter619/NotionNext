@@ -169,10 +169,10 @@ const Style = () => {
         overflow: visible;
       }
 
-      #theme-heo .heo-post-cover,
-      #theme-heo .heo-post-cover-card {
+      #theme-heo .heo-post-cover {
         aspect-ratio: var(--heo-post-cover-aspect-ratio);
       }
+      /* .heo-post-cover-card 不再强制固定比例，封面按原图完整显示、卡片高度自适应 */
 
       #theme-heo #notion-article .notion-text,
       #theme-heo #notion-article .notion-h,

@@ -19,10 +19,12 @@ describe('default feature config', () => {
     expect(analyticsConfig.ANALYTICS_BUSUANZI_ENABLE).toBe(true)
   })
 
-  it('uses platform fonts by default to keep web fonts off the critical path', () => {
+  it('loads LXGW WenKai by default as the opt-in web font', () => {
     const fontConfig = require('@/conf/font.config')
 
-    expect(fontConfig.FONT_URL).toEqual([])
+    expect(fontConfig.FONT_URL).toEqual([
+      'https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css'
+    ])
   })
 
   it('allows an explicit web font stylesheet opt-in', () => {

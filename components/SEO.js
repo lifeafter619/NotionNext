@@ -21,8 +21,6 @@ const SEO = props => {
   let image
   const router = useRouter()
   const meta = getSEOMeta(props, router, useGlobal()?.locale)
-  const webFontUrls = normalizeResourceList(siteConfig('FONT_URL'))
-  const hasWebFonts = webFontUrls.length > 0
 
   // SEO关键词
   const KEYWORDS = siteConfig('KEYWORDS')
@@ -209,26 +207,12 @@ const SEO = props => {
       />
 
       {/* DNS预取和预连接 */}
-      {hasWebFonts && <link rel='dns-prefetch' href='//fonts.googleapis.com' />}
       <link rel='dns-prefetch' href='//www.google-analytics.com' />
       <link rel='dns-prefetch' href='//www.googletagmanager.com' />
-      {hasWebFonts && (
-        <link
-          rel='preconnect'
-          href='https://fonts.gstatic.com'
-          crossOrigin='anonymous'
-        />
-      )}
 
       {children}
     </Head>
   )
-}
-
-const normalizeResourceList = value => {
-  if (!value) return []
-  if (Array.isArray(value)) return value.filter(Boolean)
-  return [value].filter(Boolean)
 }
 
 /**

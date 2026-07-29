@@ -278,15 +278,22 @@ export function NotionImage({ width, height, style, sizes, ...rest }) {
   // react-notion-x 的 forceCustomImages 分支在 image 类型下不会把 block 的
   // 真实尺寸（block_width / block_height）透传给自定义 Image 组件
   // （见 react-notion-x Asset：image 仅传 assetStyle={objectFit:'cover'}，
-  // width=null、height=null）。这会导致 <img> 没有固有宽高，加载完成后布局跳动（CLS）。
+  // width=null、height=null）。
   //
-  // 这里兜底：当拿不到精确尺寸时，用一个常见的 3:2 比例预留空间，
-  // 既适配大多数 Notion 配图，又让浏览器在图片到达前就为其保留正确高度的占位。
-  // 若上层传入了真实 width/height，则优先遵循。
+  // 这里让图片按原图比例完整显示：
+  // - 不再对无尺寸图强制套 3:2 占位（原做法会把竖图/方图压扁、横图裁上下，
+  //   造成“被拉伸到一个大小、显示不完整”）；
+  // - 用 objectFit:contain 覆盖上游传来的 cover，保证图片不被裁剪；
+  // - 仅当上层确实传入真实 width/height 时才设置 aspect-ratio，给浏览器留占位。
   const hasRealDimensions = Number(width) > 0 && Number(height) > 0
-  const mergedStyle = hasRealDimensions
-    ? style
-    : { aspectRatio: '3 / 2', ...style }
+  const mergedStyle = {
+    width: '100%',
+    height: 'auto',
+    objectFit: 'contain',
+    ...(hasRealDimensions ? { aspectRatio: `${width} / ${height}` } : {}),
+    ...style,
+    objectFit: 'contain'
+  }
 
   // 文章正文图片在阅读区宽度内渲染，给出合理的 sizes 让浏览器从 srcset
   // 中挑选合适尺寸，避免下载过大的图。
