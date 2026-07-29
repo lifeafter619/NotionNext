@@ -1,5 +1,6 @@
 import BLOG from '@/blog.config'
 import { cleanCache } from '@/lib/cache/local_file_cache'
+import { secureCompare } from '@/lib/server/secureCompare'
 
 /**
  * On-Demand Revalidation API
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
     ? authHeader.slice(7)
     : req.body?.token || ''
 
-  if (receivedToken !== token) {
+  if (!secureCompare(receivedToken, token)) {
     return res.status(401).json({ ok: false, message: 'Unauthorized' })
   }
 

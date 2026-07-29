@@ -1,5 +1,18 @@
 import { siteConfig } from '@/lib/config'
-import { formatDateFmt } from '@/lib/utils/formatDate'
+
+/**
+ * 将日期格式化为 2026-1-1,12:00 形式（年-月-日,时:分）
+ * 注：不使用 lib/utils/formatDate 的 formatDateFmt，因其小时占位符为小写 h+，
+ * 大写 HH 无法被替换，会导致输出形如 2026-1-1,HH:11 的错误结果。
+ * @param {Date} date
+ * @returns {string}
+ */
+function formatEditedDate(date) {
+  const pad = n => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()},${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}`
+}
 
 /**
  * 文章过期提醒组件
@@ -46,8 +59,17 @@ export default function ArticleExpirationNotice({
   const hasValidEditedDate = editedDate && !isNaN(editedDate.getTime())
   // 形如 2026-1-1,12:00
   const editedDateText = hasValidEditedDate
-    ? formatDateFmt(editedDate, 'yyyy-M-d,HH:mm')
+    ? formatEditedDate(editedDate)
     : ''
+
+  // 解析 %%DAYS%% 之后的前半段（如「 天前，有点久远啦…」），
+  // 将日期括号定位到「天前」之后；若文案中无「天前」字样，则紧贴 n 之后（parts[1] 之前）。
+  const tailAfterDays = articleExpirationMessageParts[1] ?? ''
+  const daysAgoIdx = tailAfterDays.indexOf('天前')
+  const tailHead =
+    daysAgoIdx >= 0 ? tailAfterDays.slice(0, daysAgoIdx + '天前'.length) : ''
+  const tailRest =
+    daysAgoIdx >= 0 ? tailAfterDays.slice(daysAgoIdx + '天前'.length) : tailAfterDays
 
   // 直接返回 JSX 内容
   return (
@@ -73,12 +95,13 @@ export default function ArticleExpirationNotice({
                 <span className='text-red-500 dark:text-red-400 font-bold'>
                   {daysOld}
                 </span>
-                {articleExpirationMessageParts[1]}
+                {tailHead}
                 {hasValidEditedDate && (
                   <span className='text-red-500 dark:text-red-400 font-bold'>
                     （{editedDateText}）
                   </span>
                 )}
+                {tailRest}
               </>
             )
           })()}

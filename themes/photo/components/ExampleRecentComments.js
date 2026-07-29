@@ -1,3 +1,4 @@
+import { Sanitizer } from '@/lib/utils/validation'
 import { useEffect, useState } from 'react'
 import { siteConfig } from '@/lib/config'
 import SmartLink from '@/components/SmartLink'
@@ -39,7 +40,9 @@ const ExampleRecentComments = props => {
           <div key={comment.objectId} className='pb-2'>
             <div
               className='dark:text-gray-300 text-gray-600 text-xs waline-recent-content wl-content'
-              dangerouslySetInnerHTML={{ __html: comment.comment }}
+              dangerouslySetInnerHTML={{
+                __html: Sanitizer.sanitizeXss(comment.comment)
+              }}
             />
             <div className='dark:text-gray-400 text-gray-400  text-sm text-right cursor-pointer hover:text-red-500 hover:underline pt-1'>
               <SmartLink

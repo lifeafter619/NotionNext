@@ -84,10 +84,21 @@ check the request `Referer` against an allow-list:
 - **Anything else → `403 Forbidden`.** A third-party site embedding your image
   sends its own `Referer`, which is rejected.
 
+> **Limitations — this is soft hotlink protection.** Because "no `Referer` →
+> allowed" is required for the site's own `no-referrer` policy, any
+> third-party page can bypass the check by adding
+> `<meta name="referrer" content="no-referrer">` (or `referrerpolicy`
+> attributes), and non-browser clients can forge an allow-listed `Referer`
+> outright (`curl -H "Referer: https://619.pp.ua/"`). The default list also
+> includes `localhost`/`127.0.0.1` for local development, which is trivially
+> forgeable in production. This blocks only casual hotlinking; for stronger
+> guarantees use `Origin`/`Sec-Fetch-Site` checks or the signed-URL routes.
+
 The allow-list defaults to `619.pp.ua`, `66619.eu.org`,
-`619-project.eu.org`, `localhost`, `127.0.0.1`. Override or extend it with the
+`619-project.eu.org`, `localhost`, `127.0.0.1`. Override it with the
 `ALLOWED_DOMAINS` environment variable (comma-separated, case-insensitive).
-Setting it **replaces** the default list, so include all the domains you need:
+Setting it **replaces** the default list entirely (it does not extend it),
+so include all the domains you need:
 
 ```bash
 # Dashboard: Workers & Pages → notion-image-proxy → Settings → Variables

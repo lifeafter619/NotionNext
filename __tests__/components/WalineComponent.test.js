@@ -68,6 +68,36 @@ describe('WalineComponent', () => {
     ).toBeInTheDocument()
   })
 
+  it('handles Windows-style backslash stacks from @waline/api', async () => {
+    init.mockReturnValue({
+      update: jest.fn(),
+      destroy: jest.fn()
+    })
+
+    render(<WalineComponent />)
+
+    const event = new Event('unhandledrejection', { cancelable: true })
+    const walineError = new TypeError(
+      'Get counter failed with 1: Failed to fetch'
+    )
+    Object.defineProperty(walineError, 'stack', {
+      value:
+        'TypeError: Get counter failed with 1: Failed to fetch\n    at c (node_modules\\@waline\\api\\dist\\api.js:1:94)'
+    })
+    Object.defineProperty(event, 'reason', {
+      value: walineError
+    })
+
+    act(() => {
+      window.dispatchEvent(event)
+    })
+
+    expect(event.defaultPrevented).toBe(true)
+    expect(
+      await screen.findByText('评论服务暂时不可用，请稍后再试。')
+    ).toBeInTheDocument()
+  })
+
   it('does not handle unrelated page fetch failures as Waline failures', async () => {
     fetch.mockResolvedValue({ ok: true })
     init.mockReturnValue({
@@ -144,8 +174,11 @@ describe('WalineComponent', () => {
       .join('\n')
 
     expect(styleText).toContain('#waline-comment')
-    expect(styleText).toContain('.wl-reply .wl-item')
+    expect(styleText).toContain('.wl-reply > .wl-item')
     expect(styleText).toContain('grid-template-columns')
+    // 防横向滚动兜底 + 回复 @昵称 与正文同行排布
+    expect(styleText).toContain('overflow-x: clip')
+    expect(styleText).toContain('.wl-reply-to')
   })
 
   it('configures elemecdn before the proxy for emoji and reactions', async () => {

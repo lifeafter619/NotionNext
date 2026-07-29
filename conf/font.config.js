@@ -35,8 +35,9 @@ const parseBoolean = (value, fallback) => {
 const defaultFontUrls = [
   'https://npm.elemecdn.com/lxgw-wenkai-webfont@1.7.0/style.css'
 ]
+// 用 ?? 而非 ||：空字符串是显式"关闭默认字体"的合法取值，不能回退到默认值
 const customFontUrls =
-  process.env.NEXT_PUBLIC_FONT_URLS || process.env.NEXT_PUBLIC_FONT_URL
+  process.env.NEXT_PUBLIC_FONT_URLS ?? process.env.NEXT_PUBLIC_FONT_URL
 
 module.exports = {
   // START ************网站字体*****************
@@ -44,7 +45,9 @@ module.exports = {
   // 后面空格隔开的font-light的字体粗细，留空是默认粗细；参考 https://www.tailwindcss.cn/docs/font-weight
   FONT_STYLE: process.env.NEXT_PUBLIC_FONT_STYLE || 'font-sans font-light',
   // 字体CSS 默认使用霞鹜文楷（已子集化、swap 异步加载，详见 _document.js）。
-  FONT_URL: customFontUrls ? parseList(customFontUrls) : defaultFontUrls,
+  // customFontUrls 为 undefined 时用默认；为空字符串时 parseList 返回 []，即关闭 Web Font。
+  FONT_URL:
+    customFontUrls !== undefined ? parseList(customFontUrls) : defaultFontUrls,
 
   // 字体优化配置
   FONT_DISPLAY: process.env.NEXT_PUBLIC_FONT_DISPLAY || 'swap',

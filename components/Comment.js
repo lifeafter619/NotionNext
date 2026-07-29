@@ -77,6 +77,8 @@ const Comment = ({ frontMatter, className }) => {
     if (!isBrowser || !articleId) return undefined
 
     let cancelled = false
+    let idleHandle = null
+    let fallbackTimer = null
     const mount = () => {
       if (cancelled) return
       setLoadedCommentId(current =>
@@ -88,9 +90,9 @@ const Comment = ({ frontMatter, className }) => {
     // 再在空闲时段挂载，绝不抢占首屏带宽与主线程
     const scheduleIdle = () => {
       if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(mount, { timeout: 4000 })
+        idleHandle = window.requestIdleCallback(mount, { timeout: 4000 })
       } else {
-        window.setTimeout(mount, 1500)
+        fallbackTimer = window.setTimeout(mount, 1500)
       }
     }
 
@@ -103,6 +105,12 @@ const Comment = ({ frontMatter, className }) => {
     return () => {
       cancelled = true
       window.removeEventListener('load', scheduleIdle)
+      if (idleHandle !== null && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleHandle)
+      }
+      if (fallbackTimer !== null) {
+        window.clearTimeout(fallbackTimer)
+      }
     }
   }, [articleId])
 

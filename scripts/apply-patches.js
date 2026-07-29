@@ -22,12 +22,21 @@
 const https = require('https')
 const { gunzipSync } = require('zlib')
 const { spawnSync } = require('child_process')
+const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 const PATCH_DIR = path.join(PROJECT_ROOT, 'patches')
 const YARN_LOCK = path.join(PROJECT_ROOT, 'yarn.lock')
+
+// 仅信任这些 registry 主机的 tarball URL；yarn.lock 被注入其它来源时拒绝下载。
+const ALLOWED_REGISTRY_HOSTS = new Set([
+  'registry.npmjs.org',
+  'registry.yarnpkg.com',
+  'registry.npmmirror.com'
+])
+const MAX_REDIRECTS = 5
 
 function log(...args) {
   // eslint-disable-next-line no-console
@@ -78,32 +87,40 @@ function patchedFilesFor(patchPath) {
 }
 
 /**
- * 从 yarn.lock 解析包的 registry tarball URL。
- * 支持 yarn lockfile v1 的 resolved 行。
+ * 从 yarn.lock 解析包的 registry tarball URL 与 integrity。
+ * 支持 yarn lockfile v1 的 resolved / integrity 行。
  * yarn.lock 的条目 header 可能是 `pkg@1.2.3:` 或 `pkg@^1.2.3:`（带 semver
  * range），所以按行扫描找到含 version "1.2.3" 的 resolved 块。
  */
-function resolvedUrlFor(pkgName, version) {
+function resolvedEntryFor(pkgName, version) {
   if (!fs.existsSync(YARN_LOCK)) return null
   const lock = fs.readFileSync(YARN_LOCK, 'utf8')
-  // 定位该包名下、version 匹配的条目块，再取其中第一个 resolved URL。
+  // 定位该包名下、version 匹配的条目块，再取其中的 resolved URL 与 integrity。
   // 条目块由 `^<pkg>@...:` 形式的 header 开始，到下一个空行结束。
   const lines = lock.split('\n')
   for (let i = 0; i < lines.length; i++) {
     const headerRe = new RegExp(`^"?${escapeRe(pkgName)}@`)
     if (!headerRe.test(lines[i].trim())) continue
-    // 在该块内（直到下一个 header 或空行）找 version 与 resolved
+    // 在该块内（直到下一个 header 或空行）找 version 与 resolved / integrity
     let j = i
     let foundVersion = false
+    let url = null
+    let integrity = null
     for (; j < lines.length; j++) {
       const line = lines[j]
-      if (j > i && /^"?[A-Za-z]/.test(line.trim()) && /:$/.test(line.trim())) break // 下一个 header
+      if (j > i && /^"?[@A-Za-z]/.test(line.trim()) && /:$/.test(line.trim())) break // 下一个 header
       if (line.includes(`version "${version}"`)) foundVersion = true
       const m = line.match(/resolved "([^"]+)"/)
-      if (m && foundVersion) {
-        return m[1].split('#')[0] // 去掉 npmmirror 的 #hash 后缀
+      if (m && foundVersion && !url) {
+        url = m[1].split('#')[0] // 去掉 npmmirror 的 #hash 后缀
       }
+      const im = line.match(/integrity "?([^"\s]+(?:\s+[^"\s]+)*)"?\s*$/)
+      if (im && foundVersion && !integrity) {
+        integrity = im[1]
+      }
+      if (url && integrity) return { url, integrity }
     }
+    if (url) return { url, integrity }
   }
   return null
 }
@@ -112,8 +129,27 @@ function escapeRe(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-/** 用 Node 内置 https 下载内容，返回 Buffer。 */
-function httpsGet(url) {
+/** 校验 tarball 内容与 yarn.lock 的 integrity（sha512-…/sha1-… base64）一致。 */
+function verifyIntegrity(buf, integrity) {
+  if (!integrity) return false
+  // integrity 可能是空格分隔的多个哈希，任一匹配即通过
+  return integrity.split(/\s+/).some(entry => {
+    const idx = entry.indexOf('-')
+    if (idx <= 0) return false
+    const algo = entry.slice(0, idx)
+    const expected = entry.slice(idx + 1)
+    if (!/^sha(1|256|384|512)$/.test(algo)) return false
+    try {
+      const actual = crypto.createHash(algo).update(buf).digest('base64')
+      return actual === expected
+    } catch (_) {
+      return false
+    }
+  })
+}
+
+/** 用 Node 内置 https 下载内容，返回 Buffer。仅允许 https 与白名单内的重定向深度。 */
+function httpsGet(url, redirectDepth = 0) {
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
@@ -124,7 +160,20 @@ function httpsGet(url) {
           res.headers.location
         ) {
           res.resume()
-          return resolve(httpsGet(res.headers.location))
+          if (redirectDepth >= MAX_REDIRECTS) {
+            return reject(new Error(`too many redirects for ${url}`))
+          }
+          // location 可能是相对路径，基于当前 URL 解析
+          let next
+          try {
+            next = new URL(res.headers.location, url).toString()
+          } catch (e) {
+            return reject(new Error(`invalid redirect location from ${url}`))
+          }
+          if (!next.startsWith('https://')) {
+            return reject(new Error(`insecure redirect refused: ${next}`))
+          }
+          return resolve(httpsGet(next, redirectDepth + 1))
         }
         if (res.statusCode !== 200) {
           res.resume()
@@ -139,30 +188,64 @@ function httpsGet(url) {
   })
 }
 
+/** 解析 tar size 字段：兼容经典八进制与 GNU base-256 编码。 */
+function parseTarSize(field) {
+  if (field[0] & 0x80) {
+    // GNU base-256：首字节最高位为 1，其余字节按大端二进制
+    let size = field[0] & 0x7f
+    for (let i = 1; i < field.length; i++) {
+      size = size * 256 + field[i]
+    }
+    return size
+  }
+  const oct = field.toString().replace(/\0/g, '').trim()
+  return oct ? parseInt(oct, 8) : 0
+}
+
 /**
  * 从 gzip tarball 中提取给定路径（相对 package/）的文件内容。
- * 仅解析 ustar/pax 普通文件条目（typeflag "0" 或 "\0"）。
+ * 解析 ustar/pax 普通文件条目（typeflag "0" 或 "\0"），并兼容：
+ * - ustar prefix 字段（长路径拆分存放）；
+ * - GNU @LongLink（typeflag "L"）长文件名记录；
+ * - pax 扩展头（typeflag "x"）中的 path 覆盖；
+ * - GNU base-256 size 编码。
  * 返回 Map<subPath, Buffer>。
  */
 function extractTar(tarBuf, wantSubPaths) {
   const want = new Set(wantSubPaths)
   const out = new Map()
   let off = 0
+  let pendingName = null // 由 GNU LongLink / pax path 提供的下一条目名
   while (off + 512 <= tarBuf.length) {
     const nameRaw = tarBuf.slice(off, off + 100).toString()
     if (!nameRaw || !nameRaw.replace(/\0/g, '')) break // 空块 = 结束
-    const name = nameRaw.replace(/\0/g, '')
-    const sizeOct = tarBuf.slice(off + 124, off + 136).toString().replace(/\0/g, '').trim()
-    const size = sizeOct ? parseInt(sizeOct, 8) : 0
+    let name = nameRaw.replace(/\0/g, '')
+    const size = parseTarSize(tarBuf.slice(off + 124, off + 136))
     const typeflag = tarBuf.slice(off + 156, off + 157).toString()
+    // ustar prefix 字段：长路径的目录部分
+    const prefixRaw = tarBuf.slice(off + 345, off + 500).toString().replace(/\0/g, '')
+    if (prefixRaw) name = `${prefixRaw}/${name}`
     off += 512
-    // 仅处理普通文件
-    const isFile = typeflag === '0' || typeflag === '' || typeflag === '\0'
-    if (isFile && size > 0) {
-      // name 形如 package/build/index.js
-      const subPath = name.replace(/^package\//, '')
-      if (want.has(subPath)) {
-        out.set(subPath, tarBuf.slice(off, off + size))
+    const contentEnd = Math.min(off + size, tarBuf.length)
+
+    if (typeflag === 'L') {
+      // GNU 长文件名：内容即下一条目的真实路径
+      pendingName = tarBuf.slice(off, contentEnd).toString().replace(/\0/g, '')
+    } else if (typeflag === 'x' || typeflag === 'X') {
+      // pax 扩展头："<len> path=<value>\n" 记录覆盖下一条目的路径
+      const paxText = tarBuf.slice(off, contentEnd).toString()
+      const pathMatch = paxText.match(/\d+ path=([^\n]+)\n/)
+      if (pathMatch) pendingName = pathMatch[1]
+    } else {
+      const isFile = typeflag === '0' || typeflag === '' || typeflag === '\0'
+      const effectiveName = pendingName || name
+      pendingName = null
+      if (isFile && size > 0) {
+        // effectiveName 形如 package/build/index.js
+        const subPath = effectiveName.replace(/^package\//, '')
+        if (want.has(subPath)) {
+          out.set(subPath, tarBuf.slice(off, off + size))
+        }
       }
     }
     // 内容按 512 对齐
@@ -173,11 +256,35 @@ function extractTar(tarBuf, wantSubPaths) {
 
 /**
  * 把被补丁改动的文件用 registry 上的纯净内容覆盖回去。
+ * 仅接受白名单 registry 主机的 https URL，且必须通过 yarn.lock 的
+ * integrity 校验后才写入 node_modules，防止 MITM / 伪造 lockfile 条目
+ * 借本脚本污染依赖。
  */
 async function restorePristineFiles(pkgName, version, files) {
-  const url = resolvedUrlFor(pkgName, version)
-  if (!url) {
+  const entry = resolvedEntryFor(pkgName, version)
+  if (!entry || !entry.url) {
     log(`  yarn.lock 中未找到 ${pkgName}@${version} 的 resolved URL，跳过`)
+    return
+  }
+  const { url, integrity } = entry
+  let host
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:') {
+      log(`  非 https 的 resolved URL（${url}），跳过`)
+      return
+    }
+    host = parsed.hostname
+  } catch (_) {
+    log(`  无法解析 resolved URL（${url}），跳过`)
+    return
+  }
+  if (!ALLOWED_REGISTRY_HOSTS.has(host)) {
+    log(`  resolved URL 主机 ${host} 不在 registry 白名单内，跳过`)
+    return
+  }
+  if (!integrity) {
+    log(`  yarn.lock 中 ${pkgName}@${version} 缺少 integrity，拒绝恢复，跳过`)
     return
   }
   // files 形如 node_modules/<pkgName>/build/index.js -> build/index.js
@@ -190,6 +297,10 @@ async function restorePristineFiles(pkgName, version, files) {
     tarGz = await httpsGet(url)
   } catch (e) {
     log(`  下载 ${url} 失败：${e.message}，跳过`)
+    return
+  }
+  if (!verifyIntegrity(tarGz, integrity)) {
+    log(`  ${pkgName}@${version} tarball integrity 校验失败，拒绝写入，跳过`)
     return
   }
   let tarBuf

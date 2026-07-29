@@ -1,5 +1,6 @@
 import BLOG from '@/blog.config'
 import { cleanCache } from '@/lib/cache/local_file_cache'
+import { secureCompare } from '@/lib/server/secureCompare'
 
 /**
  * 清理缓存
@@ -23,7 +24,7 @@ export default function handler(req, res) {
       message: 'Cache revalidation token is not configured'
     })
   }
-  if (req.headers.authorization !== `Bearer ${token}`) {
+  if (!secureCompare(req.headers.authorization || '', `Bearer ${token}`)) {
     return res.status(401).json({ status: 'error', message: 'Unauthorized' })
   }
 

@@ -1,3 +1,4 @@
+import { Sanitizer } from '@/lib/utils/validation'
 import { useEffect, useState } from 'react'
 import { siteConfig } from '@/lib/config'
 import Card from '@/themes/hexo/components/Card'
@@ -47,7 +48,9 @@ const HexoRecentComments = props => {
           <div key={comment.objectId} className='pb-2 pl-1'>
             <div
               className='dark:text-gray-200 text-sm waline-recent-content wl-content'
-              dangerouslySetInnerHTML={{ __html: comment.comment }}
+              dangerouslySetInnerHTML={{
+                __html: Sanitizer.sanitizeXss(comment.comment)
+              }}
             />
             <div className='dark:text-gray-400 text-gray-400  text-sm text-right cursor-pointer hover:text-red-500 hover:underline pt-1 pr-2'>
               <SmartLink

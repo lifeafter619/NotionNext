@@ -1,5 +1,7 @@
 import { siteConfig } from '@/lib/config'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+const REQUEST_TIMEOUT_MS = 30_000
 
 const makeMessage = (role, text) => ({
   id: `${role}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -18,6 +20,14 @@ export default function DocsChat() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState([makeMessage('assistant', welcome)])
+  // 进行中请求的 AbortController，卸载时中止避免响应落到已卸载组件
+  const abortRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort()
+    }
+  }, [])
 
   if (!api) return null
 
@@ -31,12 +41,17 @@ export default function DocsChat() {
     setInput('')
     setLoading(true)
 
+    const controller = new AbortController()
+    abortRef.current = controller
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
     try {
       const separator = api.includes('?') ? '&' : '?'
       const response = await fetch(`${api}${separator}stream=false`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages.slice(-6) })
+        body: JSON.stringify({ messages: nextMessages.slice(-6) }),
+        signal: controller.signal
       })
       const data = await response.json()
       const reply = response.ok ? data.text : data.error
@@ -44,12 +59,15 @@ export default function DocsChat() {
         ...nextMessages,
         makeMessage('assistant', reply || '请求失败，请稍后再试。')
       ])
-    } catch {
-      setMessages([
-        ...nextMessages,
-        makeMessage('assistant', '网络请求失败，请稍后再试。')
-      ])
+    } catch (error) {
+      const reason =
+        error?.name === 'AbortError'
+          ? '请求超时，请稍后再试。'
+          : '网络请求失败，请稍后再试。'
+      setMessages([...nextMessages, makeMessage('assistant', reason)])
     } finally {
+      clearTimeout(timeout)
+      if (abortRef.current === controller) abortRef.current = null
       setLoading(false)
     }
   }

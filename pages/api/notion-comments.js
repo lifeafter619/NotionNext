@@ -33,6 +33,14 @@ const getClientIp = req => {
 
 const isRateLimited = ip => {
   const now = Date.now()
+  // 惰性清理：防止长期运行后 Map 被一次性访客 IP 无限撑大
+  if (ipHits.size > 1000) {
+    for (const [key, times] of ipHits) {
+      if (times.every(time => now - time >= rateWindowMs)) {
+        ipHits.delete(key)
+      }
+    }
+  }
   const hits = (ipHits.get(ip) || []).filter(time => now - time < rateWindowMs)
   if (hits.length >= rateLimit) {
     ipHits.set(ip, hits)

@@ -119,6 +119,8 @@ const WalineComponent = props => {
       ]
         .filter(Boolean)
         .join('\n')
+        // Windows dev 构建的堆栈路径用反斜杠(@waline\api)，统一成正斜杠再匹配
+        .replace(/\\/g, '/')
         .toLowerCase()
     }
 
@@ -126,16 +128,31 @@ const WalineComponent = props => {
       const { force = false } = options
       const message = getLoadErrorMessage(event)
 
-      if (!message.includes('Failed to fetch')) {
+      // 包括裸的 'Failed to fetch',以及 @waline/api 内部 re-throw 后
+      // 包装出来的 'Get comment/counter data failed with N: Failed to fetch'
+      const isFetchFailure =
+        message.includes('Failed to fetch') ||
+        /^Get \w+ failed with \d+:/.test(message)
+
+      if (!isFetchFailure) {
         return
       }
 
-      if (!force && !getLoadErrorSource(event).includes('@waline/client')) {
-        return
+      // force 通道(本组件 fetch guard 主动调用)直接处理;
+      // 否则只处理来源确属 waline 的 rejection(@waline/client 或 @waline/api)。
+      if (!force) {
+        const source = getLoadErrorSource(event)
+        if (
+          !source.includes('@waline/client') &&
+          !source.includes('@waline/api')
+        ) {
+          return
+        }
+        // 阻止其它无关 rejection 监听器再次抛出
+        event?.preventDefault?.()
+        event?.stopImmediatePropagation?.()
       }
 
-      event?.preventDefault?.()
-      event?.stopImmediatePropagation?.()
       cancelled = true
       clearWaline()
       setLoadError(true)
@@ -334,17 +351,56 @@ const WalineComponent = props => {
   return (
     <>
       <style>{`
-        #waline-comment :where(.wl-card-item, .wl-item) {
-          align-items: flex-start;
-          box-sizing: border-box;
-          width: 100%;
+        /* 0. 在 Waline 作用域内强制 content-box
+              heo 主题 style.js 里的全局 *{box-sizing:border-box} 会覆盖
+              waline.css 的 [data-waline] *{box-sizing:content-box},
+              导致 .wl-card{flex:1;width:0} 在嵌套下盒模型计算异常。 */
+        #waline-comment :where(.wl-card-item, .wl-item),
+        #waline-comment :where(.wl-card, .wl-content, .wl-user, .wl-head,
+                                .wl-meta, .wl-card .wl-quote) {
+          box-sizing: content-box;
         }
 
-        #waline-comment .wl-cards .wl-card-item,
-        #waline-comment .wl-reply .wl-item {
+        /* 不能给 .wl-card-item 设 width:100%——上面强制的 content-box 会让
+              100% + 自身 padding 超出父级，嵌套层层放大后撑出横向滚动。
+              flex/grid 的块级子项本身就会占满宽度，无需显式 width。 */
+        #waline-comment :where(.wl-card-item, .wl-item) {
+          align-items: flex-start;
+        }
+
+        /* 兜底：任何内部溢出都不允许把评论区撑出横向滚动 */
+        #waline-comment {
+          overflow-x: clip;
+        }
+
+        #waline-comment .wl-content {
+          word-break: break-word;
+          overflow-wrap: anywhere;
+          /* 包含 .wl-reply-to 的浮动，避免其溢出到操作栏 */
+          display: flow-root;
+        }
+
+        /* waline 默认给 .wl-reply-to 设 float:left + margin-top:1em，
+              与段落自带的 margin-top 对齐；但 tailwind preflight 把 p 的
+              margin 清零后，@昵称 会掉到正文第一行下面。归零后
+              @昵称 与正文首行同行、正文自然环绕，排布整齐。 */
+        #waline-comment .wl-content .wl-reply-to {
+          margin: 0 0.5em 0 0;
+        }
+
+        /* 仅【顶层第一层】卡片用 grid 布局(头像+内容两列);
+              嵌套回复(.wl-card-item .wl-card-item)恢复 waline 默认 display:flex,
+              让其递归 padding 重新生效,由此形成层级缩进。 */
+        #waline-comment .wl-cards > .wl-card-item,
+        #waline-comment .wl-reply > .wl-item {
           display: grid;
           grid-template-columns: max-content minmax(0, 1fr);
           column-gap: 0.75em;
+          align-items: flex-start;
+        }
+
+        #waline-comment .wl-card-item .wl-card-item {
+          display: flex;
         }
 
         #waline-comment .wl-card,
