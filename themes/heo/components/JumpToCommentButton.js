@@ -13,11 +13,7 @@ const JumpToCommentButton = () => {
   }
 
   function navToComment() {
-    if (scrollToHeoComment()) {
-      setTimeout(() => {
-        scrollToHeoComment()
-      }, 500)
-    }
+    scrollToHeoComment()
   }
 
   return (

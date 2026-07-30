@@ -755,9 +755,6 @@ const JumpToCommentButtonDesktop = () => {
     e.stopPropagation()
     setSavedScrollY(window.scrollY)
     if (scrollToHeoComment()) {
-      setTimeout(() => {
-        scrollToHeoComment()
-      }, 500)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     }
@@ -842,9 +839,6 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
   const handleJump = () => {
     setSavedScrollY(window.scrollY)
     if (scrollToHeoComment()) {
-      setTimeout(() => {
-        scrollToHeoComment()
-      }, 500)
       setShowToast(true)
       setTimeout(() => setShowToast(false), 3000)
     }

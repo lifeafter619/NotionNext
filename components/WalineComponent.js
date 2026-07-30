@@ -204,6 +204,46 @@ const WalineComponent = props => {
       }
     }
 
+    // waline 的编辑框与主输入框共享 WALINE_COMMENT_BOX_EDITOR 草稿 storage，
+    // 编辑评论提交后内部清空存在竞态，会把被编辑的内容残留进主输入框；
+    // 识别编辑请求（PUT /comment/:id 且 body 带 comment 字段，点赞/审核不带）成功后主动清空
+    const isWalineCommentEdit = (input, init) => {
+      try {
+        const method = (init?.method || input?.method || 'GET').toUpperCase()
+        if (method !== 'PUT' || !isWalineRequest(input)) return false
+        const requestUrl = typeof input === 'string' ? input : input?.url
+        if (
+          !/\/comment\//.test(
+            new URL(requestUrl, window.location.href).pathname
+          )
+        ) {
+          return false
+        }
+        const rawBody = init?.body
+        if (typeof rawBody !== 'string') return false
+        return typeof JSON.parse(rawBody)?.comment === 'string'
+      } catch (error) {
+        return false
+      }
+    }
+
+    const clearWalineEditorDraft = () => {
+      // 等 waline 完成 cancelEdit 重挂载主输入框后再清
+      setTimeout(() => {
+        try {
+          window.localStorage?.setItem('WALINE_COMMENT_BOX_EDITOR', '')
+        } catch (error) {}
+        const editorEl = containerRef.current?.querySelector(
+          'textarea.wl-editor'
+        )
+        if (editorEl && editorEl.value) {
+          editorEl.value = ''
+          // 触发 v-model 同步，顺带更新预览/字数
+          editorEl.dispatchEvent(new Event('input', { bubbles: true }))
+        }
+      }, 300)
+    }
+
     if (originalFetch && serverURL) {
       guardedFetch = async (...args) => {
         if (isWalineEmojiInfoSource(args[0]?.url || args[0], notionHost)) {
@@ -216,7 +256,11 @@ const WalineComponent = props => {
         }
 
         try {
-          return await originalFetch(...args)
+          const response = await originalFetch(...args)
+          if (response?.ok && isWalineCommentEdit(args[0], args[1])) {
+            clearWalineEditorDraft()
+          }
+          return response
         } catch (error) {
           if (isWalineRequest(args[0])) {
             handleWalineLoadError(

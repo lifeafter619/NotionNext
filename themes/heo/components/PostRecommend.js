@@ -70,9 +70,9 @@ export default function PostRecommend({ recommendPosts, siteInfo }) {
               href={href}
               passHref
               className='heo-post-cover flex cursor-pointer overflow-hidden rounded-2xl'>
-              <div className='h-full w-full relative group bg-gray-800'>
+              <div className='h-full w-full relative group bg-gray-200 dark:bg-gray-800'>
                 <div className='flex items-center justify-center w-full h-full duration-300 '>
-                  <div className='z-10 text-lg px-4 font-bold text-white text-center shadow-text select-none'>
+                  <div className='z-10 text-lg px-4 font-bold text-gray-800 dark:text-white text-center [text-shadow:0_1px_3px_rgba(255,255,255,0.8)] dark:[text-shadow:0.1em_0.1em_0.2em_black] select-none'>
                     {title}
                   </div>
                 </div>
@@ -88,7 +88,7 @@ export default function PostRecommend({ recommendPosts, siteInfo }) {
                 )}
                 {/* 卡片的阴影遮罩，为了凸显图片上的文字 */}
                 <div className='h-3/4 w-full absolute left-0 bottom-0'>
-                  <div className='h-full w-full absolute opacity-80 group-hover:opacity-100 transition-all duration-1000 bg-gradient-to-b from-transparent to-black'></div>
+                  <div className='h-full w-full absolute opacity-80 group-hover:opacity-100 transition-all duration-1000 bg-gradient-to-b from-transparent to-white dark:to-black'></div>
                 </div>
               </div>
             </SmartLink>

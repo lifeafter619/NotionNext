@@ -10,7 +10,7 @@ const ShareButtons = dynamic(() => import('@/components/ShareButtons'), {
  * @param {} param0
  * @returns
  */
-const ShareBar = ({ post }) => {
+const ShareBar = ({ post, className }) => {
   if (
     !JSON.parse(siteConfig('POST_SHARE_BAR_ENABLE')) ||
     !post ||
@@ -21,7 +21,8 @@ const ShareBar = ({ post }) => {
 
   return (
     <div className='m-1 overflow-visible'>
-      <div className='flex w-full flex-wrap items-center justify-start gap-y-2 md:justify-end'>
+      <div
+        className={`flex w-full flex-wrap items-center gap-y-2 ${className || 'justify-start md:justify-end'}`}>
         <ShareButtons post={post} />
       </div>
     </div>

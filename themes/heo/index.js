@@ -1081,7 +1081,7 @@ const LayoutSlug = props => {
               {showRecommended && (
                 <div className='animate-fade-in'>
                   {/* 分享 */}
-                  <ShareBar post={post} />
+                  <ShareBar post={post} className='justify-center' />
                   {post?.type === 'Post' && (
                     <div className='px-5'>
                       {/* 版权 */}
