@@ -382,7 +382,7 @@ const WalineComponent = props => {
         true
       )
       // 编辑进行中直接离开页面：destroy 后不会再触发 observer，主动清一次
-      if (containerRef.current?.querySelector('.wl-edit-wrapper')) {
+      if (walineContainer?.querySelector('.wl-edit-wrapper')) {
         clearSharedEditorDraft()
       }
       clearWaline()
