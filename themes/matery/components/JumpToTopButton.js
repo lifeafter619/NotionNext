@@ -22,13 +22,12 @@ const JumpToTopButton = ({ showPercent = true, percent }) => {
       data-aos='fade-left'
       data-aos-duration='300'
       data-aos-anchor-placement='top-center'
-      className={'justify-center items-center text-center'}
+      className='flex justify-center items-center text-center select-none'
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
       <i
-        id='darkModeButton'
+        id='jumpToTopButton'
         title={locale.POST.TOP}
-        className={`fas fa-arrow-up transform hover:scale-105 duration-200 text-white
-        bg-indigo-700 w-10 h-10 rounded-full dark:bg-black cursor-pointer py-2.5`}
+        className='fas fa-arrow-up transform hover:scale-105 duration-200 text-white bg-indigo-700 w-10 h-10 rounded-full dark:bg-black cursor-pointer flex justify-center items-center'
       />
     </div>
   )
