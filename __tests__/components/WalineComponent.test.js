@@ -29,6 +29,10 @@ jest.mock('next/router', () => ({
 }))
 
 describe('WalineComponent', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   it('renders a fallback instead of throwing when Waline init fails', async () => {
     init.mockImplementation(() => {
       throw new TypeError('Failed to fetch')
@@ -220,5 +224,52 @@ describe('WalineComponent', () => {
     expect(image.src).toBe(
       'https://img.cdn.619.pp.ua/external/waline-emojis/1.2.0/tieba/tieba_agree.png'
     )
+  })
+
+  it('clears the shared draft when an edit session ends', async () => {
+    fetch.mockResolvedValue({ ok: true })
+    init.mockImplementation(({ el }) => {
+      const editWrapper = document.createElement('div')
+      editWrapper.className = 'wl-edit-wrapper'
+      el.appendChild(editWrapper)
+      return { update: jest.fn(), destroy: jest.fn() }
+    })
+    localStorage.setItem('WALINE_COMMENT_BOX_EDITOR', 'edited comment')
+
+    render(<WalineComponent />)
+    await waitFor(() => expect(init).toHaveBeenCalled())
+
+    act(() => document.querySelector('.wl-edit-wrapper').remove())
+
+    await waitFor(() =>
+      expect(localStorage.getItem('WALINE_COMMENT_BOX_EDITOR')).toBe('')
+    )
+  })
+
+  it('clears the shared edit draft before showing a load failure', async () => {
+    fetch.mockResolvedValue({ ok: true })
+    init.mockImplementation(({ el }) => {
+      const editWrapper = document.createElement('div')
+      editWrapper.className = 'wl-edit-wrapper'
+      el.appendChild(editWrapper)
+      return { update: jest.fn(), destroy: jest.fn() }
+    })
+    localStorage.setItem('WALINE_COMMENT_BOX_EDITOR', 'edited comment')
+
+    render(<WalineComponent />)
+    await waitFor(() => expect(init).toHaveBeenCalled())
+
+    const event = new Event('unhandledrejection', { cancelable: true })
+    const walineError = new TypeError('Failed to fetch')
+    Object.defineProperty(walineError, 'stack', {
+      value: 'TypeError: Failed to fetch\n    at request (@waline/client)'
+    })
+    Object.defineProperty(event, 'reason', { value: walineError })
+    act(() => window.dispatchEvent(event))
+
+    expect(
+      await screen.findByText('评论服务暂时不可用，请稍后再试。')
+    ).toBeInTheDocument()
+    expect(localStorage.getItem('WALINE_COMMENT_BOX_EDITOR')).toBe('')
   })
 })

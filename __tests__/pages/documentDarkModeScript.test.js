@@ -54,4 +54,16 @@ describe('document dark mode bootstrap script', () => {
     expect(activationScript).toContain("addEventListener('load'")
     expect(activationScript).not.toContain('requestAnimationFrame')
   })
+
+  it('activates web fonts only after the window load event', () => {
+    const markup = renderToStaticMarkup(new MyDocument().render())
+
+    const activationScript = markup
+      .split('<script>')
+      .find(chunk => chunk.includes("getElementById('web-font-css-"))
+    expect(activationScript).toBeDefined()
+    expect(activationScript).toContain("addEventListener('load'")
+    expect(activationScript).toContain('requestIdleCallback')
+    expect(activationScript).not.toContain('requestAnimationFrame')
+  })
 })

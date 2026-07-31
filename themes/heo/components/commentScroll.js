@@ -1,8 +1,10 @@
 const COMMENT_SCROLL_OFFSET = 80
-const SETTLE_INTERVAL_MS = 400
-const SETTLE_MAX_TICKS = 8
+const SETTLE_INTERVAL_MS = 150
+const SETTLE_MAX_TICKS = 10
+const SETTLE_STABLE_TICKS = 2
 
 let settleTimer = null
+let removeSettleCancelListeners = null
 
 export function getHeoCommentAnchor() {
   if (typeof document === 'undefined') {
@@ -36,42 +38,61 @@ export function getHeoCommentScrollTop() {
   return Math.max(0, top)
 }
 
+function stopSettle() {
+  if (settleTimer) {
+    clearInterval(settleTimer)
+    settleTimer = null
+  }
+  if (removeSettleCancelListeners) {
+    removeSettleCancelListeners()
+    removeSettleCancelListeners = null
+  }
+}
+
 export function scrollToHeoComment() {
   const top = getHeoCommentScrollTop()
   if (top === null) {
     return false
   }
 
-  window.scrollTo({ top, behavior: 'smooth' })
+  stopSettle()
 
-  // 滚动途中，评论区上方的懒加载区块（分享栏/推荐文章/评论组件）陆续挂载，
-  // 会把锚点持续往下推；周期性重算目标并校正，直到目标稳定且已到位。
-  if (settleTimer) {
-    clearInterval(settleTimer)
-  }
-  let lastTop = top
+  // 瞬时直达。smooth 动画期间懒加载区块（分享栏/推荐文章/评论组件）陆续挂载
+  // 改变布局，动画会一段一段追着新位置滚，表现为“跳很多次”；瞬时跳转 + 瞬时
+  // 校正在用户眼里就是一次到位。
+  window.scrollTo({ top, behavior: 'instant' })
+
+  // 用户一旦主动滚动，立即放弃校正，不与用户抢滚动条
+  const cancelEvents = ['wheel', 'touchstart', 'keydown']
+  const onUserInteract = () => stopSettle()
+  cancelEvents.forEach(eventName =>
+    window.addEventListener(eventName, onUserInteract, { passive: true })
+  )
+  removeSettleCancelListeners = () =>
+    cancelEvents.forEach(eventName =>
+      window.removeEventListener(eventName, onUserInteract)
+    )
+
   let ticks = 0
+  let stableTicks = 0
   settleTimer = setInterval(() => {
     ticks += 1
     const nextTop = getHeoCommentScrollTop()
 
     if (nextTop === null || ticks >= SETTLE_MAX_TICKS) {
-      clearInterval(settleTimer)
-      settleTimer = null
+      stopSettle()
       return
     }
 
-    if (Math.abs(nextTop - lastTop) > 2) {
-      lastTop = nextTop
-      window.scrollTo({ top: nextTop, behavior: 'smooth' })
+    if (Math.abs(window.scrollY - nextTop) > 2) {
+      stableTicks = 0
+      window.scrollTo({ top: nextTop, behavior: 'instant' })
       return
     }
 
-    // 目标稳定且已滚到附近才收工；未到位说明 smooth 滚动仍在进行
-    // （或用户手动打断——此时目标不再变化，不会再抢滚，只会静默超时）
-    if (Math.abs(window.scrollY - nextTop) < 4) {
-      clearInterval(settleTimer)
-      settleTimer = null
+    stableTicks += 1
+    if (stableTicks >= SETTLE_STABLE_TICKS) {
+      stopSettle()
     }
   }, SETTLE_INTERVAL_MS)
 

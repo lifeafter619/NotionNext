@@ -81,9 +81,8 @@ class MyDocument extends Document {
           ))}
           <link rel='dns-prefetch' href='//images.unsplash.com' />
 
-          {/* 网页字体样式表：preload 后异步启用，不阻塞首屏渲染。
-              中文 Web 字体样式走第三方 CDN，同步加载会显著推迟首次绘制；
-              异步启用后先用系统字体渲染文字，字体就绪后再平滑替换。 */}
+          {/* 网页字体在 load 后的空闲时段启用：首屏先用系统字体，
+              避免中文字体子集与 LCP 图片争抢带宽。 */}
           {fontUrls.map((url, index) => (
             <link
               key={`font-css-${index}`}
@@ -98,7 +97,7 @@ class MyDocument extends Document {
               <script
                 dangerouslySetInnerHTML={{
                   __html:
-                    "requestAnimationFrame(function(){for(var i=0;;i++){var l=document.getElementById('web-font-css-'+i);if(!l)break;l.rel='stylesheet'}})"
+                    "(function(){var a=function(){for(var i=0;;i++){var l=document.getElementById('web-font-css-'+i);if(!l)break;l.rel='stylesheet'}};var s=function(){if(window.requestIdleCallback){requestIdleCallback(a,{timeout:3000})}else{setTimeout(a,1500)}};if(document.readyState==='complete'){s()}else{window.addEventListener('load',s,{once:true})}})()"
                 }}
               />
               <noscript>

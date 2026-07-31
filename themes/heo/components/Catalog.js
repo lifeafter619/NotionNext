@@ -7,7 +7,7 @@ import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { getHeoCommentScrollTop } from './commentScroll'
+import { getHeoCommentScrollTop, scrollToHeoComment } from './commentScroll'
 
 const CATALOG_SCROLL_OFFSET = 80
 
@@ -91,21 +91,28 @@ const Catalog = ({
         if (!forceSpy && tRef.current && tRef.current.offsetParent === null) {
           return
         }
+        const tocIdSet = new Set(tocIds)
         const sections = document.getElementsByClassName('notion-h')
         let prevBBox = null
         let currentSectionId = null
         for (let i = 0; i < sections.length; ++i) {
           const section = sections[i]
           if (!section || !(section instanceof Element)) continue
-          if (!currentSectionId) {
-            currentSectionId = section.getAttribute('data-id')
-          }
+          const sectionId = section.getAttribute('data-id')
+          // 只在目录里出现的标题才参与定位，否则高亮会映射不到任何目录项
+          if (!sectionId || !tocIdSet.has(sectionId)) continue
+          // 折叠 toggle 内的标题没有布局盒（rect 全为 0），
+          // 恒满足 top-offset<0，会把高亮抢到不可见标题上，必须跳过
+          if (section.getClientRects().length === 0) continue
           const bbox = section.getBoundingClientRect()
+          if (!currentSectionId) {
+            currentSectionId = sectionId
+          }
           const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
           const offset = Math.max(150, prevHeight / 4)
           // GetBoundingClientRect returns values relative to viewport
           if (bbox.top - offset < 0) {
-            currentSectionId = section.getAttribute('data-id')
+            currentSectionId = sectionId
             prevBBox = bbox
             continue
           }
@@ -122,7 +129,7 @@ const Catalog = ({
           const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
           tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
         }
-      }, 500),
+      }, 200),
     [forceSpy, onActiveSectionChange, tocIds]
   )
 
@@ -280,14 +287,15 @@ const Catalog = ({
 
 const JumpToCommentButton = ({ onJump }) => {
   const handleJumpClick = () => {
-    const offsetPosition = getHeoCommentScrollTop()
-    if (offsetPosition !== null) {
-      if (onJump) {
-        onJump('评论区', offsetPosition)
-      } else {
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-      }
+    if (getHeoCommentScrollTop() === null) {
+      return
     }
+    // 先弹提示（此刻记录“回到原位置”的坐标），再交给 scrollToHeoComment
+    // 瞬时跳转并在懒加载布局位移后自动校正
+    if (onJump) {
+      onJump('评论区')
+    }
+    scrollToHeoComment()
   }
 
   return (

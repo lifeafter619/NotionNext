@@ -99,6 +99,37 @@ const WalineComponent = props => {
       }
     }
 
+    // waline 的编辑框与主输入框共享 WALINE_COMMENT_BOX_EDITOR 草稿 storage。
+    // 编辑结束后 waline 并不总能清空草稿：
+    //  - 提交成功但回包缺 data 时，内部 emit('submit') 同步抛错，清空逻辑被跳过
+    //  - 点“取消编辑”时 waline 从不清空
+    // 残留草稿会在主输入框重新挂载（编辑期间它被 v-if 卸载）时读出来。
+    // 因此监听编辑框（.wl-edit-wrapper）从 DOM 消失的时刻，强制清空共享草稿，
+    // 并派发合成 StorageEvent 让 vueuse useStorage 的已挂载实例同步。
+    const WALINE_EDITOR_DRAFT_KEY = 'WALINE_COMMENT_BOX_EDITOR'
+    let editSessionObserver = null
+
+    const clearSharedEditorDraft = () => {
+      let oldValue = null
+      try {
+        oldValue = window.localStorage?.getItem(WALINE_EDITOR_DRAFT_KEY)
+        if (!oldValue) return
+        window.localStorage.setItem(WALINE_EDITOR_DRAFT_KEY, '')
+      } catch (error) {
+        return
+      }
+      try {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: WALINE_EDITOR_DRAFT_KEY,
+            oldValue,
+            newValue: '',
+            storageArea: window.localStorage
+          })
+        )
+      } catch (error) {}
+    }
+
     const getLoadErrorMessage = event => {
       if (typeof event?.reason === 'string') {
         return event.reason
@@ -110,18 +141,20 @@ const WalineComponent = props => {
     }
 
     const getLoadErrorSource = event => {
-      return [
-        event?.reason?.stack,
-        event?.error?.stack,
-        event?.filename,
-        event?.reason?.fileName,
-        event?.error?.fileName
-      ]
-        .filter(Boolean)
-        .join('\n')
-        // Windows dev 构建的堆栈路径用反斜杠(@waline\api)，统一成正斜杠再匹配
-        .replace(/\\/g, '/')
-        .toLowerCase()
+      return (
+        [
+          event?.reason?.stack,
+          event?.error?.stack,
+          event?.filename,
+          event?.reason?.fileName,
+          event?.error?.fileName
+        ]
+          .filter(Boolean)
+          .join('\n')
+          // Windows dev 构建的堆栈路径用反斜杠(@waline\api)，统一成正斜杠再匹配
+          .replace(/\\/g, '/')
+          .toLowerCase()
+      )
     }
 
     const handleWalineLoadError = (event, options = {}) => {
@@ -154,6 +187,9 @@ const WalineComponent = props => {
       }
 
       cancelled = true
+      if (walineContainer?.querySelector('.wl-edit-wrapper')) {
+        clearSharedEditorDraft()
+      }
       clearWaline()
       setLoadError(true)
     }
@@ -204,44 +240,23 @@ const WalineComponent = props => {
       }
     }
 
-    // waline 的编辑框与主输入框共享 WALINE_COMMENT_BOX_EDITOR 草稿 storage，
-    // 编辑评论提交后内部清空存在竞态，会把被编辑的内容残留进主输入框；
-    // 识别编辑请求（PUT /comment/:id 且 body 带 comment 字段，点赞/审核不带）成功后主动清空
-    const isWalineCommentEdit = (input, init) => {
-      try {
-        const method = (init?.method || input?.method || 'GET').toUpperCase()
-        if (method !== 'PUT' || !isWalineRequest(input)) return false
-        const requestUrl = typeof input === 'string' ? input : input?.url
-        if (
-          !/\/comment\//.test(
-            new URL(requestUrl, window.location.href).pathname
-          )
-        ) {
-          return false
+    const watchEditSession = () => {
+      const container = containerRef.current
+      if (!container || typeof MutationObserver !== 'function') return
+      let editing = Boolean(container.querySelector('.wl-edit-wrapper'))
+      editSessionObserver = new MutationObserver(() => {
+        const nowEditing = Boolean(container.querySelector('.wl-edit-wrapper'))
+        if (editing && !nowEditing) {
+          clearSharedEditorDraft()
         }
-        const rawBody = init?.body
-        if (typeof rawBody !== 'string') return false
-        return typeof JSON.parse(rawBody)?.comment === 'string'
-      } catch (error) {
-        return false
-      }
-    }
-
-    const clearWalineEditorDraft = () => {
-      // 等 waline 完成 cancelEdit 重挂载主输入框后再清
-      setTimeout(() => {
-        try {
-          window.localStorage?.setItem('WALINE_COMMENT_BOX_EDITOR', '')
-        } catch (error) {}
-        const editorEl = containerRef.current?.querySelector(
-          'textarea.wl-editor'
-        )
-        if (editorEl && editorEl.value) {
-          editorEl.value = ''
-          // 触发 v-model 同步，顺带更新预览/字数
-          editorEl.dispatchEvent(new Event('input', { bubbles: true }))
-        }
-      }, 300)
+        editing = nowEditing
+      })
+      editSessionObserver.observe(container, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class']
+      })
     }
 
     if (originalFetch && serverURL) {
@@ -256,11 +271,7 @@ const WalineComponent = props => {
         }
 
         try {
-          const response = await originalFetch(...args)
-          if (response?.ok && isWalineCommentEdit(args[0], args[1])) {
-            clearWalineEditorDraft()
-          }
-          return response
+          return await originalFetch(...args)
         } catch (error) {
           if (isWalineRequest(args[0])) {
             handleWalineLoadError(
@@ -298,6 +309,7 @@ const WalineComponent = props => {
             '//file.66619.eu.org/ikun-emoji'
           ]
         })
+        watchEditSession()
       }
 
       // 跳转评论
@@ -363,11 +375,16 @@ const WalineComponent = props => {
     return () => {
       cancelled = true
       observer?.disconnect()
+      editSessionObserver?.disconnect()
       walineContainer?.removeEventListener(
         'error',
         handleWalineEmojiError,
         true
       )
+      // 编辑进行中直接离开页面：destroy 后不会再触发 observer，主动清一次
+      if (walineContainer?.querySelector('.wl-edit-wrapper')) {
+        clearSharedEditorDraft()
+      }
       clearWaline()
       window.removeEventListener(
         'unhandledrejection',

@@ -217,7 +217,7 @@ describe('heo Catalog', () => {
 
     expect(window.scrollTo).toHaveBeenCalledWith({
       top: 560,
-      behavior: 'smooth'
+      behavior: 'instant'
     })
 
     fireEvent.click(screen.getByText('回到原位置'))

@@ -18,13 +18,11 @@ module.exports = {
   // 减少用户滚动时看到占位图的概率
   LAZY_LOAD_THRESHOLD: process.env.NEXT_PUBLIC_LAZY_LOAD_THRESHOLD || '600px',
 
-  // 空闲图片预取默认开启：首屏 load 完成后，浏览器空闲时以受限并发（见下）
-  // 把页面里尚未进入视口的懒加载图（首页下方卡片封面、文章正文配图）预热进
-  // HTTP 缓存，用户滚动到时直接命中缓存即时显示，不与首屏资源抢带宽。
-  // 省流模式（Save-Data）和非 4g 网络仍会自动禁用；路由切换时取消未开始的预取。
+  // 整页图片预取默认关闭，避免首屏结束前后批量下载视口外图片。
+  // 需要用带宽换滚动体验时可通过环境变量显式开启。
   IMAGE_PREFETCH_ENABLE: parseBoolean(
     process.env.NEXT_PUBLIC_IMAGE_PREFETCH_ENABLE,
-    true
+    false
   ),
   // 预取并发上限，避免占满连接池、对低端设备造成解码压力
   IMAGE_PREFETCH_CONCURRENCY:

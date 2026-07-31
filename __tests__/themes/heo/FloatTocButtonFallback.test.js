@@ -261,7 +261,7 @@ describe('heo FloatTocButton fallback toc', () => {
 
     expect(window.scrollTo).toHaveBeenCalledWith({
       top: 560,
-      behavior: 'smooth'
+      behavior: 'instant'
     })
 
     fireEvent.click(screen.getByText('回到原位置'))
@@ -326,7 +326,7 @@ describe('heo FloatTocButton fallback toc', () => {
 
     expect(window.scrollTo).toHaveBeenCalledWith({
       top: 560,
-      behavior: 'smooth'
+      behavior: 'instant'
     })
 
     fireEvent.click(screen.getByText('回到原位置'))
