@@ -99,6 +99,37 @@ const WalineComponent = props => {
       }
     }
 
+    // waline 的编辑框与主输入框共享 WALINE_COMMENT_BOX_EDITOR 草稿 storage。
+    // 编辑结束后 waline 并不总能清空草稿：
+    //  - 提交成功但回包缺 data 时，内部 emit('submit') 同步抛错，清空逻辑被跳过
+    //  - 点“取消编辑”时 waline 从不清空
+    // 残留草稿会在主输入框重新挂载（编辑期间它被 v-if 卸载）时读出来。
+    // 因此监听编辑框（.wl-edit-wrapper）从 DOM 消失的时刻，强制清空共享草稿，
+    // 并派发合成 StorageEvent 让 vueuse useStorage 的已挂载实例同步。
+    const WALINE_EDITOR_DRAFT_KEY = 'WALINE_COMMENT_BOX_EDITOR'
+    let editSessionObserver = null
+
+    const clearSharedEditorDraft = () => {
+      let oldValue = null
+      try {
+        oldValue = window.localStorage?.getItem(WALINE_EDITOR_DRAFT_KEY)
+        if (!oldValue) return
+        window.localStorage.setItem(WALINE_EDITOR_DRAFT_KEY, '')
+      } catch (error) {
+        return
+      }
+      try {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: WALINE_EDITOR_DRAFT_KEY,
+            oldValue,
+            newValue: '',
+            storageArea: window.localStorage
+          })
+        )
+      } catch (error) {}
+    }
+
     const getLoadErrorMessage = event => {
       if (typeof event?.reason === 'string') {
         return event.reason
@@ -110,18 +141,20 @@ const WalineComponent = props => {
     }
 
     const getLoadErrorSource = event => {
-      return [
-        event?.reason?.stack,
-        event?.error?.stack,
-        event?.filename,
-        event?.reason?.fileName,
-        event?.error?.fileName
-      ]
-        .filter(Boolean)
-        .join('\n')
-        // Windows dev 构建的堆栈路径用反斜杠(@waline\api)，统一成正斜杠再匹配
-        .replace(/\\/g, '/')
-        .toLowerCase()
+      return (
+        [
+          event?.reason?.stack,
+          event?.error?.stack,
+          event?.filename,
+          event?.reason?.fileName,
+          event?.error?.fileName
+        ]
+          .filter(Boolean)
+          .join('\n')
+          // Windows dev 构建的堆栈路径用反斜杠(@waline\api)，统一成正斜杠再匹配
+          .replace(/\\/g, '/')
+          .toLowerCase()
+      )
     }
 
     const handleWalineLoadError = (event, options = {}) => {
@@ -154,6 +187,9 @@ const WalineComponent = props => {
       }
 
       cancelled = true
+      if (walineContainer?.querySelector('.wl-edit-wrapper')) {
+        clearSharedEditorDraft()
+      }
       clearWaline()
       setLoadError(true)
     }
@@ -202,37 +238,6 @@ const WalineComponent = props => {
         json: async () => JSON.parse(body),
         text: async () => body
       }
-    }
-
-    // waline 的编辑框与主输入框共享 WALINE_COMMENT_BOX_EDITOR 草稿 storage。
-    // 编辑结束后 waline 并不总能清空草稿：
-    //  - 提交成功但回包缺 data 时，内部 emit('submit') 同步抛错，清空逻辑被跳过
-    //  - 点“取消编辑”时 waline 从不清空
-    // 残留草稿会在主输入框重新挂载（编辑期间它被 v-if 卸载）时读出来。
-    // 因此监听编辑框（.wl-edit-wrapper）从 DOM 消失的时刻，强制清空共享草稿，
-    // 并派发合成 StorageEvent 让 vueuse useStorage 的已挂载实例同步。
-    const WALINE_EDITOR_DRAFT_KEY = 'WALINE_COMMENT_BOX_EDITOR'
-    let editSessionObserver = null
-
-    const clearSharedEditorDraft = () => {
-      let oldValue = null
-      try {
-        oldValue = window.localStorage?.getItem(WALINE_EDITOR_DRAFT_KEY)
-        if (!oldValue) return
-        window.localStorage.setItem(WALINE_EDITOR_DRAFT_KEY, '')
-      } catch (error) {
-        return
-      }
-      try {
-        window.dispatchEvent(
-          new StorageEvent('storage', {
-            key: WALINE_EDITOR_DRAFT_KEY,
-            oldValue,
-            newValue: '',
-            storageArea: window.localStorage
-          })
-        )
-      } catch (error) {}
     }
 
     const watchEditSession = () => {

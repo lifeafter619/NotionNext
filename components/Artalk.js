@@ -15,35 +15,43 @@ const Artalk = ({ siteInfo }) => {
   const site = siteConfig('TITLE')
 
   useEffect(() => {
-    initArtalk()
-  }, [])
+    let cancelled = false
+    let observer
 
-  const initArtalk = async () => {
-    await loadExternalResource(artalkCss, 'css')
-    const artalk = window?.Artalk?.init({
-      server: artalkServer,
-      el: '#artalk',
-      locale: artalkLocale,
-      site: site,
-      darkMode: document.documentElement.classList.contains('dark')
-    })
-
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.attributeName === 'class') {
-          const isDark = document.documentElement.classList.contains('dark')
-          artalk?.setDarkMode(isDark)
-        }
+    const initArtalk = async () => {
+      await loadExternalResource(artalkCss, 'css')
+      if (cancelled) return
+      const artalk = window?.Artalk?.init({
+        server: artalkServer,
+        el: '#artalk',
+        locale: artalkLocale,
+        site: site,
+        darkMode: document.documentElement.classList.contains('dark')
       })
-    })
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    })
+      observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          if (mutation.attributeName === 'class') {
+            const isDark = document.documentElement.classList.contains('dark')
+            artalk?.setDarkMode(isDark)
+          }
+        })
+      })
 
-    return () => observer.disconnect()
-  }
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      })
+    }
+
+    void initArtalk().catch(error => {
+      console.error('Artalk initialization failed:', error)
+    })
+    return () => {
+      cancelled = true
+      observer?.disconnect()
+    }
+  }, [artalkCss, artalkLocale, artalkServer, site])
 
   return <div id='artalk'></div>
 }

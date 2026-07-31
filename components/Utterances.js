@@ -19,21 +19,26 @@ const Utterances = ({ issueTerm, layout }) => {
     if (!anchor) {
       return
     }
+    setLoading(true)
     const script = document.createElement('script')
     script.onload = () => setLoading(false)
     script.setAttribute('src', 'https://utteranc.es/client.js')
     script.setAttribute('crossorigin', 'anonymous')
     script.setAttribute('async', true)
     script.setAttribute('repo', siteConfig('COMMENT_UTTERRANCES_REPO'))
-    script.setAttribute('issue-term', 'title')
+    script.setAttribute('issue-term', issueTerm || 'title')
     // 初始主题
     script.setAttribute('theme', isDarkMode ? 'github-dark' : 'github-light')
     anchor?.appendChild(script)
 
     return () => {
-      // anchor.innerHTML = ''
+      script.onload = null
+      script.remove()
+      anchor.querySelector('iframe.utterances-frame')?.remove()
     }
-  }, [])
+    // Theme-only changes are sent to the existing iframe below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [issueTerm])
 
   useEffect(() => {
     // 直接设置 iframe 的类来改变主题，不重新加载脚本

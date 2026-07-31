@@ -1,4 +1,10 @@
 const nextJest = require('next/jest')
+const fs = require('fs')
+const path = require('path')
+
+const worktreeIgnorePatterns = fs.existsSync(path.join(__dirname, '.worktrees'))
+  ? ['<rootDir>/.worktrees/']
+  : []
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
@@ -29,26 +35,20 @@ const customJestConfig = {
   // Test environment
   testEnvironment: '<rootDir>/jest.environment.js',
 
-  // Test file patterns
-  testMatch: [
-    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/**/*.(test|spec).{js,jsx,ts,tsx}'
-  ],
-
   // Files to ignore
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/out/',
     '<rootDir>/output/',
-    '<rootDir>/.worktrees/',
+    ...worktreeIgnorePatterns,
     '<rootDir>/.vercel/'
   ],
 
   // Worktrees live inside the repository but must not participate in module
   // discovery, otherwise duplicate manual mocks pollute targeted test runs.
-  modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
-  watchPathIgnorePatterns: ['<rootDir>/.worktrees/'],
+  modulePathIgnorePatterns: worktreeIgnorePatterns,
+  watchPathIgnorePatterns: worktreeIgnorePatterns,
 
   // Transform files
   transform: {

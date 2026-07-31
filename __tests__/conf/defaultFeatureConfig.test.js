@@ -7,6 +7,7 @@ describe('default feature config', () => {
     delete process.env.NEXT_PUBLIC_ANALYTICS_BUSUANZI_ENABLE
     delete process.env.NEXT_PUBLIC_FONT_URL
     delete process.env.NEXT_PUBLIC_FONT_URLS
+    delete process.env.NEXT_PUBLIC_IMAGE_PREFETCH_ENABLE
   })
 
   afterAll(() => {
@@ -34,5 +35,11 @@ describe('default feature config', () => {
     const fontConfig = require('@/conf/font.config')
 
     expect(fontConfig.FONT_URL).toEqual(['https://example.com/font.css'])
+  })
+
+  it('does not prefetch the full page image set by default', () => {
+    const performanceConfig = require('@/conf/performance.config')
+
+    expect(performanceConfig.IMAGE_PREFETCH_ENABLE).toBe(false)
   })
 })

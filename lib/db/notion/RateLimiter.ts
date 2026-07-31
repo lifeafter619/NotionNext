@@ -124,12 +124,12 @@ export class RateLimiter {
 
       try {
         const result: unknown = await requestFunc()
-        this.lastRequestTime = Date.now()
-        this.requestCount++
         resolve(result)
       } catch (err) {
         reject(err)
       } finally {
+        this.lastRequestTime = Date.now()
+        this.requestCount++
         this.inflight.delete(key)
       }
     } catch (err) {
