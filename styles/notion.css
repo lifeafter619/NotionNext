@@ -2113,6 +2113,15 @@ a.notion-link[href*='notion.site'],
   transform: translateY(-1px);
 }
 
+.notion-button .notion-button-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
 .notion-asset-wrapper-pdf > div {
   display: block !important;
 }

@@ -23,6 +23,7 @@ export default function NotionButton({ block, blockId, className }) {
     getPlainText(block.properties?.title) ||
     FALLBACK_BUTTON_TEXT
   const blockColor = block.format?.block_color || 'default'
+  const icon = getButtonIcon(automation)
   const actionTarget = getActionTarget(action, {
     automation,
     automationId,
@@ -95,6 +96,19 @@ export default function NotionButton({ block, blockId, className }) {
         title={label}
         disabled={!canRunAction}
         onClick={handleClick}>
+        {icon?.kind === 'image' && (
+          <img
+            src={icon.url}
+            alt=''
+            aria-hidden='true'
+            className='notion-button-icon'
+          />
+        )}
+        {icon?.kind === 'emoji' && (
+          <span className='notion-button-icon' aria-hidden='true'>
+            {icon.emoji}
+          </span>
+        )}
         {label}
       </button>
       {actionMessage && (
@@ -109,6 +123,23 @@ export default function NotionButton({ block, blockId, className }) {
       )}
     </div>
   )
+}
+
+function getButtonIcon(automation) {
+  const icon = automation?.properties?.icon
+  if (typeof icon !== 'string' || !icon) return null
+
+  // Notion 内置图标是站内路径（如 /icons/downward_pink.svg）
+  if (icon.startsWith('/')) {
+    return { kind: 'image', url: `https://www.notion.so${icon}` }
+  }
+
+  if (/^https?:\/\//.test(icon)) {
+    return { kind: 'image', url: icon }
+  }
+
+  // 其余按 emoji 处理
+  return { kind: 'emoji', emoji: icon }
 }
 
 function getAutomationId(block) {

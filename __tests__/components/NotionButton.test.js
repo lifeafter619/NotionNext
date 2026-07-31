@@ -20,7 +20,8 @@ describe('NotionButton', () => {
               id: 'automation1',
               action_ids: ['action1'],
               properties: {
-                name: 'Open docs'
+                name: 'Open docs',
+                icon: '/icons/downward_pink.svg'
               }
             }
           }
@@ -59,6 +60,9 @@ describe('NotionButton', () => {
 
     const button = screen.getByRole('button', { name: 'Open docs' })
     expect(button).toBeInTheDocument()
+    const iconImg = button.querySelector('img.notion-button-icon')
+    expect(iconImg).not.toBeNull()
+    expect(iconImg.src).toBe('https://www.notion.so/icons/downward_pink.svg')
     expect(
       screen.queryByRole('button', { name: 'Button' })
     ).not.toBeInTheDocument()

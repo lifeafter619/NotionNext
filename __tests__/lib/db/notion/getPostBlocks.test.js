@@ -15,10 +15,12 @@ jest.mock('notion-utils', () => ({
 }))
 
 import {
+  addMissingButtonAutomations,
   formatNotionBlock,
   hasExpiredSignedUrls,
   preferStablePdfSignedUrls
 } from '@/lib/db/notion/getPostBlocks'
+import notionAPI from '@/lib/db/notion/getNotionAPI'
 import {
   isAppleMusicEmbedUrl,
   isExternalVideoEmbedUrl,
@@ -558,5 +560,107 @@ describe('formatNotionBlock', () => {
     preferStablePdfSignedUrls(recordMap)
 
     expect(recordMap.signed_urls.pdf).toBeUndefined()
+  })
+})
+
+describe('addMissingButtonAutomations', () => {
+  it('fetches automations and actions missing from chunked pages', async () => {
+    const recordMap = {
+      block: {
+        btn: {
+          value: {
+            id: 'btn',
+            type: 'button',
+            space_id: 'space-1',
+            format: { automation_id: 'am-1' }
+          }
+        }
+      }
+    }
+
+    notionAPI.__call = jest.fn(async (_method, { body }) => {
+      const table = body.requests[0].pointer.table
+      if (table === 'automation') {
+        return {
+          recordMap: {
+            automation: {
+              'am-1': {
+                value: {
+                  id: 'am-1',
+                  space_id: 'space-1',
+                  properties: { name: '点我下载' },
+                  action_ids: ['act-1']
+                }
+              }
+            }
+          }
+        }
+      }
+      return {
+        recordMap: {
+          automation_action: {
+            'act-1': {
+              value: {
+                id: 'act-1',
+                type: 'open_page',
+                config: { target: { type: 'url', url: 'https://example.com' } }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    await addMissingButtonAutomations(recordMap)
+
+    expect(notionAPI.__call).toHaveBeenCalledTimes(2)
+    expect(
+      notionAPI.__call.mock.calls[0][1].body.requests[0].pointer
+    ).toEqual({ table: 'automation', id: 'am-1', spaceId: 'space-1' })
+    expect(recordMap.automation['am-1'].value.properties.name).toBe('点我下载')
+    expect(recordMap.automation_action['act-1'].value.type).toBe('open_page')
+  })
+
+  it('skips fetch when automations already present', async () => {
+    const recordMap = {
+      block: {
+        btn: {
+          value: {
+            id: 'btn',
+            type: 'button',
+            format: { automation_id: 'am-1' }
+          }
+        }
+      },
+      automation: {
+        'am-1': { value: { id: 'am-1', action_ids: ['act-1'] } }
+      },
+      automation_action: {
+        'act-1': { value: { id: 'act-1', type: 'open_page' } }
+      }
+    }
+
+    notionAPI.__call = jest.fn()
+    await addMissingButtonAutomations(recordMap)
+    expect(notionAPI.__call).not.toHaveBeenCalled()
+  })
+
+  it('does not throw when syncRecordValues fails', async () => {
+    const recordMap = {
+      block: {
+        btn: {
+          value: {
+            id: 'btn',
+            type: 'button',
+            format: { automation_id: 'am-1' }
+          }
+        }
+      }
+    }
+
+    notionAPI.__call = jest.fn(async () => {
+      throw new Error('429 Too Many Requests')
+    })
+    await expect(addMissingButtonAutomations(recordMap)).resolves.toBeUndefined()
   })
 })
