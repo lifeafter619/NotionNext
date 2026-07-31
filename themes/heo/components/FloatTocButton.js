@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import Catalog from './Catalog'
 import { uuidToId } from 'notion-utils'
 import { useArticleToc } from './useArticleToc'
-import { scrollToHeoComment } from './commentScroll'
+import { scrollToHeoComment, cancelHeoCommentSettle } from './commentScroll'
 import { siteConfig } from '@/lib/config'
 import { findNotionHeadingById } from '@/lib/utils/notionHashScroll'
 import CONFIG from '../config'
@@ -32,8 +32,12 @@ function getActiveTocSectionId(toc) {
   for (const id of tocIds) {
     const heading = findNotionHeadingById(id)
     if (!heading) continue
+    const rect = heading.getBoundingClientRect()
+    // 折叠 toggle 内的标题没有布局盒（rect 全为 0），top===0 会永久抢占
+    // “当前标题”，必须跳过
+    if (rect.width === 0 && rect.height === 0) continue
 
-    if (heading.getBoundingClientRect().top <= ACTIVE_HEADING_VIEWPORT_OFFSET) {
+    if (rect.top <= ACTIVE_HEADING_VIEWPORT_OFFSET) {
       activeSectionId = id
       continue
     }
@@ -502,10 +506,7 @@ export default function FloatTocButton(props) {
         if (retryTimer) {
           window.clearTimeout(retryTimer)
         }
-        retryTimer = window.setTimeout(
-          observeSidebarCatalog,
-          retryCount > 30 ? 500 : 100
-        )
+        retryTimer = window.setTimeout(observeSidebarCatalog, 100)
         return
       }
 
@@ -761,6 +762,7 @@ const JumpToCommentButtonDesktop = () => {
   }
 
   const handleBack = () => {
+    cancelHeoCommentSettle()
     window.scrollTo({ top: savedScrollY, behavior: 'smooth' })
     setShowToast(false)
   }
@@ -845,6 +847,7 @@ const JumpToCommentButtonMobile = ({ isExpandedButton }) => {
   }
 
   const handleBack = () => {
+    cancelHeoCommentSettle()
     window.scrollTo({ top: savedScrollY, behavior: 'smooth' })
     setShowToast(false)
   }

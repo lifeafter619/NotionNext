@@ -17,11 +17,12 @@ const Artalk = ({ siteInfo }) => {
   useEffect(() => {
     let cancelled = false
     let observer
+    let artalk
 
     const initArtalk = async () => {
       await loadExternalResource(artalkCss, 'css')
       if (cancelled) return
-      const artalk = window?.Artalk?.init({
+      artalk = window?.Artalk?.init({
         server: artalkServer,
         el: '#artalk',
         locale: artalkLocale,
@@ -50,6 +51,7 @@ const Artalk = ({ siteInfo }) => {
     return () => {
       cancelled = true
       observer?.disconnect()
+      artalk?.destroy?.()
     }
   }, [artalkCss, artalkLocale, artalkServer, site])
 

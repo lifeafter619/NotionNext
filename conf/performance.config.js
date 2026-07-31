@@ -10,10 +10,10 @@ const parseBoolean = (value, fallback) => {
 module.exports = {
   // 预加载配置
   PRELOAD_CRITICAL_RESOURCES:
-    process.env.NEXT_PUBLIC_PRELOAD_CRITICAL_RESOURCES || true,
+    parseBoolean(process.env.NEXT_PUBLIC_PRELOAD_CRITICAL_RESOURCES, true),
 
   // 懒加载配置
-  LAZY_LOAD_IMAGES: process.env.NEXT_PUBLIC_LAZY_LOAD_IMAGES || true,
+  LAZY_LOAD_IMAGES: parseBoolean(process.env.NEXT_PUBLIC_LAZY_LOAD_IMAGES, true),
   // 懒加载图片提前加载的视口边距：距离进入视口还有 600px 时就开始加载，
   // 减少用户滚动时看到占位图的概率
   LAZY_LOAD_THRESHOLD: process.env.NEXT_PUBLIC_LAZY_LOAD_THRESHOLD || '600px',
@@ -29,7 +29,7 @@ module.exports = {
     process.env.NEXT_PUBLIC_IMAGE_PREFETCH_CONCURRENCY || 4,
 
   // 代码分割配置
-  ENABLE_CODE_SPLITTING: process.env.NEXT_PUBLIC_ENABLE_CODE_SPLITTING || true,
+  ENABLE_CODE_SPLITTING: parseBoolean(process.env.NEXT_PUBLIC_ENABLE_CODE_SPLITTING, true),
   CHUNK_SIZE_LIMIT: process.env.NEXT_PUBLIC_CHUNK_SIZE_LIMIT || 244000, // 244KB
   THEME_LOCKED: parseBoolean(process.env.NEXT_PUBLIC_THEME_LOCKED, false), // 固定生产主题，关闭 ?theme= 动态切换
 
@@ -38,28 +38,28 @@ module.exports = {
   CDN_CACHE_TTL: process.env.NEXT_PUBLIC_CDN_CACHE_TTL || 604800, // 7天
 
   // 压缩配置
-  ENABLE_GZIP: process.env.NEXT_PUBLIC_ENABLE_GZIP || true,
-  ENABLE_BROTLI: process.env.NEXT_PUBLIC_ENABLE_BROTLI || true,
+  ENABLE_GZIP: parseBoolean(process.env.NEXT_PUBLIC_ENABLE_GZIP, true),
+  ENABLE_BROTLI: parseBoolean(process.env.NEXT_PUBLIC_ENABLE_BROTLI, true),
 
   // 字体优化
   FONT_DISPLAY: process.env.NEXT_PUBLIC_FONT_DISPLAY || 'swap',
-  PRELOAD_FONTS: process.env.NEXT_PUBLIC_PRELOAD_FONTS || true,
+  PRELOAD_FONTS: parseBoolean(process.env.NEXT_PUBLIC_PRELOAD_FONTS, true),
 
   // 第三方脚本优化
   DEFER_THIRD_PARTY_SCRIPTS:
-    process.env.NEXT_PUBLIC_DEFER_THIRD_PARTY_SCRIPTS || true,
+    parseBoolean(process.env.NEXT_PUBLIC_DEFER_THIRD_PARTY_SCRIPTS, true),
 
   // 图片优化
-  WEBP_SUPPORT: process.env.NEXT_PUBLIC_WEBP_SUPPORT || true,
-  AVIF_SUPPORT: process.env.NEXT_PUBLIC_AVIF_SUPPORT || true,
+  WEBP_SUPPORT: parseBoolean(process.env.NEXT_PUBLIC_WEBP_SUPPORT, true),
+  AVIF_SUPPORT: parseBoolean(process.env.NEXT_PUBLIC_AVIF_SUPPORT, true),
 
   // 预取配置
   // 大列表默认关闭视口自动预取；Next.js Pages Router 仍会在悬停时按意图预取。
   PREFETCH_LINKS: parseBoolean(process.env.NEXT_PUBLIC_PREFETCH_LINKS, false),
-  PREFETCH_IMAGES: process.env.NEXT_PUBLIC_PREFETCH_IMAGES || false,
+  PREFETCH_IMAGES: parseBoolean(process.env.NEXT_PUBLIC_PREFETCH_IMAGES, false),
 
   // 性能监控
-  ENABLE_WEB_VITALS: process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS || true,
+  ENABLE_WEB_VITALS: parseBoolean(process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS, true),
   PERFORMANCE_BUDGET: {
     FCP: 1800, // First Contentful Paint (ms)
     LCP: 2500, // Largest Contentful Paint (ms)

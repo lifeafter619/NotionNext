@@ -36,8 +36,10 @@ const TwikooCommentCounter = props => {
           includeReply: true
         })
         if (cancelled) return
-        commentsData.current = result
-        updateCommentCount(commentPosts, result)
+        // 旧版 twikoo 部分失败时可能 resolve 非数组，存入 ref 会让主题切换时崩溃
+        const counts = Array.isArray(result) ? result : []
+        commentsData.current = counts
+        updateCommentCount(commentPosts, counts)
       } catch (error) {
         console.error('twikoo 加载失败', error)
       }

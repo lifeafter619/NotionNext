@@ -34,7 +34,10 @@ const Utterances = ({ issueTerm, layout }) => {
     return () => {
       script.onload = null
       script.remove()
-      anchor.querySelector('iframe.utterances-frame')?.remove()
+      // querySelectorAll：StrictMode 双挂载/快速切换可能残留多个 iframe
+      anchor
+        .querySelectorAll('iframe.utterances-frame')
+        .forEach(frame => frame.remove())
     }
     // Theme-only changes are sent to the existing iframe below.
     // eslint-disable-next-line react-hooks/exhaustive-deps

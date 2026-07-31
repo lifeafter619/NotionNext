@@ -7,7 +7,7 @@ import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { getHeoCommentScrollTop, scrollToHeoComment } from './commentScroll'
+import { getHeoCommentScrollTop, scrollToHeoComment, cancelHeoCommentSettle } from './commentScroll'
 
 const CATALOG_SCROLL_OFFSET = 80
 
@@ -144,6 +144,7 @@ const Catalog = ({
   }, [actionSectionScrollSpy])
 
   // 处理跳转逻辑
+  const toastTimerRef = useRef(null)
   const handleJump = (title, targetScrollY) => {
     const currentScrollY = window.scrollY
     setToastState({
@@ -152,8 +153,12 @@ const Catalog = ({
       savedScrollY: currentScrollY
     })
 
-    // 3秒后自动关闭
-    setTimeout(() => {
+    // 3秒后自动关闭；连续跳转时先清掉上一个定时器，避免提前关闭新提示
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current)
+    }
+    toastTimerRef.current = setTimeout(() => {
+      toastTimerRef.current = null
       setToastState(prev => ({ ...prev, show: false }))
     }, 3000)
 
@@ -166,7 +171,17 @@ const Catalog = ({
     }
   }
 
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current)
+      }
+    }
+  }, [])
+
   const handleBack = () => {
+    // 评论跳转后的自动校正会和回滚抢滚动条，先取消
+    cancelHeoCommentSettle()
     window.scrollTo({ top: toastState.savedScrollY, behavior: 'smooth' })
     setToastState(prev => ({ ...prev, show: false }))
   }

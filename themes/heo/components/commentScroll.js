@@ -49,6 +49,12 @@ function stopSettle() {
   }
 }
 
+// “回到原位置”等程序化滚动不触发 wheel/touch/key 事件，需要显式取消校正，
+// 否则 settle 循环会把页面拽回评论区
+export function cancelHeoCommentSettle() {
+  stopSettle()
+}
+
 export function scrollToHeoComment() {
   const top = getHeoCommentScrollTop()
   if (top === null) {
@@ -63,7 +69,8 @@ export function scrollToHeoComment() {
   window.scrollTo({ top, behavior: 'instant' })
 
   // 用户一旦主动滚动，立即放弃校正，不与用户抢滚动条
-  const cancelEvents = ['wheel', 'touchstart', 'keydown']
+  // mousedown 覆盖桌面拖动滚动条（不触发 wheel/touch/key）
+  const cancelEvents = ['wheel', 'touchstart', 'keydown', 'mousedown']
   const onUserInteract = () => stopSettle()
   cancelEvents.forEach(eventName =>
     window.addEventListener(eventName, onUserInteract, { passive: true })

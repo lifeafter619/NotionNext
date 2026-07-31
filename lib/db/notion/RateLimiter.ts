@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 interface QueueItem<T> {
+  key: string
   requestFunc: () => Promise<T>
   resolve: (value: T) => void
   reject: (err: unknown) => void
@@ -78,10 +79,13 @@ export class RateLimiter {
 
     return new Promise<T>((resolve, reject) => {
       this.queue.push({
+        key,
         requestFunc: requestFunc as () => Promise<unknown>,
         resolve: resolve as (value: unknown) => void,
         reject
       })
+      // 入队即标记 inflight，让同 key 的并发 enqueue 走上面的轮询合并分支
+      this.inflight.add(key)
       if (!this.isProcessing) {
         // processQueue 是 async 但这里不 await，需要兜底捕获
         void this.processQueue()
@@ -118,9 +122,7 @@ export class RateLimiter {
       )
       if (waitTime > 0) await new Promise(res => setTimeout(res, waitTime))
 
-      const { requestFunc, resolve, reject } = this.queue.shift()!
-      const key = crypto.randomUUID()
-      this.inflight.add(key)
+      const { key, requestFunc, resolve, reject } = this.queue.shift()!
 
       try {
         const result: unknown = await requestFunc()
