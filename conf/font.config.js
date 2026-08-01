@@ -88,7 +88,7 @@ module.exports = {
   ],
   FONT_AWESOME:
     process.env.NEXT_PUBLIC_FONT_AWESOME_PATH ||
-    '/vendor/fontawesome/css/all.min.css' // font-awesome 字体图标地址; 可选 /css/all.min.css ， https://lf9-cdn-tos.bytecdntp.com/cdn/expire-1-M/font-awesome/6.0.0/css/all.min.css
+    '/vendor/fontawesome-subset/css/all.min.css' // font-awesome 字体图标地址。默认用 scripts/subset-fontawesome.js 生成的站点子集（36KB vs 全量 386KB）；新增图标后重跑该脚本。可回退 /vendor/fontawesome/css/all.min.css 全量版
 
   // END ************网站字体*****************
 }

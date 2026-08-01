@@ -19,8 +19,17 @@ import {
 } from '@/lib/utils/notionHashScroll'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
-import { useEffect, useCallback, useMemo } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useCallback,
+  useMemo
+} from 'react'
 import { NotionRenderer } from 'react-notion-x'
+
+// 正文图片元数据（首图 src + 各图真实宽高），由 NotionPage 计算、NotionImage 消费
+const NotionImageMetaContext = createContext(null)
 
 // 阅读进度保存组件
 const ReadingPositionSaver = dynamic(
@@ -239,32 +248,41 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
     return shouldEnableReadingPositionSaver(post, READING_PROGRESS_SAVE)
   }, [post, READING_PROGRESS_SAVE])
 
+  // 收集正文图片元数据：首图用 eager + fetchpriority=high 提升 LCP；
+  // 其余图片补真实宽高消除布局偏移
+  const imageMeta = useMemo(
+    () => collectContentImageMeta(cleanBlockMap, post?.id),
+    [cleanBlockMap, post?.id]
+  )
+
   return (
     <>
       <div
         id={contentId}
         className={`mx-auto overflow-hidden ${className || ''}`}
         onClick={handleImageClick}>
-        <NotionRenderer
-          recordMap={cleanBlockMap}
-          mapPageUrl={mapPageUrl}
-          mapImageUrl={mapImgUrl}
-          forceCustomImages
-          components={{
-            Button: NotionButton,
-            Code,
-            Collection,
-            Embed: NotionEmbed,
-            Equation,
-            File: NotionFile,
-            Image: NotionImage,
-            Link: NotionLink,
-            Modal,
-            Pdf,
-            Quote: NotionQuote,
-            Tweet
-          }}
-        />
+        <NotionImageMetaContext.Provider value={imageMeta}>
+          <NotionRenderer
+            recordMap={cleanBlockMap}
+            mapPageUrl={mapPageUrl}
+            mapImageUrl={mapImgUrl}
+            forceCustomImages
+            components={{
+              Button: NotionButton,
+              Code,
+              Collection,
+              Embed: NotionEmbed,
+              Equation,
+              File: NotionFile,
+              Image: NotionImage,
+              Link: NotionLink,
+              Modal,
+              Pdf,
+              Quote: NotionQuote,
+              Tweet
+            }}
+          />
+        </NotionImageMetaContext.Provider>
 
         <AdEmbed />
         {hasCode && <PrismMac />}
@@ -284,13 +302,23 @@ export function NotionImage({ width, height, style, sizes, ...rest }) {
   // - 不再对无尺寸图强制套 3:2 占位（原做法会把竖图/方图压扁、横图裁上下，
   //   造成“被拉伸到一个大小、显示不完整”）；
   // - 用 objectFit:contain 覆盖上游传来的 cover，保证图片不被裁剪；
-  // - 仅当上层确实传入真实 width/height 时才设置 aspect-ratio，给浏览器留占位。
-  const hasRealDimensions = Number(width) > 0 && Number(height) > 0
+  // - 上层没传宽高时，从 NotionPage 收集的 block format 尺寸兜底，
+  //   有真实宽高才设置 aspect-ratio，给浏览器留占位（消除 CLS）。
+  const imageMeta = useContext(NotionImageMetaContext)
+  const metaDims = imageMeta?.dims?.[rest.src]
+  const finalWidth = Number(width) > 0 ? width : metaDims?.width
+  const finalHeight = Number(height) > 0 ? height : metaDims?.height
+  const hasRealDimensions = Number(finalWidth) > 0 && Number(finalHeight) > 0
+  // 正文首图大概率是 LCP 元素：跳过原生 lazy 并提升抓取优先级。
+  // 不额外输出 preload link，避免与文章头图（PostHeader 已 preload）抢带宽
+  const isFirstImage = Boolean(imageMeta?.first && rest.src === imageMeta.first)
   const mergedStyle = {
     width: '100%',
     height: 'auto',
     objectFit: 'contain',
-    ...(hasRealDimensions ? { aspectRatio: `${width} / ${height}` } : {}),
+    ...(hasRealDimensions
+      ? { aspectRatio: `${finalWidth} / ${finalHeight}` }
+      : {}),
     ...style,
     objectFit: 'contain'
   }
@@ -302,13 +330,74 @@ export function NotionImage({ width, height, style, sizes, ...rest }) {
   return (
     <LazyImage
       {...rest}
-      width={width || undefined}
-      height={height || undefined}
+      width={finalWidth || undefined}
+      height={finalHeight || undefined}
+      loading={isFirstImage ? 'eager' : rest.loading}
+      fetchPriority={isFirstImage ? 'high' : undefined}
       style={mergedStyle}
       sizes={imageSizes}
       referrerPolicy='no-referrer'
     />
   )
+}
+
+/**
+ * 按渲染顺序遍历 blockMap，收集正文图片元数据：
+ * - first：第一张图片映射后的 src（与 react-notion-x 传给自定义 Image 的 src
+ *   同源同参，可直接字符串比对）
+ * - dims：src -> Notion block format 里的真实宽高
+ * 跳过内嵌子页面（渲染为链接、不展开），同步块跟随引用继续遍历。
+ */
+export function collectContentImageMeta(blockMap, rootId) {
+  const meta = { first: null, dims: {} }
+  const blocks = blockMap?.block
+  if (!blocks) return meta
+
+  const rootBlockId =
+    (rootId && blocks[rootId]?.value ? rootId : null) ||
+    Object.keys(blocks).find(id => getNotionValue(blocks[id])?.type === 'page')
+  if (!rootBlockId) return meta
+
+  const visited = new Set()
+  const walk = blockId => {
+    if (!blockId || visited.has(blockId)) return
+    visited.add(blockId)
+    const value = getNotionValue(blocks[blockId])
+    if (!value) return
+
+    // 子页面/链接页面在正文中只渲染为链接，不深入
+    if (value.type === 'page' && blockId !== rootBlockId) return
+
+    if (value.type === 'image') {
+      const source =
+        blockMap.signed_urls?.[blockId] || value.properties?.source?.[0]?.[0]
+      const src = source ? mapImgUrl(source, value) : null
+      if (src) {
+        const blockWidth = Number(value.format?.block_width)
+        const aspectRatio = Number(value.format?.block_aspect_ratio)
+        const blockHeight =
+          Number(value.format?.block_height) ||
+          (blockWidth > 0 && aspectRatio > 0
+            ? Math.round(blockWidth * aspectRatio)
+            : 0)
+        if (blockWidth > 0 && blockHeight > 0 && !meta.dims[src]) {
+          meta.dims[src] = { width: blockWidth, height: blockHeight }
+        }
+        if (!meta.first) meta.first = src
+      }
+      return
+    }
+
+    // 同步块引用：跟随指针继续遍历
+    const syncedRefId = value.format?.transclusion_reference_pointer?.id
+    if (syncedRefId) walk(syncedRefId)
+
+    if (Array.isArray(value.content)) {
+      value.content.forEach(walk)
+    }
+  }
+  walk(rootBlockId)
+  return meta
 }
 
 function shouldEnableReadingPositionSaver(post, enabled) {

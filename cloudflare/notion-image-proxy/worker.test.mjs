@@ -828,6 +828,47 @@ test('caches /f/ responses in the local colo cache', async () => {
   )
 })
 
+test('proxies Notion builtin icon svgs with immutable caching', async () => {
+  let fetchedUrl
+  globalThis.fetch = async url => {
+    fetchedUrl = url.toString()
+    return new Response('<svg/>', {
+      status: 200,
+      headers: { 'Content-Type': 'image/svg+xml' }
+    })
+  }
+
+  const response = await worker.fetch(
+    new Request('https://cdn.example.com/icons/downward_blue.svg')
+  )
+
+  assert.equal(fetchedUrl, 'https://www.notion.so/icons/downward_blue.svg')
+  assert.equal(response.status, 200)
+  assert.equal(response.headers.get('content-type'), 'image/svg+xml')
+  assert.match(response.headers.get('cache-control'), /immutable/)
+})
+
+test('rejects icon paths that are not simple svg filenames', async () => {
+  let fetched = false
+  globalThis.fetch = async () => {
+    fetched = true
+    return imageResponse()
+  }
+
+  for (const path of [
+    '/icons/../secret',
+    '/icons/evil.png',
+    '/icons/a/b.svg',
+    '/icons/'
+  ]) {
+    const response = await worker.fetch(
+      new Request(`https://cdn.example.com${path}`)
+    )
+    assert.equal(response.status, 404, path)
+  }
+  assert.equal(fetched, false)
+})
+
 function imageResponse() {
   return new Response(new Uint8Array([1, 2, 3]), {
     status: 200,

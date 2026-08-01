@@ -1,3 +1,4 @@
+import { mapImgUrl } from '@/lib/db/notion/mapImage'
 import { useRef, useState } from 'react'
 import { useNotionContext } from 'react-notion-x'
 
@@ -129,13 +130,11 @@ function getButtonIcon(automation) {
   const icon = automation?.properties?.icon
   if (typeof icon !== 'string' || !icon) return null
 
-  // Notion 内置图标是站内路径（如 /icons/downward_pink.svg）
-  if (icon.startsWith('/')) {
-    return { kind: 'image', url: `https://www.notion.so${icon}` }
-  }
-
-  if (/^https?:\/\//.test(icon)) {
-    return { kind: 'image', url: icon }
+  // 图标统一走 mapImgUrl：Notion 内置图标（如 /icons/downward_pink.svg 或
+  // https://www.notion.so/icons/…）会被换到自有代理域名吃边缘缓存，
+  // 其它外链原样保留。不压缩（needCompress=false，svg 无需宽度参数）
+  if (icon.startsWith('/') || /^https?:\/\//.test(icon)) {
+    return { kind: 'image', url: mapImgUrl(icon, automation, 'block', false) }
   }
 
   // 其余按 emoji 处理

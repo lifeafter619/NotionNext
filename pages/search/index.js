@@ -133,8 +133,21 @@ export async function getStaticProps({ locale }) {
   let validPosts = await pMap(
     publishedPosts,
     async post => {
-      // 再次过滤：确保有 id 和 slug
-      if (!post.id || !post.slug) {
+      // 再次过滤：确保有 id 和 slug；id 必须是字符串（曾出现过数字 id 的脏数据，
+      // 会让 notion-utils 的 id.split 抛错并中断整次构建）
+      if (!post.id || typeof post.id !== 'string' || !post.slug) {
+        if (post?.id !== undefined && typeof post.id !== 'string') {
+          console.warn(
+            '[search] 跳过脏数据（id 非字符串）:',
+            JSON.stringify({
+              id: post.id,
+              title: post.title,
+              slug: post.slug,
+              type: post.type,
+              status: post.status
+            })
+          )
+        }
         return null
       }
       const newPost = { ...post }
@@ -202,18 +215,19 @@ export async function getStaticProps({ locale }) {
       return {
         id: p.id,
         slug: p.slug,
-        href: p.href,
-        title: p.title,
+        // Next.js 禁止序列化 undefined；个别 Page 类型缺 href 等字段，会让整次构建失败
+        href: p.href ?? null,
+        title: p.title ?? null,
         summary: p.summary,
         tags: p.tags,
         category: p.category,
-        type: p.type,
-        status: p.status,
-        publishDate: p.publishDate,
-        lastEditedDate: p.lastEditedDate,
+        type: p.type ?? null,
+        status: p.status ?? null,
+        publishDate: p.publishDate ?? null,
+        lastEditedDate: p.lastEditedDate ?? null,
         pageCover: p.pageCover,
         pageCoverThumbnail: p.pageCoverThumbnail,
-        content: p.content,
+        content: p.content ?? null,
         ext: p.ext
       }
     })

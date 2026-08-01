@@ -205,13 +205,14 @@ export default function PostHeader({ post, siteInfo, isDarkMode, lock }) {
             )}
           </div>
 
-          {/* 文章Title */}
-          <div className='max-w-5xl mx-auto md:mx-0 font-bold text-2xl sm:text-3xl lg:text-5xl leading-tight md:leading-snug shadow-text-md flex justify-center md:justify-start text-center md:text-left text-white break-words'>
+          {/* 文章Title:h1 承担页面主标题(SEO + a11y page-has-heading-one),
+              Tailwind preflight 已重置 h1 默认样式,视觉与原 div 一致 */}
+          <h1 className='max-w-5xl mx-auto md:mx-0 font-bold text-2xl sm:text-3xl lg:text-5xl leading-tight md:leading-snug shadow-text-md flex justify-center md:justify-start text-center md:text-left text-white break-words'>
             {siteConfig('POST_TITLE_ICON') && (
               <NotionIcon icon={post.pageIcon} />
             )}
             {title}
-          </div>
+          </h1>
 
           {/* 标题底部补充信息 */}
           <section className='flex flex-wrap items-center gap-x-3 gap-y-2 dark:text-gray-200 text-opacity-70 shadow-text-md text-sm justify-center md:justify-start mt-4 text-white font-light leading-7'>
@@ -257,6 +258,7 @@ export default function PostHeader({ post, siteInfo, isDarkMode, lock }) {
                 max='24'
                 defaultValue='18'
                 step='1'
+                aria-label='调节正文字体大小'
                 className='w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700'
                 onChange={e => {
                   updateArticleFontSize(e.target.value)
@@ -271,19 +273,21 @@ export default function PostHeader({ post, siteInfo, isDarkMode, lock }) {
                 <input
                   type='text'
                   placeholder='在文中搜索...'
-                  className='w-36 sm:w-32 focus:w-44 max-w-[calc(100vw-3rem)] transition-all duration-300 px-3 py-2 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none text-gray-900 dark:text-gray-100'
+                  aria-label='在文中搜索'
+                  className='w-36 sm:w-32 focus:w-44 max-w-[calc(100vw-3rem)] transition-all duration-300 pl-3 pr-8 py-2 text-xs bg-gray-200 dark:bg-gray-700 rounded-lg outline-none text-gray-900 dark:text-gray-100'
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       searchInArticle(e.target.value)
                     }
                   }}
                 />
+                {/* 24x24 命中区满足 WCAG target-size；图标本身仍为 text-xs */}
                 <button
                   type='button'
                   aria-label='在文中搜索'
-                  className='fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-gray-400 text-xs cursor-pointer'
+                  className='fa-solid fa-magnifying-glass absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 text-xs cursor-pointer'
                   onClick={e => {
-                    const input = e.target.previousElementSibling
+                    const input = e.currentTarget.previousElementSibling
                     searchInArticle(input.value)
                   }}>
                   <span className='sr-only'>在文中搜索</span>

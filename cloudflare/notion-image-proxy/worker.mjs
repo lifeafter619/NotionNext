@@ -658,6 +658,7 @@ function getCachePolicy(url, routeKind) {
     routeKind === 'file' ||
     url.pathname.startsWith('/external/waline-emojis/') ||
     url.pathname.startsWith('/images/') ||
+    url.pathname.startsWith('/icons/') ||
     decodedPath.includes('/image/attachment:') ||
     /secure\.notion-static\.com|prod-files-secure|notionusercontent\.com|file\.notion\.(?:so|com)/i.test(
       decodedPath
@@ -824,6 +825,9 @@ function getRouteKind(pathname) {
     return 'r2-file'
   }
   if (pathname.startsWith('/images/')) return 'image'
+  // Notion 内置图标库（callout/按钮块图标），如 /icons/downward_blue.svg。
+  // 收紧到 .svg 文件名，避免变成 notion.so 任意路径的开放代理
+  if (/^\/icons\/[a-zA-Z0-9_-]+\.svg$/.test(pathname)) return 'image'
   if (
     pathname.startsWith('/image/') &&
     isAllowedWrappedNotionAsset(pathname, '/image/')

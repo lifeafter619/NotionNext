@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import BLOG from '@/blog.config'
 import NotionButton from '@/components/NotionButton'
 import { useNotionContext } from 'react-notion-x'
 
@@ -62,7 +63,10 @@ describe('NotionButton', () => {
     expect(button).toBeInTheDocument()
     const iconImg = button.querySelector('img.notion-button-icon')
     expect(iconImg).not.toBeNull()
-    expect(iconImg.src).toBe('https://www.notion.so/icons/downward_pink.svg')
+    // Notion 内置图标经 mapImgUrl 换到自有代理域名（NOTION_HOST）
+    expect(iconImg.src).toBe(
+      `${BLOG.NOTION_HOST}/icons/downward_pink.svg`
+    )
     expect(
       screen.queryByRole('button', { name: 'Button' })
     ).not.toBeInTheDocument()

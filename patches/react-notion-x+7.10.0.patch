@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-notion-x/build/index.js b/node_modules/react-notion-x/build/index.js
-index cbcb3b3..583343b 100644
+index cbcb3b3..3cadc12 100644
 --- a/node_modules/react-notion-x/build/index.js
 +++ b/node_modules/react-notion-x/build/index.js
 @@ -2089,6 +2089,8 @@ var defaultComponents = {
@@ -11,7 +11,61 @@ index cbcb3b3..583343b 100644
    Code: dummyComponent("Code"),
    Equation: dummyComponent("Equation"),
    Collection: dummyComponent("Collection"),
-@@ -3092,8 +3094,10 @@ function Block(props) {
+@@ -2881,7 +2883,7 @@ function Block(props) {
+           );
+         } else {
+           return /* @__PURE__ */ jsxs14(
+-            "main",
++            "article",
+             {
+               className: cs(
+                 "notion",
+@@ -3024,28 +3026,22 @@ function Block(props) {
+       const isTopLevel = block.type !== ((_j = getBlockValue2(recordMap.block[block.parent_id])) == null ? void 0 : _j.type);
+       const start = getListNumber(block.id, recordMap.block);
+       if (block.content) {
+-        const listItem = block.properties ? /* @__PURE__ */ jsx32("li", { children: /* @__PURE__ */ jsx32(Text, { value: block.properties.title, block }) }) : null;
+-        if (block.type === "bulleted_list") {
+-          output = /* @__PURE__ */ jsxs14(Fragment6, { children: [
+-            listItem,
+-            /* @__PURE__ */ jsx32("ul", { className: cs("notion-list", "notion-list-disc", blockId), children })
+-          ] });
+-        } else {
+-          const nestingLevel = getListNestingLevel(block.id, recordMap.block);
+-          output = /* @__PURE__ */ jsxs14(Fragment6, { children: [
+-            listItem,
+-            /* @__PURE__ */ jsx32(
+-              "ol",
+-              {
+-                className: cs("notion-list", "notion-list-numbered", blockId),
+-                style: {
+-                  listStyleType: getListStyle(nestingLevel + 1)
+-                },
+-                children
+-              }
+-            )
+-          ] });
+-        }
++        const childList = block.type === "bulleted_list" ? /* @__PURE__ */ jsx32("ul", { className: cs("notion-list", "notion-list-disc", blockId), children }) : /* @__PURE__ */ jsx32(
++          "ol",
++          {
++            className: cs("notion-list", "notion-list-numbered", blockId),
++            style: {
++              listStyleType: getListStyle(
++                getListNestingLevel(block.id, recordMap.block) + 1
++              )
++            },
++            children
++          }
++        );
++        output = block.properties ? /* @__PURE__ */ jsxs14("li", { children: [
++          /* @__PURE__ */ jsx32(Text, { value: block.properties.title, block }),
++          childList
++        ] }) : childList;
+       } else {
+         output = block.properties ? /* @__PURE__ */ jsx32("li", { children: /* @__PURE__ */ jsx32(Text, { value: block.properties.title, block }) }) : null;
+       }
+@@ -3092,8 +3088,10 @@ function Block(props) {
      }
      case "audio":
        return /* @__PURE__ */ jsx32(Audio, { block, className: blockId });
@@ -24,3 +78,19 @@ index cbcb3b3..583343b 100644
      case "equation":
        return /* @__PURE__ */ jsx32(
          components.Equation,
+diff --git a/node_modules/react-notion-x/build/third-party/collection.js b/node_modules/react-notion-x/build/third-party/collection.js
+index 97e229d..b6c2d6e 100644
+--- a/node_modules/react-notion-x/build/third-party/collection.js
++++ b/node_modules/react-notion-x/build/third-party/collection.js
+@@ -5877,7 +5877,10 @@ function Gallery({
+   const shouldLimit = typeof loadLimit === "number";
+   const showLoadMore = shouldLimit && !isExpanded && ((blockIds == null ? void 0 : blockIds.length) || 0) > loadLimit;
+   const visibleBlockIds = showLoadMore ? blockIds == null ? void 0 : blockIds.slice(0, loadLimit) : blockIds;
+-  return /* @__PURE__ */ jsxs17("div", { className: "notion-gallery", children: [
++  return /* @__PURE__ */ jsxs17("div", { className: cs(
++    "notion-gallery",
++    collectionView.format && collectionView.format.show_page_icon === false && "notion-gallery-hide-page-icons"
++  ), children: [
+     /* @__PURE__ */ jsx54("div", { className: "notion-gallery-view", children: /* @__PURE__ */ jsx54(
+       "div",
+       {

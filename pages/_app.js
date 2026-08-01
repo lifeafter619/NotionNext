@@ -24,10 +24,12 @@ import dynamic from 'next/dynamic'
 // import { ClerkProvider } from '@clerk/nextjs'
 // Clerk 及其中文语言包只在配置了 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY 时才会
 // 被用到；全部走动态加载，避免语言包被打进所有访客的首屏 bundle。
+// 语言包必须用 /zh-CN 子路径：裸 import('@clerk/localizations') 会把全部
+// 语言打成一个 ~670KB gzip 的 chunk，每个页面都要下载
 const ClerkProvider = dynamic(() =>
   Promise.all([
     import('@clerk/nextjs'),
-    import('@clerk/localizations')
+    import('@clerk/localizations/zh-CN')
   ]).then(([clerk, localizations]) => {
     const ClerkProviderWithLocale = ({ children }) => (
       <clerk.ClerkProvider localization={localizations.zhCN}>

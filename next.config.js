@@ -310,6 +310,7 @@ const nextConfig = {
         }
         const immutableStaticSources = [
           '/vendor/fontawesome/:path*',
+          '/vendor/fontawesome-subset/:path*',
           '/images/heo/:path*',
           '/images/themes-preview/:path*',
           '/fonts/:path*',

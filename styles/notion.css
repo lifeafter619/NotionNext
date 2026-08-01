@@ -18,7 +18,9 @@
   --select-color-1: rgba(45, 170, 219, 0.3);
   --select-color-2: #ffffff;
 
-  --notion-red: rgb(224, 62, 62);
+  /* Notion 官方红 rgb(224,62,62) 在浅色背景上对比度仅 4.1:1，
+     加深到 4.9:1 满足 WCAG AA（axe color-contrast）；暗色主题变量独立不受影响 */
+  --notion-red: rgb(208, 48, 48);
   --notion-pink: rgb(173, 26, 114);
   --notion-blue: rgb(11, 110, 153);
   --notion-purple: rgb(105, 64, 165);
@@ -1045,7 +1047,9 @@ code[class*='language-'] {
   caret-color: var(--fg-color);
   font-size: 14px;
   line-height: 1.4;
-  color: var(--fg-color-3);
+  /* 原 var(--fg-color-3)≈#878682 对白底仅 3.6:1，加深满足 WCAG AA；
+     暗色由下方 dark:text-gray-300 覆盖 */
+  color: #737270;
   @apply dark:text-gray-300;
 }
 

@@ -23,6 +23,7 @@
     "post-build": "next-sitemap --config next-sitemap.config.js",
     "export": "cross-env BUILD_MODE=true EXPORT=true next build --webpack && next-sitemap --config next-sitemap.config.js",
     "bundle-report": "cross-env ANALYZE=true next build --webpack",
+    "subset-fa": "node scripts/subset-fontawesome.js",
     "build-all-in-dev": "cross-env VERCEL_ENV=production next build --webpack",
     "version": "echo $npm_package_version",
     "bump-patch-version": "node scripts/bump-package-patch-version.js",
@@ -101,6 +102,7 @@
   "devDependencies": {
     "@ai-sdk/google": "^4.0.11",
     "@ai-sdk/vue": "^4.0.19",
+    "@fortawesome/fontawesome-free": "6.4.2",
     "@lhci/cli": "^0.15.1",
     "@netlify/plugin-nextjs": "^5.15.11",
     "@testing-library/jest-dom": "^6.9.1",
@@ -122,6 +124,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "fontawesome-subset": "^4.6.0",
     "highlight.js": "^11.11.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",

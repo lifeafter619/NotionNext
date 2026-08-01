@@ -985,6 +985,11 @@
   dependencies:
     tslib "^2.8.0"
 
+"@fortawesome/fontawesome-free@6.4.2":
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-6.4.2.tgz#36b6a9cb5ffbecdf89815c94d0c0ffa489ac5ecb"
+  integrity sha512-m5cPn3e2+FDCOgi1mz0RexTUvvQibBebOUlUlW0+YrMjDTPkiJ6VTKukA1GRsvRw+12KyJndNjj0O4AgTxm2Pg==
+
 "@headlessui/react@^1.7.19":
   version "1.7.19"
   resolved "https://registry.npmmirror.com/@headlessui/react/-/react-1.7.19.tgz"
@@ -4842,6 +4847,24 @@ follow-redirects@^1.16.0:
   resolved "https://registry.npmmirror.com/follow-redirects/-/follow-redirects-1.16.0.tgz"
   integrity sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==
 
+fontawesome-subset@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/fontawesome-subset/-/fontawesome-subset-4.6.0.tgz#446b463b7b462b9c316a043abe0967db212866ae"
+  integrity sha512-StfmCPwQUUt9wsIJDK404QDz/FkidvpNB5mZy2X36DRPorgXj9VslUwdlijxrHqPIXoA0baC0ucvdOCEQeIHEQ==
+  dependencies:
+    lodash ">=4.17.21"
+    mkdirp "^2.1.6 || ^3.0.1"
+    subset-font "^2.0.0"
+    yaml "^2.2.1"
+
+fontverter@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/fontverter/-/fontverter-2.0.0.tgz#6d9e05f963cd402d45dfcae27c83f551ba88c2c7"
+  integrity sha512-DFVX5hvXuhi1Jven1tbpebYTCT9XYnvx6/Z+HFUPb7ZRMCW+pj2clU9VMhoTPgWKPhAs7JJDSk3CW1jNUvKCZQ==
+  dependencies:
+    wawoff2 "^2.0.0"
+    woff2sfnt-sfnt2woff "^1.0.0"
+
 for-each@^0.3.3, for-each@^0.3.5:
   version "0.3.5"
   resolved "https://registry.npmjs.org/for-each/-/for-each-0.3.5.tgz"
@@ -5104,6 +5127,11 @@ gzip-size@^6.0.0:
   integrity sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==
   dependencies:
     duplexer "^0.1.2"
+
+harfbuzzjs@^0.10.3:
+  version "0.10.3"
+  resolved "https://registry.yarnpkg.com/harfbuzzjs/-/harfbuzzjs-0.10.3.tgz#fcd53cc888548d16607f19e4cab8d1b55dceb939"
+  integrity sha512-GJnLUrgLMadlMYrBGEXwYEimObbysy3prWT4HyPpFQERvgTU/OZ+ReUlEPOum6w4RBtFXzXiCCmECOr4sz3qwQ==
 
 has-bigints@^1.0.2:
   version "1.0.2"
@@ -6504,7 +6532,7 @@ lodash.merge@^4.6.2:
   resolved "https://registry.npmmirror.com/lodash.merge/-/lodash.merge-4.6.2.tgz"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
-lodash@^4.17.12, lodash@^4.18.1:
+lodash@>=4.17.21, lodash@^4.17.12, lodash@^4.17.21, lodash@^4.18.1:
   version "4.18.1"
   resolved "https://registry.npmmirror.com/lodash/-/lodash-4.18.1.tgz#ff2b66c1f6326d59513de2407bf881439812771c"
   integrity sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==
@@ -6812,6 +6840,11 @@ mkdirp@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/mkdirp/-/mkdirp-1.0.4.tgz"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
+
+"mkdirp@^2.1.6 || ^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-3.0.1.tgz#e44e4c5607fb279c168241713cc6e0fea9adcb50"
+  integrity sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==
 
 mrmime@^2.0.0:
   version "2.0.0"
@@ -7253,6 +7286,11 @@ package-json-from-dist@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmmirror.com/package-json-from-dist/-/package-json-from-dist-1.0.1.tgz"
   integrity sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==
+
+pako@^1.0.7:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
+  integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
 
 parent-module@^1.0.0:
   version "1.0.1"
@@ -8639,6 +8677,16 @@ styled-jsx@5.1.6:
   dependencies:
     client-only "0.0.1"
 
+subset-font@^2.0.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/subset-font/-/subset-font-2.5.0.tgz#1a55728089a19a38fff62afa759e95a402ad568e"
+  integrity sha512-Vsa8ngQ/ohhUj0an7on49y9jLZ2rK5U+T1FzPM4/ZQY0xUy5mLis6BfFtPGzecTjFgYXQlvY7FlsJF4t3R/6Ug==
+  dependencies:
+    fontverter "^2.0.0"
+    harfbuzzjs "^0.10.3"
+    lodash "^4.17.21"
+    p-limit "^3.1.0"
+
 sucrase@^3.35.0:
   version "3.35.0"
   resolved "https://registry.npmmirror.com/sucrase/-/sucrase-3.35.0.tgz"
@@ -9272,6 +9320,13 @@ warning@^4.0.0, warning@^4.0.3:
   dependencies:
     loose-envify "^1.0.0"
 
+wawoff2@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/wawoff2/-/wawoff2-2.0.1.tgz#474d8ccae33da3863abad0ee64b70b6db51acac2"
+  integrity sha512-r0CEmvpH63r4T15ebFqeOjGqU4+EgTx4I510NtK35EMciSdcTxCw3Byy3JnBonz7iyIFZ0AbVo0bbFpEVuhCYA==
+  dependencies:
+    argparse "^2.0.1"
+
 webdriver-bidi-protocol@0.4.1:
   version "0.4.1"
   resolved "https://registry.npmmirror.com/webdriver-bidi-protocol/-/webdriver-bidi-protocol-0.4.1.tgz"
@@ -9422,6 +9477,13 @@ which@^2.0.1:
   dependencies:
     isexe "^2.0.0"
 
+woff2sfnt-sfnt2woff@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/woff2sfnt-sfnt2woff/-/woff2sfnt-sfnt2woff-1.0.0.tgz#a03618afad537bfb43cdde7fc221aa376d90c47a"
+  integrity sha512-edK4COc1c1EpRfMqCZO1xJOvdUtM5dbVb9iz97rScvnTevqEB3GllnLWCmMVp1MfQBdF1DFg/11I0rSyAdS4qQ==
+  dependencies:
+    pako "^1.0.7"
+
 word-wrap@^1.2.5:
   version "1.2.5"
   resolved "https://registry.npmmirror.com/word-wrap/-/word-wrap-1.2.5.tgz"
@@ -9553,7 +9615,7 @@ yallist@^3.0.2:
   resolved "https://registry.npmjs.org/yallist/-/yallist-3.1.1.tgz"
   integrity sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==
 
-yaml@^2.2.2, yaml@^2.8.3:
+yaml@^2.2.1, yaml@^2.2.2, yaml@^2.8.3:
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.9.0.tgz#78274afd93598a1dfdd6130df6a566defcbf9aa4"
   integrity sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==

@@ -1,3 +1,4 @@
+import BLOG from '@/blog.config'
 import { mapImgUrl } from '@/lib/db/notion/mapImage'
 
 describe('mapImgUrl Notion proxy boundary', () => {
@@ -6,6 +7,16 @@ describe('mapImgUrl Notion proxy boundary', () => {
     type: 'bookmark',
     format: {}
   }
+
+  it('routes Notion builtin icons to the proxy host without extra params', () => {
+    expect(mapImgUrl('https://www.notion.so/icons/downward_blue.svg', block)).toBe(
+      `${BLOG.NOTION_HOST}/icons/downward_blue.svg`
+    )
+    // 相对路径同样落到代理域名
+    expect(mapImgUrl('/icons/downward_pink.svg', block, 'block', false)).toBe(
+      `${BLOG.NOTION_HOST}/icons/downward_pink.svg`
+    )
+  })
 
   it('keeps ordinary external and bookmark images on their original URL', () => {
     const source = 'https://images.example.com/cover.jpg?token=original'
