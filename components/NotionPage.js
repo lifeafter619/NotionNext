@@ -27,6 +27,7 @@ import {
   useMemo
 } from 'react'
 import { NotionRenderer } from 'react-notion-x'
+import OriginalityProof from './OriginalityProof'
 
 // 正文图片元数据（首图 src + 各图真实宽高），由 NotionPage 计算、NotionImage 消费
 const NotionImageMetaContext = createContext(null)
@@ -285,6 +286,7 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
         </NotionImageMetaContext.Provider>
 
         <AdEmbed />
+        <OriginalityProof proof={post?.originalityProof} />
         {hasCode && <PrismMac />}
       </div>
       <ReadingPositionSaver postId={post?.id} enabled={enableReadingPosition} />

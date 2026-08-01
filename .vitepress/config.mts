@@ -333,6 +333,10 @@ export default defineConfig({
               link: '/user-guide/config/article-copyright'
             },
             {
+              text: '原创存证',
+              link: '/user-guide/config/originality-proof'
+            },
+            {
               text: '多语言站点',
               link: '/user-guide/config/notion-next-mulity-languages'
             },
