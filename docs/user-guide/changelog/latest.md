@@ -38,6 +38,69 @@
 - `curl -I` 连续请求真实 Notion 图片：后续请求可观察到 `X-Notion-Image-Proxy: v6` 与 `X-Notion-Image-Proxy-Origin-Cache: HIT`。
 - `git diff --check`：通过，仅保留 Windows 工作区 LF/CRLF 提示。
 
+## 2026-08-05 自动部署流程事故记录
+
+::: warning 事件说明
+部分使用 GitHub fork + Vercel 自动部署的站点，曾收到 `Upstream Sync` 或 `chore(release): bump package.json ... [skip-version]` 构建失败邮件；个别站点可能因此出现生产部署异常。
+:::
+
+### 影响范围
+
+- 仅影响仍保留旧版自动同步或自动版本 bump 工作流的 fork 站点。
+- 手动同步、未连接 Vercel Git 部署，或使用其他部署方式的站点不在此次自动触发范围内。
+- 本次事件不涉及 Notion 数据丢失；问题发生在代码同步和部署触发链路。
+
+### 原因分析
+
+1. 旧版 `Upstream Sync` 使用定时任务，将上游 `main` 的提交自动合并到站长的 fork。
+2. 旧版版本 bump 工作流在 `main` 更新后自动修改 `package.json`，即使只改变版本号，也会产生新的 Git 提交。
+3. Vercel 对 fork 的 `main` 提交自动创建部署，因此版本号提交也会触发完整生产构建。
+4. 提交信息中的 `[skip-version]` 只能阻止 GitHub Actions 自身重复 bump，不能让 Vercel 跳过构建。旧站点的构建失败后，可能出现错误部署记录或生产指向异常。
+
+### 修复措施
+
+- 关闭 `Upstream Sync` 默认定时任务，改为站长按需手动同步。
+- 关闭版本 bump 工作流的 `push` 触发，仅保留手动执行。
+- 在 `vercel.json` 中加入 `ignoreCommand`，让 Vercel 自动跳过带 `[skip-version]` 的版本号提交。
+- 在升级教程中补充旧自动流程的恢复步骤和按需开启方法。
+
+相关修复已合并到主线：
+
+- [`0ca93d86`](https://github.com/notionnext-org/NotionNext/commit/0ca93d86946a97f9f1bc292e0468cda278e0a59b)
+
+### 站长如何处理
+
+如果站点已经出现失败部署：
+
+1. 在 Vercel 的 `Deployments` 中找到最近一条绿色 `Ready` 的 `Production` 部署，使用 `Promote to Production` 或 `Redeploy` 恢复线上版本。
+2. 将 fork 同步到最新的 NotionNext `main`，使新的工作流和 `vercel.json` 进入自己的仓库。
+3. 后续无需重新开启旧的定时任务；需要更新时使用 GitHub 的 `Sync fork` 或手动合并上游代码。
+
+上游仓库无法直接修改每个站长账号下的 Vercel 项目，也无法替旧 fork 远程执行同步。因此，历史旧 fork 至少需要完成一次同步，才能获得本次保护规则。
+
+::: tip 当前状态
+主线修复已发布，主线 CI 工作流、CodeQL、文档部署和关联 Vercel Production 部署均已验证通过。后续版本发布不再通过自动版本号提交触发所有 fork 的生产重建。
+:::
+
+### 2026-08-05 Notion API 403 后续修复
+
+部分站点在同步最新代码后，Vercel 构建仍可能出现：
+
+```text
+[POST] https://www.notion.so/api/v3/loadPageChunk: 403 Forbidden
+```
+
+经与 [react-notion-x issue #710](https://github.com/NotionX/react-notion-x/issues/710) 对照确认，原因是 Notion 前置 Cloudflare 开始拦截 Node.js 请求中缺少 `User-Agent` 的非官方 API 请求。该问题不是站长的页面权限或 `NOTION_PAGE_ID` 配置突然失效。
+
+修复内容：
+
+- 在 `notion-client` 的全局 `ofetchOptions` 中补充 `NotionNext` 的 `User-Agent`。
+- 保留 Notion 请求失败时的空数据兜底，避免 403 进一步导致页面静态序列化失败。
+
+验证结果：同一接口请求不带 UA 返回 `403`，带 `NotionNext` UA 返回 `400`（空请求参数错误），证明 Cloudflare 拦截已解除。
+
+站长处理方式：将 fork 同步到最新 `main` 后重新部署即可；无需修改 Node 版本，也无需反复修改页面权限。若仍出现 403，请先确认部署使用的是包含该修复的提交，并检查是否配置了自定义 `API_BASE_URL` 代理。
+
 ## 4.10.7 发布要点
 
 本版本将主题颜色定制从 Tailwind 类名覆盖，过渡到主题语义色变量与调色板方案。早期使用 TailwindCSS 是为了快速开发；现在主题框架已经成熟，后续更适合通过 `*_COLOR_*` 配置项表达主色、背景、文字、边框等语义色，便于用户在 Notion Config 中快速调色，也避免 `.bg-indigo-600` 这类工具类被覆盖后产生语义混淆。
