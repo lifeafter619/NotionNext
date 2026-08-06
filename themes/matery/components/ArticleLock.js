@@ -29,9 +29,7 @@ export const ArticleLock = props => {
   }, [])
 
   return (
-    <div
-      id='article-wrapper'
-      className='w-full flex justify-center items-center h-96 '>
+    <div id='article-wrapper' className='w-full flex justify-center items-center h-96 '>
       <div className='text-center space-y-3 dark:text-gray-300 text-black'>
         <div className='font-bold'>{locale.COMMON.ARTICLE_LOCK_TIPS}</div>
         <div className='flex mx-4'>
@@ -43,17 +41,17 @@ export const ArticleLock = props => {
                 submitPassword()
               }
             }}
-            ref={passwordInputRef} // 绑定ref到passwordInputRef变量
-            className='outline-none w-full text-sm pl-5 rounded-l transition focus:shadow-lg font-light leading-10 bg-gray-100 dark:bg-gray-500'></input>
+            ref={passwordInputRef}
+            className='outline-none flex-1 min-w-0 text-sm pl-5 rounded-l transition focus:shadow-lg font-light leading-10 bg-gray-100 dark:bg-gray-500'
+          />
           <div
             onClick={submitPassword}
-            className='px-3 whitespace-nowrap cursor-pointer items-center justify-center py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-r duration-300'>
-            <i className={'duration-200 cursor-pointer fas fa-key'}>
-              &nbsp;{locale.COMMON.SUBMIT}
-            </i>
+            className='flex items-center justify-center whitespace-nowrap cursor-pointer px-4 leading-10 bg-indigo-500 hover:bg-indigo-400 text-white rounded-r duration-300 select-none'>
+            <i className='duration-200 cursor-pointer fas fa-key' />
+            <span className='ml-1'>{locale.COMMON.SUBMIT}</span>
           </div>
         </div>
-        <div id='tips'></div>
+        <div id='tips' />
       </div>
     </div>
   )

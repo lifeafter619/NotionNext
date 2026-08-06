@@ -2,7 +2,7 @@
  * @author https://github.com/txs
  * 当配置文件 CODE_MAC_BAR 开启时，此样式会被动态引入，将开启代码组件左上角的mac图标
  * 注意：代码块的 padding/行高/字体等对齐关键度量统一由 styles/prism-code.css 管理，
- * 此文件只负责 mac 圆点与 mermaid 图表的装饰样式，避免与打包样式互相覆盖。
+ * 此文件只负责 mac 圆点、mermaid 图表与代码侧栏预览的装饰样式，避免与打包样式互相覆盖。
  **/
 .code-toolbar {
   position: relative;
@@ -116,5 +116,214 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   代码折叠头扩展行与"侧栏查看"按钮（折叠面板本体样式见 styles/prism-code.css）
+   -------------------------------------------------------------------------- */
+.collapse-header-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 36px;
+}
+
+/* 折叠头与侧栏按钮并排时，取消 prism-code.css 中 width:100% 的独占布局 */
+.collapse-header-row .collapse-header {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+.collapse-side-panel-button {
+  flex: 0 0 auto;
+  height: 26px;
+  margin-right: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(60, 60, 67, 0.16);
+  border-radius: 8px;
+  background: rgba(60, 60, 67, 0.06);
+  color: rgba(60, 60, 67, 0.72);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.collapse-side-panel-button:hover {
+  background: rgba(60, 60, 67, 0.12);
+  color: rgba(60, 60, 67, 0.92);
+}
+
+html.dark .collapse-side-panel-button {
+  border-color: rgba(235, 235, 245, 0.16);
+  background: rgba(235, 235, 245, 0.08);
+  color: rgba(235, 235, 245, 0.74);
+}
+
+html.dark .collapse-side-panel-button:hover {
+  background: rgba(235, 235, 245, 0.14);
+  color: rgba(235, 235, 245, 0.94);
+}
+
+@media (max-width: 1023px) {
+  .collapse-side-panel-button {
+    display: none;
+  }
+}
+
+.collapse-side-panel-button:focus-visible,
+.code-side-panel-copy:focus-visible,
+.code-side-panel-close:focus-visible {
+  outline: 2px solid rgba(66, 153, 225, 0.9);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   桌面端代码侧栏预览
+   -------------------------------------------------------------------------- */
+.code-side-panel-root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.code-side-panel-backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(12, 14, 18, 0);
+  cursor: default;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 0.22s ease, background-color 0.22s ease;
+}
+
+.code-side-panel-root.is-open .code-side-panel-backdrop {
+  background: rgba(12, 14, 18, 0.36);
+  opacity: 1;
+}
+
+.code-side-panel-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: clamp(480px, 44vw, 760px);
+  max-width: calc(100vw - 64px);
+  height: 100dvh;
+  max-height: 100vh;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  background: #20232b;
+  box-shadow: -20px 0 48px rgba(0, 0, 0, 0.32);
+  color-scheme: dark;
+  opacity: 0;
+  pointer-events: auto;
+  transform: translateX(24px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.code-side-panel-root.is-open .code-side-panel-drawer {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.code-side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-side-panel-heading {
+  min-width: 0;
+}
+
+.code-side-panel-title {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-side-panel-meta {
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
+}
+
+.code-side-panel-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.code-side-panel-copy,
+.code-side-panel-close {
+  height: 30px;
+  min-width: 48px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.code-side-panel-copy:hover,
+.code-side-panel-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.code-side-panel-code {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 18px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.9em !important;
+  line-height: 1.65 !important;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.code-side-panel-code code {
+  display: block;
+  min-width: max-content;
+  color: inherit;
+  font-family: inherit;
+  white-space: pre;
+}
+
+html.dark .code-side-panel-drawer {
+  border-left-color: rgba(255, 255, 255, 0.14);
+  background: #17191f;
+  box-shadow: -18px 0 44px rgba(0, 0, 0, 0.42);
+}
+
+@media (max-width: 1023px) {
+  .code-side-panel-root {
+    display: none;
   }
 }
