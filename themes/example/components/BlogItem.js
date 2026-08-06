@@ -41,7 +41,7 @@ const BlogItem = ({ post }) => {
             <>
               <span className='font-bold mx-1'> | </span>
               <SmartLink
-                href={`/category/${post.category}`}
+                href={`/category/${encodeURIComponent(post.category)}`}
                 className='text-gray-700 dark:text-gray-300 hover:underline'>
                 {post.category}
               </SmartLink>

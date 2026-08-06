@@ -1,4 +1,4 @@
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import dynamic from 'next/dynamic'
 
 const ShareButtons = dynamic(() => import('@/components/ShareButtons'), {
@@ -12,7 +12,7 @@ const ShareButtons = dynamic(() => import('@/components/ShareButtons'), {
  */
 const ShareBar = ({ post, className }) => {
   if (
-    !JSON.parse(siteConfig('POST_SHARE_BAR_ENABLE')) ||
+    !siteConfigBoolean('POST_SHARE_BAR_ENABLE') ||
     !post ||
     post?.type !== 'Post'
   ) {

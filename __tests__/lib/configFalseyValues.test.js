@@ -12,7 +12,7 @@ jest.mock('@/blog.config', () => ({
   NEXT_REVALIDATE_SECOND: 'blog-special'
 }))
 
-const { siteConfig } = require('@/lib/config')
+const { siteConfig, siteConfigBoolean } = require('@/lib/config')
 
 describe('siteConfig explicit falsey values', () => {
   beforeEach(() => {
@@ -128,5 +128,34 @@ describe('siteConfig explicit falsey values', () => {
     })
 
     expect(siteConfig('THEME_SWITCH', true)).toBe(false)
+  })
+
+  test.each([
+    ['true', true],
+    ['1', true],
+    ['yes', true],
+    ['on', true],
+    ['false', false],
+    ['0', false],
+    ['no', false],
+    ['off', false]
+  ])('parses boolean configuration value %s', (value, expected) => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { BOOLEAN_VALUE: value },
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+
+    expect(siteConfigBoolean('BOOLEAN_VALUE')).toBe(expected)
+  })
+
+  test('uses the boolean default for an unrecognized value', () => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { BOOLEAN_VALUE: 'sometimes' },
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+
+    expect(siteConfigBoolean('BOOLEAN_VALUE', true)).toBe(true)
   })
 })

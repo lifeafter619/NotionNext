@@ -4,7 +4,7 @@ import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
 import ShareBar from '@/components/ShareBar'
 import Tabs from '@/components/Tabs'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -78,7 +78,7 @@ const LayoutBase = props => {
         <main
           id='wrapper'
           className={
-            (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+            (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
               ? 'flex-row-reverse'
               : '') + 'relative flex justify-between w-full h-full mx-auto'
           }>
@@ -189,7 +189,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -201,8 +201,11 @@ const LayoutSlug = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
 
   return (
     <div>
@@ -378,7 +381,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <div

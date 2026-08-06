@@ -23,7 +23,7 @@ export const ArticleInfo = props => {
         {post?.type !== 'Page' && (
           <>
             <SmartLink
-              href={`/category/${post?.category}`}
+              href={`/category/${encodeURIComponent(post?.category)}`}
               passHref
               className='cursor-pointer text-md mr-2 text-green-500'>
               {post?.category}

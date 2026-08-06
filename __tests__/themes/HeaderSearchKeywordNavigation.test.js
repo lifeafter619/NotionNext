@@ -119,10 +119,11 @@ describe('theme header search keyword navigation', () => {
     openSearch.mockClear()
   })
 
-  const expectEncodedSearchNavigation = async () => {
+  const expectStaticSearchNavigation = async () => {
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith({
-        pathname: '/search/hello%20%E4%B8%96%E7%95%8C'
+        pathname: '/search',
+        query: { s: '中文 空格/?#' }
       })
     })
   }
@@ -134,10 +135,10 @@ describe('theme header search keyword navigation', () => {
 
     fireEvent.click(container.querySelector('.fa-magnifying-glass'))
     const input = screen.getByLabelText('Submit search')
-    fireEvent.change(input, { target: { value: 'hello 世界' } })
+    fireEvent.change(input, { target: { value: '中文 空格/?#' } })
     fireEvent.keyUp(input, { key: 'Enter', keyCode: 13 })
 
-    await expectEncodedSearchNavigation()
+    await expectStaticSearchNavigation()
   })
 
   it('encodes keywords submitted from the Magzine theme header search', async () => {
@@ -147,19 +148,19 @@ describe('theme header search keyword navigation', () => {
 
     fireEvent.click(container.querySelector('.fa-magnifying-glass'))
     const input = screen.getByLabelText('Submit search')
-    fireEvent.change(input, { target: { value: 'hello 世界' } })
+    fireEvent.change(input, { target: { value: '中文 空格/?#' } })
     fireEvent.keyUp(input, { key: 'Enter', keyCode: 13 })
 
-    await expectEncodedSearchNavigation()
+    await expectStaticSearchNavigation()
   })
 
   it('encodes keywords submitted from the Movie theme header search', async () => {
     render(<MovieHeader customNav={[]} customMenu={[]} />)
 
     const input = screen.getByLabelText('Submit search')
-    fireEvent.change(input, { target: { value: 'hello 世界' } })
+    fireEvent.change(input, { target: { value: '中文 空格/?#' } })
     fireEvent.keyUp(input, { key: 'Enter', keyCode: 13 })
 
-    await expectEncodedSearchNavigation()
+    await expectStaticSearchNavigation()
   })
 })

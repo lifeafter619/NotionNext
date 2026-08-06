@@ -135,7 +135,7 @@ export default function Modal(props) {
                     {modalContent?.category && (
                       <div className='flex'>
                         <SmartLink
-                          href={`/category/${modalContent?.category}`}
+                          href={`/category/${encodeURIComponent(modalContent?.category)}`}
                           className='text-xs rounded-lg mt-3 px-2 py-1 bg-black bg-opacity-20 text-white hover:bg-blue-700 hover:text-white duration-200'>
                           {modalContent?.category}
                         </SmartLink>

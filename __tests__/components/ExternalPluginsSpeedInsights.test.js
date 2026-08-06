@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import ExternalPlugins from '@/components/ExternalPlugins'
 
+let mockIsBrowser = false
+
 jest.mock('@/lib/config', () => ({
   siteConfig: jest.fn((key, fallback) => {
     const config = {
@@ -25,7 +27,9 @@ jest.mock('@/lib/global', () => ({
 }))
 
 jest.mock('@/lib/utils', () => ({
-  isBrowser: false,
+  get isBrowser() {
+    return mockIsBrowser
+  },
   loadExternalResource: jest.fn()
 }))
 
@@ -55,9 +59,23 @@ jest.mock('next/dynamic', () => loader => {
 })
 
 describe('ExternalPlugins Vercel Speed Insights', () => {
+  beforeEach(() => {
+    mockIsBrowser = false
+  })
+
   it('renders SpeedInsights when the Speed Insights switch is enabled', () => {
     render(<ExternalPlugins NOTION_CONFIG={{}} />)
 
     expect(screen.getByTestId('vercel-speed-insights')).toBeInTheDocument()
+  })
+
+  it('does not request Vercel scripts on localhost', () => {
+    mockIsBrowser = true
+
+    render(<ExternalPlugins NOTION_CONFIG={{}} />)
+
+    expect(
+      screen.queryByTestId('vercel-speed-insights')
+    ).not.toBeInTheDocument()
   })
 })

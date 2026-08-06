@@ -88,19 +88,20 @@ describe.each([
     mockRouterPush.mockResolvedValue(true)
   })
 
-  it('uses client-side navigation with an encoded search keyword', async () => {
+  it('uses the static search route with a query keyword', async () => {
     const { container } = render(
       <SearchInput {...props} cRef={React.createRef()} />
     )
     const input = container.querySelector('input')
 
-    fireEvent.change(input, { target: { value: 'hello 世界' } })
+    fireEvent.change(input, { target: { value: '中文 空格/?#' } })
     const enterEvent = _theme === 'heo' ? fireEvent.keyDown : fireEvent.keyUp
     enterEvent(input, { key: 'Enter', keyCode: 13 })
 
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith({
-        pathname: '/search/hello%20%E4%B8%96%E7%95%8C'
+        pathname: '/search',
+        query: { s: '中文 空格/?#' }
       })
     })
   })

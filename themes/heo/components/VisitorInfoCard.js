@@ -6,6 +6,7 @@ import CONFIG from '../config'
 
 const MINUTE_MS = 60000
 const LOCATION_REQUEST_TIMEOUT_MS = 5000
+const LOCATION_STORAGE_KEY = 'heo_visitor_location'
 
 function getGreeting(hours) {
   if (hours >= 5 && hours < 12) {
@@ -138,66 +139,66 @@ export default function VisitorInfoCard() {
       return
     }
 
-    let isActive = true
-    const activeControllers = new Set()
-    setLocation('加载中...')
-    const fetchJson = async url => {
-      const controller = new AbortController()
-      activeControllers.add(controller)
-      const timeoutId = setTimeout(
-        () => controller.abort(),
-        LOCATION_REQUEST_TIMEOUT_MS
-      )
-
-      try {
-        const response = await fetch(url, { signal: controller.signal })
-        if (response.ok === false) {
-          throw new Error(`Location request failed: ${response.status}`)
-        }
-        return await response.json()
-      } finally {
-        clearTimeout(timeoutId)
-        activeControllers.delete(controller)
+    try {
+      const cachedLocation = sessionStorage.getItem(LOCATION_STORAGE_KEY)
+      if (cachedLocation) {
+        setLocation(cachedLocation)
+        return
       }
+    } catch {
+      // Storage can be unavailable in privacy modes; the lookup still works.
     }
+
+    let isActive = true
+    let idleId = null
+    let fallbackTimer = null
+    const controller = new AbortController()
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      LOCATION_REQUEST_TIMEOUT_MS
+    )
+    setLocation('加载中...')
 
     const fetchLocation = async () => {
       try {
-        // 使用 vore.top API获取IP和地理位置
-        const data = await fetchJson('https://api.vore.top/api/IPdata')
+        const response = await fetch('/api/visitor-location', {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' }
+        })
+        if (!response.ok) throw new Error('Location request failed')
+        const data = await response.json()
         if (!isActive) return
-
-        if (data.code === 200 && data.ipdata) {
-          // 从返回数据中提取城市和ISP信息
-          const city = data.ipdata.info2 || data.ipdata.info1 || '未知地区'
-          // 仅显示城市，不显示运营商
-          setLocation(city)
-        } else {
-          throw new Error('Primary location service returned no location')
+        const city = data?.city || '未知地区'
+        setLocation(city)
+        try {
+          sessionStorage.setItem(LOCATION_STORAGE_KEY, city)
+        } catch {
+          // Ignore storage failures.
         }
       } catch {
-        if (!isActive) return
-
-        // 尝试备用方案
-        try {
-          const data = await fetchJson('https://ipapi.co/json/')
-          if (!isActive) return
-          const city =
-            data.city || data.region || data.country_name || '未知地区'
-          setLocation(city)
-        } catch {
-          if (isActive) {
-            setLocation('未知地区')
-          }
-        }
+        if (isActive) setLocation('未知地区')
+      } finally {
+        clearTimeout(timeoutId)
       }
     }
+    const scheduleFetchLocation = () => {
+      void fetchLocation()
+    }
 
-    fetchLocation()
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(scheduleFetchLocation, {
+        timeout: 1500
+      })
+    } else {
+      fallbackTimer = setTimeout(scheduleFetchLocation, 0)
+    }
+
     return () => {
       isActive = false
-      activeControllers.forEach(controller => controller.abort())
-      activeControllers.clear()
+      controller.abort()
+      clearTimeout(timeoutId)
+      clearTimeout(fallbackTimer)
+      if (idleId !== null) window.cancelIdleCallback?.(idleId)
     }
   }, [locationEnabled])
 

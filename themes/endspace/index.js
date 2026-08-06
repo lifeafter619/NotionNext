@@ -399,7 +399,7 @@ const LayoutArchive = props => {
             {categoryOptions?.map(category => (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <a className='ef-btn archive-filter-btn group'>
@@ -480,7 +480,7 @@ const LayoutCategoryIndex = props => {
           {categoryOptions?.map(category => (
             <SmartLink
               key={category.name}
-              href={`/category/${category.name}`}
+              href={`/category/${encodeURIComponent(category.name)}`}
               passHref
               legacyBehavior>
               <a className='ef-btn group'>

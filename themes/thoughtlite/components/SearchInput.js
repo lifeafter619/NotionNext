@@ -21,9 +21,7 @@ const SearchInput = ({ currentTag, keyword, cRef }) => {
   const handleSearch = () => {
     const key = searchInputRef.current.value?.trim()
     if (key && key !== '') {
-      router
-        .push({ pathname: '/search/' + encodeURIComponent(key) })
-        .then(() => {})
+      router.push({ pathname: '/search', query: { s: key } }).then(() => {})
     } else {
       router.push({ pathname: '/' }).then(() => {})
     }

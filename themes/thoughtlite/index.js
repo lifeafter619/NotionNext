@@ -202,7 +202,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -214,8 +214,11 @@ const LayoutSlug = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return (
     <>
       {lock ? (
@@ -375,7 +378,7 @@ const LayoutCategoryIndex = props => {
         {categoryOptions?.map(category => (
           <SmartLink
             key={category.name}
-            href={`/category/${category.name}`}
+            href={`/category/${encodeURIComponent(category.name)}`}
             className='tl-chip'>
             <i className='fas fa-folder opacity-70' aria-hidden='true' />
             {category.name}

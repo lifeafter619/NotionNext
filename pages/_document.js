@@ -112,9 +112,7 @@ class MyDocument extends Document {
             </>
           )}
 
-          {/* Font Awesome 推迟到 load 后激活：其 font-display:block 决定了
-              字体到达前图标本来就是空白，提前激活只会让 ~280KB 字体
-              抢占首屏图片与 CSS 的带宽 */}
+          {/* Font Awesome 使用本地子集，并在自身 CSS 到达后立即启用。 */}
           {BLOG.FONT_AWESOME && (
             <>
               <style
@@ -132,7 +130,7 @@ class MyDocument extends Document {
               <script
                 dangerouslySetInnerHTML={{
                   __html:
-                    "(function(){var a=function(){var l=document.getElementById('font-awesome-css');if(l)l.rel='stylesheet'};var i=function(){if(window.requestIdleCallback){requestIdleCallback(a,{timeout:2000})}else{setTimeout(a,1)}};if(document.readyState==='complete'){i()}else{window.addEventListener('load',i)}})()"
+                    "(function(){var l=document.getElementById('font-awesome-css');if(!l)return;var a=function(){l.rel='stylesheet'};l.addEventListener('load',a,{once:true});setTimeout(a,500)})()"
                 }}
               />
               <noscript>

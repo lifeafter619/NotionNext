@@ -233,7 +233,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -245,8 +245,11 @@ const LayoutSlug = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return (
     <>
       <div
@@ -364,7 +367,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={e.name}
-                href={`/category/${e.name}`}
+                href={`/category/${encodeURIComponent(e.name)}`}
                 passHref
                 legacyBehavior>
                 <div className='duration-300 text-md whitespace-nowrap dark:hover:text-white px-5 cursor-pointer py-2 hover:text-indigo-400'>

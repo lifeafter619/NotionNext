@@ -83,7 +83,7 @@ const BlogCard = ({ showAnimate, post, showSummary }) => {
           <div className='mt-auto justify-between flex'>
             {post.category && (
               <SmartLink
-                href={`/category/${post.category}`}
+                href={`/category/${encodeURIComponent(post.category)}`}
                 passHref
                 className='cursor-pointer dark:text-gray-300 font-light text-sm hover:underline hover:text-indigo-700 dark:hover:text-indigo-400 transform'>
                 <i className='mr-1 far fa-folder' />

@@ -12,9 +12,9 @@ export const ArticleLock = props => {
   const { validPassword } = props
   const { locale } = useGlobal()
 
-  const submitPassword = () => {
+  const submitPassword = async () => {
     const p = document.getElementById('password')
-    if (!validPassword(p?.value)) {
+    if (!(await validPassword(p?.value))) {
       const tips = document.getElementById('tips')
       if (tips) {
         tips.innerHTML = ''
@@ -40,13 +40,13 @@ export const ArticleLock = props => {
             type='password'
             onKeyDown={e => {
               if (e.key === 'Enter') {
-                submitPassword()
+                void submitPassword()
               }
             }}
             ref={passwordInputRef} // 绑定ref到passwordInputRef变量
             className='outline-none w-full text-sm pl-5 rounded-l transition focus:shadow-lg font-light leading-10 text-black dark:bg-gray-500 bg-gray-50'></input>
           <div
-            onClick={submitPassword}
+            onClick={() => void submitPassword()}
             className='px-3 whitespace-nowrap cursor-pointer items-center justify-center py-2 rounded-r duration-300 bg-gray-300'>
             <i
               className={

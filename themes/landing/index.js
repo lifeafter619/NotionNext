@@ -8,7 +8,7 @@
  */
 import Loading from '@/components/Loading'
 import NotionPage from '@/components/NotionPage'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { isBrowser } from '@/lib/utils'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
@@ -93,7 +93,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -105,11 +105,14 @@ const LayoutSlug = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
 
   if (
-    JSON.parse(siteConfig('LANDING_POST_REDIRECT_ENABLE', null, CONFIG)) &&
+    siteConfigBoolean('LANDING_POST_REDIRECT_ENABLE', false, CONFIG) &&
     isBrowser &&
     router.route === '/[prefix]/[slug]'
   ) {

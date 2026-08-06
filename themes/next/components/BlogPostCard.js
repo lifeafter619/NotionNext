@@ -50,7 +50,7 @@ const BlogPostCard = ({ post, index, showSummary }) => {
               {post.category && (
                 <>
                   <SmartLink
-                    href={`/category/${post.category}`}
+                    href={`/category/${encodeURIComponent(post.category)}`}
                     passHref
                     className='hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer font-light text-sm transform'>
                     <i className='mr-1 fas fa-folder' />

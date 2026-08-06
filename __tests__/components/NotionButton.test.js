@@ -64,9 +64,7 @@ describe('NotionButton', () => {
     const iconImg = button.querySelector('img.notion-button-icon')
     expect(iconImg).not.toBeNull()
     // Notion 内置图标经 mapImgUrl 换到自有代理域名（NOTION_HOST）
-    expect(iconImg.src).toBe(
-      `${BLOG.NOTION_HOST}/icons/downward_pink.svg`
-    )
+    expect(iconImg.src).toBe(`${BLOG.NOTION_HOST}/icons/downward_pink.svg`)
     expect(
       screen.queryByRole('button', { name: 'Button' })
     ).not.toBeInTheDocument()
@@ -179,12 +177,11 @@ describe('NotionButton', () => {
     const body = JSON.parse(fetch.mock.calls[0][1].body)
     expect(body).toEqual(
       expect.objectContaining({
-        url: 'https://hooks.example.com/notion',
-        headers: {
-          'X-Source': 'notion'
-        }
+        actionId: 'action1'
       })
     )
+    expect(body.url).toBeUndefined()
+    expect(body.headers).toBeUndefined()
     expect(body.payload.source).toEqual(
       expect.objectContaining({
         automation_id: 'automation1',

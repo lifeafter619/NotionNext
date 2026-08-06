@@ -56,9 +56,8 @@ export default function NotionButton({ block, blockId, className }) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            url: actionTarget.url,
-            payload: actionTarget.payload,
-            headers: actionTarget.headers
+            actionId: actionTarget.actionId,
+            payload: actionTarget.payload
           })
         })
         const result = await response.json().catch(() => ({}))
@@ -177,12 +176,10 @@ function getActionTarget(
   const normalizedUrl = typeof url === 'string' ? url.trim() : ''
 
   if (['send_webhook', 'http_request'].includes(action.type)) {
-    const webhookUrl = getWebhookUrl(normalizedUrl)
-    if (!webhookUrl) return null
+    if (!action.id) return null
     return {
       kind: 'webhook',
-      url: webhookUrl,
-      headers: getCustomHeaders(action.config),
+      actionId: action.id,
       payload: createWebhookPayload({
         action,
         automation,
@@ -260,30 +257,6 @@ function findPageId(recordMap) {
   return getRecordValue(pageRecord)?.id || null
 }
 
-function getCustomHeaders(config) {
-  const customHeaders = config?.customHeaders || config?.headers
-  if (Array.isArray(customHeaders)) {
-    return customHeaders.reduce((headers, header) => {
-      const key = header?.key || header?.name
-      const value = header?.value
-      if (typeof key === 'string' && typeof value === 'string') {
-        headers[key] = value
-      }
-      return headers
-    }, {})
-  }
-
-  if (customHeaders && typeof customHeaders === 'object') {
-    return Object.fromEntries(
-      Object.entries(customHeaders).filter(
-        ([key, value]) => typeof key === 'string' && typeof value === 'string'
-      )
-    )
-  }
-
-  return {}
-}
-
 function getRecordValue(record) {
   if (!record || typeof record !== 'object') return null
   if (record.value?.value) return record.value.value
@@ -317,16 +290,6 @@ function getNavigationKind(url) {
     }
     if (!['http:', 'https:'].includes(parsed.protocol)) return null
     return parsed.origin === base.origin ? 'internal' : 'external'
-  } catch {
-    return null
-  }
-}
-
-function getWebhookUrl(url) {
-  if (!url) return null
-  try {
-    const parsed = new URL(url)
-    return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : null
   } catch {
     return null
   }

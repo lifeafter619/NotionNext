@@ -13,7 +13,13 @@ import PaginationNumber from './PaginationNumber'
  * @returns {JSX.Element}
  * @constructor
  */
-const BlogPostListPage = ({ page = 1, posts = [], postCount, siteInfo }) => {
+const BlogPostListPage = ({
+  page = 1,
+  posts = [],
+  postCount,
+  siteInfo,
+  prioritizeFirstCover = true
+}) => {
   const { NOTION_CONFIG } = useGlobal()
   const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG)
   const safePosts = Array.isArray(posts) ? posts.filter(Boolean) : []
@@ -37,6 +43,7 @@ const BlogPostListPage = ({ page = 1, posts = [], postCount, siteInfo }) => {
               key={post?.id || post?.slug || index}
               post={post}
               siteInfo={siteInfo}
+              prioritizeCover={prioritizeFirstCover}
             />
           ))}
         </div>

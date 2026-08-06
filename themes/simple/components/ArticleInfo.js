@@ -41,7 +41,7 @@ export default function ArticleInfo(props) {
                 {' '}
                 <i className='fa-regular fa-folder'></i>{' '}
                 <a
-                  href={`/category/${post?.category}`}
+                  href={`/category/${encodeURIComponent(post?.category)}`}
                   className='hover:text-red-400 transition-all duration-200'>
                   {post?.category}
                 </a>

@@ -298,7 +298,7 @@ const Layout404 = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -310,8 +310,11 @@ const Layout404 = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return <>404 Not found.</>
 }
 
@@ -329,7 +332,7 @@ const LayoutCategoryIndex = props => {
           return (
             <SmartLink
               key={category.name}
-              href={`/category/${category.name}`}
+              href={`/category/${encodeURIComponent(category.name)}`}
               passHref
               legacyBehavior>
               <div

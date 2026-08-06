@@ -26,8 +26,12 @@ jest.mock('@/themes/heo/components/BlogPostCard', () => {
   return {
     __esModule: true,
     getPostCardCoverPreset: actual.getPostCardCoverPreset,
-    default: function BlogPostCard({ post }) {
-      return <article>{post.title}</article>
+    default: function BlogPostCard({ post, prioritizeCover }) {
+      return (
+        <article data-prioritize={String(prioritizeCover)}>
+          {post.title}
+        </article>
+      )
     }
   }
 })
@@ -94,5 +98,19 @@ describe('heo BlogPostListScroll', () => {
 
     expect(__imagePrefetchQueueTestHooks.state().pending).toBe(0)
     __imagePrefetchQueueTestHooks.reset()
+  })
+
+  it('passes homepage cover priority through to rendered cards', () => {
+    render(
+      <BlogPostListScroll
+        posts={[{ id: 'post-1', title: 'Post 1' }]}
+        prioritizeFirstCover={false}
+      />
+    )
+
+    expect(screen.getByText('Post 1')).toHaveAttribute(
+      'data-prioritize',
+      'false'
+    )
   })
 })

@@ -49,7 +49,7 @@ const BlogPost = props => {
       </h2>
       {post?.category && (
         <div className='text-xs rounded-lg absolute left-0 top-0 m-4 px-2 py-1 bg-gray-200 dark:bg-black dark:bg-opacity-25 hover:bg-blue-700 hover:text-white duration-200'>
-          <SmartLink href={`/category/${post?.category}`}>
+          <SmartLink href={`/category/${encodeURIComponent(post?.category)}`}>
             {post?.category}
           </SmartLink>
         </div>

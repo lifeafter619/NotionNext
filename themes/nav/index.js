@@ -7,7 +7,7 @@
  */
 
 import NotionIcon from '@/components/NotionIcon'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -111,7 +111,7 @@ const LayoutBase = props => {
         return {
           id: c.name,
           title: `# ${c.name}`,
-          href: `/category/${c.name}`,
+          href: `/category/${encodeURIComponent(c.name)}`,
           show: true
         }
       })
@@ -143,7 +143,7 @@ const LayoutBase = props => {
         <main
           id='wrapper'
           className={
-            (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+            (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
               ? 'flex-row-reverse'
               : '') + ' relative flex justify-between w-full h-screen mx-auto'
           }>
@@ -290,7 +290,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -302,8 +302,11 @@ const LayoutSlug = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return (
     <>
       {/* 文章锁 */}
@@ -445,7 +448,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <div

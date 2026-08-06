@@ -16,8 +16,12 @@ jest.mock('@/lib/global', () => ({
 }))
 
 jest.mock('@/themes/heo/components/BlogPostCard', () => {
-  return function BlogPostCard({ index, post }) {
-    return <article data-testid='post-card'>{`${index}:${post.title}`}</article>
+  return function BlogPostCard({ index, post, prioritizeCover }) {
+    return (
+      <article
+        data-testid='post-card'
+        data-prioritize={String(prioritizeCover)}>{`${index}:${post.title}`}</article>
+    )
   }
 })
 
@@ -49,5 +53,20 @@ describe('heo BlogPostListPage', () => {
       screen.getAllByTestId('post-card').map(node => node.textContent)
     ).toEqual(['0:Post 1', '1:Post 2'])
     expect(posts.indexOf).not.toHaveBeenCalled()
+  })
+
+  it('passes homepage cover priority through to every card', () => {
+    render(
+      <BlogPostListPage
+        posts={[{ id: 'post-1', title: 'Post 1' }]}
+        postCount={1}
+        prioritizeFirstCover={false}
+      />
+    )
+
+    expect(screen.getByTestId('post-card')).toHaveAttribute(
+      'data-prioritize',
+      'false'
+    )
   })
 })

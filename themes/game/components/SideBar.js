@@ -1,4 +1,4 @@
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import Live2D from '@/components/Live2D'
 import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
@@ -21,7 +21,7 @@ export const SideBar = props => {
               return (
                 <SmartLink
                   key={category.name}
-                  href={`/category/${category.name}`}
+                  href={`/category/${encodeURIComponent(category.name)}`}
                   passHref
                   legacyBehavior>
                   <li>
@@ -65,7 +65,7 @@ export const SideBar = props => {
       </aside>
 
       {siteConfig('COMMENT_WALINE_SERVER_URL') &&
-        JSON.parse(siteConfig('COMMENT_WALINE_RECENT')) && (
+        siteConfigBoolean('COMMENT_WALINE_RECENT') && (
           <aside className='rounded shadow overflow-hidden mb-6'>
             <h3 className='text-sm bg-gray-100 text-gray-700 dark:bg-hexo-black-gray dark:text-gray-200 py-3 px-4 dark:border-hexo-black-gray border-b'>
               {locale.COMMON.RECENT_COMMENTS}

@@ -22,20 +22,25 @@ jest.mock('@/themes/heo/components/VisitorInfoCard', () => () => null)
 jest.mock('@/themes/heo/components/TouchMeCard', () => () => null)
 jest.mock('@/themes/heo/components/TagGroups', () => () => null)
 jest.mock('@/themes/heo/components/Catalog', () => () => null)
-jest.mock('@/themes/heo/components/Card', () => ({ children }) => (
-  <div>{children}</div>
-))
+jest.mock('@/themes/heo/components/Card', () => {
+  return function MockCard({ children }) {
+    return <div>{children}</div>
+  }
+})
 jest.mock('@/themes/heo/components/useArticleToc', () => ({
   useArticleToc: () => []
 }))
-jest.mock('@/themes/heo/components/LatestPostsGroupMini', () => () => (
-  <div data-testid='latest-posts' />
-))
+jest.mock('@/themes/heo/components/LatestPostsGroupMini', () => {
+  return function MockLatestPostsGroupMini() {
+    return <div data-testid='latest-posts' />
+  }
+})
 jest.mock('@/themes/heo/components/AnalyticsCard', () => ({
   AnalyticsCard: () => <div data-testid='analytics-card' />
 }))
 
-const SideRight = require('@/themes/heo/components/SideRight').default
+const SideRightDeferred =
+  require('@/themes/heo/components/SideRightDeferred').default
 
 describe('heo widget configuration', () => {
   beforeEach(() => {
@@ -46,7 +51,7 @@ describe('heo widget configuration', () => {
     mockConfig.HEO_WIDGET_LATEST_POSTS = false
     mockConfig.HEO_WIDGET_ANALYTICS = false
 
-    render(<SideRight tagOptions={[]} />)
+    render(<SideRightDeferred tagOptions={[]} />)
 
     expect(screen.queryByTestId('latest-posts')).not.toBeInTheDocument()
     expect(screen.queryByTestId('analytics-card')).not.toBeInTheDocument()

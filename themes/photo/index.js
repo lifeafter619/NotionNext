@@ -5,7 +5,7 @@ import Comment from '@/components/Comment'
 import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
 import ShareBar from '@/components/ShareBar'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
@@ -80,7 +80,7 @@ const LayoutBase = props => {
           <div
             id='container-wrapper'
             className={
-              (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+              (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
                 ? 'flex-row-reverse'
                 : '') + 'relative mx-auto justify-center md:flex items-start'
             }>
@@ -286,13 +286,14 @@ const LayoutSlug = props => {
       }
     }
 
-    setTimeout(() => {
+    const combineTimer = setTimeout(() => {
       combineVideo()
     }, 1500)
 
     // 404
+    let redirectTimer
     if (!post) {
-      setTimeout(() => {
+      redirectTimer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -306,6 +307,8 @@ const LayoutSlug = props => {
       }, waiting404)
     }
     return () => {
+      clearTimeout(combineTimer)
+      clearTimeout(redirectTimer)
       // 获取所有 class="video-wrapper" 的元素
       const videoWrappers = document.querySelectorAll('.video-wrapper')
 
@@ -314,7 +317,7 @@ const LayoutSlug = props => {
         wrapper.parentNode.removeChild(wrapper) // 从 DOM 中移除元素
       })
     }
-  }, [post])
+  }, [post, router, waiting404])
 
   return (
     <>
@@ -365,7 +368,7 @@ const Layout404 = props => {
     if (e.keyCode === 13) {
       const search = document.getElementById('search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + encodeURIComponent(search) })
+        router.push({ pathname: '/search', query: { s: search } })
       }
     }
   }

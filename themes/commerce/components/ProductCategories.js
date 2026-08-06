@@ -24,7 +24,7 @@ export default function ProductCategories(props) {
               <SmartLink
                 key={`${category.name}`}
                 title={`${category.name}`}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 className='hover:text-[#D2232A]'
                 passHref>
                 {category.name}

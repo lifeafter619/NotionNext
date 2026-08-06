@@ -83,10 +83,11 @@ describe('search index page props', () => {
     expect(result.props.posts).toHaveLength(1)
     expect(result.props.posts[0]).toEqual(
       expect.objectContaining({
-        id: 'empty-page',
-        content: null
+        id: 'empty-page'
       })
     )
+    expect(result.props.posts[0].content).toBeUndefined()
+    expect(result.props.searchIndexUrl).toBe('/search-index.zh-CN.json')
     expect(console.warn).not.toHaveBeenCalledWith(
       'Search index: content is empty for',
       'empty-page'
@@ -119,7 +120,7 @@ describe('search index page props', () => {
 
     expect(result.props.posts).toHaveLength(1)
     expect(result.props.posts[0].password).toBeUndefined()
-    expect(result.props.posts[0].content).toBeNull()
+    expect(result.props.posts[0].content).toBeUndefined()
     expect(result.props.posts[0].blockMap).toBeUndefined()
     expect(fetchNotionPageBlocks).not.toHaveBeenCalled()
     expect(getPageContentText).not.toHaveBeenCalled()
@@ -149,6 +150,62 @@ describe('search index page props', () => {
       expect.objectContaining({
         slug: 'article/searchable-post',
         href: '/article/searchable-post'
+      })
+    )
+  })
+
+  it('unwraps nested Notion record maps before extracting body text', async () => {
+    fetchGlobalAllData.mockResolvedValue({
+      NOTION_CONFIG: {},
+      allPages: [
+        {
+          id: 'nested-page',
+          type: 'Post',
+          status: 'Published',
+          title: 'Nested page',
+          slug: 'nested-page',
+          summary: '',
+          tags: [],
+          category: ''
+        }
+      ]
+    })
+    fetchNotionPageBlocks.mockResolvedValueOnce({
+      block: {
+        'nested-page': {
+          spaceId: 'space-id',
+          value: {
+            value: {
+              id: 'nested-page',
+              type: 'page',
+              content: ['nested-text']
+            },
+            role: 'reader'
+          }
+        },
+        'nested-text': {
+          spaceId: 'space-id',
+          value: {
+            value: {
+              id: 'nested-text',
+              type: 'text',
+              properties: { title: [['Body text']] }
+            },
+            role: 'reader'
+          }
+        }
+      }
+    })
+    getPageContentText.mockReturnValueOnce('Body text')
+
+    await getStaticProps({ locale: 'zh-CN' })
+
+    const [, blockMap] = getPageContentText.mock.calls[0]
+    expect(blockMap.block['nested-page'].value).toEqual(
+      expect.objectContaining({
+        id: 'nested-page',
+        type: 'page',
+        content: ['nested-text']
       })
     )
   })

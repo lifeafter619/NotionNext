@@ -1,4 +1,4 @@
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { loadExternalResource } from '@/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 
@@ -9,10 +9,12 @@ import { useEffect, useRef, useState } from 'react'
 const Player = () => {
   const [player, setPlayer] = useState()
   const ref = useRef(null)
-  const lrcType = JSON.parse(siteConfig('MUSIC_PLAYER_LRC_TYPE'))
-  const playerVisible = JSON.parse(siteConfig('MUSIC_PLAYER_VISIBLE'))
-  const autoPlay = JSON.parse(siteConfig('MUSIC_PLAYER_AUTO_PLAY'))
-  const meting = JSON.parse(siteConfig('MUSIC_PLAYER_METING'))
+  // lrcType 是 APlayer 的数值枚举（0 禁用 / 1 歌词字符串 / 3 歌词文件 url），
+  // 不能用布尔解析；非数值配置回退为 0（禁用歌词）
+  const lrcType = Number(siteConfig('MUSIC_PLAYER_LRC_TYPE', 0)) || 0
+  const playerVisible = siteConfigBoolean('MUSIC_PLAYER_VISIBLE')
+  const autoPlay = siteConfigBoolean('MUSIC_PLAYER_AUTO_PLAY')
+  const meting = siteConfigBoolean('MUSIC_PLAYER_METING')
   const order = siteConfig('MUSIC_PLAYER_ORDER')
   const audio = siteConfig('MUSIC_PLAYER_AUDIO_LIST')
 

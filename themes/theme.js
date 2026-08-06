@@ -1,8 +1,7 @@
 import BLOG, { LAYOUT_MAPPINGS } from '@/blog.config'
 import { THEMES } from '@/conf/theme.config'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import { getQueryParam, getQueryVariable, isBrowser } from '../lib/utils'
+import { getQueryParam, getQueryVariable } from '../lib/utils'
 import { getDynamicThemeLayout } from './dynamicThemeLayouts'
 
 export { THEMES } from '@/conf/theme.config'
@@ -21,17 +20,6 @@ const getThemeExport = (mod, exportName) => {
     return mod.default
   }
   return null
-}
-
-const scheduleFixThemeDOM = (delay = 120) => {
-  if (!isBrowser) return () => {}
-  const timer = window.setTimeout(() => {
-    fixThemeDOM()
-  }, delay)
-
-  return () => {
-    window.clearTimeout(timer)
-  }
 }
 
 async function importThemeConfig(themeFolderName) {
@@ -116,9 +104,6 @@ export const DynamicLayout = props => {
 export const useLayoutByTheme = ({ layoutName, theme }) => {
   const router = useRouter()
   const themeQuery = getCurrentTheme(router, theme)
-  useEffect(() => {
-    return scheduleFixThemeDOM(themeQuery === BLOG.THEME ? 80 : 240)
-  }, [layoutName, themeQuery])
 
   return (
     getDynamicThemeLayout(themeQuery) ||
@@ -135,29 +120,6 @@ const getLayoutNameByPath = path => {
   const layoutName = LAYOUT_MAPPINGS[path] || 'LayoutSlug'
   //   console.log('path-layout',path,layoutName)
   return layoutName
-}
-
-/**
- * 切换主题时的特殊处理
- * 删除多余的元素
- */
-const fixThemeDOM = () => {
-  if (isBrowser) {
-    const elements = document.querySelectorAll('[id^="theme-"]')
-    if (elements?.length > 1) {
-      const retainedElement = elements[elements.length - 1]
-      for (let i = 0; i < elements.length - 1; i++) {
-        if (
-          elements[i] &&
-          elements[i].parentNode &&
-          elements[i].parentNode.contains(elements[i])
-        ) {
-          elements[i].parentNode.removeChild(elements[i])
-        }
-      }
-      retainedElement?.scrollIntoView()
-    }
-  }
 }
 
 export const APPEARANCE_MODE = Object.freeze({

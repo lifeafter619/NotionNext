@@ -34,7 +34,8 @@ const SearchInput = props => {
       setLoadingState(true)
       router
         .push({
-          pathname: withHeoSubPath('/search/' + encodeURIComponent(key))
+          pathname: withHeoSubPath('/search'),
+          query: { s: key }
         })
         .finally(() => {
           setLoadingState(false)

@@ -1,8 +1,6 @@
-import dynamic from 'next/dynamic'
+import NotionPage from '@/components/NotionPage'
 
-const NotionPage = dynamic(() => import('@/components/NotionPage'))
-
-const Announcement = ({ post, className }) => {
+const Announcement = ({ post }) => {
   if (post?.blockMap) {
     return (
       <div>

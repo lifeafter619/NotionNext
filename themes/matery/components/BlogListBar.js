@@ -15,7 +15,7 @@ export default function BlogListBar(props) {
             return (
               <SmartLink
                 key={e.name}
-                href={`/category/${e.name}`}
+                href={`/category/${encodeURIComponent(e.name)}`}
                 passHref
                 legacyBehavior>
                 <div className='duration-300 text-md whitespace-nowrap dark:hover:text-white px-5 cursor-pointer py-2 hover:text-indigo-400'>

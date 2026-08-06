@@ -3,7 +3,7 @@ import CONFIG from './config'
 import LazyImage from '@/components/LazyImage'
 import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser, scanAndConvertToLinks } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -49,7 +49,7 @@ const LayoutBase = props => {
 
   let headerSlot = null
   if (router.route === '/' && !post) {
-    headerSlot = JSON.parse(siteConfig('COMMERCE_HOME_BANNER_ENABLE', true)) ? (
+    headerSlot = siteConfigBoolean('COMMERCE_HOME_BANNER_ENABLE', true) ? (
       <Hero {...props} />
     ) : (
       <></>
@@ -77,7 +77,7 @@ const LayoutBase = props => {
         <div
           id='container-inner'
           className={
-            (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+            (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
               ? 'flex-row-reverse'
               : '') +
             ' w-full mx-auto lg:flex lg:space-x-4 justify-center relative z-10'
@@ -347,7 +347,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <div

@@ -40,11 +40,9 @@ const SearchInput = ({ currentTag, keyword, cRef }) => {
     const key = searchInputRef.current.value?.trim()
     if (key && key !== '') {
       setLoadingState(true)
-      router
-        .push({ pathname: '/search/' + encodeURIComponent(key) })
-        .then(r => {
-          setLoadingState(false)
-        })
+      router.push({ pathname: '/search', query: { s: key } }).then(r => {
+        setLoadingState(false)
+      })
       // location.href = '/search/' + key
     } else {
       router.push({ pathname: '/' }).then(r => {})

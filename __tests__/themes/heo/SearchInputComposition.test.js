@@ -50,7 +50,8 @@ describe('HEO SearchInput IME handling', () => {
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith({
-        pathname: '/blog/search/%E4%B8%AD%E6%96%87'
+        pathname: '/blog/search',
+        query: { s: '中文' }
       })
     })
   })

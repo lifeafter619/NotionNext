@@ -43,7 +43,7 @@ export const SearchInput = ({
   const handleSearch = e => {
     e.preventDefault()
     if (searchTerm.trim()) {
-      router.push(`/search/${encodeURIComponent(searchTerm)}`)
+      router.push({ pathname: '/search', query: { s: searchTerm } })
     }
   }
 

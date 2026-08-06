@@ -46,7 +46,14 @@ function getPostText(value, fallback = '') {
   return fallback
 }
 
-const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
+const BlogPostCard = ({
+  index,
+  post,
+  showSummary,
+  siteInfo,
+  className,
+  prioritizeCover = true
+}) => {
   if (!post) return null
 
   const showPreview =
@@ -117,7 +124,9 @@ const BlogPostCard = ({ index, post, showSummary, siteInfo, className }) => {
               ' block w-full md:w-5/12 overflow-hidden cursor-pointer select-none'
             }>
             <LazyImage
-              priority={index === 0 && Boolean(pageCoverThumbnail)}
+              priority={
+                prioritizeCover && index === 0 && Boolean(pageCoverThumbnail)
+              }
               // 首屏前两张卡片封面立即并行加载（浏览器原生 eager 调度，自带并发上限）；
               // 仍只有第 0 张走 <link rel=preload> + fetchpriority=high，不抢占 LCP 优先级。
               loading={index < 2 ? 'eager' : undefined}

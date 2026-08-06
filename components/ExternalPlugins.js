@@ -25,6 +25,9 @@ const ExternalPlugin = props => {
   const { NOTION_CONFIG } = props
   const { lang } = useGlobal()
   const [pluginsIdle, setPluginsIdle] = useState(false)
+  const isLocalPreview =
+    isBrowser &&
+    ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
   const DISABLE_PLUGIN = siteConfig('DISABLE_PLUGIN', null, NOTION_CONFIG)
   const THEME_SWITCH = siteConfig('THEME_SWITCH', null, NOTION_CONFIG)
   const DEBUG = siteConfig('DEBUG', null, NOTION_CONFIG)
@@ -214,7 +217,10 @@ const ExternalPlugin = props => {
       setTimeout(() => {
         // 映射url
         convertInnerUrl({
-          allPages: props?.allLinkPages || props?.allNavPages,
+          allPages: [
+            ...(props?.allNavPages || []),
+            ...(props?.allLinkPages || [])
+          ],
           lang: lang
         })
       }, 500)
@@ -263,8 +269,8 @@ const ExternalPlugin = props => {
       {DEBUG && <DebugPanel />}
       {ANALYTICS_ACKEE_TRACKER && <Ackee />}
       {ANALYTICS_GOOGLE_ID && <Gtag />}
-      {ANALYTICS_VERCEL && <Analytics />}
-      {ANALYTICS_VERCEL_SPEED_INSIGHTS && <SpeedInsights />}
+      {ANALYTICS_VERCEL && !isLocalPreview && <Analytics />}
+      {ANALYTICS_VERCEL_SPEED_INSIGHTS && !isLocalPreview && <SpeedInsights />}
       {ANALYTICS_BUSUANZI_ENABLE && <Busuanzi />}
       {FACEBOOK_APP_ID && FACEBOOK_PAGE_ID && <Messenger />}
       {FIREWORKS && <Fireworks />}

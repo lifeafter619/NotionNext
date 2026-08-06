@@ -6,6 +6,7 @@ const mockPush = jest.fn()
 const mockSiteConfig = jest.fn()
 const originalMatchMedia = window.matchMedia
 let mockGroupIcons
+let mockCoverEnable
 
 jest.mock('next/router', () => ({
   useRouter: () => ({ push: mockPush })
@@ -33,11 +34,11 @@ jest.mock('@/components/HeroIcons', () => ({
 
 jest.mock('@/components/LazyImage', () => {
   return function MockLazyImage({
-    priority: _priority,
+    priority,
     fetchPriority: _fetchPriority,
     ...props
   }) {
-    return <img {...props} />
+    return <img data-priority={priority ? 'high' : 'normal'} {...props} />
   }
 })
 
@@ -55,6 +56,7 @@ describe('heo Hero today card', () => {
   beforeEach(() => {
     mockPush.mockReset()
     mockGroupIcons = []
+    mockCoverEnable = true
     window.matchMedia = jest.fn().mockReturnValue({
       matches: true,
       addEventListener: jest.fn(),
@@ -63,7 +65,7 @@ describe('heo Hero today card', () => {
     mockSiteConfig.mockImplementation((key, defaultValue) => {
       const config = {
         SUB_PATH: '/blog',
-        HEO_HERO_RECOMMEND_COVER_ENABLE: true,
+        HEO_HERO_RECOMMEND_COVER_ENABLE: mockCoverEnable,
         HEO_HERO_TITLE_LINK: '/featured',
         HEO_GROUP_ICONS: mockGroupIcons,
         HEO_HERO_CATEGORY_1: {},
@@ -185,6 +187,48 @@ describe('heo Hero today card', () => {
     )
     expect(screen.getByAltText('Second recommendation')).not.toHaveAttribute(
       'loading'
+    )
+  })
+
+  it('keeps only the visible today cover at high priority', () => {
+    renderHero({
+      latestPosts: [
+        {
+          id: 'post-1',
+          href: '/post-1',
+          title: 'First recommendation',
+          pageCoverThumbnail: '/first.jpg'
+        }
+      ]
+    })
+
+    expect(screen.getByAltText('Today Card Cover')).toHaveAttribute(
+      'data-priority',
+      'high'
+    )
+    expect(screen.getByAltText('First recommendation')).toHaveAttribute(
+      'data-priority',
+      'normal'
+    )
+  })
+
+  it('transfers high priority to the first recommendation without today cover', () => {
+    mockCoverEnable = false
+    renderHero({
+      latestPosts: [
+        {
+          id: 'post-1',
+          href: '/post-1',
+          title: 'First recommendation',
+          pageCoverThumbnail: '/first.jpg'
+        }
+      ]
+    })
+
+    expect(screen.queryByAltText('Today Card Cover')).not.toBeInTheDocument()
+    expect(screen.getByAltText('First recommendation')).toHaveAttribute(
+      'data-priority',
+      'high'
     )
   })
 })

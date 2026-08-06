@@ -391,6 +391,71 @@ describe('fetchGlobalAllData cache sanitization', () => {
     expect(restoredBlockMap.collection_query).toBeUndefined()
   })
 
+  it('does not serialize protected article content or its password digest', async () => {
+    const postId = '12345678-1234-1234-1234-123456789abc'
+    const password = 'a'.repeat(64)
+    getOrSetDataWithCache.mockResolvedValue({
+      NOTION_CONFIG: {},
+      siteInfo: {},
+      notice: null,
+      allPages: [
+        {
+          id: postId,
+          title: 'Private post',
+          type: 'Post',
+          status: 'Published',
+          slug: 'article/private',
+          href: '/article/private',
+          password
+        }
+      ],
+      allMembers: [],
+      allEvents: [],
+      allNavPages: [],
+      allLinkPages: [],
+      latestPosts: [],
+      tagOptions: [],
+      categoryOptions: [],
+      customNav: [],
+      customMenu: [],
+      postCount: 1
+    })
+    fetchNotionPageBlocks.mockResolvedValue({
+      block: {
+        [postId]: {
+          value: {
+            id: postId,
+            type: 'page',
+            parent_id: 'workspace',
+            content: ['private-block']
+          }
+        },
+        'private-block': {
+          value: {
+            id: 'private-block',
+            type: 'text',
+            parent_id: postId,
+            properties: { title: [['private body']] }
+          }
+        }
+      }
+    })
+    processPostData.mockImplementation(props => {
+      props.post.toc = [{ id: 'private-block', text: 'private heading' }]
+    })
+
+    const result = await resolvePostProps({
+      prefix: 'article',
+      slug: 'private',
+      locale: 'zh-CN'
+    })
+
+    expect(result.post.password).toBe(true)
+    expect(result.post.blockMap).toBeUndefined()
+    expect(result.post.content).toBeUndefined()
+    expect(result.post.toc).toBeUndefined()
+  })
+
   it('trims article page lists to fields needed by detail layout', async () => {
     const postId = '12345678-1234-1234-1234-123456789abc'
     const heavyCover =
@@ -473,14 +538,7 @@ describe('fetchGlobalAllData cache sanitization', () => {
         short_id: '1234-1234-123456789abc'
       }
     ])
-    expect(result.allLinkPages).toEqual([
-      {
-        title: 'Nav Post',
-        slug: 'article/nav-post',
-        href: '/article/nav-post',
-        short_id: '1234-1234-123456789abc'
-      }
-    ])
+    expect(result.allLinkPages).toEqual([])
     expect(result.latestPosts).toEqual([
       {
         id: '22345678-1234-1234-1234-123456789abc',

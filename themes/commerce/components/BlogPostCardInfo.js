@@ -37,7 +37,7 @@ export const BlogPostCardInfo = ({
               showPreview ? 'justify-center' : 'justify-start'
             } flex-wrap dark:text-gray-500 text-gray-400 `}>
             <SmartLink
-              href={`/category/${post.category}`}
+              href={`/category/${encodeURIComponent(post.category)}`}
               passHref
               className='cursor-pointer font-light text-sm menu-link hover:text-red-700 dark:hover:text-red-400 transform'>
               <i className='mr-1 far fa-folder' />

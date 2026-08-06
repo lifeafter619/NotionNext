@@ -150,6 +150,27 @@ describe('heo post cover fallback', () => {
     expect(getByAltText('Second post')).toHaveAttribute('loading', 'eager')
   })
 
+  it('allows the homepage hero to own the high-priority image', () => {
+    const post = {
+      ...createPost(),
+      pageCoverThumbnail: '/post-cover.jpg'
+    }
+
+    const { getByAltText } = render(
+      <BlogPostCard
+        index={0}
+        post={post}
+        siteInfo={siteInfo}
+        prioritizeCover={false}
+      />
+    )
+
+    expect(getByAltText('Post title')).toHaveAttribute(
+      'data-priority',
+      'normal'
+    )
+  })
+
   it('applies cover sizing to the direct flex item', () => {
     const post = {
       ...createPost(),

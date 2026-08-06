@@ -129,7 +129,7 @@ export default function ArticleDetail(props) {
                 <>
                   <div className='cursor-pointer my-auto text-md mr-2 hover:text-black dark:hover:text-white border-b dark:text-gray-500 border-dashed'>
                     <SmartLink
-                      href={`/category/${post.category}`}
+                      href={`/category/${encodeURIComponent(post.category)}`}
                       legacyBehavior>
                       <a>
                         <i className='mr-1 far fa-folder-open' />{' '}

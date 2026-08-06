@@ -63,7 +63,7 @@ export const SideBar = props => {
             {categories.map(category => (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 className='flex items-center justify-between group py-2 border-b border-[var(--endspace-border-base)] hover:border-[var(--endspace-border-active)] transition-all'>
                 <span className='text-sm text-[var(--endspace-text-secondary)] group-hover:text-[var(--endspace-text-primary)] transition-colors'>
                   {category.name}

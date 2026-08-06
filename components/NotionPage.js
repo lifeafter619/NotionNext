@@ -17,6 +17,10 @@ import {
   bindNotionHashScrollHandler,
   scrollToNotionHeading
 } from '@/lib/utils/notionHashScroll'
+import {
+  collectContentImageMeta,
+  resolveNotionImageDimensions
+} from '@/lib/notionImageMeta'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
 import {
@@ -252,8 +256,11 @@ const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
   // 收集正文图片元数据：首图用 eager + fetchpriority=high 提升 LCP；
   // 其余图片补真实宽高消除布局偏移
   const imageMeta = useMemo(
-    () => collectContentImageMeta(cleanBlockMap, post?.id),
-    [cleanBlockMap, post?.id]
+    () => ({
+      ...collectContentImageMeta(cleanBlockMap, post?.id),
+      prioritizeFirst: contentId === 'notion-article'
+    }),
+    [cleanBlockMap, contentId, post?.id]
   )
 
   return (
@@ -308,12 +315,16 @@ export function NotionImage({ width, height, style, sizes, ...rest }) {
   //   有真实宽高才设置 aspect-ratio，给浏览器留占位（消除 CLS）。
   const imageMeta = useContext(NotionImageMetaContext)
   const metaDims = imageMeta?.dims?.[rest.src]
-  const finalWidth = Number(width) > 0 ? width : metaDims?.width
-  const finalHeight = Number(height) > 0 ? height : metaDims?.height
+  const { width: finalWidth, height: finalHeight } =
+    resolveNotionImageDimensions(width, height, metaDims)
   const hasRealDimensions = Number(finalWidth) > 0 && Number(finalHeight) > 0
   // 正文首图大概率是 LCP 元素：跳过原生 lazy 并提升抓取优先级。
   // 不额外输出 preload link，避免与文章头图（PostHeader 已 preload）抢带宽
-  const isFirstImage = Boolean(imageMeta?.first && rest.src === imageMeta.first)
+  const isFirstImage = Boolean(
+    imageMeta?.prioritizeFirst &&
+      imageMeta?.first &&
+      rest.src === imageMeta.first
+  )
   const mergedStyle = {
     width: '100%',
     height: 'auto',
@@ -343,64 +354,7 @@ export function NotionImage({ width, height, style, sizes, ...rest }) {
   )
 }
 
-/**
- * 按渲染顺序遍历 blockMap，收集正文图片元数据：
- * - first：第一张图片映射后的 src（与 react-notion-x 传给自定义 Image 的 src
- *   同源同参，可直接字符串比对）
- * - dims：src -> Notion block format 里的真实宽高
- * 跳过内嵌子页面（渲染为链接、不展开），同步块跟随引用继续遍历。
- */
-export function collectContentImageMeta(blockMap, rootId) {
-  const meta = { first: null, dims: {} }
-  const blocks = blockMap?.block
-  if (!blocks) return meta
-
-  const rootBlockId =
-    (rootId && blocks[rootId]?.value ? rootId : null) ||
-    Object.keys(blocks).find(id => getNotionValue(blocks[id])?.type === 'page')
-  if (!rootBlockId) return meta
-
-  const visited = new Set()
-  const walk = blockId => {
-    if (!blockId || visited.has(blockId)) return
-    visited.add(blockId)
-    const value = getNotionValue(blocks[blockId])
-    if (!value) return
-
-    // 子页面/链接页面在正文中只渲染为链接，不深入
-    if (value.type === 'page' && blockId !== rootBlockId) return
-
-    if (value.type === 'image') {
-      const source =
-        blockMap.signed_urls?.[blockId] || value.properties?.source?.[0]?.[0]
-      const src = source ? mapImgUrl(source, value) : null
-      if (src) {
-        const blockWidth = Number(value.format?.block_width)
-        const aspectRatio = Number(value.format?.block_aspect_ratio)
-        const blockHeight =
-          Number(value.format?.block_height) ||
-          (blockWidth > 0 && aspectRatio > 0
-            ? Math.round(blockWidth * aspectRatio)
-            : 0)
-        if (blockWidth > 0 && blockHeight > 0 && !meta.dims[src]) {
-          meta.dims[src] = { width: blockWidth, height: blockHeight }
-        }
-        if (!meta.first) meta.first = src
-      }
-      return
-    }
-
-    // 同步块引用：跟随指针继续遍历
-    const syncedRefId = value.format?.transclusion_reference_pointer?.id
-    if (syncedRefId) walk(syncedRefId)
-
-    if (Array.isArray(value.content)) {
-      value.content.forEach(walk)
-    }
-  }
-  walk(rootBlockId)
-  return meta
-}
+export { collectContentImageMeta, resolveNotionImageDimensions }
 
 function shouldEnableReadingPositionSaver(post, enabled) {
   if (!enabled || !isBrowser || !post?.id) return false

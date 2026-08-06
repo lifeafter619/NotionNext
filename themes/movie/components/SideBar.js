@@ -22,13 +22,13 @@ export const SideBar = props => {
               return (
                 <SmartLink
                   key={category.name}
-                  href={`/category/${category.name}`}
+                  href={`/category/${encodeURIComponent(category.name)}`}
                   passHref
                   legacyBehavior>
                   <li>
                     {' '}
                     <a
-                      href={`/category/${category.name}`}
+                      href={`/category/${encodeURIComponent(category.name)}`}
                       className='text-gray-darkest text-sm'>
                       {category.name}({category.count})
                     </a>

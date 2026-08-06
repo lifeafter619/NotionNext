@@ -19,6 +19,7 @@ import SmartLink from '@/themes/heo/components/HeoLink'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import Head from 'next/head'
 import BlogPostArchive from './components/BlogPostArchive'
 import BlogPostListPage from './components/BlogPostListPage'
 import BlogPostListScroll from './components/BlogPostListScroll'
@@ -39,6 +40,7 @@ import ArticleExpirationNotice from '@/components/ArticleExpirationNotice'
 import { isHeoCommentServiceConfigured } from './utils/commentEnabled'
 import { withHeoSubPath } from './utils/path'
 import usePreserveReadingPositionOnResize from '@/hooks/usePreserveReadingPositionOnResize'
+import { collectContentImageMeta } from '@/lib/notionImageMeta'
 
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const ShareBar = dynamic(() => import('@/components/ShareBar'), { ssr: false })
@@ -84,6 +86,10 @@ const LayoutBase = props => {
   const [showSideRight, setShowSideRight] = useState(false)
   const showHomeBanner =
     siteConfig('HEO_HOME_BANNER_ENABLE', true, CONFIG) !== false
+  const announcementImage = useMemo(
+    () => collectContentImageMeta(props.notice?.blockMap).first,
+    [props.notice?.blockMap]
+  )
 
   useEffect(() => {
     if (router.route === '/404') {
@@ -147,6 +153,17 @@ const LayoutBase = props => {
     <div
       id='theme-heo'
       className={`${siteConfig('FONT_STYLE')} bg-[var(--heo-color-bg)] dark:bg-[var(--heo-color-bg-dark)] h-full min-h-screen flex flex-col scroll-smooth`}>
+      {router.route !== '/404' && announcementImage && (
+        <Head>
+          <link
+            rel='preload'
+            as='image'
+            href={announcementImage}
+            media='(min-width: 1280px)'
+            fetchpriority='low'
+          />
+        </Head>
+      )}
       <Style />
 
       {/* 顶部嵌入 导航栏，首页放hero，文章页放文章详情 */}
@@ -191,14 +208,23 @@ const LayoutBase = props => {
  * @returns
  */
 const LayoutIndex = props => {
+  const prioritizeFirstCover =
+    siteConfig('HEO_HOME_BANNER_ENABLE', true, CONFIG) === false
+
   return (
     <div id='post-outer-wrapper' className='px-5 md:px-0'>
       {/* 文章分类条 */}
       <CategoryBar {...props} />
       {siteConfig('POST_LIST_STYLE') === 'page' ? (
-        <BlogPostListPage {...props} />
+        <BlogPostListPage
+          {...props}
+          prioritizeFirstCover={prioritizeFirstCover}
+        />
       ) : (
-        <BlogPostListScroll {...props} />
+        <BlogPostListScroll
+          {...props}
+          prioritizeFirstCover={prioritizeFirstCover}
+        />
       )}
     </div>
   )

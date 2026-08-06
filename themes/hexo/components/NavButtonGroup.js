@@ -22,7 +22,7 @@ const NavButtonGroup = props => {
           <SmartLink
             key={`${category.name}`}
             title={`${category.name}`}
-            href={`/category/${category.name}`}
+            href={`/category/${encodeURIComponent(category.name)}`}
             passHref
             className='text-center shadow-text shadow-text-hover shadow-lg shadow-gray-500 w-full sm:w-4/5 md:mx-6 md:w-40 md:h-14 lg:h-20 h-14 justify-center items-center flex border-2 cursor-pointer rounded-lg glassmorphism hover:bg-white hover:text-black hover:font-normal duration-200 hover:scale-105 transform'>
             {category.name}

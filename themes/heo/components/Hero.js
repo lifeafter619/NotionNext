@@ -307,6 +307,10 @@ function TopGroup(props) {
 
   // 获取置顶推荐文章
   const topPosts = getTopPosts({ latestPosts, allNavPages })
+  const todayCardHasCover = Boolean(
+    siteConfig('HEO_HERO_RECOMMEND_COVER_ENABLE', true, CONFIG) &&
+      siteInfo?.pageCover
+  )
 
   return (
     <div
@@ -332,6 +336,7 @@ function TopGroup(props) {
               <div className='cursor-pointer h-[164px] group relative flex flex-col w-full overflow-hidden shadow bg-white dark:bg-black dark:text-white rounded-xl'>
                 {headerImage ? (
                   <LazyImage
+                    priority={index === 0 && !todayCardHasCover}
                     loading={index === 0 ? 'eager' : undefined}
                     width={505}
                     height={220}
@@ -518,6 +523,7 @@ function TodayCard({ cRef, siteInfo }) {
 
         {/* 封面图 */}
         <LazyImage
+          priority
           loading='eager'
           width={900}
           height={342}

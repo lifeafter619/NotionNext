@@ -1,7 +1,7 @@
 import { subscribeToNewsletter } from '@/lib/plugins/mailchimp'
 import { useRef, useState } from 'react'
 import CONFIG from '../config'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 
 export default function Newsletter() {
   const inputRef = useRef(null)
@@ -25,7 +25,7 @@ export default function Newsletter() {
     }
   }
 
-  if (!JSON.parse(siteConfig('LANDING_NEWSLETTER', null, CONFIG))) {
+  if (!siteConfigBoolean('LANDING_NEWSLETTER', false, CONFIG)) {
     return <></>
   }
 

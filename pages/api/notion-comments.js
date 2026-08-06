@@ -62,32 +62,31 @@ const getDatabaseProperties = async notion => {
 const hashEmail = email =>
   createHash('sha256').update(email).digest('hex').slice(0, 32)
 
-const fetchComments = async postId => {
+const fetchComments = async ({ postId, cursor, parentId, pageSize }) => {
   const notion = getClient()
-  const comments = []
-  let startCursor
+  const response = await notion.databases.query({
+    database_id: databaseId,
+    start_cursor: cursor || undefined,
+    page_size: pageSize,
+    filter: {
+      and: [
+        { property: 'PostId', title: { equals: postId } },
+        {
+          property: 'ParentId',
+          rich_text: parentId ? { equals: parentId } : { is_empty: true }
+        }
+      ]
+    },
+    sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
+  })
 
-  do {
-    const response = await notion.databases.query({
-      database_id: databaseId,
-      start_cursor: startCursor,
-      page_size: 100,
-      filter: {
-        property: 'PostId',
-        title: { equals: postId }
-      },
-      sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
-    })
-    comments.push(
-      ...response.results
-        .filter(page => 'properties' in page)
-        .map(formatNotionComment)
-        .filter(isPublicComment)
-    )
-    startCursor = response.has_more ? response.next_cursor : undefined
-  } while (startCursor)
-
-  return comments
+  return {
+    comments: response.results
+      .filter(page => 'properties' in page)
+      .map(formatNotionComment)
+      .filter(isPublicComment),
+    nextCursor: response.has_more ? response.next_cursor : null
+  }
 }
 
 const getParentLevel = async (notion, parentId, postId) => {
@@ -107,11 +106,19 @@ const getParentLevel = async (notion, parentId, postId) => {
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     const postId = String(req.query.postId || '').trim()
+    const parentId = String(req.query.parentId || '').trim() || null
+    const cursor = String(req.query.cursor || '').trim() || null
+    const pageSize = Math.min(
+      50,
+      Math.max(1, Number.parseInt(req.query.pageSize, 10) || 10)
+    )
     if (!postId) {
       return res.status(400).json({ error: 'Missing postId' })
     }
     try {
-      return res.status(200).json(await fetchComments(postId))
+      return res
+        .status(200)
+        .json(await fetchComments({ postId, parentId, cursor, pageSize }))
     } catch (error) {
       console.error('Failed to fetch Notion comments:', error)
       return res.status(500).json({ error: 'Failed to fetch comments' })

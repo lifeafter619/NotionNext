@@ -1,4 +1,7 @@
-import { collectContentImageMeta } from '@/components/NotionPage'
+import {
+  collectContentImageMeta,
+  resolveNotionImageDimensions
+} from '@/components/NotionPage'
 
 jest.mock('react-notion-x', () => ({
   NotionRenderer: jest.fn(() => null)
@@ -23,7 +26,11 @@ const makeBlockMap = () => ({
         id: 'img1',
         type: 'image',
         properties: { source: [['https://example.com/a.png']] },
-        format: { block_width: 800, block_aspect_ratio: 0.5 }
+        format: {
+          block_width: 800,
+          block_height: 42,
+          block_aspect_ratio: 0.5
+        }
       }
     },
     // 内嵌子页面在正文中只渲染为链接，里面的图不应参与收集
@@ -71,5 +78,13 @@ describe('collectContentImageMeta', () => {
       first: null,
       dims: {}
     })
+  })
+})
+
+describe('resolveNotionImageDimensions', () => {
+  it('元数据完整时不与上游孤立高度混用', () => {
+    expect(
+      resolveNotionImageDimensions(null, 42, { width: 624, height: 200 })
+    ).toEqual({ width: 624, height: 200 })
   })
 })

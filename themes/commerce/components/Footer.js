@@ -50,7 +50,7 @@ const Footer = props => {
                     <SmartLink
                       key={`${category.name}`}
                       title={`${category.name}`}
-                      href={`/category/${category.name}`}
+                      href={`/category/${encodeURIComponent(category.name)}`}
                       passHref>
                       {category.name}
                     </SmartLink>

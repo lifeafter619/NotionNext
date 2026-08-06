@@ -1,4 +1,4 @@
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
 import { useRef } from 'react'
 
@@ -86,7 +86,7 @@ const SocialButton = () => {
             <i className='fas fa-envelope transform hover:scale-125 duration-150' />
           </a>
         )}
-        {JSON.parse(siteConfig('ENABLE_RSS')) && (
+        {siteConfigBoolean('ENABLE_RSS') && (
           <a
             target='_blank'
             rel='noreferrer'

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import ShareBar from '@/components/ShareBar'
 
 jest.mock('@/lib/config', () => ({
+  siteConfigBoolean: jest.fn(() => true),
   siteConfig: jest.fn(key => {
     const config = {
       POST_SHARE_BAR_ENABLE: 'true'

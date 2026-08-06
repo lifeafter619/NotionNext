@@ -12,6 +12,13 @@ jest.mock('https', () => ({
   request: jest.fn()
 }))
 
+process.env.NOTION_WEBHOOK_ACTIONS = JSON.stringify({
+  action1: {
+    url: 'https://hooks.example.com/webhook',
+    headers: { Authorization: 'Bearer server-token' }
+  }
+})
+
 const {
   promises: { lookup }
 } = require('dns')
@@ -76,7 +83,8 @@ function createResponse() {
 function createRequest(body, method = 'POST') {
   return {
     method,
-    body
+    body,
+    headers: { origin: 'https://619.pp.ua', host: '619.pp.ua' }
   }
 }
 
@@ -158,14 +166,8 @@ describe('/api/webhook-proxy', () => {
 
     await handler(
       createRequest({
-        url: 'https://hooks.example.com/webhook',
-        payload,
-        headers: {
-          Authorization: 'Bearer token',
-          'X-Trace-Id': 'trace-1',
-          Host: 'internal.service',
-          'Content-Length': '999'
-        }
+        actionId: 'action1',
+        payload
       }),
       res
     )
@@ -183,9 +185,8 @@ describe('/api/webhook-proxy', () => {
         path: '/webhook',
         servername: 'hooks.example.com',
         headers: {
-          Authorization: 'Bearer token',
+          Authorization: 'Bearer server-token',
           'Content-Type': 'application/json',
-          'X-Trace-Id': 'trace-1',
           Host: 'hooks.example.com',
           'Content-Length': Buffer.byteLength(JSON.stringify(payload))
         },

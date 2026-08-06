@@ -80,7 +80,7 @@ export default function Header(props) {
     if (e.keyCode === 13) {
       const search = document.getElementById('simple-search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + encodeURIComponent(search) })
+        router.push({ pathname: '/search', query: { s: search } })
       }
     }
   }

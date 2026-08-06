@@ -18,7 +18,8 @@ const BlogPostListScroll = ({
   posts = [],
   currentSearch,
   showSummary = siteConfig('HEO_POST_LIST_SUMMARY', null, CONFIG),
-  siteInfo
+  siteInfo,
+  prioritizeFirstCover = true
 }) => {
   const { locale, NOTION_CONFIG } = useGlobal()
   const [page, updatePage] = useState(1)
@@ -108,6 +109,7 @@ const BlogPostListScroll = ({
               post={post}
               showSummary={showSummary}
               siteInfo={siteInfo}
+              prioritizeCover={prioritizeFirstCover}
             />
           ))}
         </div>

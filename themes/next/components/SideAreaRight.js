@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import Announcement from './Announcement'
 import LatestPostsGroup from './LatestPostsGroup'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 const NextRecentComments = dynamic(() => import('./NextRecentComments'))
 
 /**
@@ -39,7 +39,7 @@ const SideAreaRight = props => {
     <aside
       id='right'
       className={
-        (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE')) ? 'mr-4' : 'ml-4') +
+        (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE') ? 'mr-4' : 'ml-4') +
         ' space-y-4 hidden xl:block flex-col w-60 relative z-10'
       }>
       {siteConfig('NEXT_RIGHT_AD', null, CONFIG) && (

@@ -19,11 +19,9 @@ const SearchInput = props => {
   const handleSearch = () => {
     const key = searchInputRef.current.value?.trim()
     if (key && key !== '') {
-      router
-        .push({ pathname: '/search/' + encodeURIComponent(key) })
-        .then(r => {
-          // console.log('搜索', key)
-        })
+      router.push({ pathname: '/search', query: { s: key } }).then(r => {
+        // console.log('搜索', key)
+      })
     } else {
       router.push({ pathname: '/' }).then(r => {})
     }

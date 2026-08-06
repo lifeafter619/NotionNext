@@ -14,9 +14,9 @@ export const PostLock = props => {
   const [showError, setShowError] = useState(false)
   const passwordInputRef = useRef(null)
 
-  const submitPassword = () => {
+  const submitPassword = async () => {
     const value = passwordInputRef.current?.value
-    if (!validPassword(value)) {
+    if (!(await validPassword(value))) {
       // 触发抖动动画：先取消再加上，让 CSS 动画重新跑
       setShowError(false)
       // 下一帧再设 true，确保动画重启
@@ -45,19 +45,16 @@ export const PostLock = props => {
             type='password'
             onKeyDown={e => {
               if (e.key === 'Enter') {
-                submitPassword()
+                void submitPassword()
               }
             }}
             ref={passwordInputRef} // 绑定ref到passwordInputRef变量
             className='outline-none w-full text-sm pl-5 rounded-l transition focus:shadow-lg  font-light leading-10 bg-gray-100 dark:bg-gray-500'></input>
           <button
             type='button'
-            onClick={submitPassword}
+            onClick={() => void submitPassword()}
             className='px-3 whitespace-nowrap cursor-pointer items-center justify-center py-2 bg-[var(--heo-color-primary)] hover:bg-[var(--heo-color-primary-hover)] text-[var(--heo-color-primary-text)] rounded-r duration-300'>
-            <i
-              aria-hidden='true'
-              className={'duration-200 fas fa-key'}
-            />{' '}
+            <i aria-hidden='true' className={'duration-200 fas fa-key'} />{' '}
             {locale.COMMON.SUBMIT}
           </button>
         </div>

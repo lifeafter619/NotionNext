@@ -9,7 +9,7 @@ export default function CategoryItem({ category }) {
   return (
     <SmartLink
       key={category.name}
-      href={`/category/${category.name}`}
+      href={`/category/${encodeURIComponent(category.name)}`}
       passHref
       legacyBehavior>
       <div

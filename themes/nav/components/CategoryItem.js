@@ -3,7 +3,7 @@ import SmartLink from '@/components/SmartLink'
 export default function CategoryItem({ selected, category, categoryCount }) {
   return (
     <SmartLink
-      href={`/category/${category}`}
+      href={`/category/${encodeURIComponent(category)}`}
       passHref
       className={
         (selected

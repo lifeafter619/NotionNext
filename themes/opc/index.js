@@ -483,7 +483,7 @@ const LayoutCategoryIndex = props => (
   <PageShell title='分类' description='按主题浏览文章。'>
     <div className='flex flex-wrap gap-3'>
       {(props.categoryOptions || []).map(category => (
-        <SmartLink key={category.name} href={`/category/${category.name}`} className='opc-secondary-action rounded-md border px-4 py-2 text-sm'>
+        <SmartLink key={category.name} href={`/category/${encodeURIComponent(category.name)}`} className='opc-secondary-action rounded-md border px-4 py-2 text-sm'>
           {category.name}{category.count ? ` (${category.count})` : ''}
         </SmartLink>
       ))}

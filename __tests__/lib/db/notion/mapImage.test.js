@@ -18,6 +18,15 @@ describe('mapImgUrl Notion proxy boundary', () => {
     )
   })
 
+  it('maps the written-by-human badge to the existing local asset', () => {
+    const wrapped =
+      'https://img.cdn.619.pp.ua/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fid%2FWritten-By-Human-Not-By-AI-Badge-black.svg?table=block&id=block-id'
+
+    expect(mapImgUrl(wrapped, block)).toBe(
+      '/svg/not-by-ai/zh/Written-By-Human-Not-By-AI-Badge-black.svg'
+    )
+  })
+
   it('keeps ordinary external and bookmark images on their original URL', () => {
     const source = 'https://images.example.com/cover.jpg?token=original'
 

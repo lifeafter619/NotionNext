@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
 import { checkStrIsNotionId, getLastPartOfUrl } from '@/lib/utils'
 import { idToUuid } from 'notion-utils'
 import BLOG from './blog.config'
@@ -49,6 +49,8 @@ const NON_PUBLIC_PAGE_ROOTS = new Set([
   'user'
 ])
 
+let redirectJsonPromise: Promise<Record<string, string>> | null = null
+
 function getRouteRoot(pathname: string) {
   const segments = pathname.split('/').filter(Boolean)
   if (segments.length === 0) return ''
@@ -91,31 +93,43 @@ function withPublicPageCache(req: NextRequest, response: NextResponse) {
  * @param ev
  * @returns
  */
-const noAuthProxy = async (req: NextRequest) => {
-  // 如果没有配置 Clerk 相关环境变量，返回一个默认响应或者继续处理请求
-  if (BLOG['UUID_REDIRECT']) {
-    let redirectJson: Record<string, string> = {}
-    try {
-      const response = await fetch(`${req.nextUrl.origin}/redirect.json`)
-      if (response.ok) {
-        redirectJson = (await response.json()) as Record<string, string>
-      }
-    } catch (err) {
-      console.error('Error fetching static file:', err)
-    }
-    let lastPart = getLastPartOfUrl(req.nextUrl.pathname) as string
-    if (checkStrIsNotionId(lastPart)) {
-      lastPart = idToUuid(lastPart)
-    }
-    if (lastPart && redirectJson[lastPart]) {
-      const redirectToUrl = req.nextUrl.clone()
-      redirectToUrl.pathname = '/' + redirectJson[lastPart]
-      console.log(
-        `redirect from ${req.nextUrl.pathname} to ${redirectToUrl.pathname}`
-      )
-      return NextResponse.redirect(redirectToUrl, 308)
-    }
+const getUuidRedirect = async (req: NextRequest) => {
+  const enabled =
+    BLOG.UUID_REDIRECT === true ||
+    ['true', '1', 'yes', 'on'].includes(
+      String(BLOG.UUID_REDIRECT).trim().toLowerCase()
+    )
+  if (!enabled) return null
+
+  let lastPart = getLastPartOfUrl(req.nextUrl.pathname) as string
+  if (!lastPart || !checkStrIsNotionId(lastPart)) return null
+  lastPart = idToUuid(lastPart)
+
+  if (!redirectJsonPromise) {
+    redirectJsonPromise = fetch(`${req.nextUrl.origin}/redirect.json`)
+      .then(async response => {
+        if (!response.ok) throw new Error(`redirect.json: ${response.status}`)
+        return (await response.json()) as Record<string, string>
+      })
+      .catch(error => {
+        redirectJsonPromise = null
+        console.error('Error fetching static redirect map:', error)
+        return {}
+      })
   }
+
+  const redirectJson = await redirectJsonPromise
+  if (!redirectJson[lastPart]) return null
+
+  const redirectToUrl = req.nextUrl.clone()
+  redirectToUrl.pathname = '/' + redirectJson[lastPart]
+  console.log(
+    `redirect from ${req.nextUrl.pathname} to ${redirectToUrl.pathname}`
+  )
+  return NextResponse.redirect(redirectToUrl, 308)
+}
+
+const noAuthProxy = async (req: NextRequest) => {
   return withPublicPageCache(req, NextResponse.next())
 }
 /**
@@ -146,4 +160,8 @@ const authProxy = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
     })
   : noAuthProxy
 
-export default authProxy
+export default async function proxy(req: NextRequest, event: NextFetchEvent) {
+  const redirect = await getUuidRedirect(req)
+  if (redirect) return redirect
+  return authProxy(req, event)
+}

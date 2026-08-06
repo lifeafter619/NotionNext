@@ -2,7 +2,7 @@ import { buildCommentTree, countReplies } from '@/lib/plugins/notionComments'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const ROOT_PAGE_SIZE = 10
-const REPLY_PAGE_SIZE = 2
+const REPLY_PAGE_SIZE = 5
 
 const formatTime = value => {
   const date = new Date(value)
@@ -26,65 +26,135 @@ const NotionComments = ({ postId }) => {
   const [website, setWebsite] = useState('')
   const [replyTo, setReplyTo] = useState('')
   const [expandedReplies, setExpandedReplies] = useState({})
-  const [visibleReplyCounts, setVisibleReplyCounts] = useState({})
-  const [visibleRootCount, setVisibleRootCount] = useState(ROOT_PAGE_SIZE)
+  const [replyStates, setReplyStates] = useState({})
+  const [rootCursor, setRootCursor] = useState(null)
+  const [rootHasMore, setRootHasMore] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [errorSource, setErrorSource] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const contentRef = useRef(null)
-  const loadRequestRef = useRef(0)
+  const loadRequestRef = useRef(new Map())
   const postIdRef = useRef(postId)
   postIdRef.current = postId
 
-  const loadComments = useCallback(async () => {
-    const requestId = loadRequestRef.current + 1
-    loadRequestRef.current = requestId
-    setLoading(true)
-    setError('')
-    setErrorSource('')
-    try {
-      const response = await fetch(
-        `/api/notion-comments?postId=${encodeURIComponent(postId)}`
-      )
-      if (!response.ok) throw new Error('Failed to load comments')
-      const result = await response.json()
-      if (!Array.isArray(result)) throw new Error('Invalid comments response')
-      if (loadRequestRef.current === requestId) setComments(result)
-    } catch {
-      if (loadRequestRef.current !== requestId) return
-      setError('评论加载失败，请重试')
-      setErrorSource('load')
-    } finally {
-      if (loadRequestRef.current === requestId) setLoading(false)
-    }
-  }, [postId])
+  const loadComments = useCallback(
+    async ({ cursor = null, parentId = null, append = false } = {}) => {
+      const requestedPostId = postId
+      const requestKey = parentId || 'root'
+      const requestId = (loadRequestRef.current.get(requestKey) || 0) + 1
+      loadRequestRef.current.set(requestKey, requestId)
+      const isCurrentRequest = () =>
+        postIdRef.current === requestedPostId &&
+        loadRequestRef.current.get(requestKey) === requestId
+
+      if (parentId) {
+        setReplyStates(current => ({
+          ...current,
+          [parentId]: {
+            ...current[parentId],
+            loading: true,
+            error: false
+          }
+        }))
+      } else {
+        setLoading(true)
+        setError('')
+        setErrorSource('')
+      }
+      try {
+        const response = await fetch(
+          `/api/notion-comments?postId=${encodeURIComponent(postId)}&pageSize=${
+            parentId ? REPLY_PAGE_SIZE : ROOT_PAGE_SIZE
+          }${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}${
+            parentId ? `&parentId=${encodeURIComponent(parentId)}` : ''
+          }`
+        )
+        if (!response.ok) throw new Error('Failed to load comments')
+        const result = await response.json()
+        if (!Array.isArray(result.comments)) {
+          throw new Error('Invalid comments response')
+        }
+        if (!isCurrentRequest()) return
+
+        if (parentId) {
+          setComments(current => {
+            const known = new Set(current.map(comment => comment.id))
+            return append
+              ? [...current, ...result.comments.filter(c => !known.has(c.id))]
+              : [...current, ...result.comments.filter(c => !known.has(c.id))]
+          })
+          setReplyStates(current => ({
+            ...current,
+            [parentId]: {
+              loaded: true,
+              loading: false,
+              error: false,
+              hasMore: Boolean(result.nextCursor),
+              cursor: result.nextCursor
+            }
+          }))
+        } else {
+          setComments(current => {
+            if (!append) return result.comments
+            const known = new Set(current.map(comment => comment.id))
+            return [
+              ...current,
+              ...result.comments.filter(c => !known.has(c.id))
+            ]
+          })
+          setRootCursor(result.nextCursor)
+          setRootHasMore(Boolean(result.nextCursor))
+        }
+        return result
+      } catch {
+        if (!isCurrentRequest()) return
+        if (parentId) {
+          setReplyStates(current => ({
+            ...current,
+            [parentId]: {
+              ...current[parentId],
+              loading: false,
+              error: true
+            }
+          }))
+        } else {
+          setError('评论加载失败，请重试')
+          setErrorSource('load')
+        }
+      } finally {
+        if (!parentId && isCurrentRequest()) setLoading(false)
+      }
+    },
+    [postId]
+  )
 
   useEffect(() => {
+    const requestMap = loadRequestRef.current
     setComments([])
     setContent('')
     setReplyTo('')
     setExpandedReplies({})
-    setVisibleReplyCounts({})
-    setVisibleRootCount(ROOT_PAGE_SIZE)
+    setReplyStates({})
+    setRootCursor(null)
+    setRootHasMore(false)
     setNotice('')
     setError('')
     setErrorSource('')
     setSubmitting(false)
     if (!postId) {
-      loadRequestRef.current += 1
+      requestMap.clear()
       setLoading(false)
       return
     }
     void loadComments()
     return () => {
-      loadRequestRef.current += 1
+      requestMap.clear()
     }
   }, [loadComments, postId])
 
   const commentTree = useMemo(() => buildCommentTree(comments), [comments])
-  const visibleRoots = commentTree.slice(0, visibleRootCount)
   const replyTarget = comments.find(comment => comment.id === replyTo)
 
   const submitComment = async event => {
@@ -125,8 +195,10 @@ const NotionComments = ({ postId }) => {
       )
       if (replyTo) {
         setExpandedReplies(current => ({ ...current, [replyTo]: true }))
+        await loadComments({ parentId: replyTo })
+      } else {
+        await loadComments()
       }
-      await loadComments()
     } catch (error) {
       if (postIdRef.current !== submittedPostId) return
       setError(
@@ -143,39 +215,40 @@ const NotionComments = ({ postId }) => {
   const startReply = comment => {
     setReplyTo(comment.id)
     setExpandedReplies(current => ({ ...current, [comment.id]: true }))
-    setVisibleReplyCounts(current => ({
-      ...current,
-      [comment.id]: current[comment.id] || REPLY_PAGE_SIZE
-    }))
+    if (!replyStates[comment.id]?.loaded && !replyStates[comment.id]?.loading) {
+      void loadComments({ parentId: comment.id })
+    }
     contentRef.current?.focus()
   }
 
   const toggleReplies = commentId => {
+    const state = replyStates[commentId]
+    if (!state?.loaded && !state?.loading) {
+      void loadComments({ parentId: commentId })
+    }
     setExpandedReplies(current => ({
       ...current,
       [commentId]: !current[commentId]
     }))
-    setVisibleReplyCounts(current => ({
-      ...current,
-      [commentId]: current[commentId] || REPLY_PAGE_SIZE
-    }))
   }
 
   const showMoreReplies = commentId => {
-    setVisibleReplyCounts(current => ({
-      ...current,
-      [commentId]: (current[commentId] || REPLY_PAGE_SIZE) + REPLY_PAGE_SIZE
-    }))
+    const state = replyStates[commentId]
+    if (!state?.hasMore || state.loading) return
+    void loadComments({
+      parentId: commentId,
+      cursor: state.cursor,
+      append: true
+    })
   }
 
   const renderComment = (comment, level = 0) => {
     const replies = comment.children || []
-    const hasReplies = replies.length > 0
+    const replyState = replyStates[comment.id] || {}
+    const hasReplies = replies.length > 0 || !replyState.loaded
     const repliesOpen = expandedReplies[comment.id] || level > 0
     const replyCount = countReplies(comment)
-    const visibleReplyCount = visibleReplyCounts[comment.id] || REPLY_PAGE_SIZE
-    const visibleReplies =
-      level === 0 ? replies.slice(0, visibleReplyCount) : replies
+    const visibleReplies = replies
 
     return (
       <article
@@ -213,7 +286,15 @@ const NotionComments = ({ postId }) => {
                 type='button'
                 className='text-gray-600 hover:underline dark:text-gray-300'
                 onClick={() => toggleReplies(comment.id)}>
-                {repliesOpen ? '收起回复' : `查看 ${replyCount} 条回复`}
+                {replyState.loading
+                  ? '加载回复…'
+                  : replyState.error
+                    ? '重试加载回复'
+                  : repliesOpen
+                    ? '收起回复'
+                    : replyState.loaded
+                      ? `查看 ${replyCount} 条回复`
+                      : '查看回复'}
               </button>
             )}
           </div>
@@ -221,7 +302,7 @@ const NotionComments = ({ postId }) => {
           {hasReplies && repliesOpen && (
             <div className='mt-3 space-y-1'>
               {visibleReplies.map(child => renderComment(child, level + 1))}
-              {level === 0 && visibleReplyCount < replies.length && (
+              {level === 0 && replyState.hasMore && (
                 <button
                   type='button'
                   className='ml-12 text-sm text-gray-600 hover:underline dark:text-gray-300'
@@ -354,15 +435,15 @@ const NotionComments = ({ postId }) => {
         )}
         {!loading &&
           !(errorSource === 'load' && comments.length === 0) &&
-          (visibleRoots.length ? (
+          (commentTree.length ? (
             <>
-              <div>{visibleRoots.map(comment => renderComment(comment))}</div>
-              {visibleRootCount < commentTree.length && (
+              <div>{commentTree.map(comment => renderComment(comment))}</div>
+              {rootHasMore && (
                 <button
                   type='button'
                   className='mt-4 w-full rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
                   onClick={() =>
-                    setVisibleRootCount(count => count + ROOT_PAGE_SIZE)
+                    void loadComments({ cursor: rootCursor, append: true })
                   }>
                   加载更多评论
                 </button>

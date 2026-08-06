@@ -3,7 +3,7 @@ import SmartLink from '@/components/SmartLink'
 import { useRef, useState } from 'react'
 import CONFIG from '../config'
 import Logo from './Logo'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 
 /**
  * 页脚
@@ -166,7 +166,7 @@ export default function Footer() {
           </div>
 
           {/* 开启邮件收集 */}
-          {JSON.parse(siteConfig('LANDING_NEWSLETTER', null, CONFIG)) && (
+          {siteConfigBoolean('LANDING_NEWSLETTER', false, CONFIG) && (
             <>
               {/* 5th block */}
               <div className='sm:col-span-6 md:col-span-3 lg:col-span-3'>

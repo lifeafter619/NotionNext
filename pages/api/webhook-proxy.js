@@ -2,6 +2,7 @@ import net from 'net'
 import * as dns from 'dns'
 import http from 'http'
 import https from 'https'
+import BLOG from '@/blog.config'
 
 const REQUEST_TIMEOUT_MS = 10000
 const BLOCKED_HEADER_NAMES = new Set([
@@ -17,6 +18,8 @@ const BLOCKED_HEADER_NAMES = new Set([
   'transfer-encoding',
   'upgrade'
 ])
+
+const WEBHOOK_ACTIONS = loadWebhookActions()
 
 export const config = {
   api: {
@@ -36,18 +39,26 @@ export default async function handler(req, res) {
     })
   }
 
-  const { url, payload = {}, headers = {} } = req.body || {}
+  if (!isSameOriginRequest(req)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Same-origin request required'
+    })
+  }
 
-  if (!url || typeof url !== 'string') {
+  const { actionId, payload = {} } = req.body || {}
+  const action = WEBHOOK_ACTIONS[actionId]
+
+  if (!action || typeof action.url !== 'string') {
     return res.status(400).json({
       success: false,
-      error: 'Missing url'
+      error: 'Unknown webhook action'
     })
   }
 
   let targetUrl
   try {
-    targetUrl = new URL(url)
+    targetUrl = new URL(action.url)
   } catch {
     return res.status(400).json({
       success: false,
@@ -67,7 +78,7 @@ export default async function handler(req, res) {
     const response = await postWebhookRequest({
       targetUrl,
       resolvedAddress: validation.address,
-      headers: sanitizeHeaders(headers),
+      headers: sanitizeHeaders(action.headers),
       body: JSON.stringify(payload)
     })
 
@@ -83,6 +94,47 @@ export default async function handler(req, res) {
       error: 'Webhook request failed'
     })
   }
+}
+
+function loadWebhookActions() {
+  const raw = process.env.NOTION_WEBHOOK_ACTIONS
+  if (!raw) return Object.create(null)
+
+  try {
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : Object.create(null)
+  } catch {
+    console.error('[webhook-proxy] invalid NOTION_WEBHOOK_ACTIONS JSON')
+    return Object.create(null)
+  }
+}
+
+function isSameOriginRequest(req) {
+  const origin = req.headers?.origin
+  const referer = req.headers?.referer
+  let requestOrigin = origin
+  if (!requestOrigin && referer) {
+    try {
+      requestOrigin = new URL(referer).origin
+    } catch {
+      return false
+    }
+  }
+  if (!requestOrigin) return false
+
+  const configuredOrigin = (() => {
+    try {
+      return new URL(BLOG.LINK).origin
+    } catch {
+      return null
+    }
+  })()
+  const hostOrigin = req.headers?.host
+    ? `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
+    : null
+  return requestOrigin === configuredOrigin || requestOrigin === hostOrigin
 }
 
 function postWebhookRequest({ targetUrl, resolvedAddress, headers, body }) {

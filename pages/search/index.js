@@ -8,7 +8,8 @@ import { overwriteAlgoliaSearch } from '@/lib/plugins/algolia'
 import { getPageContentText } from '@/lib/db/notion/getPageContentText'
 import { hasAlgoliaAdminConfig } from '@/lib/plugins/algoliaConfig'
 import { idToUuid } from 'notion-utils'
-import { useMemo } from 'react'
+import { adapterNotionBlockMap } from '@/lib/utils/notion.util'
+import { useEffect, useMemo, useState } from 'react'
 
 const MAX_SEARCH_SNIPPETS = 3
 
@@ -49,16 +50,37 @@ function getSearchSnippets(bodyContent, lowerBodyContent, searchKeyword) {
  */
 const Search = props => {
   const { posts } = props
+  const [searchIndex, setSearchIndex] = useState(null)
 
   const router = useRouter()
   const keyword = router?.query?.s
+
+  useEffect(() => {
+    if (
+      searchIndex ||
+      !props.searchIndexUrl ||
+      !normalizeSearchKeyword(keyword)
+    ) {
+      return undefined
+    }
+    let cancelled = false
+    fetch(props.searchIndexUrl)
+      .then(response => (response.ok ? response.json() : null))
+      .then(index => {
+        if (!cancelled && Array.isArray(index)) setSearchIndex(index)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [keyword, props.searchIndexUrl, searchIndex])
 
   // 使用 useMemo 优化过滤性能，避免每次渲染都重新计算
   const filteredPosts = useMemo(() => {
     const searchKeyword = normalizeSearchKeyword(keyword)
     if (!searchKeyword) return []
 
-    return posts.reduce((results, post) => {
+    return (searchIndex || posts).reduce((results, post) => {
       const metaContent = [
         post.title,
         post.summary,
@@ -82,9 +104,22 @@ const Search = props => {
       })
       return results
     }, [])
-  }, [keyword, posts])
+  }, [keyword, posts, searchIndex])
 
-  const newProps = { ...props, posts: filteredPosts }
+  const totalCount = filteredPosts.length
+  const page = Math.max(1, Number.parseInt(router?.query?.page, 10) || 1)
+  const pageSize = Number(siteConfig('POSTS_PER_PAGE', 12, props.NOTION_CONFIG))
+  const pagePosts =
+    siteConfig('POST_LIST_STYLE', 'page', props.NOTION_CONFIG) === 'scroll'
+      ? filteredPosts
+      : filteredPosts.slice((page - 1) * pageSize, page * pageSize)
+  const newProps = {
+    ...props,
+    posts: pagePosts,
+    postCount: totalCount,
+    page,
+    keyword: typeof keyword === 'string' ? keyword : ''
+  }
 
   const theme = siteConfig('THEME', BLOG.THEME, props.NOTION_CONFIG)
   return <DynamicLayout theme={theme} layoutName='LayoutSearch' {...newProps} />
@@ -169,9 +204,13 @@ export async function getStaticProps({ locale }) {
       // 尝试获取全文内容
       if (!newPost.content && !newPost.blockMap?.rawText) {
         try {
-          const blockMap = await getPage(post.id, 'search-index', {
+          const rawBlockMap = await getPage(post.id, 'search-index', {
             cacheVersion: post.lastEditedDate
           })
+          // Build caches may contain Notion's nested record-map shape
+          // ({ value: { value: block } }). Normalize it before reading the
+          // root content IDs and passing the map to the text extractor.
+          const blockMap = adapterNotionBlockMap(rawBlockMap)
           // 提取blockMap中的content字段(BlockID列表)到post中，以便getPageContentText遍历
           const pId = idToUuid(post.id)
           let contentIds = []
@@ -231,6 +270,49 @@ export async function getStaticProps({ locale }) {
         ext: p.ext
       }
     })
+
+  const searchIndex = validPosts
+    .filter(p => p !== null)
+    .map(p => ({
+      id: p.id,
+      slug: p.slug,
+      href: p.href ?? null,
+      title: p.title ?? null,
+      summary: p.summary,
+      tags: p.tags,
+      category: p.category,
+      type: p.type ?? null,
+      status: p.status ?? null,
+      publishDate: p.publishDate ?? null,
+      lastEditedDate: p.lastEditedDate ?? null,
+      pageCover: p.pageCover,
+      pageCoverThumbnail: p.pageCoverThumbnail,
+      content: p.content ?? null,
+      ext: p.ext
+    }))
+
+  const searchIndexFile = `search-index.${String(locale || 'default').replace(
+    /[^a-z0-9_-]/gi,
+    '_'
+  )}.json`
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const fs = require('node:fs')
+      const path = require('node:path')
+      const publicDir = path.join(process.cwd(), 'public')
+      fs.mkdirSync(publicDir, { recursive: true })
+      fs.writeFileSync(
+        path.join(publicDir, searchIndexFile),
+        JSON.stringify(searchIndex)
+      )
+    } catch (error) {
+      console.error('Search index write failed', error)
+    }
+  }
+
+  props.posts = searchIndex.map(({ content, ...post }) => post)
+  props.postCount = props.posts.length
+  props.searchIndexUrl = `/${searchIndexFile}`
 
   // 上传数据到 Algolia
   if (

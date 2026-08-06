@@ -16,16 +16,24 @@ jest.mock('@/themes/heo/components/Card', () => {
 
 describe('HEO VisitorInfoCard storage and privacy handling', () => {
   let getItem
+  let setItem
 
   beforeEach(() => {
     mockSiteConfig.mockReturnValue(false)
     getItem = jest
       .spyOn(Storage.prototype, 'getItem')
-      .mockReturnValue('not-a-number')
-    fetch.mockResolvedValue({
-      json: async () => ({
-        code: 500
+      .mockImplementation(function () {
+        return this === window.localStorage ? 'not-a-number' : null
       })
+    setItem = jest.spyOn(Storage.prototype, 'setItem')
+    window.requestIdleCallback = jest.fn(callback => {
+      callback()
+      return 1
+    })
+    window.cancelIdleCallback = jest.fn()
+    fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ city: '上海市' })
     })
   })
 
@@ -42,46 +50,48 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
     }
   )
 
-  it('uses the fallback location service when explicitly enabled', async () => {
+  it('uses the same-origin location endpoint when explicitly enabled', async () => {
     mockSiteConfig.mockReturnValue(true)
-    fetch
-      .mockRejectedValueOnce(new Error('primary service unavailable'))
-      .mockResolvedValueOnce({
-        json: async () => ({
-          city: 'Shanghai',
-          region: 'Shanghai',
-          country_name: 'China'
-        })
-      })
 
     render(<VisitorInfoCard />)
 
     expect(screen.getByText('加载中...')).toBeInTheDocument()
     await waitFor(() =>
-      expect(screen.getByText('Shanghai')).toBeInTheDocument()
+      expect(screen.getByText('上海市')).toBeInTheDocument()
     )
-    expect(fetch).toHaveBeenNthCalledWith(
-      1,
-      'https://api.vore.top/api/IPdata',
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/visitor-location',
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     )
-    expect(fetch).toHaveBeenNthCalledWith(
-      2,
-      'https://ipapi.co/json/',
-      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(setItem).toHaveBeenCalledWith(
+      'heo_visitor_location',
+      '上海市'
     )
   })
 
-  it('shows an unknown location when both enabled services fail', async () => {
+  it('shows an unknown location when the location endpoint fails', async () => {
     mockSiteConfig.mockReturnValue(true)
-    fetch.mockRejectedValue(new Error('location services unavailable'))
+    fetch.mockRejectedValue(new Error('location service unavailable'))
 
     render(<VisitorInfoCard />)
 
     await waitFor(() =>
       expect(screen.getByText('未知地区')).toBeInTheDocument()
     )
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('reuses the session location without another request', async () => {
+    mockSiteConfig.mockReturnValue(true)
+    getItem.mockImplementation(function () {
+      return this === window.sessionStorage ? '北京市' : 'not-a-number'
+    })
+
+    render(<VisitorInfoCard />)
+
+    expect(screen.getByText('北京市')).toBeInTheDocument()
+    await waitFor(() => expect(fetch).not.toHaveBeenCalled())
   })
 
   it('describes Busuanzi site views as cumulative views', () => {
@@ -126,9 +136,5 @@ describe('HEO VisitorInfoCard storage and privacy handling', () => {
 
     unmount()
     setIntervalSpy.mockRestore()
-  })
-
-  afterEach(() => {
-    getItem?.mockRestore()
   })
 })

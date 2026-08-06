@@ -87,7 +87,7 @@ export const Header = props => {
     if (e.keyCode === 13) {
       const search = document.getElementById('search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + encodeURIComponent(search) })
+        router.push({ pathname: '/search', query: { s: search } })
       }
     }
   }
@@ -95,7 +95,7 @@ export const Header = props => {
   const handleSearch = () => {
     const search = document.getElementById('search')?.value?.trim()
     if (search) {
-      router.push({ pathname: '/search/' + encodeURIComponent(search) })
+      router.push({ pathname: '/search', query: { s: search } })
     }
   }
 

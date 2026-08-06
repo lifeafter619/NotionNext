@@ -16,7 +16,7 @@ export default function PostInfo(props) {
           {post?.type !== 'Page' && (
             <>
               <SmartLink
-                href={`/category/${post?.category}`}
+                href={`/category/${encodeURIComponent(post?.category)}`}
                 passHref
                 className='cursor-pointer text-xs font-bold hover:underline mr-2'>
                 {post?.category}

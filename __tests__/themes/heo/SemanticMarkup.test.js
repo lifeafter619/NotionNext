@@ -130,6 +130,11 @@ jest.mock('@/components/LoadingCover', () => () => null)
 jest.mock('@/components/Mark', () => jest.fn())
 jest.mock('@/components/SearchHighlightNav', () => () => null)
 jest.mock('@/components/ArticleExpirationNotice', () => () => null)
+jest.mock('@/components/NotionPage', () => {
+  return function MockNotionPage({ contentId = 'notion-article' }) {
+    return <div id={contentId}>Notion body</div>
+  }
+})
 
 jest.mock('@/themes/heo/components/BlogPostArchive', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListPage', () => () => null)

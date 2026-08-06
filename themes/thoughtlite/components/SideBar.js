@@ -55,13 +55,13 @@ export const SideBar = props => {
               return (
                 <SmartLink
                   key={category.name}
-                  href={`/category/${category.name}`}
+                  href={`/category/${encodeURIComponent(category.name)}`}
                   passHref
                   legacyBehavior>
                   <li>
                     {' '}
                     <a
-                      href={`/category/${category.name}`}
+                      href={`/category/${encodeURIComponent(category.name)}`}
                       className='text-sm text-[var(--tl-muted)] hover:text-[var(--tl-accent)]'>
                       {category.name}({category.count})
                     </a>

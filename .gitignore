@@ -60,6 +60,7 @@ output/
 /public/robots.txt
 /public/sitemap.xml
 /public/rss/*
+/public/search-index.*.json
 /sitemap.xml
 
 # yarn

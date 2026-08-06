@@ -31,7 +31,7 @@ const BlogItem = ({ post, variant = 'default' }) => {
           </SmartLink>
           {post?.type !== 'Page' && post?.category && (
             <SmartLink
-              href={`/category/${post.category}`}
+              href={`/category/${encodeURIComponent(post.category)}`}
               className='text-xs text-[var(--tl-faint)] no-underline hover:text-[var(--tl-accent)]'>
               #{post.category}
             </SmartLink>
@@ -80,7 +80,7 @@ const BlogItem = ({ post, variant = 'default' }) => {
             <>
               <span className='font-bold mx-1'> | </span>
               <SmartLink
-                href={`/category/${post.category}`}
+                href={`/category/${encodeURIComponent(post.category)}`}
                 className='text-[var(--tl-muted)] hover:underline'>
                 {post.category}
               </SmartLink>
