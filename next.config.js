@@ -443,10 +443,15 @@ const nextConfig = {
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
             // 将大型第三方库单独分割
+            // 注意：必须用 chunks:'async'。_app 静态引入了 react-notion-x 的
+            // styles.css（其 JS wrapper 模块也命中本 test），若为 'all'，
+            // 合并后的命名 chunk 会因包含 _app 初始模块而变成全站首屏必载，
+            // 白白拖慢所有非文章页。'async' 下 CSS wrapper 留在 _app（体积极小），
+            // 真正的渲染器代码只在异步 chunk 中按需加载。
             notionRenderer: {
               test: /[\\/]node_modules[\\/](react-notion-x)[\\/]/,
               name: 'notion-renderer',
-              chunks: 'all',
+              chunks: 'async',
               priority: 30
             }
           }
