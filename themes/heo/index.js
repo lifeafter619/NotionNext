@@ -1445,7 +1445,8 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
 }
 
 /**
- * 标签列表 - 使用绿色/青色主题，与分类页面形成视觉区分
+ * 标签列表
+ * 页头卡片 + 统一 pill 标签云（点击预览）+ 热门标签文章分组
  * @param {*} props
  * @returns
  */
@@ -1474,48 +1475,36 @@ const LayoutTagIndex = props => {
   const selectedPosts = selectedTag
     ? getPreviewPostsByTag(selectedTag).slice(0, 8)
     : []
-  const tagCounts = safeTagOptions.map(tag => getFiniteNumber(tag?.count, 0))
-  const maxTagCount = Math.max(1, ...tagCounts)
+
+  // 标签云按文章数降序
+  const sortedTagOptions = [...safeTagOptions].sort(
+    (a, b) => getFiniteNumber(b?.count, 0) - getFiniteNumber(a?.count, 0)
+  )
 
   return (
     <div id='tag-outer-wrapper' className='px-5 mt-8 md:px-0'>
-      {/* 标签页面头部 - 使用绿色/青色主题 */}
-      <div className='mb-8 p-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-white'>
-        <div className='flex items-center gap-3'>
-          <i className='fas fa-tags text-3xl'></i>
-          <div>
-            <h1 className='text-3xl font-bold'>{locale.COMMON.TAGS}</h1>
-            <p className='text-emerald-100 mt-1'>
-              共 {safeTagOptions.length} 个标签
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* 页头卡片 */}
+      <PageHeaderCard
+        icon='fas fa-tags'
+        title={locale.COMMON.TAGS}
+        subtitle={`共 ${safeTagOptions.length} 个标签`}
+      />
 
-      {/* 标签云 - 交互式设计 */}
-      <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-8'>
-        <h2 className='text-lg font-bold dark:text-white mb-4 flex items-center gap-2'>
-          <i className='fas fa-cloud text-emerald-500'></i>
-          标签云
-        </h2>
+      {/* 标签云 - 统一 pill，点击预览 */}
+      <div className='wow fadeInUp bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-600 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] transition-colors duration-300 mb-8'>
         <div className='flex flex-wrap gap-2'>
-          {safeTagOptions.map(tag => {
-            // 根据文章数量计算标签大小
+          {sortedTagOptions.map(tag => {
             const count = getFiniteNumber(tag?.count, 0)
-            const minSize = 0.8
-            const maxSize = 1.4
-            const size = minSize + (count / maxTagCount) * (maxSize - minSize)
             const isSelected = selectedTag === tag.name
 
             return (
               <button
                 key={tag.name}
                 onClick={() => setSelectedTag(isSelected ? null : tag.name)}
-                style={{ fontSize: `${size}rem` }}
-                className={`px-3 py-1.5 rounded-full transition-all duration-300 ${
+                className={`px-3 py-1.5 rounded-full text-sm border transition-all duration-200 ${
                   isSelected
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg scale-105'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400'
+                    ? 'bg-indigo-600 dark:bg-yellow-600 text-white border-transparent shadow-md scale-105'
+                    : 'bg-[#f1f3f8] dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-transparent hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] hover:text-[var(--heo-color-primary)] dark:hover:text-[var(--heo-color-accent)]'
                 }`}>
                 #{tag.name}
                 <sup className='ml-1 text-xs opacity-70'>{count}</sup>
@@ -1527,17 +1516,17 @@ const LayoutTagIndex = props => {
 
       {/* 选中标签的文章预览 */}
       {selectedTag && selectedPosts.length > 0 && (
-        <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700 mb-8 animate-fade-in'>
-          <div className='flex items-center justify-between mb-6'>
-            <h2 className='text-xl font-bold dark:text-white flex items-center gap-2'>
-              <span className='px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full text-sm'>
+        <div className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-600 mb-8 animate-fade-in'>
+          <div className='flex items-center justify-between mb-6 gap-3'>
+            <h2 className='text-xl font-extrabold dark:text-white flex items-center gap-2 min-w-0'>
+              <span className='flex-shrink-0 px-3 py-1 bg-indigo-600 dark:bg-yellow-600 text-white rounded-full text-sm'>
                 #{selectedTag}
               </span>
-              的相关文章
+              <span className='truncate'>的相关文章</span>
             </h2>
             <SmartLink
               href={'/tag/' + encodeURIComponent(selectedTag)}
-              className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
+              className='flex-shrink-0 text-sm font-bold text-[var(--heo-color-primary)] dark:text-[var(--heo-color-accent)] hover:underline flex items-center gap-1'>
               查看全部 <i className='fas fa-arrow-right text-xs' />
             </SmartLink>
           </div>
@@ -1564,30 +1553,25 @@ const LayoutTagIndex = props => {
           return (
             <div
               key={tag.name}
-              className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
+              className='wow fadeInUp bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-600 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] transition-colors duration-300'>
               {/* 标签标题 */}
-              <div className='flex items-center justify-between mb-5'>
-                <div className='flex items-center gap-3'>
-                  <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center'>
-                    <i className='fas fa-hashtag text-white'></i>
-                  </div>
-                  <div>
-                    <h2 className='text-xl font-bold dark:text-white'>
-                      #{tag.name}
-                    </h2>
-                    <span className='text-sm text-gray-500 dark:text-gray-400'>
-                      {getFiniteNumber(tag?.count, 0)} 篇文章
-                    </span>
-                  </div>
+              <div className='flex items-center justify-between mb-5 gap-3'>
+                <div className='flex items-center gap-3 min-w-0'>
+                  <h2 className='text-xl font-extrabold dark:text-white truncate'>
+                    #{tag.name}
+                  </h2>
+                  <span className='flex-shrink-0 px-2 py-0.5 rounded-full bg-[#f1f3f8] dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400'>
+                    {getFiniteNumber(tag?.count, 0)} 篇
+                  </span>
                 </div>
                 <SmartLink
                   href={`/tag/${encodeURIComponent(tag.name)}`}
-                  className='px-4 py-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
+                  className='flex-shrink-0 text-sm font-bold text-[var(--heo-color-primary)] dark:text-[var(--heo-color-accent)] hover:underline flex items-center gap-1'>
                   查看全部 <i className='fas fa-arrow-right text-xs' />
                 </SmartLink>
               </div>
 
-              {/* 文章卡片 - 网格大图布局 */}
+              {/* 文章卡片 - 网格布局 */}
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                 {posts?.map((post, index) => (
                   <TagPostCard
@@ -1621,7 +1605,7 @@ const TagPostCard = ({ post, index, siteInfo }) => {
 
   return (
     <SmartLink href={postHref}>
-      <article className='group cursor-pointer rounded-xl overflow-hidden border dark:border-gray-700 hover:shadow-lg hover:border-emerald-500 dark:hover:border-teal-500 transition-all duration-300'>
+      <article className='group cursor-pointer rounded-xl overflow-hidden border dark:border-gray-700 hover:shadow-lg hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] transition-all duration-300'>
         {/* 大封面图 */}
         {showCover && (
           <div className='heo-post-cover w-full overflow-hidden bg-gray-100 dark:bg-gray-800'>
@@ -1639,7 +1623,7 @@ const TagPostCard = ({ post, index, siteInfo }) => {
         {/* 文章信息 */}
         <div className='p-4'>
           {/* 标题 - 完整显示 */}
-          <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-emerald-600 dark:group-hover:text-teal-400 transition-colors leading-relaxed'>
+          <h3 className='font-bold text-gray-800 dark:text-gray-100 group-hover:text-[var(--heo-color-primary)] dark:group-hover:text-[var(--heo-color-accent)] transition-colors leading-relaxed'>
             {title}
           </h3>
           {/* 摘要 */}
