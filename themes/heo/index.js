@@ -1235,6 +1235,7 @@ const Layout404 = props => {
 
 /**
  * 分类列表
+ * 页头卡片 + 分类封面网格 + 每分类最新文章预览
  * @param {*} props
  * @returns
  */
@@ -1250,81 +1251,66 @@ const LayoutCategoryIndex = props => {
       ? allPages
       : []
 
+  const getPostsByCategory = categoryName =>
+    safePreviewPosts.filter(
+      p => p?.category === categoryName && p?.status === 'Published'
+    )
+
   return (
     <div id='category-outer-wrapper' className='mt-8 px-5 md:px-0'>
-      {/* 分类页面头部 - 使用蓝色/紫色主题 */}
-      <div className='mb-8 p-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl text-white'>
-        <div className='flex items-center gap-3'>
-          <i className='fas fa-folder-open text-3xl'></i>
-          <div>
-            <h1 className='text-3xl font-bold'>{locale.COMMON.CATEGORY}</h1>
-            <p className='text-blue-100 mt-1'>
-              共 {safeCategoryOptions.length} 个分类
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* 页头卡片 */}
+      <PageHeaderCard
+        icon='fas fa-folder-open'
+        title={locale.COMMON.CATEGORY}
+        subtitle={`共 ${safeCategoryOptions.length} 个分类`}
+      />
 
-      {/* 分类统计卡片 */}
-      <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-8'>
-        {safeCategoryOptions.map(category => (
-          <SmartLink
-            key={category.name}
-            href={`/category/${encodeURIComponent(category.name)}`}
-            className='p-4 bg-white dark:bg-[#1e1e1e] rounded-xl border dark:border-gray-700 hover:border-blue-500 dark:hover:border-purple-500 hover:shadow-lg transition-all duration-300 group'>
-            <div className='flex flex-col items-center text-center'>
-              <div className='w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform'>
-                <i className='fas fa-folder text-blue-500 dark:text-blue-400'></i>
-              </div>
-              <span className='font-medium text-gray-800 dark:text-gray-200 text-sm truncate w-full'>
-                {category.name}
-              </span>
-              <span className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                {getFiniteNumber(category?.count, 0)} 篇文章
-              </span>
-            </div>
-          </SmartLink>
-        ))}
+      {/* 分类封面卡片网格 */}
+      <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8'>
+        {safeCategoryOptions.map((category, index) => {
+          const posts = getPostsByCategory(category.name)
+          const cover = posts.find(p => p?.pageCoverThumbnail)
+            ?.pageCoverThumbnail
+          return (
+            <CategoryCard
+              key={category.name}
+              category={category}
+              cover={cover}
+              prioritize={index < 4}
+            />
+          )
+        })}
       </div>
 
       {/* 分类文章列表 */}
       <div id='category-list' className='space-y-10'>
         {safeCategoryOptions.map(category => {
-          const posts = safePreviewPosts
-            .filter(
-              p => p?.category === category.name && p?.status === 'Published'
-            )
-            .slice(0, 4) // 每个分类显示4篇文章
+          const posts = getPostsByCategory(category.name).slice(0, 4) // 每个分类显示4篇文章
 
           if (!posts || posts.length === 0) return null
 
           return (
             <div
               key={category.name}
-              className='bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-700'>
+              className='wow fadeInUp bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 border dark:border-gray-600 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] transition-colors duration-300'>
               {/* 分类标题 */}
-              <div className='flex items-center justify-between mb-6'>
-                <div className='flex items-center gap-3'>
-                  <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center'>
-                    <i className='fas fa-folder text-white'></i>
-                  </div>
-                  <div>
-                    <h2 className='text-xl font-bold dark:text-white'>
-                      {category.name}
-                    </h2>
-                    <span className='text-sm text-gray-500 dark:text-gray-400'>
-                      {getFiniteNumber(category?.count, 0)} 篇文章
-                    </span>
-                  </div>
+              <div className='flex items-center justify-between mb-6 gap-3'>
+                <div className='flex items-center gap-3 min-w-0'>
+                  <h2 className='text-xl font-extrabold dark:text-white truncate'>
+                    {category.name}
+                  </h2>
+                  <span className='flex-shrink-0 px-2 py-0.5 rounded-full bg-[#f1f3f8] dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400'>
+                    {getFiniteNumber(category?.count, 0)} 篇
+                  </span>
                 </div>
                 <SmartLink
                   href={`/category/${encodeURIComponent(category.name)}`}
-                  className='px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-medium text-sm flex items-center gap-2'>
+                  className='flex-shrink-0 text-sm font-bold text-[var(--heo-color-primary)] dark:text-[var(--heo-color-accent)] hover:underline flex items-center gap-1'>
                   查看全部 <i className='fas fa-arrow-right text-xs' />
                 </SmartLink>
               </div>
 
-              {/* 文章卡片 - 横向大图布局 */}
+              {/* 文章卡片 - 横向布局 */}
               <div className='space-y-4'>
                 {posts?.map((post, index) => (
                   <CategoryPostCard
@@ -1340,6 +1326,54 @@ const LayoutCategoryIndex = props => {
         })}
       </div>
     </div>
+  )
+}
+
+/**
+ * 分类网格卡片 - 最新文章封面做卡底，无封面降级为 muted + 图标
+ */
+const CategoryCard = ({ category, cover, prioritize }) => {
+  if (!category?.name) return null
+  const count = getFiniteNumber(category?.count, 0)
+
+  return (
+    <SmartLink
+      href={`/category/${encodeURIComponent(category.name)}`}
+      className='wow fadeInUp group relative block heo-post-cover rounded-xl overflow-hidden border dark:border-gray-600 bg-[#f1f3f8] dark:bg-gray-800 hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] hover:shadow-lg transition-all duration-300'>
+      {cover ? (
+        <>
+          <LazyImage
+            priority={prioritize}
+            width={505}
+            height={220}
+            sizes='(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw'
+            src={cover}
+            alt={category.name}
+            className='absolute inset-0 h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500'
+          />
+          {/* 中性黑色遮罩 */}
+          <div className='absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent' />
+          <div className='absolute bottom-0 left-0 right-0 p-4'>
+            <div className='font-extrabold text-lg text-white truncate'>
+              {category.name}
+            </div>
+            <div className='text-xs text-white opacity-80 mt-0.5'>
+              {count} 篇文章
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className='absolute inset-0 flex flex-col items-center justify-center p-4'>
+          <i className='fas fa-folder text-2xl text-[var(--heo-color-primary)] dark:text-[var(--heo-color-accent)] mb-2' />
+          <div className='font-extrabold text-black dark:text-gray-100 truncate w-full text-center'>
+            {category.name}
+          </div>
+          <div className='text-xs text-gray-600 dark:text-gray-400 mt-0.5'>
+            {count} 篇文章
+          </div>
+        </div>
+      )}
+    </SmartLink>
   )
 }
 
@@ -1360,7 +1394,7 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
 
   return (
     <SmartLink href={postHref}>
-      <article className='flex flex-col md:flex-row gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-300 group cursor-pointer'>
+      <article className='flex flex-col md:flex-row gap-4 p-4 rounded-xl hover:bg-[#f1f3f8] dark:hover:bg-gray-800/60 transition-all duration-300 group cursor-pointer'>
         {/* 大封面图 */}
         {showCover && (
           <div className='heo-post-cover w-full md:w-64 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800'>
@@ -1379,7 +1413,7 @@ const CategoryPostCard = ({ post, index, siteInfo }) => {
         <div className='flex-1 flex flex-col justify-between py-1'>
           <div>
             {/* 标题 - 完整显示，不截断 */}
-            <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-purple-400 transition-colors leading-relaxed'>
+            <h3 className='text-lg font-bold text-gray-800 dark:text-gray-100 group-hover:text-[var(--heo-color-primary)] dark:group-hover:text-[var(--heo-color-accent)] transition-colors leading-relaxed'>
               {title}
             </h3>
             {/* 摘要 */}
