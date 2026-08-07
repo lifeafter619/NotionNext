@@ -20,7 +20,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
-import BlogPostArchive from './components/BlogPostArchive'
+import ArchiveTimeline from './components/ArchiveTimeline'
 import BlogPostListPage from './components/BlogPostListPage'
 import BlogPostListScroll from './components/BlogPostListScroll'
 import CategoryBar from './components/CategoryBar'
@@ -29,6 +29,7 @@ import Footer from './components/Footer'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import LatestPostsGroup from './components/LatestPostsGroup'
+import PageHeaderCard from './components/PageHeaderCard'
 import { NoticeBar } from './components/NoticeBar'
 import PostHeader from './components/PostHeader'
 import { PostLock } from './components/PostLock'
@@ -986,25 +987,40 @@ const SearchResultGridCard = ({
  * @returns
  */
 const LayoutArchive = props => {
-  const { archivePosts } = props
+  const { archivePosts, categoryOptions, tagOptions } = props
+  const { locale } = useGlobal()
   const safeArchivePosts =
     archivePosts && typeof archivePosts === 'object' ? archivePosts : {}
 
-  // 归档页顶部显示条，如果是默认归档则不显示。分类详情页显示分类列表，标签详情页显示当前标签
+  // 页头统计
+  const postTotal = Object.values(safeArchivePosts).reduce(
+    (sum, list) =>
+      sum + (Array.isArray(list) ? list.filter(Boolean).length : 0),
+    0
+  )
+  const categoryTotal = Array.isArray(categoryOptions)
+    ? categoryOptions.filter(category => category?.name).length
+    : 0
+  const tagTotal = Array.isArray(tagOptions)
+    ? tagOptions.filter(tag => tag?.name).length
+    : 0
 
   return (
-    <div className='p-5 rounded-xl border dark:border-gray-600 max-w-6xl w-full bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)]'>
-      {/* 文章分类条 */}
-      <CategoryBar {...props} border={false} />
+    <div className='max-w-6xl w-full'>
+      {/* 页头卡片 */}
+      <PageHeaderCard
+        icon='fas fa-archive'
+        title={locale.NAV.ARCHIVE}
+        subtitle={`共 ${postTotal} 篇文章 · ${categoryTotal} 个分类 · ${tagTotal} 个标签`}
+      />
 
-      <div className='px-3'>
-        {Object.keys(safeArchivePosts).map(archiveTitle => (
-          <BlogPostArchive
-            key={archiveTitle}
-            posts={safeArchivePosts[archiveTitle]}
-            archiveTitle={archiveTitle}
-          />
-        ))}
+      <div className='p-5 rounded-xl border dark:border-gray-600 bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)]'>
+        {/* 文章分类条 */}
+        <CategoryBar {...props} border={false} />
+
+        <div className='px-3'>
+          <ArchiveTimeline archivePosts={safeArchivePosts} />
+        </div>
       </div>
     </div>
   )
