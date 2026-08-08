@@ -183,14 +183,20 @@ const LayoutBase = props => {
             {children}
           </div>
 
-          <div className='lg:px-2'></div>
+          {/* 右侧栏：slotRight 为空（404 等场景）时整条不渲染，
+              避免留下一条 288px 的空列把内容挤向左侧 */}
+          {slotRight && (
+            <>
+              <div className='lg:px-2'></div>
 
-          <div
-            id='sideRightSlot'
-            className='hidden xl:block h-full w-72 flex-shrink-0'>
-            {/* 主区快右侧 */}
-            {slotRight}
-          </div>
+              <div
+                id='sideRightSlot'
+                className='hidden xl:block h-full w-72 flex-shrink-0'>
+                {/* 主区快右侧 */}
+                {slotRight}
+              </div>
+            </>
+          )}
         </div>
       </main>
 
@@ -1180,9 +1186,8 @@ const Layout404 = props => {
   const { onLoading, fullWidth } = useGlobal()
   return (
     <>
-      {/* 主区块 */}
-      <main
-        id='wrapper-outer'
+      {/* 主区块（LayoutBase 已提供 <main>，这里用普通容器，避免嵌套 main 与重复 id） */}
+      <div
         className={`flex-grow ${fullWidth ? '' : 'max-w-4xl'} w-full mx-auto px-5`}>
         <div id='error-wrapper' className={'w-full mx-auto justify-center'}>
           <Transition
@@ -1228,7 +1233,7 @@ const Layout404 = props => {
             </div>
           </Transition>
         </div>
-      </main>
+      </div>
     </>
   )
 }
