@@ -12,7 +12,11 @@ const __dirname = dirname(__filename)
 const typeCheckedConfigs = tseslint.configs.recommendedTypeChecked.map(
   config => ({
     ...config,
+    // Type-checked rules only apply to tsconfig-backed files (.mjs/.cjs are
+    // Node scripts outside the tsconfig project; they get a separate block
+    // below with parserOptions.project disabled).
     files: ['**/*.{js,jsx,ts,tsx}'],
+    ignores: ['**/*.{mjs,cjs}'],
     languageOptions: {
       ...config.languageOptions,
       parserOptions: {
@@ -38,6 +42,30 @@ export default defineConfig([
       'test-results/**',
       'next-env.d.ts'
     ]
+  },
+  // .mjs/.cjs Node scripts (cloudflare workers, build scripts) are not part of
+  // the tsconfig project and must not be type-checked; relax the type-checked
+  // parser requirements and provide a Node environment for them.
+  {
+    files: ['**/*.{mjs,cjs}'],
+    languageOptions: {
+      parserOptions: {
+        project: false
+      }
+    },
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      'no-undef': 'off'
+    }
   },
   ...nextVitals,
   ...nextTs,
@@ -79,7 +107,7 @@ export default defineConfig([
     }
   },
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,mjs,cjs}'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',

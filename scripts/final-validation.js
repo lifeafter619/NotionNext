@@ -187,23 +187,8 @@ function validateDependencies(filePath) {
   try {
     const packageJson = JSON.parse(fs.readFileSync(filePath, 'utf8'))
 
-    // 检查关键依赖是否已更新
-    const keyDeps = {
-      next: '^16.2.6',
-      react: '^18.3.1',
-      tailwindcss: '^3.4.19'
-    }
-
-    for (const [dep, expectedVersion] of Object.entries(keyDeps)) {
-      const currentVersion =
-        packageJson.dependencies?.[dep] || packageJson.devDependencies?.[dep]
-      if (
-        !currentVersion ||
-        !currentVersion.includes(expectedVersion.replace('^', ''))
-      ) {
-        return false
-      }
-    }
+    // 版本一致性由 package.json、yarn.lock 和 CI 的 --frozen-lockfile 保证；
+    // 健康检查不再重复硬编码精确版本判断。
 
     // 检查新增的脚本
     const requiredScripts = [

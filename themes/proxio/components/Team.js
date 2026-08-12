@@ -4,7 +4,7 @@ import LazyImage from '@/components/LazyImage'
 import SmartLink from '@/components/SmartLink'
 /**
  * 作者团队
- * @returns 
+ * @returns
  */
 export const Team = () => {
     const PROXIO_ABOUT_PHOTO_URL = siteConfig('PROXIO_ABOUT_PHOTO_URL')

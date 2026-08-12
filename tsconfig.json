@@ -47,5 +47,5 @@
     "**/*.jsx",
     ".eslintrc.js"
   ],
-  "exclude": ["node_modules", "public"]
+  "exclude": ["node_modules", "public", "__tests__"]
 }
