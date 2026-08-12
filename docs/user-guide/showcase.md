@@ -18,21 +18,22 @@
 
 在 [用户作品征集帖](https://github.com/notionnext-org/NotionNext/discussions/4319) 回复，或直接提交文档 PR 修改本页，提供以下信息即可：
 
-| 字段     | 说明                                                           |
-| -------- | -------------------------------------------------------------- |
-| 站点名   | 公开展示的名称                                                 |
-| 站点链接 | 可访问的公开 URL                                               |
-| 用途     | 博客、作品集、知识库、产品官网、导航站等                       |
-| 主题     | 使用的 NotionNext 主题 ID，例如 `simple`、`gitbook`、`starter` |
-| 提交人   | GitHub 用户名或站点作者名                                      |
+| 字段 | 说明 |
+| --- | --- |
+| 站点名 | 公开展示的名称 |
+| 站点链接 | 可访问的公开 URL |
+| 用途 | 博客、作品集、知识库、产品官网、导航站等 |
+| 主题 | 使用的 NotionNext 主题 ID，例如 `simple`、`gitbook`、`starter` |
+| 提交人 | GitHub 用户名或站点作者名 |
 
 ## 站点列表
 
-| 站点                                                     | 用途     | 主题   | 提交人                             |
-| -------------------------------------------------------- | -------- | ------ | ---------------------------------- |
-| [NotionNext 主题预览站](https://preview.tangly1024.com/) | 主题预览 | 多主题 | NotionNext                         |
-| [Tangly Blog](https://blog.tangly1024.com/)              | 个人博客 | 未标注 | tangly1024                         |
-| [茉灵智库](https://blog.88lin.eu.org)                    | 个人博客 | `heo`  | [@88lin](https://github.com/88lin) |
+| 站点 | 用途 | 主题 | 提交人 |
+| --- | --- | --- | --- |
+| [NotionNext 主题预览站](https://preview.tangly1024.com/) | 主题预览 | `多主题` | NotionNext |
+| [Tangly Blog](https://blog.tangly1024.com/) | 个人博客 | `magzine` | [@tangly1024](https://github.com/tangly1024) |
+| [茉灵智库](https://blog.88lin.eu.org) | 个人博客 | `heo` | [@88lin](https://github.com/88lin) |
+| [Cloud09_Space](https://cloud09.space/) | 个人空间 | `endspace` | [@cloud09](https://github.com/cloud09) |
 
 ## 推荐格式
 

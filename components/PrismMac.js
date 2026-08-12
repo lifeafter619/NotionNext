@@ -241,8 +241,11 @@ export const closeCodeSidePanel = () => {
 const requestFrame = callback => {
   if (typeof window === 'undefined') return callback()
 
-  const raf = window.requestAnimationFrame || (cb => window.setTimeout(cb, 0))
-  return raf(callback)
+  const nativeRaf =
+    typeof window.requestAnimationFrame === 'function'
+      ? cb => window.requestAnimationFrame(cb)
+      : cb => window.setTimeout(() => cb(), 0)
+  return nativeRaf(callback)
 }
 
 export const openCodeSidePanel = ({

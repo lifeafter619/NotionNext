@@ -24,7 +24,8 @@ const THEMES = [
   'simple',
   'starter',
   'thoughtlite',
-  'typography'
+  'typography',
+  'xuhome'
 ]
 
 module.exports = { THEMES }

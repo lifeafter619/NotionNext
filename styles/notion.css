@@ -1084,7 +1084,11 @@ code[class*='language-'] {
   overflow: hidden;
 }
 
-.notion-callout-text .notion-text {
+.notion-callout > .notion-callout-text:first-child {
+  margin-left: 0;
+}
+
+.notion-callout-text .notion-text{
   padding: 0px 0px !important;
   margin: 0px 0px !important;
   line-height: normal !important;

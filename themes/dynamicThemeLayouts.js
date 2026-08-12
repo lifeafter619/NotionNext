@@ -188,6 +188,11 @@ export const DYNAMIC_THEME_LAYOUTS = {
         resolveThemeModule('typography', mod)
       ),
     { ssr: true, loading: ThemeLayoutLoading }
+  ),
+  xuhome: dynamic(
+    () =>
+      import('@/themes/xuhome').then(mod => resolveThemeModule('xuhome', mod)),
+    { ssr: true, loading: ThemeLayoutLoading }
   )
 }
 

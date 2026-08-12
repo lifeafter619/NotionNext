@@ -39,7 +39,6 @@ jest.mock('@/components/BeiAnGongAn', () => ({ BeiAnGongAn: () => null }))
 jest.mock('@/components/CopyRightDate', () => () => null)
 jest.mock('@/components/PoweredBy', () => () => null)
 
-jest.mock('@/themes/heo/components/BlogPostArchive', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListPage', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListScroll', () => () => null)
 jest.mock('@/themes/heo/components/CategoryBar', () => () => null)

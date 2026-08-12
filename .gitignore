@@ -85,3 +85,6 @@ health-report.json
 *.pyc
 __pycache__/
 .zcode/
+
+# Local Cloudflare Worker route configuration
+/cloudflare/notion-image-proxy/wrangler.toml

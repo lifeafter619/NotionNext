@@ -123,7 +123,6 @@ jest.mock('@/components/SmartLink', () => {
   }
 })
 
-jest.mock('@/themes/heo/components/BlogPostArchive', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListPage', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListScroll', () => () => null)
 jest.mock('@/themes/heo/components/CategoryBar', () => () => null)

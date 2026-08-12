@@ -1,5 +1,4 @@
 import { render } from '@testing-library/react'
-import BlogPostArchive from '@/themes/heo/components/BlogPostArchive'
 import BlogPostCard from '@/themes/heo/components/BlogPostCard'
 import CONFIG from '@/themes/heo/config'
 
@@ -243,15 +242,5 @@ describe('heo post cover fallback', () => {
     )
 
     expect(getByAltText('Post title')).not.toHaveClass('group-hover:scale-105')
-  })
-
-  it('does not mutate a post when BlogPostArchive uses the site default cover', () => {
-    const post = createPost()
-
-    render(
-      <BlogPostArchive archiveTitle='2026' posts={[post]} siteInfo={siteInfo} />
-    )
-
-    expect(post.pageCoverThumbnail).toBeUndefined()
   })
 })

@@ -1,17 +1,17 @@
 import { getThemeSwitchMeta } from '@/conf/themeSwitch.manifest'
-import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { writeThemePreviewColor } from '@/lib/themeColorUtils'
 import { getQueryParam } from '@/lib/utils'
 import { THEMES } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import AppearanceModeSwitch from './AppearanceModeSwitch'
 import { Draggable } from './Draggable'
+import { Moon, Sun } from './HeroIcons'
 import LazyImage from './LazyImage'
 import SideBarDrawer from './SideBarDrawer'
 
-function ThemeTierBadge({ tier, labels }) {
+function ThemeTierBadge ({ tier, labels }) {
   const isPaid = tier === 'paid'
   const text = isPaid ? labels.paid : labels.free
   const cls = isPaid
@@ -28,17 +28,10 @@ function ThemeTierBadge({ tier, labels }) {
 
 const EMPTY_CONSOLE_ITEMS = []
 
-function PaletteField({
-  item,
-  value,
-  copyValue,
-  isHexColor,
-  updateItem,
-  resetItem,
-  copyText
-}) {
+function PaletteField ({ item, value, copyValue, isHexColor, updateItem, resetItem, copyText }) {
   return (
-    <div className='min-w-0 rounded-xl border border-gray-100 bg-white p-2 dark:border-gray-800 dark:bg-gray-950/70 sm:p-3'>
+    <div
+      className='min-w-0 rounded-xl border border-gray-100 bg-white p-2 dark:border-gray-800 dark:bg-gray-950/70 sm:p-3'>
       <div className='mb-2 flex items-start gap-2'>
         <input
           type='color'
@@ -93,7 +86,7 @@ function PaletteField({
   )
 }
 
-function ThemeConsole({ meta, onClose }) {
+function ThemeConsole ({ meta, isOpen, onClose }) {
   const { updateRuntimeConfigOverride, THEME_CONFIG } = useGlobal()
   const noticeTimerRef = useRef(null)
   const [values, setValues] = useState({})
@@ -116,13 +109,10 @@ function ThemeConsole({ meta, onClose }) {
       : `'${text.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
   }
 
-  const readSettingValue = item =>
-    siteConfig(item.key, item.defaultValue, THEME_CONFIG || {})
+  const readSettingValue = item => siteConfig(item.key, item.defaultValue, THEME_CONFIG || {})
 
   const hexToHue = value => {
-    const hex = String(value || '')
-      .trim()
-      .replace('#', '')
+    const hex = String(value || '').trim().replace('#', '')
     if (!/^[0-9a-f]{6}$/i.test(hex)) return value
     const r = parseInt(hex.slice(0, 2), 16) / 255
     const g = parseInt(hex.slice(2, 4), 16) / 255
@@ -131,12 +121,11 @@ function ThemeConsole({ meta, onClose }) {
     const min = Math.min(r, g, b)
     const delta = max - min
     if (delta === 0) return 0
-    const hue =
-      max === r
-        ? ((g - b) / delta) % 6
-        : max === g
-          ? (b - r) / delta + 2
-          : (r - g) / delta + 4
+    const hue = max === r
+      ? ((g - b) / delta) % 6
+      : max === g
+        ? (b - r) / delta + 2
+        : (r - g) / delta + 4
     return Math.round((hue * 60 + 360) % 360)
   }
 
@@ -150,9 +139,7 @@ function ThemeConsole({ meta, onClose }) {
     const f = n => {
       const k = (n + h / 30) % 12
       const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
-      return Math.round(255 * color)
-        .toString(16)
-        .padStart(2, '0')
+      return Math.round(255 * color).toString(16).padStart(2, '0')
     }
     return `#${f(0)}${f(8)}${f(4)}`
   }
@@ -162,29 +149,9 @@ function ThemeConsole({ meta, onClose }) {
     return value
   }
 
-  const getConsoleAlias = useCallback(
-    item => {
-      const prefix = `${String(meta.id).toUpperCase()}_COLOR_`
-      if (item.key.startsWith(prefix)) {
-        return item.key.slice(prefix.length).toLowerCase().replace(/_/g, '-')
-      }
-      return String(item.cssVar || '')
-        .replace(/^--/, '')
-        .replace(`${meta.id}-`, '')
-    },
-    [meta.id]
-  )
-
-  const writePreviewColor = useCallback(
-    (root, item, value) => {
-      root.style.setProperty(item.cssVar, value)
-      root.style.setProperty(
-        `--${meta.id}-console-${getConsoleAlias(item)}`,
-        value
-      )
-    },
-    [getConsoleAlias, meta.id]
-  )
+  const writePreviewColor = useCallback((root, item, value) => {
+    writeThemePreviewColor(root, meta.id, item, value)
+  }, [meta.id])
 
   const getExportValue = item => {
     const value = values[item.key] ?? item.defaultValue
@@ -230,14 +197,8 @@ function ThemeConsole({ meta, onClose }) {
     const root = getRoot()
     writePreviewColor(root, item, previewValue)
     if (meta.id === 'fuwari' && item.cssVar === '--fuwari-primary') {
-      root.style.setProperty(
-        '--fuwari-primary-soft',
-        `color-mix(in oklab, ${previewValue} 14%, transparent)`
-      )
-      root.style.setProperty(
-        '--fuwari-gradient',
-        `linear-gradient(135deg, ${previewValue} 0%, color-mix(in oklab, ${previewValue} 70%, #ffffff) 100%)`
-      )
+      root.style.setProperty('--fuwari-primary-soft', `color-mix(in oklab, ${previewValue} 14%, transparent)`)
+      root.style.setProperty('--fuwari-gradient', `linear-gradient(135deg, ${previewValue} 0%, color-mix(in oklab, ${previewValue} 70%, #ffffff) 100%)`)
     }
   }
 
@@ -249,9 +210,7 @@ function ThemeConsole({ meta, onClose }) {
   }
 
   const updateSelectSetting = (item, selectedValue) => {
-    const option = (item.options || []).find(
-      option => String(option.value) === selectedValue
-    )
+    const option = (item.options || []).find(option => String(option.value) === selectedValue)
     updateSetting(item, option ? option.value : selectedValue)
   }
 
@@ -279,8 +238,7 @@ function ThemeConsole({ meta, onClose }) {
 
   const copyText = async (text, message = '配置已复制到剪贴板') => {
     try {
-      if (!navigator.clipboard?.writeText)
-        throw new Error('Clipboard unavailable')
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable')
       await navigator.clipboard.writeText(String(text))
       showNotice(message)
     } catch {
@@ -293,10 +251,11 @@ function ThemeConsole({ meta, onClose }) {
       const value = settingValues[item.key] ?? readSettingValue(item)
       return `${item.key}: ${formatConfigValue(value)}`
     })
-    const paletteText = palette.map(item => {
-      const value = getExportValue(item)
-      return `${item.key}: ${formatConfigValue(value)}`
-    })
+    const paletteText = palette
+      .map(item => {
+        const value = getExportValue(item)
+        return `${item.key}: ${formatConfigValue(value)}`
+      })
     const text = settingText.concat(paletteText).join(',\n')
     copyText(text, '全部配置已复制到剪贴板')
   }
@@ -311,10 +270,7 @@ function ThemeConsole({ meta, onClose }) {
         const match = line.match(/^\s*([A-Z0-9_]+)\s*:\s*(.+?)\s*,?\s*$/)
         if (!match) return acc
         let value = match[2].trim()
-        if (
-          (value.startsWith("'") && value.endsWith("'")) ||
-          (value.startsWith('"') && value.endsWith('"'))
-        ) {
+        if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
           value = value.slice(1, -1)
         } else if (value === 'true' || value === 'false') {
           value = value === 'true'
@@ -338,10 +294,7 @@ function ThemeConsole({ meta, onClose }) {
       let count = 0
       settings.forEach(item => {
         if (!(item.key in data)) return
-        const value =
-          item.type === 'boolean'
-            ? data[item.key] === true || data[item.key] === 'true'
-            : data[item.key]
+        const value = item.type === 'boolean' ? data[item.key] === true || data[item.key] === 'true' : data[item.key]
         updateSetting(item, value)
         count++
       })
@@ -351,9 +304,7 @@ function ThemeConsole({ meta, onClose }) {
           count++
         }
       })
-      showNotice(
-        count ? `已从剪贴板导入 ${count} 项配置` : '未识别到当前主题可用配置'
-      )
+      showNotice(count ? `已从剪贴板导入 ${count} 项配置` : '未识别到当前主题可用配置')
     } catch {
       showNotice('无法读取剪贴板，请检查浏览器剪贴板权限')
     }
@@ -363,7 +314,14 @@ function ThemeConsole({ meta, onClose }) {
     <Draggable stick={true}>
       <section
         style={{ right: '1rem', top: '10vh' }}
-        className='fixed z-50 w-[min(94vw,40rem)] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl dark:border-gray-700/70 dark:bg-gray-950/95 dark:ring-white/10 sm:w-[min(92vw,42rem)]'>
+        role='dialog'
+        aria-label={`主题控制台 · ${meta.name}`}
+        aria-hidden={!isOpen}
+        className={`fixed z-50 w-[min(94vw,40rem)] overflow-hidden rounded-2xl border border-gray-200/80 bg-white/95 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl transition-[transform,opacity] duration-200 ease-out will-change-transform motion-reduce:transform-none motion-reduce:transition-none dark:border-gray-700/70 dark:bg-gray-950/95 dark:ring-white/10 sm:w-[min(92vw,42rem)] ${
+          isOpen
+            ? 'translate-x-0 opacity-100'
+            : 'translate-x-[calc(100%+2rem)] opacity-0'
+        }`}>
         <div className='flex items-start justify-between gap-3 border-b border-gray-100 px-4 py-3 dark:border-gray-800'>
           <div className='min-w-0'>
             <p className='text-sm font-semibold text-gray-900 dark:text-white'>
@@ -435,114 +393,86 @@ function ThemeConsole({ meta, onClose }) {
             </div>
             {openSections.settings && (
               <div className='grid grid-cols-1 gap-2 border-t border-gray-100 p-3 dark:border-gray-800 sm:grid-cols-2'>
-                {settings.length ? (
-                  settings.map(item => {
-                    const value =
-                      settingValues[item.key] ?? readSettingValue(item)
-                    return (
-                      <div
-                        key={item.key}
-                        className='min-w-0 rounded-xl border border-gray-100 bg-white p-3 dark:border-gray-800 dark:bg-gray-950/70'>
-                        <div className='mb-2 flex items-start justify-between gap-2'>
-                          <div className='min-w-0'>
-                            <p className='truncate text-xs font-semibold text-gray-900 dark:text-gray-100'>
-                              {item.label}
-                            </p>
-                            <div className='flex min-w-0 items-center gap-1'>
-                              <span className='truncate font-mono text-[10px] text-gray-500 dark:text-gray-400'>
-                                {item.key}
-                              </span>
-                              <button
-                                type='button'
-                                onClick={() =>
-                                  void copyText(
-                                    item.key,
-                                    '配置名已复制到剪贴板'
-                                  )
-                                }
-                                className='flex h-5 w-5 shrink-0 items-center justify-center rounded text-gray-400 transition hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-800 dark:hover:text-indigo-300'
-                                title='复制配置名'
-                                aria-label={`复制配置名 ${item.key}`}>
-                                <i
-                                  className='fa-regular fa-copy text-[10px]'
-                                  aria-hidden
-                                />
-                              </button>
-                            </div>
-                            {item.help ? (
-                              <p className='mt-1 line-clamp-2 text-[11px] leading-snug text-gray-500 dark:text-gray-400'>
-                                {item.help}
-                              </p>
-                            ) : null}
-                          </div>
-                          <button
-                            type='button'
-                            onClick={() => resetSetting(item)}
-                            className='flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white'
-                            title='Reset'>
-                            <i
-                              className='fa-solid fa-rotate-left text-xs'
-                              aria-hidden
-                            />
-                          </button>
-                        </div>
-                        <div className='flex items-center gap-1.5'>
-                          {item.type === 'boolean' ? (
+                {settings.length ? settings.map(item => {
+                  const value = settingValues[item.key] ?? readSettingValue(item)
+                  return (
+                    <div
+                      key={item.key}
+                      className='min-w-0 rounded-xl border border-gray-100 bg-white p-3 dark:border-gray-800 dark:bg-gray-950/70'>
+                      <div className='mb-2 flex items-start justify-between gap-2'>
+                        <div className='min-w-0'>
+                          <p className='truncate text-xs font-semibold text-gray-900 dark:text-gray-100'>
+                            {item.label}
+                          </p>
+                          <div className='flex min-w-0 items-center gap-1'>
+                            <span className='truncate font-mono text-[10px] text-gray-500 dark:text-gray-400'>
+                              {item.key}
+                            </span>
                             <button
                               type='button'
-                              onClick={() => updateSetting(item, !value)}
-                              className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${value ? 'justify-end bg-indigo-600' : 'justify-start bg-gray-300 dark:bg-gray-700'}`}
-                              aria-pressed={Boolean(value)}>
-                              <span className='block h-5 w-5 rounded-full bg-white shadow transition-all' />
+                              onClick={() => void copyText(item.key, '配置名已复制到剪贴板')}
+                              className='flex h-5 w-5 shrink-0 items-center justify-center rounded text-gray-400 transition hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-800 dark:hover:text-indigo-300'
+                              title='复制配置名'
+                              aria-label={`复制配置名 ${item.key}`}>
+                              <i className='fa-regular fa-copy text-[10px]' aria-hidden />
                             </button>
-                          ) : item.type === 'select' ? (
-                            <select
-                              value={String(value)}
-                              onChange={event =>
-                                updateSelectSetting(item, event.target.value)
-                              }
-                              className='h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-800 outline-none focus:border-indigo-400 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100'>
-                              {(item.options || []).map(option => (
-                                <option
-                                  key={String(option.value)}
-                                  value={String(option.value)}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              type={item.type === 'number' ? 'number' : 'text'}
-                              value={value}
-                              onChange={event =>
-                                updateSetting(
-                                  item,
-                                  item.type === 'number'
-                                    ? Number(event.target.value)
-                                    : event.target.value
-                                )
-                              }
-                              className='h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20'
-                            />
-                          )}
-                          <button
-                            type='button'
-                            onClick={() =>
-                              void copyText(value, '配置值已复制到剪贴板')
-                            }
-                            className='flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-gray-200 text-gray-400 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300'
-                            title='复制配置值'
-                            aria-label={`复制配置值 ${item.key}`}>
-                            <i
-                              className='fa-regular fa-copy text-xs'
-                              aria-hidden
-                            />
-                          </button>
+                          </div>
+                          {item.help ? (
+                            <p className='mt-1 line-clamp-2 text-[11px] leading-snug text-gray-500 dark:text-gray-400'>
+                              {item.help}
+                            </p>
+                          ) : null}
                         </div>
+                        <button
+                          type='button'
+                          onClick={() => resetSetting(item)}
+                          className='flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white'
+                          title='Reset'>
+                          <i className='fa-solid fa-rotate-left text-xs' aria-hidden />
+                        </button>
                       </div>
-                    )
-                  })
-                ) : (
+                      <div className='flex items-center gap-1.5'>
+                      {item.type === 'boolean' ? (
+                        <button
+                          type='button'
+                          onClick={() => updateSetting(item, !value)}
+                          className={`flex h-6 w-11 items-center rounded-full p-0.5 transition ${value ? 'justify-end bg-indigo-600' : 'justify-start bg-gray-300 dark:bg-gray-700'}`}
+                          aria-pressed={Boolean(value)}>
+                          <span
+                            className='block h-5 w-5 rounded-full bg-white shadow transition-all'
+                          />
+                        </button>
+                      ) : item.type === 'select' ? (
+                        <select
+                          value={String(value)}
+                          onChange={event => updateSelectSetting(item, event.target.value)}
+                          className='h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-800 outline-none focus:border-indigo-400 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100'>
+                          {(item.options || []).map(option => (
+                            <option key={String(option.value)} value={String(option.value)}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={item.type === 'number' ? 'number' : 'text'}
+                          value={value}
+                          onChange={event => updateSetting(item, item.type === 'number' ? Number(event.target.value) : event.target.value)}
+                          className='h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-800 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20'
+                        />
+                      )}
+                        <button
+                          type='button'
+                          onClick={() => void copyText(value, '配置值已复制到剪贴板')}
+                          className='flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-gray-200 text-gray-400 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300'
+                          title='复制配置值'
+                          aria-label={`复制配置值 ${item.key}`}>
+                          <i className='fa-regular fa-copy text-xs' aria-hidden />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }) : (
                   <p className='rounded-xl border border-dashed border-gray-200 p-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400 sm:col-span-2'>
                     当前主题暂未声明可在线调整的信息配置。
                   </p>
@@ -552,80 +482,80 @@ function ThemeConsole({ meta, onClose }) {
           </section>
 
           {palette.length > 0 && (
-            <section className='overflow-hidden rounded-2xl border border-gray-100 bg-gray-50/70 dark:border-gray-800 dark:bg-gray-900/60'>
-              <div className='flex items-center'>
-                <button
-                  type='button'
-                  onClick={() => toggleSection('palette')}
-                  className='group flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:hover:bg-gray-800 sm:pl-4'>
-                  <span>
-                    <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
-                      配色
-                    </span>
-                    <span className='mt-0.5 block text-xs text-gray-500 dark:text-gray-400'>
-                      色值实时写入当前主题 CSS 变量
-                    </span>
+          <section className='overflow-hidden rounded-2xl border border-gray-100 bg-gray-50/70 dark:border-gray-800 dark:bg-gray-900/60'>
+            <div className='flex items-center'>
+              <button
+                type='button'
+                onClick={() => toggleSection('palette')}
+                className='group flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 dark:hover:bg-gray-800 sm:pl-4'>
+                <span>
+                  <span className='block text-sm font-semibold text-gray-900 dark:text-white'>
+                    配色
                   </span>
-                  <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition group-hover:border-indigo-300 group-hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-300 dark:group-hover:border-indigo-600 dark:group-hover:text-indigo-300'>
-                    <i
-                      className={`fa-solid fa-chevron-down text-xs transition-transform ${openSections.palette ? 'rotate-180' : ''}`}
-                      aria-hidden
-                    />
+                  <span className='mt-0.5 block text-xs text-gray-500 dark:text-gray-400'>
+                    色值实时写入当前主题 CSS 变量
                   </span>
-                </button>
-                <button
-                  type='button'
-                  onClick={resetAllPalette}
-                  className='mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-300 dark:hover:border-amber-700 dark:hover:bg-amber-950/50 dark:hover:text-amber-300'
-                  title='恢复默认配色'
-                  aria-label='恢复默认配色'>
-                  <i className='fa-solid fa-rotate-left text-xs' aria-hidden />
-                </button>
-              </div>
-              {openSections.palette && (
-                <div className='grid grid-cols-2 gap-2 border-t border-gray-100 p-3 dark:border-gray-800'>
-                  <div className='col-span-2 flex items-center gap-3 text-xs font-semibold text-gray-500 dark:text-gray-400'>
-                    <span>浅色模式</span>
-                    <span className='h-px flex-1 bg-gray-200 dark:bg-gray-700' />
-                  </div>
-                  {lightPalette.map(item => (
-                    <PaletteField
-                      key={item.key}
-                      item={item}
-                      value={values[item.key] || item.defaultValue}
-                      copyValue={getExportValue(item)}
-                      isHexColor={isHexColor}
-                      updateItem={updateItem}
-                      resetItem={resetItem}
-                      copyText={copyText}
-                    />
-                  ))}
-                  <div className='col-span-2 mt-2 flex items-center gap-3 border-t border-gray-200 pt-3 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400'>
-                    <span>深色模式</span>
-                    <span className='h-px flex-1 bg-gray-200 dark:bg-gray-700' />
-                  </div>
-                  {darkPalette.map(item => (
-                    <PaletteField
-                      key={item.key}
-                      item={item}
-                      value={values[item.key] || item.defaultValue}
-                      copyValue={getExportValue(item)}
-                      isHexColor={isHexColor}
-                      updateItem={updateItem}
-                      resetItem={resetItem}
-                      copyText={copyText}
-                    />
-                  ))}
-                  {!darkPalette.length ? (
-                    <div className='col-span-2 space-y-2'>
-                      <p className='rounded-xl border border-dashed border-gray-200 p-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400'>
-                        当前主题暂未声明深色模式色号。
-                      </p>
-                    </div>
-                  ) : null}
+                </span>
+                <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition group-hover:border-indigo-300 group-hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-300 dark:group-hover:border-indigo-600 dark:group-hover:text-indigo-300'>
+                  <i
+                    className={`fa-solid fa-chevron-down text-xs transition-transform ${openSections.palette ? 'rotate-180' : ''}`}
+                    aria-hidden
+                  />
+                </span>
+              </button>
+              <button
+                type='button'
+                onClick={resetAllPalette}
+                className='mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-300 dark:hover:border-amber-700 dark:hover:bg-amber-950/50 dark:hover:text-amber-300'
+                title='恢复默认配色'
+                aria-label='恢复默认配色'>
+                <i className='fa-solid fa-rotate-left text-xs' aria-hidden />
+              </button>
+            </div>
+            {openSections.palette && (
+              <div className='grid grid-cols-2 gap-2 border-t border-gray-100 p-3 dark:border-gray-800'>
+                <div className='col-span-2 flex items-center gap-3 text-xs font-semibold text-gray-500 dark:text-gray-400'>
+                  <span>浅色模式</span>
+                  <span className='h-px flex-1 bg-gray-200 dark:bg-gray-700' />
                 </div>
-              )}
-            </section>
+                {lightPalette.map(item => (
+                  <PaletteField
+                    key={item.key}
+                    item={item}
+                    value={values[item.key] || item.defaultValue}
+                    copyValue={getExportValue(item)}
+                    isHexColor={isHexColor}
+                    updateItem={updateItem}
+                    resetItem={resetItem}
+                    copyText={copyText}
+                  />
+                ))}
+                <div className='col-span-2 mt-2 flex items-center gap-3 border-t border-gray-200 pt-3 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400'>
+                  <span>深色模式</span>
+                  <span className='h-px flex-1 bg-gray-200 dark:bg-gray-700' />
+                </div>
+                {darkPalette.map(item => (
+                  <PaletteField
+                    key={item.key}
+                    item={item}
+                    value={values[item.key] || item.defaultValue}
+                    copyValue={getExportValue(item)}
+                    isHexColor={isHexColor}
+                    updateItem={updateItem}
+                    resetItem={resetItem}
+                    copyText={copyText}
+                  />
+                ))}
+                {!darkPalette.length ? (
+                  <div className='col-span-2 space-y-2'>
+                    <p className='rounded-xl border border-dashed border-gray-200 p-3 text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400'>
+                      当前主题暂未声明深色模式色号。
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </section>
           )}
         </div>
       </section>
@@ -638,11 +568,28 @@ function ThemeConsole({ meta, onClose }) {
  * @returns 主题切换
  */
 const ThemeSwitch = () => {
-  const { theme, locale, isDarkMode } = useGlobal()
+  const { theme, locale, isDarkMode, toggleDarkMode } = useGlobal()
   const router = useRouter()
   const currentTheme = getQueryParam(router.asPath, 'theme') || theme
   const [sideBarVisible, setSideBarVisible] = useState(false)
+  const [consoleMounted, setConsoleMounted] = useState(false)
   const [consoleVisible, setConsoleVisible] = useState(false)
+
+  useEffect(() => {
+    if (!consoleMounted) return
+    const frame = window.requestAnimationFrame(() => {
+      setConsoleVisible(true)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [consoleMounted])
+
+  useEffect(() => {
+    if (!consoleMounted || consoleVisible) return
+    const timer = window.setTimeout(() => {
+      setConsoleMounted(false)
+    }, 220)
+    return () => window.clearTimeout(timer)
+  }, [consoleMounted, consoleVisible])
 
   const currentMeta = getThemeSwitchMeta(currentTheme)
   const tierLabels = {
@@ -651,12 +598,10 @@ const ThemeSwitch = () => {
   }
 
   const changeTheme = newTheme => {
-    const query = { ...router.query, theme: newTheme }
-    setSideBarVisible(false)
-    void router.push({ pathname: router.pathname, query })
+    const query = router.query
+    query.theme = newTheme
+    router.push({ pathname: router.pathname, query }).then(() => {})
   }
-
-  if (BLOG.THEME_LOCKED) return null
 
   return (
     <>
@@ -685,7 +630,7 @@ const ThemeSwitch = () => {
             <button
               id='themeSelect'
               type='button'
-              className={`flex h-9 min-w-0 max-w-10 cursor-pointer items-center gap-2 rounded-lg px-2 text-left transition active:scale-[0.98] sm:max-w-[9.5rem] ${
+              className={`flex h-9 min-w-0 max-w-[9.5rem] cursor-pointer items-center gap-2 rounded-lg px-2 text-left transition active:scale-[0.98] ${
                 isDarkMode
                   ? 'text-gray-100 hover:bg-gray-800'
                   : 'text-gray-900 hover:bg-gray-100'
@@ -701,12 +646,9 @@ const ThemeSwitch = () => {
                     ? 'bg-indigo-400/15 text-indigo-300'
                     : 'bg-indigo-50 text-indigo-600'
                 }`}>
-                <i
-                  className='fa-solid fa-layer-group text-xs leading-none'
-                  aria-hidden
-                />
+                <i className='fa-solid fa-layer-group text-xs leading-none' aria-hidden />
               </span>
-              <span className='hidden min-w-0 truncate text-sm font-semibold leading-none sm:block'>
+              <span className='min-w-0 truncate text-sm font-semibold leading-none'>
                 {currentMeta.name}
               </span>
             </button>
@@ -718,24 +660,39 @@ const ThemeSwitch = () => {
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-950'
               }`}
               onClick={() => {
-                setConsoleVisible(visible => !visible)
+                if (consoleMounted) {
+                  setConsoleVisible(visible => !visible)
+                } else {
+                  setConsoleMounted(true)
+                }
               }}
               title='配置主题'
               aria-label='配置主题'
               aria-expanded={consoleVisible}>
-              <i
-                className='fa-solid fa-sliders translate-y-[-1px] text-sm leading-none'
-                aria-hidden
-              />
+              <i className='fa-solid fa-sliders translate-y-[-1px] text-sm leading-none' aria-hidden />
             </button>
-            <AppearanceModeSwitch className='!border-0 !bg-transparent !p-0 !shadow-none dark:!bg-transparent [&_button]:h-9 [&_button]:w-9 [&_svg]:h-4 [&_svg]:w-4' />
+            <button
+              type='button'
+              onClick={toggleDarkMode}
+              className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition active:scale-95 ${
+                isDarkMode
+                  ? 'text-amber-300 hover:bg-gray-800'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+              title={isDarkMode ? '切换浅色模式' : '切换深色模式'}
+              aria-label={isDarkMode ? '切换浅色模式' : '切换深色模式'}>
+              <span className='h-4 w-4 [&_svg]:h-4 [&_svg]:w-4'>
+                {isDarkMode ? <Sun /> : <Moon />}
+              </span>
+            </button>
           </div>
         </div>
       </Draggable>
 
-      {consoleVisible && (
+      {consoleMounted && (
         <ThemeConsole
           meta={currentMeta}
+          isOpen={consoleVisible}
           onClose={() => {
             setConsoleVisible(false)
           }}
@@ -743,7 +700,6 @@ const ThemeSwitch = () => {
       )}
 
       <SideBarDrawer
-        ariaLabel={locale.MENU.THEME_SWITCH}
         className='flex max-h-screen w-[min(100vw-0.5rem,28rem)] flex-col overflow-hidden border-r border-gray-200/90 bg-white p-0 shadow-2xl dark:border-gray-800 dark:bg-gray-950 md:w-[min(100vw-2rem,48rem)] lg:w-[min(100vw-3rem,56rem)]'
         isOpen={sideBarVisible}
         showOnPC={true}
@@ -763,29 +719,16 @@ const ThemeSwitch = () => {
               </div>
               <button
                 type='button'
-                aria-label='Close theme panel'
-                className='flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white'
+                className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white'
                 onClick={() => {
                   setSideBarVisible(false)
                 }}>
-                <i className='fas fa-times' aria-hidden />
+                <i className='fas fa-times' />
               </button>
             </div>
           </div>
 
           <div className='space-y-6 px-5 pb-10 pt-6'>
-            <section className='rounded-2xl border-2 border-indigo-200/90 bg-gradient-to-r from-sky-50 via-white to-violet-50 px-4 py-3.5 shadow-sm ring-1 ring-indigo-100/80 dark:border-indigo-500/40 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950/60 dark:ring-indigo-500/20'>
-              <p className='text-sm font-semibold text-gray-900 dark:text-white'>
-                {locale?.MENU?.APPEARANCE || '外观模式'}
-              </p>
-              <p className='mt-0.5 text-xs text-gray-600 dark:text-gray-400'>
-                浅色、跟随系统或深色
-              </p>
-              <AppearanceModeSwitch
-                fullWidth
-                className='mt-3 !bg-white/70 dark:!bg-gray-950/70'
-              />
-            </section>
 
             <div>
               <p className='text-sm font-medium text-gray-900 dark:text-gray-100'>
@@ -802,9 +745,7 @@ const ThemeSwitch = () => {
                 const active = currentTheme === t
                 const meta = getThemeSwitchMeta(t)
                 return (
-                  <button
-                    type='button'
-                    aria-pressed={active}
+                  <div
                     className={`cursor-pointer rounded-2xl border bg-white p-1.5 shadow-sm transition dark:bg-gray-900/40 ${
                       active
                         ? 'border-indigo-500 ring-2 ring-indigo-500/30 dark:border-indigo-400'
@@ -840,7 +781,7 @@ const ThemeSwitch = () => {
                         </span>
                       )}
                     </div>
-                  </button>
+                  </div>
                 )
               })}
             </div>

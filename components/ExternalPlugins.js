@@ -133,6 +133,7 @@ const ExternalPlugin = props => {
   // 默认关闭NProgress
   const ENABLE_NPROGRSS = siteConfig('ENABLE_NPROGRSS', false)
   const COZE_BOT_ID = siteConfig('COZE_BOT_ID')
+  const AI_CHAT_API = siteConfig('AI_CHAT_API')
   const DOCS_CHAT_API = siteConfig('DOCS_CHAT_API')
   const HILLTOP_ADS_META_ID = siteConfig(
     'HILLTOP_ADS_META_ID',
@@ -293,7 +294,7 @@ const ExternalPlugin = props => {
       {ENABLE_NPROGRSS && <LoadingProgress />}
       {pluginsIdle && <AosAnimation />}
       {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && <LA51 />}
-      {DOCS_CHAT_API ? <DocsChat /> : COZE_BOT_ID && <Coze />}
+      {AI_CHAT_API || DOCS_CHAT_API ? <DocsChat /> : COZE_BOT_ID && <Coze />}
 
       {ANALYTICS_51LA_ID && ANALYTICS_51LA_CK && (
         <Script

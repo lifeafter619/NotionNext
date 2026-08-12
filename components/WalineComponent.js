@@ -198,8 +198,14 @@ const WalineComponent = props => {
     window.addEventListener('error', handleWalineLoadError, true)
 
     const serverURL = siteConfig('COMMENT_WALINE_SERVER_URL')
-    const originalFetch =
-      typeof window.fetch === 'function' ? window.fetch : null
+    // Capture the live fetch reference before we replace window.fetch with the
+    // guarded wrapper. Calls go through this captured reference (not through
+    // window.fetch, which would recurse into the guard) and it is restored on
+    // teardown. The eslint-disable is required because separating the method
+    // from its receiver triggers @typescript-eslint/unbound-method; fetch is
+    // not bound to `this` in practice.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const originalFetch = window.fetch
     let guardedFetch = null
 
     const isWalineRequest = input => {
