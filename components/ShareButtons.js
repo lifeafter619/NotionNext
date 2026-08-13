@@ -303,6 +303,7 @@ const ShareButtons = ({ post }) => {
                   height={28}
                   className={IMAGE_SHARE_ICON_CLASS}
                   loading='lazy'
+                  unoptimized
                 />
               </button>
             )
@@ -324,6 +325,7 @@ const ShareButtons = ({ post }) => {
                   height={24}
                   className={IMAGE_SHARE_ICON_CLASS}
                   loading='lazy'
+                  unoptimized
                 />
               </button>
             )
