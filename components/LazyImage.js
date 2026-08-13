@@ -182,13 +182,7 @@ export default function LazyImage({
       cancelPrefetchRef.current = null
       cancel()
     }
-  }, [
-    isEager,
-    optimizedImageSrc,
-    targetImageWidth,
-    imageSizes,
-    referrerPolicy
-  ])
+  }, [isEager, optimizedImageSrc, targetImageWidth, imageSizes, referrerPolicy])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
@@ -292,7 +286,7 @@ export function adjustImgSize(src, maxWidth) {
 function normalizeImageWidth(width) {
   const numericWidth = Number(width)
   if (Number.isFinite(numericWidth) && numericWidth > 0) {
-    return numericWidth
+    return Math.max(1, Math.round(numericWidth))
   }
   return 1080
 }
@@ -303,22 +297,15 @@ export function buildResponsiveSrcSet(imageSrc, maxWidth) {
   }
 
   const breakpoints = [
-    320,
-    480,
-    640,
-    680,
-    750,
-    828,
-    1080,
-    1200,
-    1920,
-    2048,
-    3840
+    320, 480, 640, 680, 750, 828, 1080, 1200, 1920, 2048, 3840
   ]
   const maxImageWidth = normalizeImageWidth(maxWidth)
   const candidateWidths = breakpoints.filter(w => w <= maxImageWidth)
 
-  if (maxImageWidth >= breakpoints[0] && !candidateWidths.includes(maxImageWidth)) {
+  if (
+    maxImageWidth >= breakpoints[0] &&
+    !candidateWidths.includes(maxImageWidth)
+  ) {
     candidateWidths.push(maxImageWidth)
   }
 
@@ -331,8 +318,7 @@ export function buildResponsiveSrcSet(imageSrc, maxWidth) {
 }
 
 function replaceImageWidthParam(imageSrc, width, appendWidth = false) {
-  const hasWidthParam =
-    imageSrc?.includes('width=') || imageSrc?.includes('w=')
+  const hasWidthParam = imageSrc?.includes('width=') || imageSrc?.includes('w=')
   if (!imageSrc || (!hasWidthParam && !appendWidth)) {
     return imageSrc
   }

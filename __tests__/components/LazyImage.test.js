@@ -79,14 +79,7 @@ describe('LazyImage Component', () => {
     const source =
       'https://img.cdn.619.pp.ua/image/attachment%3Apage-icon?table=block&id=page-id'
 
-    render(
-      <LazyImage
-        src={source}
-        alt='Fixed icon'
-        width={24}
-        height={24}
-      />
-    )
+    render(<LazyImage src={source} alt='Fixed icon' width={24} height={24} />)
 
     const image = screen.getByAltText('Fixed icon')
     expect(image.getAttribute('src')).toContain('width=24')
@@ -103,6 +96,14 @@ describe('LazyImage Component', () => {
     const source = 'https://example.com/card.jpg?width=1010'
 
     expect(buildResponsiveSrcSet(source, 1010)).toContain('width=680 680w')
+  })
+
+  it('uses integer width descriptors when image metadata contains decimals', () => {
+    const source = 'https://example.com/content.jpg?width=1080'
+    const srcSet = buildResponsiveSrcSet(source, 692.9896240234375)
+
+    expect(srcSet).toContain('width=693 693w')
+    expect(srcSet).not.toMatch(/\d+\.\d+w/)
   })
 
   it('omits invalid auto width and height attributes when dimensions are not provided', () => {
