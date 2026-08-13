@@ -1,7 +1,13 @@
 import { siteConfig } from '@/lib/config'
+import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 
 const REQUEST_TIMEOUT_MS = 30_000
+
+export const sanitizeChatPath = asPath => {
+  const path = String(asPath || '/').split(/[?#]/, 1)[0] || '/'
+  return path.startsWith('/') ? path.slice(0, 500) || '/' : '/'
+}
 
 const makeMessage = (role, text) => ({
   id: `${role}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -10,6 +16,7 @@ const makeMessage = (role, text) => ({
 })
 
 export default function DocsChat() {
+  const router = useRouter()
   const aiChatApi = siteConfig('AI_CHAT_API')
   const api = aiChatApi || siteConfig('DOCS_CHAT_API')
   const title = aiChatApi
@@ -55,10 +62,14 @@ export default function DocsChat() {
 
     try {
       const separator = api.includes('?') ? '&' : '?'
+      const currentPath = sanitizeChatPath(router.asPath)
       const response = await fetch(`${api}${separator}stream=false`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages.slice(-6) }),
+        body: JSON.stringify({
+          messages: nextMessages.slice(-6),
+          currentPath
+        }),
         signal: controller.signal
       })
       const data = await response.json()
@@ -89,8 +100,7 @@ export default function DocsChat() {
             <button
               type='button'
               onClick={() => setOpen(false)}
-              aria-label='关闭 AI 助手'
-            >
+              aria-label='关闭 AI 助手'>
               ×
             </button>
           </header>
@@ -98,8 +108,7 @@ export default function DocsChat() {
             {messages.map(message => (
               <p
                 key={message.id}
-                className={`docs-chat-message ${message.role}`}
-              >
+                className={`docs-chat-message ${message.role}`}>
                 {message.parts?.[0]?.text}
               </p>
             ))}
@@ -118,8 +127,7 @@ export default function DocsChat() {
             <button
               type='submit'
               disabled={loading || !input.trim()}
-              aria-label='发送'
-            >
+              aria-label='发送'>
               ↑
             </button>
           </form>
@@ -128,8 +136,7 @@ export default function DocsChat() {
       <button
         className='docs-chat-fab'
         type='button'
-        onClick={() => setOpen(true)}
-      >
+        onClick={() => setOpen(true)}>
         {title}
       </button>
       <style jsx>{`

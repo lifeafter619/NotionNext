@@ -90,6 +90,34 @@ describe('ai-chat proxy', () => {
       expect(mockFetch).not.toHaveBeenCalled()
     })
 
+    it('stops reading a streamed body after the byte limit', async () => {
+      let cancelled = false
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new Uint8Array(20_001))
+        },
+        cancel() {
+          cancelled = true
+        }
+      })
+      const request = new Request('https://example.com/api/ai-chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body,
+        duplex: 'half'
+      } as RequestInit & { duplex: 'half' })
+
+      const res = await aiChat.onRequestPost({
+        request,
+        env: baseEnv,
+        next: async (response: Response) => response
+      })
+
+      expect(res.status).toBe(413)
+      expect(cancelled).toBe(true)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
     it('rejects empty messages array with 400', async () => {
       const res = await runPost({ messages: [] })
       expect(res.status).toBe(400)
@@ -162,10 +190,13 @@ describe('ai-chat proxy', () => {
   describe('temperature validation', () => {
     it('falls back to default when temperature < 0', async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        })
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: 'ok' } }] }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+          }
+        )
       )
       await runPost(
         { messages: [{ role: 'user', content: 'hi' }] },
@@ -177,10 +208,13 @@ describe('ai-chat proxy', () => {
 
     it('falls back to default when temperature > 2', async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        })
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: 'ok' } }] }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+          }
+        )
       )
       await runPost(
         { messages: [{ role: 'user', content: 'hi' }] },
@@ -192,10 +226,13 @@ describe('ai-chat proxy', () => {
 
     it('falls back to default when temperature is non-numeric', async () => {
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        })
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: 'ok' } }] }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' }
+          }
+        )
       )
       await runPost(
         { messages: [{ role: 'user', content: 'hi' }] },
@@ -208,12 +245,13 @@ describe('ai-chat proxy', () => {
 
   describe('upstream error handling', () => {
     it('returns 504 on timeout (AbortError)', async () => {
-      mockFetch.mockImplementationOnce(() =>
-        new Promise((_, reject) => {
-          const err = new Error('The operation was aborted')
-          err.name = 'AbortError'
-          reject(err)
-        })
+      mockFetch.mockImplementationOnce(
+        () =>
+          new Promise((_, reject) => {
+            const err = new Error('The operation was aborted')
+            err.name = 'AbortError'
+            reject(err)
+          })
       )
       const res = await runPost({
         messages: [{ role: 'user', content: 'hi' }]
@@ -248,6 +286,107 @@ describe('ai-chat proxy', () => {
   })
 
   describe('success path', () => {
+    it('passes server-generated site context to the upstream model', async () => {
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: '来自文章' } }] }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+
+      const request = buildRequest({
+        messages: [{ role: 'user', content: '这篇文章讲了什么？' }],
+        currentPath: '/guide/start'
+      })
+      const response = await aiChat.handleAiChatRequest(request, baseEnv, {
+        getSiteContext: async input => {
+          expect(input).toEqual({
+            question: '这篇文章讲了什么？',
+            currentPath: '/guide/start'
+          })
+          return '标题: 开始使用\n正文: 这是服务端文章文本。'
+        }
+      })
+
+      expect(response.status).toBe(200)
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+      expect(callBody.messages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            content: expect.stringContaining('这是服务端文章文本')
+          })
+        ])
+      )
+    })
+
+    it('continues with an explicit limitation when site retrieval fails', async () => {
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: '无法核对' } }] }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+
+      const response = await aiChat.handleAiChatRequest(
+        buildRequest({ messages: [{ role: 'user', content: '本站有什么？' }] }),
+        baseEnv,
+        {
+          getSiteContext: async () =>
+            Promise.reject(new Error('Notion unavailable'))
+        }
+      )
+
+      expect(response.status).toBe(200)
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+      expect(callBody.messages).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            content: expect.stringContaining('检索当前不可用')
+          })
+        ])
+      )
+    })
+
+    it('rejects an invalid current path before calling the model', async () => {
+      const response = await runPost({
+        messages: [{ role: 'user', content: 'hi' }],
+        currentPath: 'https://evil.example.com'
+      })
+      expect(response.status).toBe(400)
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it('works in runtimes without the Node.js Buffer global', async () => {
+      const originalBuffer = Object.getOwnPropertyDescriptor(
+        globalThis,
+        'Buffer'
+      )
+      Object.defineProperty(globalThis, 'Buffer', {
+        configurable: true,
+        value: undefined
+      })
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: 'Hello!' } }] }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+
+      try {
+        const res = await runPost({
+          messages: [{ role: 'user', content: 'hi' }]
+        })
+        expect(res.status).toBe(200)
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+      } finally {
+        if (originalBuffer) {
+          Object.defineProperty(globalThis, 'Buffer', originalBuffer)
+        } else {
+          delete (globalThis as { Buffer?: typeof Buffer }).Buffer
+        }
+      }
+    })
+
     it('returns controlled JSON on a valid request', async () => {
       mockFetch.mockResolvedValueOnce(
         new Response(
@@ -286,9 +425,18 @@ describe('ai-chat proxy', () => {
       // Each call needs a fresh Response (bodies are single-use streams).
       mockFetch.mockImplementation(() => Promise.resolve(okResponse()))
 
-      const r1 = await runPost({ messages: [{ role: 'user', content: 'a' }] }, env)
-      const r2 = await runPost({ messages: [{ role: 'user', content: 'b' }] }, env)
-      const r3 = await runPost({ messages: [{ role: 'user', content: 'c' }] }, env)
+      const r1 = await runPost(
+        { messages: [{ role: 'user', content: 'a' }] },
+        env
+      )
+      const r2 = await runPost(
+        { messages: [{ role: 'user', content: 'b' }] },
+        env
+      )
+      const r3 = await runPost(
+        { messages: [{ role: 'user', content: 'c' }] },
+        env
+      )
 
       expect(r1.status).toBe(200)
       expect(r2.status).toBe(200)
