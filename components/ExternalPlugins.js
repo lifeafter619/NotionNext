@@ -31,6 +31,11 @@ const ExternalPlugin = props => {
   const DISABLE_PLUGIN = siteConfig('DISABLE_PLUGIN', null, NOTION_CONFIG)
   const THEME_SWITCH = siteConfig('THEME_SWITCH', null, NOTION_CONFIG)
   const DEBUG = siteConfig('DEBUG', null, NOTION_CONFIG)
+  const INNER_PAGE_URL_PARENT_PATH = siteConfig(
+    'INNER_PAGE_URL_PARENT_PATH',
+    null,
+    NOTION_CONFIG
+  )
   const ANALYTICS_ACKEE_TRACKER = siteConfig(
     'ANALYTICS_ACKEE_TRACKER',
     null,
@@ -222,7 +227,8 @@ const ExternalPlugin = props => {
             ...(props?.allNavPages || []),
             ...(props?.allLinkPages || [])
           ],
-          lang: lang
+          lang: lang,
+          innerPageUrlParentPath: INNER_PAGE_URL_PARENT_PATH
         })
       }, 500)
     )
@@ -230,7 +236,14 @@ const ExternalPlugin = props => {
     return () => {
       timers.forEach(timer => clearTimeout(timer))
     }
-  }, [ADSENSE_GOOGLE_ID, lang, props?.allLinkPages, props?.allNavPages, router])
+  }, [
+    ADSENSE_GOOGLE_ID,
+    INNER_PAGE_URL_PARENT_PATH,
+    lang,
+    props?.allLinkPages,
+    props?.allNavPages,
+    router
+  ])
 
   useEffect(() => {
     if (!isBrowser || !GLOBAL_JS || GLOBAL_JS.trim() === '') {
