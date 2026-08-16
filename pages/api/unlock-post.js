@@ -1,5 +1,17 @@
 import { resolvePostProps } from '@/lib/db/SiteDataApi'
+import { getClientIp } from '@/lib/middleware/security'
+import { globalRateLimiter } from '@/lib/utils/validation'
 import { createHash, timingSafeEqual } from 'crypto'
+
+const RATE_WINDOW_MS = 60 * 1000
+const configuredRateLimit = Number.parseInt(
+  process.env.UNLOCK_POST_RATE_LIMIT || '10',
+  10
+)
+const RATE_LIMIT =
+  Number.isFinite(configuredRateLimit) && configuredRateLimit > 0
+    ? configuredRateLimit
+    : 10
 
 const digest = (algorithm, value) =>
   createHash(algorithm).update(String(value)).digest('hex')
@@ -34,6 +46,18 @@ export default async function handler(req, res) {
     password.length > 1024
   ) {
     return res.status(400).json({ error: 'Invalid request' })
+  }
+
+  const rateLimitKey = `unlock-post:${getClientIp(req)}`
+  if (
+    globalRateLimiter.isRateLimited(
+      rateLimitKey,
+      RATE_LIMIT,
+      RATE_WINDOW_MS
+    )
+  ) {
+    res.setHeader('Retry-After', String(Math.ceil(RATE_WINDOW_MS / 1000)))
+    return res.status(429).json({ error: 'Too many attempts' })
   }
 
   const props = await resolvePostProps({

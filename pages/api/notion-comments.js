@@ -1,5 +1,7 @@
 import { Client } from '@notionhq/client'
 import { createHash } from 'node:crypto'
+import { getClientIp } from '@/lib/middleware/security'
+import { globalRateLimiter } from '@/lib/utils/validation'
 import {
   formatNotionComment,
   getPlainText,
@@ -12,8 +14,14 @@ const databaseId = process.env.NOTION_COMMENT_DATABASE_ID
 const token = process.env.NOTION_TOKEN
 const requireApproval = process.env.NOTION_COMMENT_REQUIRE_APPROVAL === 'true'
 const rateWindowMs = 60 * 1000
-const rateLimit = Number(process.env.NOTION_COMMENT_RATE_LIMIT || 5)
-const ipHits = new Map()
+const configuredRateLimit = Number.parseInt(
+  process.env.NOTION_COMMENT_RATE_LIMIT || '5',
+  10
+)
+const rateLimit =
+  Number.isFinite(configuredRateLimit) && configuredRateLimit > 0
+    ? configuredRateLimit
+    : 5
 
 const getClient = () => {
   if (!databaseId || !token) {
@@ -22,33 +30,12 @@ const getClient = () => {
   return new Client({ auth: token })
 }
 
-const getClientIp = req => {
-  const forwardedFor = req.headers['x-forwarded-for']
-  return String(
-    Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || ''
-  )
-    .split(',')[0]
-    .trim()
-}
-
 const isRateLimited = ip => {
-  const now = Date.now()
-  // 惰性清理：防止长期运行后 Map 被一次性访客 IP 无限撑大
-  if (ipHits.size > 1000) {
-    for (const [key, times] of ipHits) {
-      if (times.every(time => now - time >= rateWindowMs)) {
-        ipHits.delete(key)
-      }
-    }
-  }
-  const hits = (ipHits.get(ip) || []).filter(time => now - time < rateWindowMs)
-  if (hits.length >= rateLimit) {
-    ipHits.set(ip, hits)
-    return true
-  }
-  hits.push(now)
-  ipHits.set(ip, hits)
-  return false
+  return globalRateLimiter.isRateLimited(
+    `notion-comments:${ip}`,
+    rateLimit,
+    rateWindowMs
+  )
 }
 
 const hasProperty = (properties, name, type) =>
@@ -140,7 +127,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true })
     }
 
-    const ip = getClientIp(req) || 'unknown'
+    const ip = getClientIp(req)
     if (isRateLimited(ip)) {
       return res.status(429).json({ error: 'Too many comments' })
     }

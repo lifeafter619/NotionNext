@@ -333,11 +333,12 @@ const LayoutSlug = props => {
               {/* <ShareBar post={post} /> */}
               {/* 文章分类和标签信息 */}
               <div className='flex justify-between'>
-                {CONFIG.POST_DETAIL_CATEGORY && post?.category && (
+                {siteConfig('NAV_POST_DETAIL_CATEGORY', true, CONFIG) &&
+                  post?.category && (
                   <CategoryItem category={post.category} />
                 )}
                 <div>
-                  {CONFIG.POST_DETAIL_TAG &&
+                  {siteConfig('NAV_POST_DETAIL_TAG', true, CONFIG) &&
                     post?.tagItems?.map(tag => (
                       <TagItemMini key={tag.name} tag={tag} />
                     ))}

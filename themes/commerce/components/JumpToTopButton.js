@@ -1,4 +1,5 @@
 import { useGlobal } from '@/lib/global'
+import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
 
 /**
@@ -12,7 +13,7 @@ import CONFIG from '../config'
 const JumpToTopButton = ({ showPercent = true, percent }) => {
   const { locale } = useGlobal()
 
-  if (!CONFIG.WIDGET_TO_TOP) {
+  if (!siteConfig('COMMERCE_WIDGET_TO_TOP', true, CONFIG)) {
     return <></>
   }
   return (

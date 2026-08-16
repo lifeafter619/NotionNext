@@ -2,14 +2,11 @@ import { markContributionCacheDirty } from '@/lib/server/claude/contributionStor
 import { secureCompare } from '@/lib/server/secureCompare'
 
 const getTokenFromRequest = req => {
-  const queryToken = Array.isArray(req.query?.token)
-    ? req.query.token[0]
-    : req.query?.token
   const headerToken =
     req.headers['x-contribution-trigger-token'] ||
     req.headers['x-contrib-trigger-token'] ||
     ''
-  return String(queryToken || headerToken || '')
+  return String(headerToken || '')
 }
 
 const ALLOWED_REVALIDATE_PATHS = ['/', '/archive', '/category', '/tag']
@@ -21,7 +18,7 @@ const normalizeRevalidatePath = rawPath => {
 }
 
 export default async function handler(req, res) {
-  if (!['GET', 'POST'].includes(req.method || '')) {
+  if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, message: 'Method Not Allowed' })
   }
 

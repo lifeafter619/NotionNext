@@ -1,4 +1,5 @@
 import SmartLink from '@/components/SmartLink'
+import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
 
 /**
@@ -7,7 +8,7 @@ import CONFIG from '../config'
  * @returns
  */
 export default function ArticleAdjacent({ prev, next }) {
-  if (!prev || !next || !CONFIG.ARTICLE_ADJACENT) {
+  if (!prev || !next || !siteConfig('COMMERCE_ARTICLE_ADJACENT', true, CONFIG)) {
     return <></>
   }
   return (

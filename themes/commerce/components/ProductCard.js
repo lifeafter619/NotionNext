@@ -8,13 +8,17 @@ import LazyImage from '@/components/LazyImage'
  * 商品卡
  */
 const ProductCard = ({ index, post, siteInfo }) => {
-  if (post && !post.pageCoverThumbnail && CONFIG.POST_LIST_COVER_DEFAULT) {
+  if (
+    post &&
+    !post.pageCoverThumbnail &&
+    siteConfig('COMMERCE_POST_LIST_COVER_DEFAULT', true, CONFIG)
+  ) {
     post.pageCoverThumbnail = siteInfo?.pageCover
   }
 
   return (
     <div
-      className={`${CONFIG.POST_LIST_COVER_HOVER_ENLARGE ? ' hover:scale-110 transition-all duration-150' : ''}`}>
+      className={`${siteConfig('COMMERCE_POST_LIST_COVER_HOVER_ENLARGE', false, CONFIG) ? ' hover:scale-110 transition-all duration-150' : ''}`}>
       <div
         key={post.id}
         className={

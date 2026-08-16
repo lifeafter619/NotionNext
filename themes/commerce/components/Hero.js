@@ -1,5 +1,6 @@
 // import Image from 'next/image'
 import CONFIG from '../config'
+import { siteConfig } from '@/lib/config'
 import LazyImage from '@/components/LazyImage'
 
 /**
@@ -18,7 +19,7 @@ const Hero = props => {
       <LazyImage
         id='header-cover'
         src={siteInfo?.pageCover}
-        className={`header-cover w-full h-auto aspect-[5/2] object-cover object-center ${CONFIG.HOME_NAV_BACKGROUND_IMG_FIXED ? 'fixed' : ''}`}
+        className={`header-cover w-full h-auto aspect-[5/2] object-cover object-center ${siteConfig('COMMERCE_HOME_NAV_BACKGROUND_IMG_FIXED', false, CONFIG) ? 'fixed' : ''}`}
       />
     </header>
   )

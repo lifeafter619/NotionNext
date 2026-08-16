@@ -73,7 +73,7 @@ const LayoutBase = props => {
       {/* 主区块 */}
       <main
         id='wrapper'
-        className={`${CONFIG.HOME_BANNER_ENABLE ? '' : 'pt-16'} bg-hexo-background-gray dark:bg-black w-full py-8 md:px-8 lg:px-24 relative`}>
+        className={`${siteConfigBoolean('COMMERCE_HOME_BANNER_ENABLE', true, CONFIG) ? '' : 'pt-16'} bg-hexo-background-gray dark:bg-black w-full py-8 md:px-8 lg:px-24 relative`}>
         <div
           id='container-inner'
           className={

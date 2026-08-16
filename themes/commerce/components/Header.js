@@ -26,25 +26,25 @@ export default function Header(props) {
       icon: 'fas fa-th',
       name: locale.COMMON.CATEGORY,
       href: '/category',
-      show: CONFIG.MENU_CATEGORY
+      show: siteConfig('COMMERCE_MENU_CATEGORY', true, CONFIG)
     },
     {
       icon: 'fas fa-tag',
       name: locale.COMMON.TAGS,
       href: '/tag',
-      show: CONFIG.MENU_TAG
+      show: siteConfig('COMMERCE_MENU_TAG', true, CONFIG)
     },
     {
       icon: 'fas fa-archive',
       name: locale.NAV.ARCHIVE,
       href: '/archive',
-      show: CONFIG.MENU_ARCHIVE
+      show: siteConfig('COMMERCE_MENU_ARCHIVE', true, CONFIG)
     },
     {
       icon: 'fas fa-search',
       name: locale.NAV.SEARCH,
       href: '/search',
-      show: CONFIG.MENU_SEARCH
+      show: siteConfig('COMMERCE_MENU_SEARCH', true, CONFIG)
     }
   ]
 

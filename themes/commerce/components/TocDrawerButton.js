@@ -1,4 +1,5 @@
 import { useGlobal } from '@/lib/global'
+import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
 
 /**
@@ -10,7 +11,7 @@ import CONFIG from '../config'
  */
 const TocDrawerButton = props => {
   const { locale } = useGlobal()
-  if (!CONFIG.WIDGET_TOC) {
+  if (!siteConfig('COMMERCE_WIDGET_TOC', true, CONFIG)) {
     return <></>
   }
   return (

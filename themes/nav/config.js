@@ -16,6 +16,9 @@ const CONFIG = {
   NAV_MENU_ARCHIVE: true, // 显示归档
   NAV_MENU_SEARCH: true, // 显示搜索
 
+  NAV_POST_DETAIL_CATEGORY: true, // 文章显示分类
+  NAV_POST_DETAIL_TAG: true, // 文章显示标签
+
   // Widget
   NAV_WIDGET_REVOLVER_MAPS:
     process.env.NEXT_PUBLIC_WIDGET_REVOLVER_MAPS || 'false', // 地图插件

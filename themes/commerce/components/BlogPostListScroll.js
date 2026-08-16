@@ -16,7 +16,7 @@ import ProductCard from './ProductCard'
 const BlogPostListScroll = ({
   posts = [],
   currentSearch,
-  showSummary = CONFIG.POST_LIST_SUMMARY,
+  showSummary = siteConfig('COMMERCE_POST_LIST_SUMMARY', true, CONFIG),
   siteInfo
 }) => {
   const { NOTION_CONFIG } = useGlobal()
