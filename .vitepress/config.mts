@@ -302,6 +302,7 @@ export default defineConfig({
               link: '/user-guide/config/cache-of-notion-next'
             },
             { text: 'URL 自定义', link: '/user-guide/config/url-customize' },
+            { text: 'PWA 安装入口', link: '/user-guide/config/pwa-install' },
             { text: '站点公告', link: '/user-guide/config/notionnext-notice' },
             { text: '二级菜单', link: '/user-guide/menu-secondary' },
             {
