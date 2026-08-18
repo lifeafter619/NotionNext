@@ -23,7 +23,7 @@ export const Footer = props => {
           <div>
             Powered By{' '}
             <a
-              href='https://github.com/tangly1024/NotionNext'
+              href='https://github.com/notionnext-org/NotionNext'
               className='underline'>
               NotionNext {siteConfig('VERSION')}
             </a>

@@ -244,7 +244,7 @@ export default function Footer() {
               <div className='h-full flex justify-center items-center text-gray-600 hover:text-gray-900 bg-white hover:bg-white-100'>
                 Powered by
                 <a
-                  href='https://github.com/tangly1024/NotionNext'
+                  href='https://github.com/notionnext-org/NotionNext'
                   className='mx-1 hover:underline font-semibold'>
                   NotionNext {siteConfig('VERSION')}
                 </a>
