@@ -153,7 +153,7 @@ const CONFIG = {
     {
       name: '开发者',
       menus: [
-        { title: 'Github', href: 'https://github.com/tangly1024/NotionNext' },
+        { title: 'Github', href: 'https://github.com/notionnext-org/NotionNext' },
         { title: '关于作者', href: '/about' }
       ]
     },
@@ -203,7 +203,7 @@ export default CONFIG
     {
       name: '开发者',
       menus: [
-        { title: 'Github', href: 'https://github.com/tangly1024/NotionNext' },
+        { title: 'Github', href: 'https://github.com/notionnext-org/NotionNext' },
         { title: '关于作者', href: '/about' }
       ]
     },
@@ -260,7 +260,7 @@ export default CONFIG
         "menus": [
             {
                 "title": "Github",
-                "href": "https://github.com/tangly1024/NotionNext"
+                "href": "https://github.com/notionnext-org/NotionNext"
             },
             {
                 "title": "开发帮助",
@@ -268,11 +268,11 @@ export default CONFIG
             },
             {
                 "title": "功能反馈",
-                "href": "https://github.com/tangly1024/NotionNext/issues/new/choose"
+                "href": "https://github.com/notionnext-org/NotionNext/issues/new/choose"
             },
             {
                 "title": "技术讨论",
-                "href": "https://github.com/tangly1024/NotionNext/discussions"
+                "href": "https://github.com/notionnext-org/NotionNext/discussions"
             },
             {
                 "title": "关于作者",

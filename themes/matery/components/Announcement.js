@@ -19,7 +19,7 @@ const Announcement = ({ notice }) => {
         <div className='text-sm flex flex-nowrap justify-between'>
           <div className='font-light text-gray-600  dark:text-gray-200'>
             <i className='mx-2 fas fa-bullhorn' />
-            {locale.COMMON.ANNOUNCEMENT}
+            {notice?.title || locale.COMMON.ANNOUNCEMENT}
           </div>
         </div>
         {notice && (

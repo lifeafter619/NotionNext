@@ -2,7 +2,7 @@
  * 站点统计插件
  */
 module.exports = {
-  ANALYTICS_VERCEL: process.env.NEXT_PUBLIC_ANALYTICS_VERCEL || true, // vercel自带的统计 https://vercel.com/docs/concepts/analytics/quickstart https://github.com/tangly1024/NotionNext/issues/897
+  ANALYTICS_VERCEL: process.env.NEXT_PUBLIC_ANALYTICS_VERCEL || true, // vercel自带的统计 https://vercel.com/docs/concepts/analytics/quickstart https://github.com/notionnext-org/NotionNext/issues/897
   ANALYTICS_VERCEL_SPEED_INSIGHTS:
     process.env.NEXT_PUBLIC_ANALYTICS_VERCEL_SPEED_INSIGHTS || true, // Vercel Speed Insights https://vercel.com/docs/speed-insights/quickstart
   ANALYTICS_BUSUANZI_ENABLE:

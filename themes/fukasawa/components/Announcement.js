@@ -13,7 +13,7 @@ const Announcement = ({ post, className }) => {
           className='dark:text-gray-300 rounded-xl px-2 py-4'>
           <div>
             <i className='mr-2 fas fa-bullhorn' />
-            {locale.COMMON.ANNOUNCEMENT}
+            {post?.title || locale.COMMON.ANNOUNCEMENT}
           </div>
           {post && (
             <div id='announcement-content'>
