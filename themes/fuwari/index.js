@@ -214,16 +214,15 @@ const LayoutSearch = props => {
           {locale?.NAV?.SEARCH || '搜索'}
         </p>
         <h1 className='fuwari-section-title text-2xl font-bold mb-4'>
-          {currentSearch
-            ? `${locale?.NAV?.SEARCH || '搜索'}: ${currentSearch}`
-            : locale?.NAV?.SEARCH || '搜索'}
+          {currentSearch || locale?.NAV?.SEARCH || '搜索'}
         </h1>
         <SearchInput keyword={currentSearch} />
       </div>
 
       {currentSearch ? (
         posts.length > 0 ? (
-          <div id='posts-wrapper'>
+          // PostList 自带 #posts-wrapper，此处不要再套一层同 id 的容器
+          <>
             {siteConfig('POST_LIST_STYLE', 'page', props.NOTION_CONFIG) ===
             'page' ? (
               <>
@@ -236,7 +235,7 @@ const LayoutSearch = props => {
             ) : (
               <PostListScroll posts={posts} />
             )}
-          </div>
+          </>
         ) : (
           <div className='fuwari-card p-8 text-center text-sm text-[var(--fuwari-muted)]'>
             {locale?.COMMON?.NO_RESULTS_FOUND || '没有找到文章'}
