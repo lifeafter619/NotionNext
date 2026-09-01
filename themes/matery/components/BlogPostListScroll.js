@@ -1,8 +1,8 @@
+import useThrottledScroll from '@/hooks/useThrottledScroll'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { getListByPage } from '@/lib/utils'
-import throttle from '@/lib/utils/throttle'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import CONFIG from '../config'
 import BlogPostCard from './BlogPostCard'
 import BlogPostListEmpty from './BlogPostListEmpty'
@@ -24,13 +24,6 @@ const BlogPostListScroll = ({
   const POSTS_PER_PAGE = siteConfig('POSTS_PER_PAGE', null, NOTION_CONFIG)
   const [page, updatePage] = useState(1)
   const postsToShow = getListByPage(posts, page, POSTS_PER_PAGE)
-  // 监听滚动
-  useEffect(() => {
-    window.addEventListener('scroll', scrollTrigger, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', scrollTrigger)
-    }
-  })
 
   const targetRef = useRef(null)
   const { locale } = useGlobal()
@@ -46,21 +39,16 @@ const BlogPostListScroll = ({
   }
 
   const throttleMs = 200
-  const scrollTrigger = useCallback(
-    throttle(() => {
-      requestAnimationFrame(() => {
-        const scrollS = window.scrollY + window.outerHeight
-        const clientHeight = targetRef
-          ? targetRef.current
-            ? targetRef.current.clientHeight
-            : 0
-          : 0
-        if (scrollS > clientHeight + 100) {
-          handleGetMore()
-        }
-      })
-    }, throttleMs)
-  )
+  // 监听滚动自动分页加载
+  useThrottledScroll(() => {
+    requestAnimationFrame(() => {
+      const scrollS = window.scrollY + window.outerHeight
+      const clientHeight = targetRef.current?.clientHeight ?? 0
+      if (scrollS > clientHeight + 100) {
+        handleGetMore()
+      }
+    })
+  }, throttleMs)
 
   if (!postsToShow || postsToShow.length === 0) {
     return <BlogPostListEmpty currentSearch={currentSearch} />

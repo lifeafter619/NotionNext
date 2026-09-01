@@ -1,7 +1,7 @@
+import useThrottledScroll from '@/hooks/useThrottledScroll'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import throttle from '@/lib/utils/throttle'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { BlogItem } from './BlogItem'
 
 /**
@@ -31,27 +31,13 @@ export default function BlogListScroll(props) {
   const targetRef = useRef(null)
 
   // 监听滚动自动分页加载
-  const scrollTrigger = useCallback(
-    throttle(() => {
-      const scrollS = window.scrollY + window.outerHeight
-      const clientHeight = targetRef
-        ? targetRef.current
-          ? targetRef.current.clientHeight
-          : 0
-        : 0
-      if (scrollS > clientHeight + 100) {
-        handleGetMore()
-      }
-    }, 500)
-  )
-
-  useEffect(() => {
-    window.addEventListener('scroll', scrollTrigger, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', scrollTrigger)
+  useThrottledScroll(() => {
+    const scrollS = window.scrollY + window.outerHeight
+    const clientHeight = targetRef.current?.clientHeight ?? 0
+    if (scrollS > clientHeight + 100) {
+      handleGetMore()
     }
-  })
+  }, 500)
 
   return (
     <div id='posts-wrapper' className='w-full md:pr-8 mb-12' ref={targetRef}>

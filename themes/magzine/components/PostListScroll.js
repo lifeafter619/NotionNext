@@ -1,8 +1,8 @@
+import useThrottledScroll from '@/hooks/useThrottledScroll'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import throttle from '@/lib/utils/throttle'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import PostItemCard from './PostItemCard'
 import PostListEmpty from './PostListEmpty'
 
@@ -41,27 +41,15 @@ const PostListScroll = ({ posts = [], currentSearch }) => {
   }
 
   // 监听滚动自动分页加载
-  const scrollTrigger = useCallback(
-    throttle(() => {
-      const scrollS = window.scrollY + window.outerHeight
-      const clientHeight = targetRef
-        ? targetRef.current
-          ? targetRef.current.clientHeight
-          : 0
-        : 0
-      if (scrollS > clientHeight + 100) {
-        handleGetMore()
-      }
-    }, 500)
-  )
+  useThrottledScroll(() => {
+    const scrollS = window.scrollY + window.outerHeight
+    const clientHeight = targetRef.current?.clientHeight ?? 0
+    if (scrollS > clientHeight + 100) {
+      handleGetMore()
+    }
+  }, 500)
 
   // 监听滚动
-  useEffect(() => {
-    window.addEventListener('scroll', scrollTrigger, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', scrollTrigger)
-    }
-  })
 
   const targetRef = useRef(null)
   const { locale } = useGlobal()

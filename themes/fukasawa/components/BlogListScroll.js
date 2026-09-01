@@ -1,7 +1,7 @@
+import useThrottledScroll from '@/hooks/useThrottledScroll'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import throttle from '@/lib/utils/throttle'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import BlogCard from './BlogCard'
 import BlogPostListEmpty from './BlogListEmpty'
 
@@ -27,26 +27,13 @@ const BlogListScroll = ({ posts }) => {
   const targetRef = useRef(null)
 
   // 监听滚动自动分页加载
-  const scrollTrigger = useCallback(
-    throttle(() => {
-      const scrollS = window.scrollY + window.outerHeight
-      const clientHeight = targetRef
-        ? targetRef.current
-          ? targetRef.current.clientHeight
-          : 0
-        : 0
-      if (scrollS > clientHeight + 100) {
-        loadMorePosts()
-      }
-    }, 500)
-  )
-
-  useEffect(() => {
-    window.addEventListener('scroll', scrollTrigger, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', scrollTrigger)
+  useThrottledScroll(() => {
+    const scrollS = window.scrollY + window.outerHeight
+    const clientHeight = targetRef.current?.clientHeight ?? 0
+    if (scrollS > clientHeight + 100) {
+      loadMorePosts()
     }
-  })
+  }, 500)
 
   // 根据当前页和每页文章数截取应该显示的文章
   useEffect(() => {
