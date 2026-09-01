@@ -16,22 +16,22 @@
     "@ai-sdk/provider-utils" "5.0.23"
     "@vercel/oidc" "3.2.0"
 
-"@ai-sdk/gateway@4.0.63":
-  version "4.0.63"
-  resolved "https://registry.yarnpkg.com/@ai-sdk/gateway/-/gateway-4.0.63.tgz#f98246aeb9a6a941721c0e492f1c36b13322f0b1"
-  integrity sha512-D7BogSRg61QfTdr7AEcYn9h0I/e4QHvFXwIV1RW+DZZGJu1wSiX2cH06szZSYyKi7Eat50V4s4J8vggZUEs7eg==
+"@ai-sdk/gateway@4.0.70":
+  version "4.0.70"
+  resolved "https://registry.yarnpkg.com/@ai-sdk/gateway/-/gateway-4.0.70.tgz#61870f575282a40135c8427dae3773017dcedec4"
+  integrity sha512-0tzAH2vwXOs/kVktAZRS04dATEQJk1hf1QR+VuVfvo9QmW3UPgcjhhJD9QFgP8HZLxkrEGDImwLIQ7sUfQTIsA==
   dependencies:
-    "@ai-sdk/provider" "4.0.7"
-    "@ai-sdk/provider-utils" "5.0.29"
+    "@ai-sdk/provider" "4.0.9"
+    "@ai-sdk/provider-utils" "5.0.34"
     "@vercel/oidc" "3.2.0"
 
-"@ai-sdk/google@^4.0.44":
-  version "4.0.50"
-  resolved "https://registry.yarnpkg.com/@ai-sdk/google/-/google-4.0.50.tgz#57e95305d2a4c3c973f9e37b7f0fc878c7f15655"
-  integrity sha512-n7aMmqw6ZGVNBDAiv89fZkuZp3ahfzwZTXsdW27WugXdFSIuLTlYBZ+FlKGRdk1pRMPrdIGT2GPL2Ra0Gc2Tkg==
+"@ai-sdk/google@^4.0.50":
+  version "4.0.59"
+  resolved "https://registry.yarnpkg.com/@ai-sdk/google/-/google-4.0.59.tgz#5de24f24a70cb54d4ef1da23b49c4c5c2b08cd91"
+  integrity sha512-5fAbNdudYEB+PE+QkXl0tjdGpn+8nmVWVFSlOzFnwXZv1v8/8/IzM0iyMNzcvqW5Xh4MjdWJrxo+GWkMiDbOyw==
   dependencies:
-    "@ai-sdk/provider" "4.0.7"
-    "@ai-sdk/provider-utils" "5.0.29"
+    "@ai-sdk/provider" "4.0.9"
+    "@ai-sdk/provider-utils" "5.0.34"
 
 "@ai-sdk/provider-utils@5.0.23":
   version "5.0.23"
@@ -44,12 +44,12 @@
     eventsource-parser "^3.0.8"
     undici "^7.28.0"
 
-"@ai-sdk/provider-utils@5.0.29":
-  version "5.0.29"
-  resolved "https://registry.yarnpkg.com/@ai-sdk/provider-utils/-/provider-utils-5.0.29.tgz#a6903d14d79c81ab5bfaf0c6c731f67ca73a23f8"
-  integrity sha512-7EIbwXiXKGa7EFk6tDZpuZBs6lxhEJpOuHeqrDb3Vd85uYdjwkdRuHnZDVDIIb2+QTSRmyph2NrXcbvuO/KAjQ==
+"@ai-sdk/provider-utils@5.0.34":
+  version "5.0.34"
+  resolved "https://registry.yarnpkg.com/@ai-sdk/provider-utils/-/provider-utils-5.0.34.tgz#b1b695707da5e81ba5a7d279d78d9922cf3d7069"
+  integrity sha512-tRBdgRcys/4d8wyQdOdyYScq1AxfMdMd0hIlwolxJKVIbBwXUgClZuQT0VIsz4e7pylY8FE6utYCCZ494UAMJQ==
   dependencies:
-    "@ai-sdk/provider" "4.0.7"
+    "@ai-sdk/provider" "4.0.9"
     "@standard-schema/spec" "^1.1.0"
     "@workflow/serde" "4.1.0"
     eventsource-parser "^3.0.8"
@@ -62,20 +62,20 @@
   dependencies:
     json-schema "^0.4.0"
 
-"@ai-sdk/provider@4.0.7":
-  version "4.0.7"
-  resolved "https://registry.yarnpkg.com/@ai-sdk/provider/-/provider-4.0.7.tgz#5c0a2df39b57ca6f63c745dcc9cb0e684a94593d"
-  integrity sha512-6or44XprPzKbr8zkmzosowSE0pxkvJcoojBL+mCZvPUt3kvXp3XSNqeVun9golb1acEfSo6yaEBRT18h2VU+1Q==
+"@ai-sdk/provider@4.0.9":
+  version "4.0.9"
+  resolved "https://registry.yarnpkg.com/@ai-sdk/provider/-/provider-4.0.9.tgz#460ebb9770d0539eb7b325c266216cd33b7ae892"
+  integrity sha512-XnGXPWiBIfqjsVEud5pOaVneRByJQOu2sYNwlSVJTPCvakdCDkVuYKKfNuStkIpMUYl7JIkBZGBx+B5YfNeVjA==
   dependencies:
     json-schema "^0.4.0"
 
-"@ai-sdk/vue@^4.0.65":
-  version "4.0.78"
-  resolved "https://registry.yarnpkg.com/@ai-sdk/vue/-/vue-4.0.78.tgz#f90c91787d61c6308791be47cf643a692de74d11"
-  integrity sha512-dFcmL7OPSoyE7w8hhKPGYIqdTbNBja5H7MUl/lnFKK+Doil9G/1h6e9BpTPnLrnw+um7PP72QLB/JuRTAm7Jww==
+"@ai-sdk/vue@^4.0.77":
+  version "4.0.87"
+  resolved "https://registry.yarnpkg.com/@ai-sdk/vue/-/vue-4.0.87.tgz#1442fd360f2775590069c08d22e1aa5a59c907e2"
+  integrity sha512-4JHKnXRee/zskML6I4l+snBPHulZ5GQZ/mXuWXfR6XlHxjDK+pyh4QrCaaqPWecgwoJflFcR3nUcopgJIojHEA==
   dependencies:
-    "@ai-sdk/provider-utils" "5.0.29"
-    ai "7.0.78"
+    "@ai-sdk/provider-utils" "5.0.34"
+    ai "7.0.87"
     swrv "^1.2.0"
 
 "@algolia/abtesting@1.18.1":
@@ -2085,7 +2085,7 @@
     "@testing-library/dom" "^9.0.0"
     "@types/react-dom" "^18.0.0"
 
-"@testing-library/user-event@^14.6.4":
+"@testing-library/user-event@^14.6.6":
   version "14.6.6"
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.6.6.tgz#ecd5614fe2dbb76a1744a9b5a96e305b8591ceac"
   integrity sha512-Jbs9FpkkIDw8FgSc6kOVsOv8JuuqGAL7J4X1oot77JxAoDlkNn2GRkd0aYRVuQ+pVQAiHWVkE4rX/dkF5fBiCw==
@@ -2418,7 +2418,7 @@
   dependencies:
     execa "5.1.1"
 
-"@vercel/functions@^3.9.3":
+"@vercel/functions@^3.9.5":
   version "3.9.5"
   resolved "https://registry.yarnpkg.com/@vercel/functions/-/functions-3.9.5.tgz#a151d02afd8371c0a78500197321b91adfec58d8"
   integrity sha512-EUfqlb7AzoEh7URlMNAO4jbJiLWz9grDBHvfjKTDvEP9c8y3DqX3SWPvfaQkUjtkm3b83flhaUUMuewdHa+qmw==
@@ -2700,14 +2700,14 @@ agent-base@^7.1.0, agent-base@^7.1.2:
   resolved "https://registry.npmmirror.com/agent-base/-/agent-base-7.1.4.tgz"
   integrity sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==
 
-ai@7.0.78:
-  version "7.0.78"
-  resolved "https://registry.yarnpkg.com/ai/-/ai-7.0.78.tgz#70b5f7a38a88099a6f065f0a093f1b2b082b06d6"
-  integrity sha512-AlHn784ceofz5XOe+AhllCUwloC4QgNogVVYMULc5GHsEmzLRjuBeLGZR6yRvL0cgkX3YV3Jq8/QqNLcPNmnqA==
+ai@7.0.87:
+  version "7.0.87"
+  resolved "https://registry.yarnpkg.com/ai/-/ai-7.0.87.tgz#d54a9cd47a55eef2b856f2e2ba85d4ba33299419"
+  integrity sha512-/hrT7toRx8vLIyr/lTKOOPDxCGdxk2tVs5viHDwIPlUsge5FBaLe9h3BhPAr7cOmEAXkN/Cf2+2N8HYGCjJbHg==
   dependencies:
-    "@ai-sdk/gateway" "4.0.63"
-    "@ai-sdk/provider" "4.0.7"
-    "@ai-sdk/provider-utils" "5.0.29"
+    "@ai-sdk/gateway" "4.0.70"
+    "@ai-sdk/provider" "4.0.9"
+    "@ai-sdk/provider-utils" "5.0.34"
 
 ai@^7.0.19:
   version "7.0.56"
@@ -6675,7 +6675,12 @@ marked-highlight@^2.2.4:
   resolved "https://registry.yarnpkg.com/marked-highlight/-/marked-highlight-2.2.4.tgz#e8d9a3b9ab8cdba8c255a5bcca9d922716befa5e"
   integrity sha512-PZxisNMJDduSjc0q6uvjsnqqHCXc9s0eyzxDO9sB1eNGJnd/H1/Fu+z6g/liC1dfJdFW4SftMwMlLvsBhUPrqQ==
 
-marked@^18.0.4, marked@^18.0.9:
+marked@^18.0.10:
+  version "18.0.11"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-18.0.11.tgz#0f50ce5cdf25b2c07f67d3787220b64a5845cce1"
+  integrity sha512-HnslJfsZkRPBDJRHvVtAaWlZHEpSu7u8LgQuJCELjRKuWR+hpq4A7sLq3p8HaI9ypVoXDXxV34CsQJEe1+J5Aw==
+
+marked@^18.0.4:
   version "18.0.9"
   resolved "https://registry.yarnpkg.com/marked/-/marked-18.0.9.tgz#729fb57203a4fd58dd5ddc551917ef40daf5036a"
   integrity sha512-/Sa4qiiHZxf0/FQdBBowr9q4r10krCwMvpK48FUBdXdUXScDxiQGR9zCPrFgRVR5LU3iySOiIjy09ZQvADir1w==
