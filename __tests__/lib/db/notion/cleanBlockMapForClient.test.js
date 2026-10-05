@@ -62,8 +62,9 @@ describe('cleanBlockMapForClient', () => {
     )
     expect(result.block.block1.role).toBeUndefined()
     expect(value.space_id).toBeUndefined()
-    expect(value.created_time).toBeUndefined()
-    expect(value.last_edited_time).toBeUndefined()
+    // 上游修复：保留 Notion 系统时间字段（getNotionPost/getMetadata 等下游在读取）
+    expect(value.created_time).toBe(1)
+    expect(value.last_edited_time).toBe(2)
     expect(value.parent_table).toBeUndefined()
     expect(value.copied_from).toBeUndefined()
     expect(value.permissions).toBeUndefined()
