@@ -168,6 +168,11 @@ const Style = () => {
         color: var(--starter-color-primary);
       }
 
+      #theme-starter .sticky #navbarCollapse li > button:hover {
+        color: var(--starter-color-primary);
+        opacity: 1;
+      }
+
       :is(.dark #theme-starter .sticky #navbarCollapse li > button) {
         --tw-text-opacity: 1;
         color: rgb(255 255 255 / var(--tw-text-opacity));
@@ -180,6 +185,10 @@ const Style = () => {
       #theme-starter .sticky #navbarCollapse li .ud-menu-scroll.active {
         color: var(--starter-color-primary);
         opacity: 1;
+      }
+
+      :is(.dark #theme-starter .sticky #navbarCollapse li > button:hover) {
+        color: var(--starter-color-primary);
       }
 
       #theme-starter .signUpBtn {

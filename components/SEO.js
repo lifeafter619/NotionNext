@@ -22,6 +22,10 @@ const SEO = props => {
   let image
   const router = useRouter()
   const meta = getSEOMeta(props, router, useGlobal()?.locale)
+  // 字体 CSS 由 _document.js 以 preload + requestIdleCallback 方式加载；
+  // 此处仅探测 Google Fonts 以按需输出 dns-prefetch / preconnect 提示
+  const webFontUrl = siteConfig('FONT_URL')
+  const hasGoogleFontsUrl = containsGoogleFontsUrl(webFontUrl)
 
   // SEO关键词
   const KEYWORDS = siteConfig('KEYWORDS')
@@ -222,8 +226,18 @@ const SEO = props => {
       />
 
       {/* DNS预取和预连接 */}
+      {hasGoogleFontsUrl && (
+        <link rel='dns-prefetch' href='//fonts.googleapis.com' />
+      )}
       <link rel='dns-prefetch' href='//www.google-analytics.com' />
       <link rel='dns-prefetch' href='//www.googletagmanager.com' />
+      {hasGoogleFontsUrl && (
+        <link
+          rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossOrigin='anonymous'
+        />
+      )}
 
       {children}
     </Head>
@@ -300,6 +314,18 @@ export const generateStructuredData = (
   }
 
   return baseData
+}
+
+const containsGoogleFontsUrl = fontUrl => {
+  const urls = Array.isArray(fontUrl) ? fontUrl : [fontUrl]
+
+  return urls.filter(Boolean).some(url => {
+    try {
+      return new URL(url).hostname === 'fonts.googleapis.com'
+    } catch {
+      return false
+    }
+  })
 }
 
 const getAbsoluteImageUrl = (image, siteUrl) => {

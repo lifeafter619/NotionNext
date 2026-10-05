@@ -34,7 +34,9 @@ describe('default feature config', () => {
 
     const fontConfig = require('@/conf/font.config')
 
-    expect(fontConfig.FONT_URL).toEqual(['https://example.com/font.css'])
+    // 单个 URL 按上游契约字符串透传（SEO.test.js 同契约）；
+    // 消费者 _document.js / SEO.js 均兼容字符串与数组两种形态
+    expect(fontConfig.FONT_URL).toBe('https://example.com/font.css')
   })
 
   it('does not prefetch the full page image set by default', () => {

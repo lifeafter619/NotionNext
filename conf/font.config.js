@@ -2,7 +2,9 @@
  * 网站字体相关配置
  *
  */
-const parseList = value => {
+// 单个 URL 保持字符串原样返回（与 NEXT_PUBLIC_FONT_URL 直通语义一致）；
+// 逗号分隔或 JSON 数组才解析为数组。两种形态 _document.js / SEO.js 均可处理。
+const resolveFontUrls = value => {
   if (!value) return []
   if (Array.isArray(value)) return value.filter(Boolean)
 
@@ -12,14 +14,18 @@ const parseList = value => {
   if (text.startsWith('[')) {
     try {
       const parsed = JSON.parse(text)
-      return Array.isArray(parsed) ? parsed.filter(Boolean) : []
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : text
     } catch (_) {}
   }
 
+  if (text.includes(',')) {
+    return text
+      .split(',')
+      .map(url => url.trim())
+      .filter(Boolean)
+  }
+
   return text
-    .split(',')
-    .map(url => url.trim())
-    .filter(Boolean)
 }
 
 const parseBoolean = (value, fallback) => {
@@ -45,9 +51,12 @@ module.exports = {
   // 后面空格隔开的font-light的字体粗细，留空是默认粗细；参考 https://www.tailwindcss.cn/docs/font-weight
   FONT_STYLE: process.env.NEXT_PUBLIC_FONT_STYLE || 'font-sans font-light',
   // 字体CSS 默认使用霞鹜文楷（已子集化、swap 异步加载，详见 _document.js）。
-  // customFontUrls 为 undefined 时用默认；为空字符串时 parseList 返回 []，即关闭 Web Font。
+  // customFontUrls 为 undefined 时用默认；为空字符串时 resolveFontUrls 返回 []，
+  // 即关闭 Web Font；单个 URL 原样字符串透传，逗号分隔/JSON 数组解析为数组。
   FONT_URL:
-    customFontUrls !== undefined ? parseList(customFontUrls) : defaultFontUrls,
+    customFontUrls !== undefined
+      ? resolveFontUrls(customFontUrls)
+      : defaultFontUrls,
 
   // 字体优化配置
   FONT_DISPLAY: process.env.NEXT_PUBLIC_FONT_DISPLAY || 'swap',
