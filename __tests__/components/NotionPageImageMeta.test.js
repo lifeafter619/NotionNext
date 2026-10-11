@@ -7,8 +7,8 @@ jest.mock('react-notion-x', () => ({
   NotionRenderer: jest.fn(() => null)
 }))
 
-// 外链图片 mapImgUrl 原样返回（byte-for-byte 保留），
-// 用外链构造 fixture 可以让断言不依赖 Notion 代理与压缩参数
+// Notion 官方静态资源 URL（notion.so/images/…）会被 mapImgUrl 原样返回，
+// 用它构造 fixture 可以让断言不依赖代理包装与压缩参数
 const makeBlockMap = () => ({
   block: {
     root: {
@@ -25,7 +25,7 @@ const makeBlockMap = () => ({
       value: {
         id: 'img1',
         type: 'image',
-        properties: { source: [['https://example.com/a.png']] },
+        properties: { source: [['https://www.notion.so/images/a.png']] },
         format: {
           block_width: 800,
           block_height: 42,
@@ -39,14 +39,14 @@ const makeBlockMap = () => ({
       value: {
         id: 'img3',
         type: 'image',
-        properties: { source: [['https://example.com/sub.png']] }
+        properties: { source: [['https://www.notion.so/images/sub.png']] }
       }
     },
     img2: {
       value: {
         id: 'img2',
         type: 'image',
-        properties: { source: [['https://example.com/b.png']] }
+        properties: { source: [['https://www.notion.so/images/b.png']] }
       }
     }
   }
@@ -55,8 +55,8 @@ const makeBlockMap = () => ({
 describe('collectContentImageMeta', () => {
   it('按渲染顺序取首图，并从 block format 收集宽高', () => {
     const meta = collectContentImageMeta(makeBlockMap(), 'root')
-    expect(meta.first).toBe('https://example.com/a.png')
-    expect(meta.dims['https://example.com/a.png']).toEqual({
+    expect(meta.first).toBe('https://www.notion.so/images/a.png')
+    expect(meta.dims['https://www.notion.so/images/a.png']).toEqual({
       width: 800,
       height: 400
     })
@@ -64,13 +64,13 @@ describe('collectContentImageMeta', () => {
 
   it('跳过内嵌子页面里的图片', () => {
     const meta = collectContentImageMeta(makeBlockMap(), 'root')
-    expect(meta.first).not.toBe('https://example.com/sub.png')
-    expect(meta.dims['https://example.com/sub.png']).toBeUndefined()
+    expect(meta.first).not.toBe('https://www.notion.so/images/sub.png')
+    expect(meta.dims['https://www.notion.so/images/sub.png']).toBeUndefined()
   })
 
   it('rootId 不在 blockMap 时回退到第一个 page block', () => {
     const meta = collectContentImageMeta(makeBlockMap(), 'missing-id')
-    expect(meta.first).toBe('https://example.com/a.png')
+    expect(meta.first).toBe('https://www.notion.so/images/a.png')
   })
 
   it('空 blockMap 返回空元数据', () => {

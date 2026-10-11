@@ -29,6 +29,12 @@ const MobileNav = ({ locale, customNav, customMenu }) => {
 
   if (!enabled) return null
 
+  // 注意：条件返回必须放在所有 Hooks 之后。
+  // 此前该判定位于 useState/useRef/useEffect 之间，通过控制台开关
+  // （如「Mobile菜单」）切换 FUWARI_MOBILE_MENU 会改变 Hooks 的调用数量，
+  // 触发 React「Rendered more hooks than during the previous render」错误。
+  if (!enabled) return null
+
   return (
     <div className='relative md:hidden' ref={panelRef}>
       <button
