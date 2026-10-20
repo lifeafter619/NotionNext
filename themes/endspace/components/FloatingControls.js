@@ -12,6 +12,7 @@ import {
 } from '@tabler/icons-react'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { hasEnabledComments } from '@/lib/utils/comments'
 import CONFIG from '../config'
 import { SideBar } from './SideBar'
 
@@ -22,6 +23,8 @@ import { SideBar } from './SideBar'
 const FloatingControls = ({ toc, ...props }) => {
   const { isDarkMode, toggleDarkMode } = useGlobal()
   const showDarkToggle = siteConfig('ENDSPACE_WIDGET_DARK_MODE', true, CONFIG)
+  const { post, lock } = props
+  const showComments = post && !lock && post.comment !== 'Hide' && hasEnabledComments(siteConfig)
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState(null) // 'logs' | 'toc'
   const [percent, setPercent] = useState(0)
@@ -239,8 +242,8 @@ const FloatingControls = ({ toc, ...props }) => {
             />
           )}
 
-          {/* Comments - Only on Article Pages (approximated by TOC presence) */}
-          {hasToc && (
+          {/* Comments are available independently of the article's TOC. */}
+          {showComments && (
             <ControlBtn
               icon={IconMessage}
               label='Jump to Comments'

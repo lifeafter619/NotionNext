@@ -1,22 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { completeNotionOAuth } from '@/lib/server/notionOAuth'
 
-/**
- * Compatibility callback. Token exchange is handled only by /auth so the
- * state validation and credential handling cannot diverge between routes.
- */
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  res.setHeader('Cache-Control', 'private, no-store')
+  res.setHeader('Referrer-Policy', 'no-referrer')
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET')
     return res.status(405).json({ error: 'Method not allowed' })
   }
-
-  const query = new URLSearchParams()
-  for (const key of ['code', 'state', 'error', 'error_description']) {
-    const value = req.query[key]
-    const normalized = Array.isArray(value) ? value[0] : value
-    if (normalized) query.set(key, normalized)
-  }
-
-  const suffix = query.toString()
-  return res.redirect(307, suffix ? `/auth?${suffix}` : '/auth')
+  const result = await completeNotionOAuth(req, res)
+  if (result.redirect) return res.redirect(303, result.redirect)
+  return res.status(result.status || 502).json({ error: result.error })
 }

@@ -1,3 +1,4 @@
+import { getPublicPostBlockMap } from '@/lib/utils/publicPost'
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'

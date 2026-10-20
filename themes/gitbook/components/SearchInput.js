@@ -67,7 +67,10 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
   const handleKeyUp = e => {
     // 使用Algolia
     if (algoliaEnabled) {
-      searchModal?.current?.openSearch()
+      // Esc closes the dialog on keydown and returns focus here before keyup.
+      if (e.key !== 'Escape' && e.keyCode !== 27) {
+        searchModal?.current?.openSearch()
+      }
       return
     }
 

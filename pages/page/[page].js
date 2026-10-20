@@ -1,3 +1,4 @@
+import { getPublicPostBlockMap } from '@/lib/utils/publicPost'
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData, getPostBlocks } from '@/lib/db/SiteDataApi'
@@ -86,7 +87,11 @@ export async function getStaticProps({ params: { page }, locale }) {
         'slug',
         POST_PREVIEW_LINES
       )
-      post.blockMap = adapterNotionBlockMap(rawBlockMap)
+      post.blockMap = getPublicPostBlockMap(
+        post,
+        adapterNotionBlockMap(rawBlockMap),
+        props.allPages
+      )
       if (post.blockMap?.block) {
         post.blockMap.block = formatNotionBlock(post.blockMap.block)
       }

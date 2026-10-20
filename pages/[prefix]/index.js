@@ -4,13 +4,12 @@ import TechGrow from '@/components/TechGrow'
 import { siteConfig } from '@/lib/config'
 import { resolvePostProps } from '@/lib/db/SiteDataApi'
 import { useGlobal } from '@/lib/global'
-import { getPageTableOfContents } from '@/lib/db/notion/getPageTableOfContents'
-import { getPasswordQuery, rememberPasswordForPath } from '@/lib/utils/password'
+import useProtectedPost from '@/hooks/useProtectedPost'
+import ArticleLock from '@/components/ArticleLock'
 import { checkSlugHasNoSlash } from '@/lib/utils/post'
 import { DynamicLayout } from '@/themes/theme'
 import { useRouter } from 'next/router'
 import PropTypes from 'prop-types'
-import { useEffect, useRef, useState } from 'react'
 import { getStaticPathsBase } from '@/lib/build/staticPaths'
 import { isExport } from '@/lib/utils/buildMode'
 
@@ -23,104 +22,24 @@ const isStaticExport = process.env.EXPORT === 'true'
  * @returns
  */
 const Slug = props => {
-  const { post } = props
   const router = useRouter()
   const { locale } = useGlobal()
-  const activePostId = useRef(post?.id)
-  activePostId.current = post?.id
-
-  // 文章锁🔐
-  const [currentPost, setCurrentPost] = useState(post)
-  const [lock, setLock] = useState(Boolean(post?.password))
+  const access = useProtectedPost(props.post, router, locale, props.postUnlockUnavailable)
   const { showNotification, Notification } = useNotification()
-
-  /**
-   * 验证文章密码
-   * @param {*} passInput
-   */
-  const validPassword = async passInput => {
-    if (!post?.id || !passInput || isStaticExport) {
-      return false
-    }
-
-    try {
-      const response = await fetch('/api/unlock-post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          postId: post.id,
-          password: passInput,
-          locale: router.locale
-        })
-      })
-      if (!response.ok) return false
-
-      const unlockedPost = (await response.json())?.post
-      if (!unlockedPost?.blockMap || activePostId.current !== post.id) {
-        return false
-      }
-
-      setCurrentPost(unlockedPost)
-      setLock(false)
-      // 输入密码存入 localStorage；键仅含 pathname，避免 query/hash 导致读写不一致（PR #3389）
-      rememberPasswordForPath(router.asPath, passInput)
-      showNotification(locale.COMMON.ARTICLE_UNLOCK_TIPS) // 设置解锁成功提示显示
-      return true
-    } catch {
-      return false
-    }
+  const validPassword = async password => {
+    const valid = await access.validPassword(password)
+    if (valid) showNotification(locale.COMMON.ARTICLE_UNLOCK_TIPS)
+    return valid
   }
-
-  // 文章加载
-  useEffect(() => {
-    // 文章加密
-    setCurrentPost(post)
-    setLock(Boolean(post?.password))
-
-    // 读取上次记录 自动提交密码
-    if (post?.password) {
-      const tryStoredPasswords = async () => {
-        const passInputs = getPasswordQuery(router.asPath)
-        for (const passInput of passInputs) {
-          if (await validPassword(passInput)) {
-            break
-          }
-        }
-      }
-      void tryStoredPasswords()
-    }
-    // validPassword 内部依赖 post / router 同时也已在依赖里
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post, router.asPath])
-
-  // 文章加载
-  useEffect(() => {
-    if (lock) {
-      return
-    }
-    // 文章解锁后生成目录与内容
-    if (currentPost?.blockMap?.block) {
-      currentPost.content = Object.keys(currentPost.blockMap.block).filter(
-        key =>
-          currentPost.blockMap.block[key]?.value?.parent_id === currentPost.id
-      )
-      currentPost.toc = getPageTableOfContents(
-        currentPost,
-        currentPost.blockMap
-      )
-    }
-  }, [router, lock, currentPost])
-
-  props = { ...props, post: currentPost, lock, validPassword }
   const theme = siteConfig('THEME', BLOG.THEME, props.NOTION_CONFIG)
   return (
     <>
-      {/* 文章布局 */}
-      <DynamicLayout theme={theme} layoutName='LayoutSlug' {...props} />
-      {/* 解锁密码提示框 */}
-      {post?.password && !lock && <Notification />}
-      {/* 导流工具 */}
-      <TechGrow lock={lock} />
+      {access.unlockError && <p role='alert' className='p-4 text-center text-red-600'>{access.unlockError}</p>}
+      {props.postUnlockUnavailable
+        ? <ArticleLock unavailable post={props.post} />
+        : <DynamicLayout theme={theme} layoutName='LayoutSlug' {...props} {...access} validPassword={validPassword} />}
+      {props.post?.password && !access.lock && <Notification />}
+      <TechGrow lock={access.lock} />
     </>
   )
 }
@@ -129,11 +48,11 @@ Slug.propTypes = {
   post: PropTypes.shape({
     id: PropTypes.string,
     slug: PropTypes.string,
-    password: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    password: PropTypes.string,
     content: PropTypes.array,
     toc: PropTypes.array,
     blockMap: PropTypes.shape({
-      block: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
+      block: PropTypes.object
     })
   }),
   NOTION_CONFIG: PropTypes.object
@@ -147,10 +66,11 @@ export async function getStaticPaths() {
   })
 }
 
-export async function getStaticProps({ params: { prefix }, locale }) {
+export async function getStaticProps({ params: { prefix }, locale, revalidateReason }) {
   const props = await resolvePostProps({
     prefix,
-    locale
+    locale,
+    revalidateReason,
   })
 
   // 未找到文章时用短 revalidate：Notion 瞬时异常也会走到这里，

@@ -80,6 +80,9 @@ export default function AlgoliaSearchModal({ cRef }) {
   const inputRef = useRef(null)
   const modalRef = useRef(null)
   const previousFocusRef = useRef(null)
+  // 关闭弹窗还原焦点期间忽略合成 focus 事件，避免 gitbook 输入框的
+  // handleFocus 立即重开弹窗（与上游 openSearch 的守卫一致）
+  const restoringFocusRef = useRef(false)
   const searchTimer = useRef(null)
   const focusTimer = useRef(null)
   const highlightTimer = useRef(null)
@@ -91,7 +94,7 @@ export default function AlgoliaSearchModal({ cRef }) {
    * 快捷键设置
    */
   useHotkeys('ctrl+k', e => {
-    if (!algoliaEnabled) return
+    if (!algoliaEnabled || restoringFocusRef.current) return
     e.preventDefault()
     setIsModalOpen(true)
   })
@@ -223,7 +226,11 @@ export default function AlgoliaSearchModal({ cRef }) {
         document.body.style.overflow = originalOverflow
         const previousFocus = previousFocusRef.current
         if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+          restoringFocusRef.current = true
           previousFocus.focus()
+          window.setTimeout(() => {
+            restoringFocusRef.current = false
+          }, 0)
         }
       }
     }
@@ -237,7 +244,8 @@ export default function AlgoliaSearchModal({ cRef }) {
   useImperativeHandle(cRef, () => {
     return {
       openSearch: () => {
-        if (algoliaEnabled) setIsModalOpen(true)
+        if (!algoliaEnabled || restoringFocusRef.current) return
+        setIsModalOpen(true)
       }
     }
   }, [algoliaEnabled])
@@ -481,12 +489,13 @@ export default function AlgoliaSearchModal({ cRef }) {
       className={`${
         isModalOpen ? 'opacity-100' : 'invisible opacity-0 pointer-events-none'
       } z-30 fixed h-screen w-screen left-0 top-0 sm:mt-[5vh] flex items-start justify-center mt-0`}>
-      {/* 模态框 - 增大宽度以容纳更多内容 */}
+      {/* 模态框 - 关闭时立即从可访问树移除，避免屏幕阅读器/Tab 停留在已关闭的弹层 */}
+      {isModalOpen && (
       <div
         ref={modalRef}
         role='dialog'
         aria-modal='true'
-        aria-labelledby='algolia-search-title'
+        aria-label='搜索'
         tabIndex={-1}
         className={`${
           isModalOpen ? 'opacity-100' : 'invisible opacity-0 translate-y-10'
@@ -526,11 +535,8 @@ export default function AlgoliaSearchModal({ cRef }) {
         <div className='relative'>
           <input
             type='text'
-            role='combobox'
+            role='textbox'
             aria-label='搜索文章'
-            aria-controls='algolia-search-results'
-            aria-expanded={searchResults.length > 0}
-            aria-autocomplete='list'
             aria-activedescendant={
               searchResults.length ? `algolia-result-${activeIndex}` : undefined
             }
@@ -767,6 +773,7 @@ export default function AlgoliaSearchModal({ cRef }) {
           </div>
         </div>
       </div>
+      )}
 
       {/* 遮罩 */}
       <div

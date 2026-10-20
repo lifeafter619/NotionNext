@@ -1,5 +1,4 @@
 # Vercel 部署 NotionNext
-
 > 迁移自：[Vercel部署NotionNext](https://docs.tangly1024.com/article/vercel-deploy-notion-next)
 > 发布日期：2023-2-10
 > 最后编辑：2026-5-2
@@ -23,6 +22,7 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 
 想查看更多网站搭建效果，欢迎访问友情链接：[https://blog.tangly1024.com/links](https://blog.tangly1024.com/links)
 
+
 ### 部署步骤
 
 部署站点只需三步，分别是：
@@ -34,6 +34,7 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 1. 在 Vercel 中一键部署
 
 部署文档已经过大量站长实践验证。若无法完成独立部署，先查看 [获取帮助](/user-guide/help/) 中的社区支持和付费协助说明。
+
 
 ### 视频帮助
 
@@ -72,31 +73,31 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 
 ## 一、创建您的Notion页面
 
+
 ### 复制模板
 
 1. 请先注册登陆您的[Notion](https://www.notion.so/)账号。
 
 1. 点击下方链接，打开模板
-   [Notion Blog](https://tanghh.notion.site/02ab3b8678004aa69e9e415905ef32a5)
+[Notion Blog](https://tanghh.notion.site/02ab3b8678004aa69e9e415905ef32a5)
 
 一个NotionNext搭建的博客
 
 1. 在右上角点击**Duplicate**复制模板，如图所示。点击后会将这个博客数据模板复制到您的笔记空间中。
-   ![点击右上角的Duplicate，将模板复制到您的笔记中](/legacy/b6b81e01d512a122.png)
+![点击右上角的Duplicate，将模板复制到您的笔记中](/legacy/b6b81e01d512a122.png)
+
 
 ### 获取页面ID
 
 1. 在Notion笔记中：在页面右上角的菜单栏中，依次点击**Share**→**Published**→**Share To Web，**开启页面分享，获取**共享链接**
-
-- 如下图所示，点击右上角 **Share ，**在弹出窗口中点击 **Publish **→ **Share to web** (点击展开截图)
-  ![Untitled](/legacy/529223fa2a1ffd16.png)
+  - 如下图所示，点击右上角 **Share ，**在弹出窗口中点击 **Publish **→ **Share to web**  (点击展开截图)
+![Untitled](/legacy/529223fa2a1ffd16.png)
 
 1. 复制**页面ID**
-   页面ID在您的共享链接中、域名中间的一串**32位字母与数字**。
-
-- 如下图所示：
-  ![Untitled](/legacy/3be621dcdd736f88.png)
-- 页面ID注意
+页面ID在您的共享链接中、域名中间的一串**32位字母与数字**。
+  - 如下图所示：
+![Untitled](/legacy/3be621dcdd736f88.png)
+  - 页面ID注意
 
 > **如何识别页面ID**
 >
@@ -120,6 +121,7 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 
 请将您的**页面ID**记录下来，步骤三配置环境变量时会用到。
 
+
 ## 二、复制源代码
 
 ::: tip 提示
@@ -129,9 +131,11 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 1. 请先注册并登陆[Github账号](https://github.com/)，
 
 1. 仅需点击下方链接，即可一键 **Fork（复刻）** 官方项目。
-   [Fork NotionNext](https://github.com/notionnext-org/NotionNext/fork)
+[Fork NotionNext](https://github.com/notionnext-org/NotionNext/fork)
+
 
 ## 三、Vercel部署
+
 
 ### 准备账号
 
@@ -146,47 +150,53 @@ Vercel是一个来自国外的在线脚本托管平台，对于个人使用，�
 这是由于 `Vercel` 不支持大部分国内邮箱。可以将 `github` 账号主邮箱改为 `Gmail` 邮箱。
 **但是**根据群友反应，将 `github` 账号主邮箱切换为 `Gmail` 以后，`Vercel` 又会提示需要使用手机号码验证。然而 `github` 并没有提供手机号码绑定的内容。
 综上，建议一开始注册 `github` 账号时就使用 `Gmail` 等国外邮箱进行注册。
-
-1. 国内访问`Gmail`的方案：
-
-- 直接使用 QQ 邮箱手机版，它提供 `Gmail` 的访问路线，可以直接注册并使用。使用 `Ghelper` 等浏览器插件访问。详情可以参考这篇文章：[玩转 Microsoft-Edge](https://github.com/Zfour/python_github_calendar_api/blob/master/posts/8c8df126)
-
-1. 若是执着于当前`Github`账号，可以参考以下方案进行尝试:
-
-- 完成了 `Gmail` 等国外邮箱的注册，打开 [github-&gt; 头像 -&gt;settings-&gt;Emails](https://github.com/settings/emails)&gt;Add email address, 并完成邮箱验证。在Add email address 下方的Primary email address 选项中将 `Gmail` 设置为主邮箱。
+  1. 国内访问`Gmail`的方案：
+  - 直接使用 QQ 邮箱手机版，它提供 `Gmail` 的访问路线，可以直接注册并使用。使用 `Ghelper` 等浏览器插件访问。详情可以参考这篇文章：[玩转 Microsoft-Edge](https://github.com/Zfour/python_github_calendar_api/blob/master/posts/8c8df126)
+  1. 若是执着于当前`Github`账号，可以参考以下方案进行尝试:
+  - 完成了 `Gmail` 等国外邮箱的注册，打开 [github-&gt; 头像 -&gt;settings-&gt;Emails](https://github.com/settings/emails)&gt;Add email address, 并完成邮箱验证。在Add email address 下方的Primary email address 选项中将 `Gmail` 设置为主邮箱。
 
 </details>
+
 
 ### 导入代码
 
 1. 点击下方创建新项目
-   [New Project - Vercel](https://vercel.com/new)
+[New Project - Vercel](https://vercel.com/new)
 
 To deploy a new Project, import an existing Git Repository or get started with one of our Templates.
 
 1. 在代码仓库列表中选择导入**NotionNext**
-   ![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
-   ::: tip 提示
-   注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
-   :::
+![2.点击导入您的NotionNext项目](/legacy/fe71592782250a93.png)
+::: tip 提示
+注意：这里步骤放慢些，**不要急着**点击页面上的**Deploy**按钮，先看下方教程。
+:::
+
 
 ### 配置页面ID并部署
 
 1. 点击**Environment Variables**（环境变量），并添加一个属性名称为`**NOTION_PAGE_ID**`**，**值为步骤一获取的**页面ID**。
-   例如，我的页面ID是：`02ab3b8678004aa69e9e415905ef32a5`，则配置如下：
-   ![左侧填写 NOTION_PAGE_ID ， 右侧填写 页面ID的值](/legacy/1b6bad1ad0dee297.png)
-   填写后要**点击右边的\*\***`Add`\***\*按钮**确认添加
+例如，我的页面ID是：`02ab3b8678004aa69e9e415905ef32a5`，则配置如下：
+![左侧填写 NOTION_PAGE_ID ， 右侧填写 页面ID的值](/legacy/1b6bad1ad0dee297.png)
+填写后要**点击右边的****`Add`****按钮**确认添加
 
 1. 点击`Deploy`按钮，静候两分钟等待部署。
-   ![1.点击Deploy进行自动部署](/legacy/9a881298d4a9b142.png)
+![1.点击Deploy进行自动部署](/legacy/9a881298d4a9b142.png)
+
+### 可选：开启 Fluid Compute
+
+NotionNext 默认兼容未开启 Fluid Compute 的 Vercel Hobby 项目，部署时无需为此更改设置。若希望 Vercel Functions 复用运行实例、改善冷启动并提升并发处理能力，可在项目的 **Settings → Functions → Fluid Compute** 中开启，然后重新部署使设置生效；也可在 `vercel.json` 显式设置 `"fluid": true`，将选择随仓库配置。两种方式选其一即可。
+
+Fluid Compute 是可选的性能优化，不是 NotionNext 的部署前提。不开启时，Hobby 旧计算模式的函数时长上限为 60 秒；NotionNext 的缓存维护函数兼容此限制，`/api/revalidate` 每批运行约 45 秒后通过 HTTP 202 和 `remainingPaths` 续传。开启后 Hobby 函数时长上限为 300 秒，Fluid Compute 可优化函数实例复用与并发，但 NotionNext 仍采用较短批次预算以便及时返回续传结果。其他套餐的限制请以 Vercel 当前方案文档为准：[Functions 最大执行时间](https://vercel.com/docs/functions/limitations#max-duration)、[Fluid Compute](https://vercel.com/docs/fluid-compute)。
+
 
 ## 四、完成🎉🎉🎉
 
 1. 在部署完成页面，点击`Go to Dashboard`访问控制台
-   ![Untitled](/legacy/78f86a1a1c05b5c3.png)
+![Untitled](/legacy/78f86a1a1c05b5c3.png)
 
 1. 在控制台右上角的`Visit`按钮访问您的站点。或在DOMAINS中获取您的网站地址
-   ![2.在Vercel控制台中找到访问地址](/legacy/0cde1f7486038757.png)
+![2.在Vercel控制台中找到访问地址](/legacy/0cde1f7486038757.png)
+
 
 ## 注意事项
 
@@ -197,14 +207,14 @@ NotionNext会实时抓取Notion笔记内容
 
 ::: warning 注意
 **若您的站点始终无法同步笔记的数据**，请再次检查上面的步骤，或者干脆重来一遍：
-
 1. 在Notion中检查您的`NOTION_PAGE_ID` 格式是否正确、并已开起页面分享。
 2. Vercel后台环境变量中`NOTION_PAGE_ID`是否配置，并重新配置后尝试`Redeploy`。
-   如何检查Vercel后台环境变量配置：
-   ![Untitled](/legacy/27a7df016686481d.png)
-   如何重新部署
-   ![Untitled](/legacy/1f4cae5794779d16.png)
-   :::
+如何检查Vercel后台环境变量配置：
+![Untitled](/legacy/27a7df016686481d.png)
+如何重新部署
+![Untitled](/legacy/1f4cae5794779d16.png)
+:::
+
 
 ## 自定义您的站点
 

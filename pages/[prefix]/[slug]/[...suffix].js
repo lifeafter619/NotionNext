@@ -39,13 +39,15 @@ export async function getStaticPaths() {
  */
 export async function getStaticProps({
   params: { prefix, slug, suffix },
-  locale
+  locale,
+  revalidateReason
 }) {
   const props = await resolvePostProps({
     prefix,
     slug,
     suffix,
-    locale
+    locale,
+    revalidateReason
   })
 
   // 未找到文章时用短 revalidate：Notion 瞬时异常也会走到这里，

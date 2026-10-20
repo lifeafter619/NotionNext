@@ -226,9 +226,11 @@ describe('fetchGlobalAllData cache sanitization', () => {
       expect(post.toc).toBeUndefined()
       expect(post.blockMap).toBeUndefined()
     }
-    // allPages 保留 password 摘要供文章详情页的锁定/解锁与加密文章过滤使用
-    expect(result.allPages[0].password).toBe('hashed-password')
-    // latestPosts 会下发到客户端，必须去除 password
+    // 上游安全契约：默认返回路径统一脱敏，密码摘要打码为 truthy 的 'protected'，
+    // 客户端的真值判断（列表过滤/锁标记）不受影响；真实摘要仅在
+    // includePasswordHashes=true（详情页/解锁）路径返回
+    expect(result.allPages[0].password).toBe('protected')
+    // latestPosts 用独立的字段白名单（不含 password），下发前已剥除
     expect(result.latestPosts[0].password).toBeUndefined()
 
     expect(result.allNavPages[0]).toEqual(
@@ -240,6 +242,7 @@ describe('fetchGlobalAllData cache sanitization', () => {
       })
     )
     expect(result.allNavPages[0].id).toBeUndefined()
+    // allNavPages 白名单不含 password，下发前已剥除
     expect(result.allNavPages[0].password).toBeUndefined()
     expect(result.allNavPages[0].content).toBeUndefined()
     expect(result.allNavPages[0].toc).toBeUndefined()
@@ -450,7 +453,7 @@ describe('fetchGlobalAllData cache sanitization', () => {
       locale: 'zh-CN'
     })
 
-    expect(result.post.password).toBe(true)
+    expect(result.post.password).toBe('protected')
     expect(result.post.blockMap).toBeUndefined()
     expect(result.post.content).toBeUndefined()
     expect(result.post.toc).toBeUndefined()

@@ -2,6 +2,10 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import AlgoliaSearchModal from '@/components/AlgoliaSearchModal'
 
+// jsdom 未实现 Element.scrollIntoView
+Element.prototype.scrollIntoView =
+  Element.prototype.scrollIntoView || jest.fn()
+
 const searchMock = jest.fn()
 const mockRouterPush = jest.fn()
 
@@ -52,9 +56,6 @@ jest.mock('next/router', () => ({
   })
 }))
 
-jest.mock('react-hotkeys-hook', () => ({
-  useHotkeys: jest.fn()
-}))
 
 describe('AlgoliaSearchModal', () => {
   beforeEach(() => {
@@ -130,6 +131,8 @@ describe('AlgoliaSearchModal', () => {
 
     render(<AlgoliaSearchModal cRef={React.createRef()} />)
 
+    // 先用 Ctrl+K 打开弹窗；关闭状态下输入框不在 DOM 中（条件渲染）
+    fireEvent.keyDown(document, { key: 'k', code: 'KeyK', ctrlKey: true })
     fireEvent.change(
       screen.getByPlaceholderText('搜索文章标题、内容、标签、分类...'),
       {

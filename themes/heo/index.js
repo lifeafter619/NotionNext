@@ -1,3 +1,4 @@
+import { hasEnabledComments } from '@/lib/utils/comments'
 /**
  *   HEO 主题说明
  *  > 主题设计者 [张洪](https://zhheo.com/)
@@ -1051,7 +1052,8 @@ const LayoutSlug = props => {
   // 避免客户端导航后沿用上一篇文章的宽度布局
   const hasCode = useMemo(() => blockMapHasCode(post?.blockMap), [post])
 
-  const commentEnable = isHeoCommentServiceConfigured()
+  // post.comment === 'Hide' 时隐藏评论区（上游语义），服务开关沿用本地帮助函数
+  const commentEnable = post?.comment !== 'Hide' && isHeoCommentServiceConfigured()
 
   const router = useRouter()
   const waiting404 = siteConfig('POST_WAITING_TIME_FOR_404') * 1000
@@ -1142,11 +1144,10 @@ const LayoutSlug = props => {
               )}
             </article>
 
-            {/* 评论区 */}
-            {fullWidth ? null : (
+            {/* 评论区：禁用评论或无文章时完全不渲染，避免占位 */}
+            {fullWidth || !commentEnable || !post ? null : (
               <div id='post-comments' className='px-5'>
-                <div
-                  className={`${commentEnable && post && showRecommended ? '' : 'hidden'}`}>
+                <div className={`${showRecommended ? '' : 'hidden'}`}>
                   <hr className='my-4 border-dashed' />
                   {/* 评论区上方广告 */}
                   <div className='py-2'>

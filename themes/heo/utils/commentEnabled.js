@@ -1,22 +1,11 @@
+import { hasEnabledComments } from '@/lib/utils/comments'
 import { siteConfig } from '@/lib/config'
 
 /**
  * 与 components/Comment.js 支持的评论服务保持一致。
+ * 统一走共享的 hasEnabledComments：正确处理字符串 'false' / 'true'。
  * 未配置评论服务时不显示跳转入口，避免跳到空白占位区。
  */
 export function isHeoCommentServiceConfigured() {
-  return Boolean(
-    siteConfig('COMMENT_ARTALK_SERVER') ||
-      siteConfig('COMMENT_TWIKOO_ENV_ID') ||
-      siteConfig('COMMENT_WALINE_SERVER_URL') ||
-      siteConfig('COMMENT_VALINE_APP_ID') ||
-      siteConfig('COMMENT_GISCUS_REPO') ||
-      siteConfig('COMMENT_CUSDIS_APP_ID') ||
-      siteConfig('COMMENT_UTTERRANCES_REPO') ||
-      siteConfig('COMMENT_GITALK_CLIENT_ID') ||
-      siteConfig('COMMENT_WEBMENTION_ENABLE') ||
-      // 与 Comment.js 的判定保持一致（布尔或字符串 'true'）
-      siteConfig('COMMENT_NOTION_ENABLE') === true ||
-      siteConfig('COMMENT_NOTION_ENABLE') === 'true'
-  )
+  return hasEnabledComments(siteConfig)
 }

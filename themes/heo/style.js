@@ -1,5 +1,7 @@
-import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
+/* eslint-disable react/no-unknown-property */
+import { useEffect } from 'react'
 import { siteConfig } from '@/lib/config'
+import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 import CONFIG from './config'
 
 /**
@@ -8,6 +10,25 @@ import CONFIG from './config'
  * @returns
  */
 const Style = () => {
+  const bgColor = siteConfig('HEO_COLOR_BG', '#f7f9fe', CONFIG)
+  const bgDarkColor = siteConfig('HEO_COLOR_BG_DARK', '#18171d', CONFIG)
+
+  useEffect(() => {
+    const rootStyle = document.documentElement.style
+    const previous = ['--heo-color-bg', '--heo-color-bg-dark'].map(name => ({
+      name,
+      value: rootStyle.getPropertyValue(name),
+      priority: rootStyle.getPropertyPriority(name)
+    }))
+    // Keep previews after closing the palette, but reset them on theme changes.
+    return () => {
+      previous.forEach(({ name, value, priority }) => {
+        if (value) rootStyle.setProperty(name, value, priority)
+        else rootStyle.removeProperty(name)
+      })
+    }
+  }, [])
+
   return (
     <style jsx global>{`
       #theme-heo {
@@ -28,8 +49,8 @@ const Style = () => {
           '#ca8a04',
           CONFIG
         )};
-        --heo-color-bg: #f7f9fe;
-        --heo-color-bg-dark: #18171d;
+        --heo-color-bg: ${bgColor};
+        --heo-color-bg-dark: ${bgDarkColor};
         --heo-color-card: #ffffff;
         --heo-color-card-dark: #1e1e1e;
         --heo-color-card-muted: ${siteConfig(
@@ -138,11 +159,11 @@ const Style = () => {
       }
 
       body {
-        background-color: ${siteConfig('HEO_COLOR_BG', '#f7f9fe', CONFIG)};
+        background-color: var(--heo-color-bg, ${bgColor});
       }
 
-      .dark body {
-        background-color: ${siteConfig('HEO_COLOR_BG_DARK', '#18171d', CONFIG)};
+      html.dark body {
+        background-color: var(--heo-color-bg-dark, ${bgDarkColor});
       }
 
       /* 公告栏中的字体固定白色 */
