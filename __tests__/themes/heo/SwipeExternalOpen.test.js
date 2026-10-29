@@ -54,7 +54,7 @@ describe('HEO Swipe navigation and autoplay', () => {
     )
 
     const internalLink = screen.getByRole('link', { name: 'Internal notice' })
-    const externalLink = screen.getByRole('link', { name: 'External notice' })
+    const externalLink = screen.getByText('External notice').closest('a')
 
     expect(internalLink).toHaveAttribute('href', '/post')
     expect(internalLink).not.toHaveAttribute('target')
@@ -77,7 +77,7 @@ describe('HEO Swipe navigation and autoplay', () => {
     )
 
     const firstLink = screen.getByRole('link', { name: 'First notice' })
-    const secondLink = screen.getByRole('link', { name: 'Second notice' })
+    const secondLink = screen.getByText('Second notice').closest('a')
     const carousel = firstLink.parentElement
 
     fireEvent.mouseEnter(carousel)
@@ -121,7 +121,7 @@ describe('HEO Swipe navigation and autoplay', () => {
     )
 
     const firstLink = screen.getByRole('link', { name: 'First notice' })
-    const secondLink = screen.getByRole('link', { name: 'Second notice' })
+    const secondLink = screen.getByText('Second notice').closest('a')
 
     expect(firstLink).toHaveClass('motion-reduce:duration-0')
     expect(firstLink).toHaveClass('motion-reduce:transition-none')

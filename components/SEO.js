@@ -18,6 +18,14 @@ const SEO = props => {
     siteConfig('LINK', siteInfo?.link, NOTION_CONFIG)
   )
   const SUB_PATH = siteConfig('SUB_PATH', '')
+  const ENABLE_RSS = siteConfig('ENABLE_RSS')
+  const rssSubPath = String(SUB_PATH || '')
+    .trim()
+    .replace(/^\/+|\/+$/g, '')
+  const rssUrl = createSiteUrl(
+    rssSubPath ? `${LINK}/${rssSubPath}` : LINK,
+    'rss/feed.xml'
+  )
   let url = PATH?.length ? createSiteUrl(LINK, SUB_PATH) || LINK : LINK
   let image
   const router = useRouter()
@@ -93,12 +101,14 @@ const SEO = props => {
     <Head>
       <link rel='icon' href={favicon} />
       <title>{title}</title>
-      <link
-        rel='alternate'
-        type='application/rss+xml'
-        title={title}
-        href={`${LINK}/rss/feed.xml`}
-      />
+      {ENABLE_RSS && rssUrl && (
+        <link
+          rel='alternate'
+          type='application/rss+xml'
+          title={`${TITLE} RSS`}
+          href={rssUrl}
+        />
+      )}
       <meta
         name='theme-color'
         content={pwaEnabled ? pwaConfig.themeColor : BACKGROUND_DARK}

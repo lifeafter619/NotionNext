@@ -1,4 +1,6 @@
 import fs from 'fs'
+import BLOG from '@/blog.config'
+import { Feed } from 'feed'
 import { generateRss, shouldGenerateRssForLocale } from '@/lib/utils/rss'
 import { getPostBlocks } from '@/lib/db/SiteDataApi'
 import { formatNotionBlock } from '@/lib/db/notion/getPostBlocks'
@@ -200,5 +202,35 @@ describe('generateRss', () => {
     expect(
       shouldGenerateRssForLocale({ locale: 'en', defaultLocale: 'zh-CN' })
     ).toBe(false)
+  })
+
+  it('sets a static feed ID and preserves canonical post URLs and numeric dates', async () => {
+    await generateRss({
+      NOTION_CONFIG: { SUB_PATH: '/blog/', RSS_FULL_CONTENT: false },
+      siteInfo: { title: 'Site', link: 'https://stale.example.com' },
+      latestPosts: [
+        {
+          id: 'post',
+          title: 'Post',
+          slug: '/article/post',
+          summary: 'Summary',
+          publishDate: Date.UTC(2026, 7, 1),
+          publishDay: 'invalid'
+        }
+      ]
+    })
+    const link = BLOG.LINK.replace(/\/+$/, '')
+    expect(Feed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: `${link}/blog/rss/feed.xml`,
+        link: `${link}/blog`
+      })
+    )
+    expect(addItemMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        link: `${link}/article/post`,
+        date: new Date(Date.UTC(2026, 7, 1))
+      })
+    )
   })
 })

@@ -26,6 +26,7 @@ const CONFIG = {
       url: 'https://www.travellings.cn/go.html'
     }
   ],
+  HEO_NOTICE_BAR_INTERVAL: 3000, // 多条通知的切换间隔，单位毫秒；非正数或无效值回退为 3000
 
   // 英雄区左右侧组件颠倒位置
   HEO_HERO_REVERSE: false,

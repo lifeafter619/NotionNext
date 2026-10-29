@@ -63,13 +63,17 @@ HEO_COLOR_ACCENT: '#f59e0b'
 
 ## 1. 顶部横幅
 
-可以滚动当前的通知内容，并且支持点击跳转到指定链接，配置方式 themes/heo/config.js
+通知会自动轮播。手机端过长的标题显示省略号，没有链接的通知可点击展开全文；站内链接在当前页打开，外链在新窗口打开。鼠标悬停、键盘聚焦、阅读弹窗或系统开启减少动画时暂停轮播。
+
+`HEO_NOTICE_BAR_INTERVAL` 设置轮播间隔，单位毫秒，默认 `3000`。可在 Notion Config 或 `themes/heo/config.js` 中配置；非正数、无效值或超过 `2147483647` 时回退到默认值。
 
 ```JavaScript
 // 首页顶部通知条滚动内容，如不需要可以留空 []
-  NOTICE_BAR: [
+  HEO_NOTICE_BAR_INTERVAL: 3000,
+  HEO_NOTICE_BAR: [
     { title: '欢迎来到我的博客', url: 'https://blog.tangly1024.com' },
-    { title: '访问文档中心获取更多帮助', url: '/user-guide/intro' }
+    { title: '访问文档中心获取更多帮助', url: '/user-guide/intro' },
+    { title: '没有链接的长通知可以点击展开全文。' }
   ],
 ```
 
@@ -99,6 +103,7 @@ HERO_TITLE_3: 'TANGLY1024.COM',
 ```
 
 1. **左上角卡牌背景滚动图**，会循环展示一些技能的图标，可以在 [themes/heo/config.js](https://github.com/notionnext-org/NotionNext/blob/b9f52f386c1a7110a15ba5bf005c8eccb190b1f3/themes/heo/config.js#L38)中配置
+
 <details>
 <summary>展开相关代码</summary>
 

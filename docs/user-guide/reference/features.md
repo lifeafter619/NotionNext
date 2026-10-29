@@ -15,8 +15,8 @@
 | `NEXT_REVALIDATE_SECOND` | ISR 缓存秒数，越大越省 Vercel 额度 |
 | `CACHE_REVALIDATION_TOKEN` | 保护 `/api/cache` 的 Bearer 令牌；升级须知见[最新版本更新日志](../changelog/latest.md#升级须知-请先阅读) |
 | `PSEUDO_STATIC` | URL 以 `.html` 结尾 |
-| `ENABLE_RSS` | RSS 生成 |
-| `RSS_FULL_CONTENT` | RSS 是否包含文章全文；默认 `true`，设为 `false` 时仅返回文章摘要 |
+| `ENABLE_RSS` | RSS 自动发现声明；`/rss/feed.xml` 与 `/api/rss` 使用运行时轻量订阅源 |
+| `RSS_FULL_CONTENT` | 静态 RSS 生成器是否包含文章全文；默认 `true`。运行时订阅源始终输出公开文章摘要 |
 | `CUSTOM_MENU` | 使用 Menu/SubMenu 导航 |
 | `CAN_COPY` | 是否允许复制正文；文章可用 `CAN_COPY` 或 `ext.CAN_COPY` 单独覆盖 |
 | `GREETING_WORDS` | 欢迎语打字（部分主题） |

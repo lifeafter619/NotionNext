@@ -8,7 +8,11 @@ jest.mock('@/lib/config', () => ({
 jest.mock('@/lib/global', () => ({
   useGlobal: () => ({
     locale: {
-      NAV: { ARCHIVE: 'Archive', SEARCH: 'Search', PAGE_NOT_FOUND: 'Not Found' },
+      NAV: {
+        ARCHIVE: 'Archive',
+        SEARCH: 'Search',
+        PAGE_NOT_FOUND: 'Not Found'
+      },
       COMMON: { CATEGORY: 'Category', TAGS: 'Tags' }
     }
   })
@@ -136,6 +140,30 @@ describe('SEO font resource hints', () => {
     expect(
       container.querySelector('link[href="https://fonts.gstatic.com"]')
     ).toBeInTheDocument()
+  })
+})
+
+describe('RSS discovery', () => {
+  it('omits RSS discovery when RSS is disabled', () => {
+    siteConfig.mockImplementation(key =>
+      key === 'ENABLE_RSS' ? false : baseSiteConfig[key]
+    )
+    const { container } = render(<SEO siteInfo={{ title: 'Example Blog' }} />)
+    expect(
+      container.querySelector('link[type="application/rss+xml"]')
+    ).toBeNull()
+  })
+
+  it('normalizes sub-path deployment in the RSS discovery URL', () => {
+    siteConfig.mockImplementation(key => {
+      if (key === 'ENABLE_RSS') return true
+      if (key === 'SUB_PATH') return '/blog/'
+      return baseSiteConfig[key]
+    })
+    const { container } = render(<SEO siteInfo={{ title: 'Example Blog' }} />)
+    expect(
+      container.querySelector('link[type="application/rss+xml"]')
+    ).toHaveAttribute('href', 'https://example.com/blog/rss/feed.xml')
   })
 })
 

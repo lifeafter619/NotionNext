@@ -1,5 +1,5 @@
 import SmartLink from './HeoLink'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 /**
  * 一个swipe组件
@@ -7,15 +7,18 @@ import { useEffect, useState } from 'react'
  * @param {*} param0
  * @returns
  */
-export function Swipe({ items }) {
+export function Swipe({ items, interval = 3000 }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
   const [isFocusWithin, setIsFocusWithin] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [expandedNotice, setExpandedNotice] = useState(null)
+  const dialogRef = useRef(null)
+  const dialogTitleId = useId()
   const safeItems = Array.isArray(items)
     ? items.filter(item => item?.title)
     : []
-  const isPaused = isHovered || isFocusWithin
+  const isPaused = isHovered || isFocusWithin || Boolean(expandedNotice)
 
   useEffect(() => {
     if (
@@ -45,14 +48,14 @@ export function Swipe({ items }) {
     }
 
     setActiveIndex(index => Math.min(index, safeItems.length - 1))
-    if (isPaused || prefersReducedMotion) return
+    if (safeItems.length < 2 || isPaused || prefersReducedMotion) return
 
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       // 函数式 setState，避免把 activeIndex 放进依赖数组导致每秒重建 interval
       setActiveIndex(prev => (prev + 1) % safeItems.length)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [isPaused, prefersReducedMotion, safeItems.length])
+    }, interval)
+    return () => clearInterval(timer)
+  }, [interval, isPaused, prefersReducedMotion, safeItems.length])
 
   const handleBlur = event => {
     if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -68,17 +71,33 @@ export function Swipe({ items }) {
       onFocus={() => setIsFocusWithin(true)}
       onBlur={handleBlur}>
       {safeItems.map((item, index) => {
-        const className = `whitespace-nowrap absolute top-0 bottom-0 w-full h-full flex justify-center items-center line-clamp-1 transform transition-transform duration-500 motion-reduce:duration-0 motion-reduce:transition-none ${
-            index === activeIndex
-              ? 'translate-y-0 slide-in'
-              : 'translate-y-full slide-out'
-          }`
+        const active = index === activeIndex
+        const title = (
+          <span className='block w-full min-w-0 truncate text-center md:w-auto md:min-w-max md:overflow-visible'>
+            {item.title}
+          </span>
+        )
+        const className = `whitespace-nowrap absolute top-0 bottom-0 w-full h-full flex justify-center items-center transform transition-transform duration-500 motion-reduce:duration-0 motion-reduce:transition-none ${
+          index === activeIndex
+            ? 'translate-y-0 slide-in'
+            : 'translate-y-full slide-out pointer-events-none'
+        }`
 
         if (!item.url) {
           return (
-            <div key={`${item.title}-${index}`} className={className}>
-              {item.title}
-            </div>
+            <button
+              key={`${item.title}-${index}`}
+              type='button'
+              className={className}
+              tabIndex={active ? 0 : -1}
+              aria-hidden={!active}
+              aria-haspopup='dialog'
+              onClick={() => {
+                setExpandedNotice(item)
+                dialogRef.current?.showModal()
+              }}>
+              {title}
+            </button>
           )
         }
 
@@ -87,11 +106,30 @@ export function Swipe({ items }) {
             key={`${item.url}-${index}`}
             href={item.url}
             className={className}
-            tabIndex={index === activeIndex ? 0 : -1}>
-            {item.title}
+            tabIndex={active ? 0 : -1}
+            aria-hidden={!active}>
+            {title}
           </SmartLink>
         )
       })}
+
+      <dialog
+        ref={dialogRef}
+        aria-labelledby={dialogTitleId}
+        onClose={() => setExpandedNotice(null)}
+        className='w-[calc(100%-2rem)] max-w-lg max-h-[80vh] overflow-y-auto rounded-xl p-5 bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] text-[var(--heo-color-text)] dark:text-white backdrop:bg-black/50 cursor-auto'>
+        <form method='dialog' className='flex justify-end'>
+          <button
+            type='submit'
+            aria-label='Close notification'
+            className='w-10 h-10 text-2xl'>
+            ×
+          </button>
+        </form>
+        <p id={dialogTitleId} className='whitespace-pre-wrap break-words'>
+          {expandedNotice?.title}
+        </p>
+      </dialog>
 
       <style jsx>{`
         .slide-in {
