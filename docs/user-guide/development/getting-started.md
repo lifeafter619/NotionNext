@@ -1,5 +1,4 @@
 # NotionNext开发先导
-
 > 迁移自：[NotionNext开发先导](https://docs.tangly1024.com/article/how-to-develop-with-notion-next)
 > 发布日期：2022-11-13
 > 最后编辑：2026-5-2
@@ -19,7 +18,8 @@
 - `blog.config.js` 文件中可以修改站点的基础信息、主题、语言、评论插件等核心配置
 
 - 每个主题下都有一个配置文件`config_[theme].js`，以便用户配置自己的页面个性化。
-  ![NotionNext 代码结构](/legacy/d4d1adb97885d113.png)
+![NotionNext 代码结构](/legacy/d4d1adb97885d113.png)
+
 
 ### 自定义脚本
 
@@ -40,6 +40,7 @@ NotionNext操作手册中，有关于自定义脚本和样式的引入方式；�
 
 ![Untitled](/legacy/5b7bb6ec77d8b7d2.png)
 
+
 ## 自行开发
 
 如果上述的配置方式，不能满足您的需要，例如新增组件、深度定制等等。您可以选择在github上[发起issue](https://github.com/notionnext-org/NotionNext/issues/new/choose)，提出改进页面的建议，或者遵循此教程，进行您的开发之旅。
@@ -56,21 +57,20 @@ NotionNext操作手册中，有关于自定义脚本和样式的引入方式；�
 Codespaces是Github官方提供的云开发环境。
 :::
 
+
 #### 导入启动项目
-
-1. 点击Codespaces
-   ![Untitled](/legacy/5582198b173c5d11.png)
-1. 点击新建代码空间
-   ![Untitled](/legacy/128d4d07d1ebfd0e.png)
-1. 导入项目，并选择代码分支、以及云环境的服务器配置，然后点击Create codespacee
-   ![Untitled](/legacy/163129609cf67f4d.png)
-   ![Untitled](/legacy/992e52f11d3a7ab9.png)
-1. 等待几分钟，您的云开发环境即可搭建
-   - 在终端中输入 `yarn` 即可安装依赖的环境
-
-![Untitled](/legacy/2fbf8d9d15d9dee3.png) - 等上一步安装全部完成（约3分钟）后，在终端输入 `yarn dev` 即可开始实时调试
+  1. 点击Codespaces
+![Untitled](/legacy/5582198b173c5d11.png)
+  1. 点击新建代码空间
+![Untitled](/legacy/128d4d07d1ebfd0e.png)
+  1. 导入项目，并选择代码分支、以及云环境的服务器配置，然后点击Create codespacee
+![Untitled](/legacy/163129609cf67f4d.png)
+![Untitled](/legacy/992e52f11d3a7ab9.png)
+  1. 等待几分钟，您的云开发环境即可搭建
+    - 在终端中输入 `yarn` 即可安装依赖的环境
+![Untitled](/legacy/2fbf8d9d15d9dee3.png)
+    - 等上一步安装全部完成（约3分钟）后，在终端输入 `yarn dev`  即可开始实时调试
 终端会提示以下内容，说明服务启动成功：
-
 ```Bash
 @tangly1024 ➜ /workspaces/NotionNext (main) $ yarn dev
 yarn run v1.22.19
@@ -82,13 +82,15 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 ```
-
 点击右下角的在浏览器中打开，即可开启调试页面。
-![Untitled](/legacy/4bfa35f5db63968c.png) - 调试效果
+![Untitled](/legacy/4bfa35f5db63968c.png)
+    - 调试效果
 github 会临时分配给您一个临时的域名，用于开发调试
 ![Untitled](/legacy/3bdb4924dbbb7aa7.png)
 
+
 ### 二、 本地开发
+
 
 #### 1.准备开发环境
 ::: tip 提示
@@ -98,8 +100,7 @@ github 会临时分配给您一个临时的域名，用于开发调试
 <details>
 <summary>安装步骤</summary>
 
-- windows操作系统下，在官网下载安装最新版的NodeJs即可
-
+      - windows操作系统下，在官网下载安装最新版的NodeJs即可
 [Node.js](https://nodejs.org/zh-cn/#home-downloadhead)
 
 Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine.
@@ -123,8 +124,7 @@ node是基础运行环境，npm是依赖包的管理组件
 
 </details>
 
-##### VSCode 编辑器
-
+  1. VsCode 编辑器
 <details>
 <summary>安装下载</summary>
 
@@ -141,6 +141,7 @@ Visual Studio Code is free and available on your favorite platform - Linux, macO
 Visual Studio Code是一款支持多种语言和格式的编辑器，那么，怎么把界面设置成中文的呢？今天就和大家一起把Visual Studio Code界面设置成中文 打开Visual Studio Code 点击"应用"按钮 输入"Chinese (Simplified) Language Pack for Visual Studio Code"并敲回车键 点击第一个选项 点击Install 点击Restart Now 这样就设置完成了 点击下方链接 点击Install 点击Continue 如果浏览器有拦截，请点击打开（各浏览器的界面不同） 点击Install 最后点击Restart Now即可 END 喜欢请点赞+关注
 
 </details>
+
 ::: tip 提示
 相关阅读
     - [NodeJS是什么](http://c.biancheng.net/view/9338.html)
@@ -148,9 +149,9 @@ Visual Studio Code是一款支持多种语言和格式的编辑器，那么，�
     - [什么是React](https://www.jianshu.com/p/163bfc500549)
 :::
 
-#### 2.导入启动项目
 
-1. 下载您的代码
+#### 2.导入启动项目
+  1. 下载您的代码
 <details>
 <summary>安装Github Desktop</summary>
 
@@ -171,6 +172,7 @@ Checkout branches with pull requests and view CI statuses See all open pull requ
 点击Clone即可下载代码
 
 </details>
+
   1. 用vscode打开项目
 <details>
 <summary>打开项目文件</summary>
@@ -184,7 +186,6 @@ Checkout branches with pull requests and view CI statuses See all open pull requ
 点击 菜单栏的终端，并选择 新建终端，然后在新建的终端窗口中输入安装启动脚本：
 ![Untitled](/legacy/5a3b0c6aa0feaa3f.png)
 任选一种安装
-
 ```Bash
 # 使用npm安装
 npm install -g yarn --registry=https://registry.npm.taobao.org
@@ -204,7 +205,6 @@ yarn install
 ```Plain Text
 yarn dev
 ```
-
 ```Bash
 # 执行后vscode中会显示
 yarn run v1.22.19
@@ -212,9 +212,7 @@ $ next dev
 ready - started server on 0.0.0.0:3000, url: http://localhost:3000
 info  - Loaded env from D:\Workspace\NotionNext\.env.local
 ```
-
 ![Untitled](/legacy/0b354b31415ec084.png)
-
 <details>
 <summary>其他脚本说明</summary>
 
@@ -228,24 +226,25 @@ yarn start  # 运行打包后的项目构建服务
 </details>
 
 </details>
+
   1. 访问页面
 <details>
-<summary>浏览器打开 [http://localhost:3000/](http://localhost:3000/) 即可访问你的本地博客</summary>
+<summary>浏览器打开 <a href="http://localhost:3000/">http://localhost:3000/</a> 即可访问你的本地博客</summary>
 
 ![Untitled](/legacy/cf986649cac87c10.png)
 
 </details>
+
 ::: tip 提示
 调试模式下：代码的每次修改会实时影响到你的页面，不需要刷新或重启服务
 :::
 
-#### 3.本地开发环境配置
 
+#### 3.本地开发环境配置
 VSCode中可以使用launch面板，进行设置环境变量以及断点调试
 ![Untitled](/legacy/95164f6c3999613c.png)
 创建一个launch文件
 ![Untitled](/legacy/e91692502a688ef5.png)
-
 <details>
 <summary>可参考官方推荐配置</summary>
 
@@ -286,31 +285,37 @@ VSCode中可以使用launch面板，进行设置环境变量以及断点调试
   ]
 }
 ```
-
 VSCode 里会出现三个启动项：
 
 #### ① Debug Server
-
 只调试 Node 端
-适合调试：- `getServerSideProps` - `app/api/*` - `middleware.ts` - `server components`
-
+适合调试：
+    - `getServerSideProps`
+    - `app/api/*`
+    - `middleware.ts`
+    - `server components`
 ---
 
 #### ② Debug Client (Chrome)
-
 只启动浏览器调试
-适合调试：- React组件 - hooks - 前端逻辑 - 页面跳转
-
+适合调试：
+    - React组件
+    - hooks
+    - 前端逻辑
+    - 页面跳转
 ---
 
 #### ③ Debug Full Stack（推荐）
-
-一次同时启动：- Next dev server - Chrome调试
+一次同时启动：
+    - Next dev server
+    - Chrome调试
 这是 **Next.js最常用调试方式**。
 
 </details>
 
+
 ## 代码结构简介
+
 
 #### NextJS
 
@@ -325,6 +330,7 @@ VSCode 里会出现三个启动项：
 欢迎阅读 Next.js 文档！ 如果你是初学 Next.js，我们建议你从 互动课程 开始。 通过这些带小测验的互动课程你将学到使用 Next.js 所需的全部知识。 如果你有任何与 Next.js 相关的问题，欢迎随时在 GitHub Discussions 上向我们的社区寻求帮助。 我们建议使用 create-next-app 创建新的 Next.js 应用程序，它会自动为你设置所有内容。创建项目，请运行： npx create-next-app@latest yarn create next-app 如果你希望使用 TypeScript 开发项目，可以通过 --typescript 参数创建 TypeScript 项目： npx create-next-app@latest --typescript yarn create next-app --typescript 安装完成后: 运行 npm run dev 或 yarn dev 来启动开发服务器，访问地址为 http://localhost:3000。
 :::
 
+
 #### TailWindCSS
 
 项目开发使用TailwindCss，这是一个极简、灵活的CSS工具库，上手后开发效率极高。
@@ -337,6 +343,7 @@ TailwindCSS官方称一个可以让你脱离css文件，在html直接通过class
 
 The simplest and fastest way to get up and running with Tailwind CSS from scratch is with the Tailwind CLI tool.
 
+
 ## 代码格式规范
 
 使用Eslint + Prettier，关于格式化代码，可以阅读这篇文档：
@@ -345,7 +352,7 @@ The simplest and fastest way to get up and running with Tailwind CSS from scratc
 
 - ESLint插件：
   - [https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-    ![Untitled](/legacy/e8b7e3eeab70e385.png)
+![Untitled](/legacy/e8b7e3eeab70e385.png)
 
 - Prettier插件
 有两个插件任选一种,按照插件内的配置说明配置您的工作空间即可。
@@ -353,9 +360,9 @@ The simplest and fastest way to get up and running with Tailwind CSS from scratc
 <details>
 <summary>示例：Prettier - Code formatter</summary>
 
-使用说明 - [https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+使用说明
+    - [https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 安装后，在项目配置中启用自动格式化，在settings.json中添加如下配置：
-
 ```JSON
 {
   // 保存时 prettier 自动格式化
@@ -372,7 +379,6 @@ The simplest and fastest way to get up and running with Tailwind CSS from scratc
   }
 }
 ```
-
 ![Untitled](/legacy/62dc10d3ba088150.png)
 安装后，在项目配置中启用自动格式化，在用户，或者项目的settings.json中添加如下配置：
 
@@ -382,7 +388,6 @@ The simplest and fastest way to get up and running with Tailwind CSS from scratc
 
     - 使用说明: [Prettier ESLint - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=rvest.vs-code-prettier-eslint)
     - 安装后，在项目配置中启用自动格式化，在settings.json中添加如下配置：
-
 ```JSON
 {
   "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
@@ -398,7 +403,6 @@ The simplest and fastest way to get up and running with Tailwind CSS from scratc
 </details>
 
 - 项目中的相关配置文件参考。
-
 ```Java
 .eslintrc.js
 .prettierrc.json
