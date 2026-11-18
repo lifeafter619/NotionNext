@@ -46,6 +46,7 @@ export const Blog = ({ posts }) => {
                             src={item.pageCoverThumbnail}
                             alt={item.title}
                             className='w-full transition group-hover:rotate-6 group-hover:scale-125'
+                            referrerPolicy='no-referrer'
                           />
                         </SmartLink>
                       )}

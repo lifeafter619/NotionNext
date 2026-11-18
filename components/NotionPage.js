@@ -1,14 +1,46 @@
 import { siteConfig } from '@/lib/config'
+import BLOG from '@/blog.config'
 import { compressImage, mapImgUrl } from '@/lib/db/notion/mapImage'
 import NotionEmbed from '@/components/NotionEmbed'
 import NotionLink from '@/components/NotionLink'
-import { isBrowser, loadExternalResource } from '@/lib/utils'
-import mediumZoom from '@fisch0920/medium-zoom'
+import { isBrowser, loadExternalResource, getImageSrc } from '@/lib/utils'
+import { useImageViewerContext } from '@/lib/ImageViewerContext'
+import {
+  blockMapHasCode,
+  restoreCompactBlockMapForRender
+} from '@/lib/db/notion/cleanBlockMapForClient'
+import NotionButton from '@/components/NotionButton'
+import LazyImage from '@/components/LazyImage'
+import NotionFile, { buildNotionFileProxyUrl } from '@/components/NotionFile'
+import { retryNotionAssetElement } from '@/lib/notionAssetFallback'
+import {
+  bindNotionHashScrollHandler,
+  scrollToNotionHeading
+} from '@/lib/utils/notionHashScroll'
+import {
+  collectContentImageMeta,
+  resolveNotionImageDimensions
+} from '@/lib/notionImageMeta'
 import 'katex/dist/katex.min.css'
 import dynamic from 'next/dynamic'
-import { useEffect, useId, useRef } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useCallback,
+  useMemo
+} from 'react'
 import { NotionRenderer } from 'react-notion-x'
 import OriginalityProof from './OriginalityProof'
+
+// 正文图片元数据（首图 src + 各图真实宽高），由 NotionPage 计算、NotionImage 消费
+const NotionImageMetaContext = createContext(null)
+
+// 阅读进度保存组件
+const ReadingPositionSaver = dynamic(
+  () => import('@/components/ReadingPositionSaver'),
+  { ssr: false }
+)
 
 /**
  * 整个站点的核心组件
@@ -16,129 +48,166 @@ import OriginalityProof from './OriginalityProof'
  * @param {*} param0
  * @returns
  */
-const NotionPage = ({ post, className }) => {
+const NotionPage = ({ post, className, contentId = 'notion-article' }) => {
   // 是否关闭数据库和画册的点击跳转
   const POST_DISABLE_GALLERY_CLICK = siteConfig('POST_DISABLE_GALLERY_CLICK')
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
   const SPOILER_TEXT_TAG = siteConfig('SPOILER_TEXT_TAG')
-
-  const zoomRef = useRef(null)
-  const articleRef = useRef(null)
-  const zoomOwnerId = useId()
-  const zoomSequence = useRef(0)
   const IMAGE_ZOOM_IN_WIDTH = siteConfig('IMAGE_ZOOM_IN_WIDTH', 1200)
+  const READING_PROGRESS_SAVE = siteConfig('READING_PROGRESS_SAVE', true)
+
+  // 使用全局图片查看器
+  const { openViewer } = useImageViewerContext()
+
+  // 检查是否包含代码块，优化PrismMac加载
+  const hasCode = useMemo(() => {
+    // 兼容 post 为 recordMap 或 post 为包含 blockMap 的对象；
+    // blockMapHasCode 内部兼容压缩（compact）后的 blockMap（详情页数据均已压缩）
+    return blockMapHasCode(post?.blockMap || post)
+  }, [post])
+
+  // 处理图片点击事件
+  const handleImageClick = useCallback(
+    e => {
+      const target = e.target
+      if (target.tagName === 'IMG' && target.closest('.notion-asset-wrapper')) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        // 收集所有文章内图片 (排除侧栏和其他非文章主体内容)
+        // 使用更精确的选择器，或者过滤掉包含 wow fadeInUp 类（如果是侧栏元素特征）的元素
+        // 但 wow fadeInUp 通常是动画类，文章内图片也可能有。
+        // 根据用户反馈 "wow fadeInUp 这个里面，也就是侧栏中出现的图片"
+        // 我们可以检查元素的祖先是否包含侧栏特定的类名，例如 #side-bar (如果存在)
+        // 或者只选择 #notion-article .notion-page-content img (如果结构如此)
+        // 目前 #notion-article 包含 NotionRenderer，通常包含文章主体。
+        // 如果侧栏图片混入，可能是因为 selector 选到了不该选的。
+        // 我们这里加一个简单的过滤：排除 sidebar 内的图片。
+        // 假设侧栏 id 是 sideRight 或 side-bar。
+
+        const article = document.getElementById(contentId)
+        let allImages = Array.from(
+          article?.querySelectorAll('.notion-asset-wrapper img') || []
+        )
+
+        // 过滤掉位于侧栏中的图片 (如果侧栏不幸被包含在 #notion-article 中，或者有重叠)
+        // 通常 #notion-article 是纯文章内容。如果用户说 "wow fadeInUp 里面... 侧栏中出现的图片"
+        // 可能侧栏的部分组件被错误地渲染到了 article 区域，或者选择器范围太大。
+        // 无论如何，我们可以过滤掉那些 offsetParent 为 null (不可见) 或者在特定容器内的图片。
+
+        allImages = allImages.filter(img => {
+          const sideRight = document.getElementById('sideRight')
+          const sideBar = document.getElementById('sideBar') // 假设 ID
+          // 如果图片在侧栏内，则排除
+          if (sideRight && sideRight.contains(img)) return false
+          if (sideBar && sideBar.contains(img)) return false
+          return true
+        })
+
+        const imageList = allImages.map(img => {
+          const src = getImageSrc(img)
+          let highResSrc = src
+          try {
+            const urlObj = new URL(src)
+            // Remove resize parameters to get high quality image
+            urlObj.searchParams.delete('width')
+            urlObj.searchParams.delete('height')
+            urlObj.searchParams.delete('quality')
+            urlObj.searchParams.delete('fmt')
+            urlObj.searchParams.delete('fm') // Unsplash
+            urlObj.searchParams.delete('crop')
+            urlObj.searchParams.delete('fit')
+
+            // Special handling for Unsplash to ensure high res
+            if (src.includes('unsplash.com')) {
+              urlObj.searchParams.set('q', '100') // Set max quality
+            }
+
+            highResSrc = urlObj.toString()
+          } catch (e) {
+            // ignore
+          }
+          return {
+            src,
+            alt: img.getAttribute('alt') || '',
+            highResSrc
+          }
+        })
+
+        const currentSrc = getImageSrc(target)
+        // 修正：确保找到正确的索引
+        // 有时候 src 可能经过了处理，这里尝试更宽松的匹配，或者回退到 0
+        let currentIndex = imageList.findIndex(item => item.src === currentSrc)
+        if (currentIndex === -1) {
+          // 尝试通过 highResSrc 匹配 (假设 target 也是原始链接)
+          currentIndex = imageList.findIndex(
+            item => item.highResSrc === currentSrc
+          )
+        }
+        if (currentIndex === -1) {
+          currentIndex = 0 // Fallback
+        }
+
+        // 传递图片列表和当前索引
+        openViewer(imageList, currentIndex)
+      }
+    },
+    [contentId, openViewer]
+  )
+
   // 页面首次打开时执行的勾子
   useEffect(() => {
     // 检测当前的url并自动滚动到对应目标
     autoScrollToHash()
   }, [])
 
+  useEffect(() => {
+    return bindNotionHashScrollHandler()
+  }, [post])
+
+  useEffect(() => {
+    if (!isBrowser) return
+
+    const article = document.getElementById(contentId)
+    if (!article) return
+
+    // capture 阶段监听 error：媒体（<video>/<audio>）的 error 事件不冒泡，
+    // 只有 capture 才能捕获到；图片（<img>）也会被捕获。
+    const handleArticleMediaError = event => {
+      retryNotionArticleAsset(event.target, BLOG.NOTION_HOST)
+    }
+
+    article.addEventListener('error', handleArticleMediaError, true)
+    return () => {
+      article.removeEventListener('error', handleArticleMediaError, true)
+    }
+  }, [contentId, post])
+
   // 页面文章发生变化时会执行的勾子
   useEffect(() => {
+    let cleanupGalleryImg = () => {}
+
     // 相册视图点击禁止跳转，只能放大查看图片
     if (POST_DISABLE_GALLERY_CLICK) {
-      if (!zoomRef.current && isBrowser) {
-        zoomRef.current = mediumZoom({
-          background: 'rgba(0, 0, 0, 0.2)',
-          margin: getMediumZoomMargin()
-        })
-      }
-      // 针对页面中的gallery视图，点击后是放大图片还是跳转到gallery的内部页面
-      processGalleryImg(zoomRef?.current)
+      // 针对页面中的gallery视图，点击后是放大图片
+      cleanupGalleryImg = processGalleryImg(openViewer, IMAGE_ZOOM_IN_WIDTH)
     }
 
     // 页内数据库点击禁止跳转，只能查看
     if (POST_DISABLE_DATABASE_CLICK) {
       processDisableDatabaseUrl()
     }
-  }, [post, POST_DISABLE_GALLERY_CLICK, POST_DISABLE_DATABASE_CLICK])
-
-  useEffect(() => {
-    const articleRoot = articleRef.current
-    if (!articleRoot) return
-    const zoomSources = new Map()
-    const activeZooms = new Map()
-    const markerAttribute = 'data-notionnext-zoom-id'
-    const finishZoom = (image, entry) => {
-      // A broken image can become complete before its error event. medium-zoom
-      // may already have appended that HD copy, then lose its reference on error.
-      document.querySelectorAll(
-        `.medium-zoom-image--opened[${markerAttribute}="${entry.marker}"]`
-      ).forEach(copy => copy.remove())
-      if (image.getAttribute(markerAttribute) === entry.marker) {
-        if (entry.previousMarker === null) image.removeAttribute(markerAttribute)
-        else image.setAttribute(markerAttribute, entry.previousMarker)
-      }
-    }
-    const prepareZoomSource = event => {
-      const image = event.target
-      if (image.tagName !== 'IMG') return
-      const zoom = event.detail?.zoom
-      if (zoom) {
-        const marker = `${zoomOwnerId}-${++zoomSequence.current}`
-        activeZooms.set(image, { zoom, marker, previousMarker: image.getAttribute(markerAttribute) })
-        image.setAttribute(markerAttribute, marker)
-      }
-      if (image.hasAttribute('data-zoom-src')) return
-      const source = image.currentSrc || image.getAttribute('src')
-      const hdSource = compressImage(source, IMAGE_ZOOM_IN_WIDTH)
-      if (!hdSource || hdSource === source) return
-      zoomSources.set(image, hdSource)
-      image.setAttribute('data-zoom-src', hdSource)
-    }
-    const restoreZoomSource = image => {
-      if (!zoomSources.has(image)) return
-      if (image.getAttribute('data-zoom-src') === zoomSources.get(image)) {
-        image.removeAttribute('data-zoom-src')
-      }
-      zoomSources.delete(image)
-    }
-    const onZoomClosed = event => {
-      restoreZoomSource(event.target)
-      const entry = activeZooms.get(event.target)
-      if (entry) finishZoom(event.target, entry)
-      activeZooms.delete(event.target)
-    }
-    const onZoomImageError = event => {
-      const image = event.target
-      if (!image.classList?.contains('medium-zoom-image--opened')) return
-      const marker = image.getAttribute(markerAttribute)
-      if ([...activeZooms.values()].some(entry => entry.marker === marker)) image.remove()
-    }
-
-    // medium-zoom dispatches a non-bubbling open event on the original image
-    // before cloning it into document.body. Supply HD there so its own loader
-    // can fall back to the thumbnail if the HD request fails.
-    articleRoot.addEventListener('medium-zoom:open', prepareZoomSource, true)
-    articleRoot.addEventListener('medium-zoom:closed', onZoomClosed, true)
-    document.addEventListener('error', onZoomImageError, true)
 
     return () => {
-      articleRoot.removeEventListener('medium-zoom:open', prepareZoomSource, true)
-      articleRoot.removeEventListener('medium-zoom:closed', onZoomClosed, true)
-      document.removeEventListener('error', onZoomImageError, true)
-      zoomSources.forEach((_source, image) => restoreZoomSource(image))
-      activeZooms.forEach((entry, image) => {
-        const { zoom } = entry
-        if (zoom.getZoomedImage() !== image) {
-          finishZoom(image, entry)
-          return
-        }
-        const closeZoom = () => {
-          if (zoom.getZoomedImage() === image) void zoom.close()
-        }
-        // close() is ignored while opening. The original may already be detached,
-        // so listen on it directly and close as soon as that animation finishes.
-        image.addEventListener('medium-zoom:opened', closeZoom, { once: true })
-        image.addEventListener('medium-zoom:closed', () => {
-          image.removeEventListener('medium-zoom:opened', closeZoom)
-          finishZoom(image, entry)
-        }, { once: true })
-        closeZoom()
-      })
-      activeZooms.clear()
+      cleanupGalleryImg()
     }
-  }, [post, IMAGE_ZOOM_IN_WIDTH, zoomOwnerId])
+  }, [
+    post,
+    POST_DISABLE_GALLERY_CLICK,
+    POST_DISABLE_DATABASE_CLICK,
+    openViewer,
+    IMAGE_ZOOM_IN_WIDTH
+  ])
 
   useEffect(() => {
     // Spoiler文本功能
@@ -153,46 +222,310 @@ const NotionPage = ({ post, className }) => {
         })
       })
     }
-  }, [post])
 
-  // const cleanBlockMap = cleanBlocksWithWarn(post?.blockMap);
-  // console.log('NotionPage render with post:', post);
+    // 查找所有具有 'notion-collection-page-properties' 类的元素,删除notion自带的页面properties
+    const timer = setTimeout(() => {
+      // 查找所有具有 'notion-collection-page-properties' 类的元素
+      const elements = document.querySelectorAll(
+        '.notion-collection-page-properties'
+      )
+
+      // 遍历这些元素并将其从 DOM 中移除
+      elements?.forEach(element => {
+        element?.remove()
+      })
+    }, 1000) // 1000 毫秒 = 1 秒
+
+    // 清理定时器，防止组件卸载时执行
+    return () => clearTimeout(timer)
+  }, [post, SPOILER_TEXT_TAG])
+
+  const cleanBlockMap = useMemo(() => {
+    return post?.blockMap
+      ? proxyNotionVideoUrls(
+          cleanBlocksForRender(post.blockMap),
+          BLOG.NOTION_HOST
+        )
+      : post?.blockMap
+  }, [post?.blockMap])
+
+  const enableReadingPosition = useMemo(() => {
+    return shouldEnableReadingPositionSaver(post, READING_PROGRESS_SAVE)
+  }, [post, READING_PROGRESS_SAVE])
+
+  // 收集正文图片元数据：首图用 eager + fetchpriority=high 提升 LCP；
+  // 其余图片补真实宽高消除布局偏移
+  const imageMeta = useMemo(
+    () => ({
+      ...collectContentImageMeta(cleanBlockMap, post?.id),
+      prioritizeFirst: contentId === 'notion-article'
+    }),
+    [cleanBlockMap, contentId, post?.id]
+  )
 
   return (
-    <div
-      id='notion-article'
-      ref={articleRef}
-      className={`mx-auto overflow-hidden ${className || ''}`}>
-      <NotionRenderer
-        recordMap={post?.blockMap}
-        mapPageUrl={mapPageUrl}
-        mapImageUrl={mapImgUrl}
-        components={{
-          Code,
-          Collection,
-          Embed: NotionEmbed,
-          Equation,
-          Link: NotionLink,
-          Modal,
-          Pdf,
-          Quote: NotionQuote,
-          Tweet
-        }}
-      />
+    <>
+      <div
+        id={contentId}
+        className={`mx-auto overflow-hidden ${className || ''}`}
+        onClick={handleImageClick}>
+        <NotionImageMetaContext.Provider value={imageMeta}>
+          <NotionRenderer
+            recordMap={cleanBlockMap}
+            mapPageUrl={mapPageUrl}
+            mapImageUrl={mapImgUrl}
+            forceCustomImages
+            components={{
+              Button: NotionButton,
+              Code,
+              Collection,
+              Embed: NotionEmbed,
+              Equation,
+              File: NotionFile,
+              Image: NotionImage,
+              Link: NotionLink,
+              Modal,
+              Pdf,
+              Quote: NotionQuote,
+              Tweet
+            }}
+          />
+        </NotionImageMetaContext.Provider>
 
-      <AdEmbed />
-      <OriginalityProof proof={post?.originalityProof} />
-      {hasCodeBlock(post?.blockMap) && <PrismMac />}
-    </div>
+        <AdEmbed />
+        <OriginalityProof proof={post?.originalityProof} />
+        {hasCode && <PrismMac />}
+      </div>
+      <ReadingPositionSaver postId={post?.id} enabled={enableReadingPosition} />
+    </>
   )
 }
 
-const hasCodeBlock = blockMap => {
-  const blocks = blockMap?.block
-  if (!blocks) return false
-  return Object.values(blocks).some(
-    item => item?.value?.type === 'code'
+export function NotionImage({ width, height, style, sizes, ...rest }) {
+  // react-notion-x 的 forceCustomImages 分支在 image 类型下不会把 block 的
+  // 真实尺寸（block_width / block_height）透传给自定义 Image 组件
+  // （见 react-notion-x Asset：image 仅传 assetStyle={objectFit:'cover'}，
+  // width=null、height=null）。
+  //
+  // 这里让图片按原图比例完整显示：
+  // - 不再对无尺寸图强制套 3:2 占位（原做法会把竖图/方图压扁、横图裁上下，
+  //   造成“被拉伸到一个大小、显示不完整”）；
+  // - 用 objectFit:contain 覆盖上游传来的 cover，保证图片不被裁剪；
+  // - 上层没传宽高时，从 NotionPage 收集的 block format 尺寸兜底，
+  //   有真实宽高才设置 aspect-ratio，给浏览器留占位（消除 CLS）。
+  const imageMeta = useContext(NotionImageMetaContext)
+  const metaDims = imageMeta?.dims?.[rest.src]
+  const { width: finalWidth, height: finalHeight } =
+    resolveNotionImageDimensions(width, height, metaDims)
+  const hasRealDimensions = Number(finalWidth) > 0 && Number(finalHeight) > 0
+  // 正文首图大概率是 LCP 元素：跳过原生 lazy 并提升抓取优先级。
+  // 不额外输出 preload link，避免与文章头图（PostHeader 已 preload）抢带宽
+  const isFirstImage = Boolean(
+    imageMeta?.prioritizeFirst &&
+      imageMeta?.first &&
+      rest.src === imageMeta.first
   )
+  const mergedStyle = {
+    width: '100%',
+    height: 'auto',
+    objectFit: 'contain',
+    ...(hasRealDimensions
+      ? { aspectRatio: `${finalWidth} / ${finalHeight}` }
+      : {}),
+    ...style,
+    objectFit: 'contain'
+  }
+
+  // 文章正文图片在阅读区宽度内渲染，给出合理的 sizes 让浏览器从 srcset
+  // 中挑选合适尺寸，避免下载过大的图。
+  const imageSizes = sizes || '(min-width: 768px) 720px, 100vw'
+
+  return (
+    <LazyImage
+      {...rest}
+      width={finalWidth || undefined}
+      height={finalHeight || undefined}
+      loading={isFirstImage ? 'eager' : rest.loading}
+      fetchPriority={isFirstImage ? 'high' : undefined}
+      style={mergedStyle}
+      sizes={imageSizes}
+      referrerPolicy='no-referrer'
+    />
+  )
+}
+
+export { collectContentImageMeta, resolveNotionImageDimensions }
+
+function shouldEnableReadingPositionSaver(post, enabled) {
+  if (!enabled || !isBrowser || !post?.id) return false
+
+  const currentPath = getNormalizedCurrentPath()
+  const normalizedPostId = String(post.id)
+  const candidates = [
+    post.slug,
+    post.href,
+    normalizedPostId,
+    normalizedPostId.replace(/-/g, '')
+  ]
+    .filter(Boolean)
+    .map(normalizePathCandidate)
+    .filter(Boolean)
+
+  return candidates.some(candidate => currentPath.includes(candidate))
+}
+
+function getNormalizedCurrentPath() {
+  try {
+    return decodeURIComponent(window.location.pathname).toLowerCase()
+  } catch {
+    return window.location.pathname.toLowerCase()
+  }
+}
+
+function normalizePathCandidate(value) {
+  return String(value)
+    .split('?')[0]
+    .split('#')[0]
+    .replace(/^https?:\/\/[^/]+/i, '')
+    .replace(/^\/+|\/+$/g, '')
+    .toLowerCase()
+}
+
+export function cleanBlocksForRender(blockMap) {
+  const cleanedBlocks = {}
+  const removedBlockIds = new Set()
+  const restoredBlockMap = restoreCompactBlockMapForRender(blockMap)
+  const sourceBlocks = restoredBlockMap.block || {}
+
+  for (const [id, block] of Object.entries(sourceBlocks)) {
+    const normalizedBlock = normalizeRenderableBlock(block, restoredBlockMap)
+    if (
+      !normalizedBlock?.value?.id ||
+      isUnrenderableCollectionView(normalizedBlock.value, restoredBlockMap)
+    ) {
+      removedBlockIds.add(id)
+      continue
+    }
+
+    cleanedBlocks[id] = normalizedBlock
+  }
+
+  for (const [id, block] of Object.entries(cleanedBlocks)) {
+    const newBlock = { ...block, value: { ...block.value } }
+    if (Array.isArray(newBlock.value.content)) {
+      // 递归清理 content 中无效的 blockId
+      newBlock.value.content = newBlock.value.content.filter(cid => {
+        if (!cleanedBlocks[cid]?.value?.id) {
+          removedBlockIds.add(cid)
+          return false
+        }
+        return true
+      })
+    }
+
+    cleanedBlocks[id] = newBlock
+  }
+
+  if (removedBlockIds.size && process.env.NODE_ENV === 'development') {
+    console.warn('Removed invalid blocks:', Array.from(removedBlockIds))
+  }
+
+  return {
+    ...restoredBlockMap,
+    block: cleanedBlocks
+  }
+}
+
+export function proxyNotionVideoUrls(blockMap, notionHost = BLOG.NOTION_HOST) {
+  if (!blockMap?.block || !blockMap?.signed_urls) return blockMap
+
+  let signedUrls = blockMap.signed_urls
+
+  for (const entry of Object.values(blockMap.block)) {
+    const block = getNotionValue(entry)
+    if (!['video', 'audio'].includes(block?.type) || !block.id) continue
+
+    const stableSource =
+      block.properties?.source?.[0]?.[0] || block.format?.display_source
+    const proxyUrl = buildNotionFileProxyUrl({
+      id: block.id,
+      source: stableSource,
+      notionHost
+    })
+    if (!proxyUrl || proxyUrl === signedUrls[block.id]) continue
+
+    if (signedUrls === blockMap.signed_urls) {
+      signedUrls = { ...blockMap.signed_urls }
+    }
+    signedUrls[block.id] = proxyUrl
+  }
+
+  return signedUrls === blockMap.signed_urls
+    ? blockMap
+    : { ...blockMap, signed_urls: signedUrls }
+}
+
+function normalizeRenderableBlock(block, blockMap) {
+  if (block?.value?.type !== 'collection_view') return { ...block }
+
+  const renderableViewId = findRenderableCollectionViewId(block.value, blockMap)
+  if (!renderableViewId || block.value.view_ids?.[0] === renderableViewId) {
+    return { ...block }
+  }
+
+  return {
+    ...block,
+    value: {
+      ...block.value,
+      view_ids: [
+        renderableViewId,
+        ...block.value.view_ids.filter(viewId => viewId !== renderableViewId)
+      ]
+    }
+  }
+}
+
+function isUnrenderableCollectionView(blockValue, blockMap) {
+  if (blockValue?.type !== 'collection_view') return false
+
+  return !findRenderableCollectionViewId(blockValue, blockMap)
+}
+
+function findRenderableCollectionViewId(blockValue, blockMap) {
+  const viewIds = Array.isArray(blockValue.view_ids) ? blockValue.view_ids : []
+
+  return (
+    viewIds.find(viewId => {
+      if (!viewId) return false
+
+      const collectionId = getCollectionId(blockValue, blockMap, viewId)
+      if (!collectionId) return false
+
+      return (
+        getNotionValue(blockMap.collection?.[collectionId]) &&
+        getNotionValue(blockMap.collection_view?.[viewId]) &&
+        blockMap.collection_query?.[collectionId]?.[viewId]
+      )
+    }) || null
+  )
+}
+
+function getCollectionId(blockValue, blockMap, collectionViewId) {
+  const directCollectionId =
+    blockValue.collection_id || blockValue.format?.collection_pointer?.id
+
+  if (directCollectionId) return directCollectionId
+
+  const collectionView = getNotionValue(
+    blockMap.collection_view?.[collectionViewId]
+  )
+  return collectionView?.format?.collection_pointer?.id || null
+}
+
+function getNotionValue(record) {
+  if (!record) return undefined
+  if (record.value) return getNotionValue(record.value)
+  return record.id ? record : undefined
 }
 
 /**
@@ -208,26 +541,50 @@ const processDisableDatabaseUrl = () => {
 }
 
 /**
- * gallery视图，点击后是放大图片还是跳转到gallery的内部页面
+ * gallery视图，点击后是放大图片
  */
-const processGalleryImg = zoom => {
-  setTimeout(() => {
-    if (isBrowser) {
-      const imgList = document?.querySelectorAll(
-        '.notion-collection-card-cover img'
-      )
-      if (imgList && zoom) {
-        for (let i = 0; i < imgList.length; i++) {
-          zoom.attach(imgList[i])
-        }
-      }
+const processGalleryImg = (openViewer, imageZoomWidth) => {
+  if (!isBrowser) return () => {}
 
-      const cards = document.getElementsByClassName('notion-collection-card')
-      for (const e of cards) {
-        e.removeAttribute('href')
+  const cleanupListeners = []
+  const timer = setTimeout(() => {
+    const imgList = document?.querySelectorAll(
+      '.notion-collection-card-cover img'
+    )
+    if (imgList) {
+      for (let i = 0; i < imgList.length; i++) {
+        const img = imgList[i]
+        if (img.dataset.notionNextGalleryBound === 'true') continue
+
+        const handleClick = e => {
+          e.preventDefault()
+          e.stopPropagation()
+          const src = getImageSrc(img)
+          const highResSrc = compressImage(src, imageZoomWidth)
+          const alt = img.getAttribute('alt') || ''
+          openViewer([{ src, alt, highResSrc }], 0)
+        }
+
+        img.dataset.notionNextGalleryBound = 'true'
+        img.style.cursor = 'zoom-in'
+        img.addEventListener('click', handleClick)
+        cleanupListeners.push(() => {
+          img.removeEventListener('click', handleClick)
+          delete img.dataset.notionNextGalleryBound
+        })
       }
     }
+
+    const cards = document.getElementsByClassName('notion-collection-card')
+    for (const e of cards) {
+      e.removeAttribute('href')
+    }
   }, 800)
+
+  return () => {
+    clearTimeout(timer)
+    cleanupListeners.forEach(cleanup => cleanup())
+  }
 }
 
 /**
@@ -239,11 +596,7 @@ const autoScrollToHash = () => {
     const hash = window?.location?.hash
     const needToJumpToTitle = hash && hash.length > 0
     if (needToJumpToTitle) {
-      console.log('jump to hash', hash)
-      const tocNode = document.getElementById(hash.substring(1))
-      if (tocNode && tocNode?.className?.indexOf('notion') > -1) {
-        tocNode.scrollIntoView({ block: 'start', behavior: 'smooth' })
-      }
+      scrollToNotionHeading(hash)
     }
   }, 180)
 }
@@ -258,27 +611,30 @@ const mapPageUrl = id => {
   return '/' + id.replace(/-/g, '')
 }
 
-/**
- * 缩放
- * @returns
- */
-function getMediumZoomMargin() {
-  const width = window.innerWidth
-
-  if (width < 500) {
-    return 8
-  } else if (width < 800) {
-    return 20
-  } else if (width < 1280) {
-    return 30
-  } else if (width < 1600) {
-    return 40
-  } else if (width < 1920) {
-    return 48
-  } else {
-    return 72
-  }
+export function retryImageWithProxyFallback(
+  img,
+  notionHost = BLOG.NOTION_HOST
+) {
+  return retryNotionAssetElement(img, { kind: 'image', notionHost })
 }
+
+export function retryNotionArticleAsset(target, notionHost = BLOG.NOTION_HOST) {
+  const tagName = target?.tagName
+  if (tagName === 'IMG') {
+    // LazyImage owns its React state and handles its own ordered fallback. The
+    // capture listener only covers raw images from third-party renderers.
+    if (target.dataset.notionNextFallbackManaged === 'true') return false
+    return retryImageWithProxyFallback(target, notionHost)
+  }
+
+  if (tagName === 'VIDEO' || tagName === 'AUDIO') {
+    return retryNotionAssetElement(target, { kind: 'media', notionHost })
+  }
+
+  return false
+}
+
+export { getOriginalNotionImageSource } from '@/lib/notionAssetUrl'
 
 // 代码
 const Code = dynamic(
@@ -297,7 +653,7 @@ const Equation = dynamic(
       await import('@/lib/plugins/mhchem')
       return m.Equation
     }),
-  { ssr: true }
+  { ssr: false }
 )
 
 // 原版文档
@@ -374,11 +730,27 @@ const NotionText = ({ value }) => {
         else if (type === 'i') element = <em>{element}</em>
         else if (type === 's') element = <s>{element}</s>
         else if (type === 'c') element = <code>{element}</code>
-        else if (type === 'a') element = <a href={Array.isArray(fmt) ? fmt[1] : '#'}>{element}</a>
+        else if (type === 'a') {
+          element = <a href={getSafeNotionHref(fmt?.[1])}>{element}</a>
+        }
       }
     }
     return <span key={i}>{element}</span>
   })
+}
+
+function getSafeNotionHref(value) {
+  if (typeof value !== 'string') return '#'
+  if (value.startsWith('/') || value.startsWith('#')) return value
+
+  try {
+    const url = new URL(value)
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol)
+      ? value
+      : '#'
+  } catch {
+    return '#'
+  }
 }
 
 export default NotionPage

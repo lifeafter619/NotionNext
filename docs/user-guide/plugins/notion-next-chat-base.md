@@ -1,4 +1,5 @@
 # AI聊天机器人-ChatBase
+
 > 迁移自：[AI聊天机器人-ChatBase](https://docs.tangly1024.com/article/notion-next-chat-base)
 > 发布日期：2023-7-18
 > 最后编辑：2024-9-7
@@ -20,7 +21,6 @@ Chatbase.co 是**一款为网站构建自定义ChatGPT 界面的工具**，用�
 
 ![Untitled](/legacy/6f6380aa08eec94b.png)
 
-
 ## 配置方法
 
 用环境变量或修改代码的方式，在[blog.config.js](https://github.com/notionnext-org/NotionNext/blob/48cb3ee6779c117bcb6b61e5cb89fbd1c541a115/blog.config.js#L156)中添加您的chatbase-id即可。
@@ -37,16 +37,13 @@ CHATBASE_ID: process.env.NEXT_PUBLIC_CHATBASE_ID || null, // 是否显示chatbas
 https://www.chatbase.co/chatbot-iframe/${BLOG.CHATBASE_ID}
 ```
 
-
 ## 获取ChatBase-id方法
-
 
 ### 1. 注册登录ChatBase
 
 [Chatbase | ChatGPT for your website](https://www.chatbase.co/)
 
 Build an AI chatbot from your knowledge base and add it to your website.
-
 
 ### 2. 根据引导，配置机器人的数据源
 
@@ -80,7 +77,6 @@ Build an AI chatbot from your knowledge base and add it to your website.
 
 在setting中可以设置默认欢迎语和用户提问的提示词，这里需要自己折腾一下，不展开叙述了。
 
-
 ### 3. 在Embed on Site 中找到id
 
 点击Embed on site，会提示你需要将此机器人公开，
@@ -94,7 +90,6 @@ Build an AI chatbot from your knowledge base and add it to your website.
 然后在弹出的确认框中就可以找到你的chatbotId了。
 
 ![Untitled](/legacy/be78700f51a776cd.png)
-
 
 ## 配置在NotionNext中
 

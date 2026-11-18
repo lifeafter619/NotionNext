@@ -1,4 +1,4 @@
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useRef } from 'react'
 import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
 
@@ -98,9 +98,7 @@ const SocialButton = () => {
         )}
         {CONTACT_EMAIL && (
           <a
-            onClick={e =>
-              handleEmailClick(e, emailIcon, CONTACT_EMAIL)
-            }
+            onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
             target='_blank'
             rel='noreferrer'
             className='cursor-pointer'
@@ -109,7 +107,7 @@ const SocialButton = () => {
             <i className='fas fa-envelope transform hover:scale-125 duration-150' />
           </a>
         )}
-        {JSON.parse(siteConfig('ENABLE_RSS')) && (
+        {siteConfigBoolean('ENABLE_RSS') && (
           <a
             target='_blank'
             rel='noreferrer'

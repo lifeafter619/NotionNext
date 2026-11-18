@@ -32,7 +32,9 @@ jest.mock('@/lib/db/notion/getNotionAPI', () => ({
 }))
 
 const { formatNotionBlock } = require('@/lib/db/notion/getPostBlocks')
-const { getPageTableOfContents } = require('@/lib/db/notion/getPageTableOfContents')
+const {
+  getPageTableOfContents
+} = require('@/lib/db/notion/getPageTableOfContents')
 
 describe('Notion data format compatibility', () => {
   it('unwraps nested block values returned by newer Notion payloads', () => {
@@ -59,6 +61,67 @@ describe('Notion data format compatibility', () => {
       id: 'page_1',
       type: 'page',
       properties: { title: [['Hello']] }
+    })
+  })
+
+  it('unwraps nested record maps used by collection views and automations', () => {
+    const blockMap = {
+      block: {},
+      collection: {},
+      collection_view: {
+        view_1: {
+          spaceId: 'space_1',
+          value: {
+            role: 'reader',
+            value: {
+              id: 'view_1',
+              type: 'table',
+              page_sort: ['page_1']
+            }
+          }
+        }
+      },
+      automation: {
+        automation_1: {
+          spaceId: 'space_1',
+          value: {
+            role: 'reader',
+            value: {
+              id: 'automation_1',
+              action_ids: ['action_1'],
+              properties: { name: 'Open page' }
+            }
+          }
+        }
+      },
+      automation_action: {
+        action_1: {
+          value: {
+            role: 'reader',
+            value: {
+              id: 'action_1',
+              type: 'open_page'
+            }
+          }
+        }
+      }
+    }
+
+    const adapted = adapterNotionBlockMap(blockMap)
+
+    expect(adapted.collection_view.view_1.value).toMatchObject({
+      id: 'view_1',
+      type: 'table',
+      page_sort: ['page_1']
+    })
+    expect(adapted.automation.automation_1.value).toMatchObject({
+      id: 'automation_1',
+      action_ids: ['action_1'],
+      properties: { name: 'Open page' }
+    })
+    expect(adapted.automation_action.action_1.value).toMatchObject({
+      id: 'action_1',
+      type: 'open_page'
     })
   })
 
@@ -1346,6 +1409,9 @@ describe('Notion data format compatibility', () => {
   })
 
   it('downgrades newer heading block types for older renderers', () => {
+    expect(normalizeNotionBlockType('paragraph')).toBe('text')
+    expect(normalizeNotionBlockType('bulleted_list_item')).toBe('bulleted_list')
+    expect(normalizeNotionBlockType('numbered_list_item')).toBe('numbered_list')
     expect(normalizeNotionBlockType('heading_1')).toBe('header')
     expect(normalizeNotionBlockType('heading_2')).toBe('sub_header')
     expect(normalizeNotionBlockType('heading_3')).toBe('sub_sub_header')
@@ -1401,14 +1467,19 @@ describe('Notion data format compatibility', () => {
 })
 
 describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
-  const { normalizeExternalMediaBlock, isAppleMusicEmbedUrl } =
-    require('@/lib/db/notion/normalizeExternalMediaBlock')
+  const {
+    normalizeExternalMediaBlock,
+    isAppleMusicEmbedUrl
+  } = require('@/lib/db/notion/normalizeExternalMediaBlock')
 
   describe('isAppleMusicEmbedUrl', () => {
     it.each([
       ['https://embed.music.apple.com/us/song/neon-blue/324357768', true],
       ['https://embed.music.apple.com/cn/song/test-song/123456', true],
-      ['https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768', false],
+      [
+        'https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768',
+        false
+      ],
       ['https://embed.music.apple.com/us/album/test/123456', false],
       ['https://www.youtube.com/watch?v=abc', false],
       ['', false]
@@ -1422,7 +1493,9 @@ describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
       const block = {
         type: 'video',
         properties: {
-          source: [['https://embed.music.apple.com/us/song/neon-blue/324357768']]
+          source: [
+            ['https://embed.music.apple.com/us/song/neon-blue/324357768']
+          ]
         }
       }
       normalizeExternalMediaBlock(block)
@@ -1433,7 +1506,11 @@ describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
       const block = {
         type: 'video',
         properties: {
-          source: [['https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768']]
+          source: [
+            [
+              'https://embed.music.apple.com/us/album/girls-come-too/324357208?i=324357768'
+            ]
+          ]
         }
       }
       normalizeExternalMediaBlock(block)
@@ -1466,7 +1543,9 @@ describe('normalizeExternalMediaBlock — Apple Music song embeds', () => {
       expect(() => normalizeExternalMediaBlock(null)).not.toThrow()
       expect(() => normalizeExternalMediaBlock(undefined)).not.toThrow()
       expect(() => normalizeExternalMediaBlock({ type: 'video' })).not.toThrow()
-      expect(() => normalizeExternalMediaBlock({ type: 'video', properties: {} })).not.toThrow()
+      expect(() =>
+        normalizeExternalMediaBlock({ type: 'video', properties: {} })
+      ).not.toThrow()
     })
   })
 })

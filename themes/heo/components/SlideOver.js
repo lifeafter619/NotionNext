@@ -1,27 +1,29 @@
-import DarkModeButton from '@/components/DarkModeButton'
 import { useGlobal } from '@/lib/global'
 import { Dialog, Transition } from '@headlessui/react'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import {
   Fragment,
   useEffect,
   useImperativeHandle,
-  useRef,
   useState
 } from 'react'
 import { MenuListSide } from './MenuListSide'
 import TagGroups from './TagGroups'
+import { siteConfig } from '@/lib/config'
+import CONFIG from '../config'
+import DarkModeButton from './DarkModeButton'
 
 /**
  * 侧边抽屉
  * 移动端的菜单在这里
  */
 export default function SlideOver(props) {
-  const { cRef, tagOptions } = props
+  const { cRef, tagOptions, openSignal = 0 } = props
   const [open, setOpen] = useState(false)
   const { locale } = useGlobal()
   const router = useRouter()
+  const showDarkMode = siteConfig('HEO_WIDGET_DARK_MODE', true, CONFIG)
   /**
    * 函数组件暴露方法useImperativeHandle
    **/
@@ -33,7 +35,7 @@ export default function SlideOver(props) {
    * 开关侧拉抽屉
    */
   const toggleSlideOvers = () => {
-    setOpen(!open)
+    setOpen(currentOpen => !currentOpen)
   }
 
   /**
@@ -41,7 +43,13 @@ export default function SlideOver(props) {
    */
   useEffect(() => {
     setOpen(false)
-  }, [router])
+  }, [router.asPath])
+
+  useEffect(() => {
+    if (openSignal > 0) {
+      setOpen(true)
+    }
+  }, [openSignal])
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -59,7 +67,7 @@ export default function SlideOver(props) {
 
         <div className='fixed inset-0 overflow-hidden'>
           <div className='absolute inset-0 overflow-hidden'>
-            <div className='pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10'>
+            <div className='pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10'>
               <Transition.Child
                 as={Fragment}
                 enter='transform transition ease-in-out duration-500 sm:duration-700'
@@ -68,7 +76,7 @@ export default function SlideOver(props) {
                 leave='transform transition ease-in-out duration-500 sm:duration-700'
                 leaveFrom='translate-x-0'
                 leaveTo='translate-x-full'>
-                <Dialog.Panel className='pointer-events-auto relative w-96 max-w-md'>
+                <Dialog.Panel className='pointer-events-auto relative w-[min(24rem,calc(100vw-1.5rem))] max-w-md'>
                   <Transition.Child
                     as={Fragment}
                     enter='ease-in-out duration-500'
@@ -77,10 +85,10 @@ export default function SlideOver(props) {
                     leave='ease-in-out duration-500'
                     leaveFrom='opacity-100'
                     leaveTo='opacity-0'>
-                    <div className='absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4'>
+                    <div className='absolute left-0 top-0 -ml-6 flex pr-2 pt-4 sm:-ml-10 sm:pr-4'>
                       <button
                         type='button'
-                        className='rounded-md text-gray-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-white'
+                        className='w-11 h-11 rounded-full text-gray-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-white flex items-center justify-center'
                         onClick={() => setOpen(false)}>
                         <span className='sr-only'>Close panel</span>
                         <i className='fa-solid fa-xmark px-2'></i>
@@ -90,10 +98,12 @@ export default function SlideOver(props) {
                   {/* 内容 */}
                   <div className='flex h-full flex-col overflow-y-scroll bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-bg-dark)] py-6 shadow-xl'>
                     <div className='relative mt-6 flex-1 flex-col space-y-3 px-4 sm:px-6 dark:text-white '>
-                      <section className='space-y-2 flex flex-col'>
-                        {/* 切换深色模式 */}
-                        <DarkModeBlockButton />
-                      </section>
+                      {showDarkMode && (
+                        <section className='space-y-2 flex flex-col'>
+                          <div>{locale?.MENU?.APPEARANCE || '外观模式'}</div>
+                          <DarkModeButton fullWidth />
+                        </section>
+                      )}
 
                       <section className='space-y-2 flex flex-col'>
                         <div>{locale.COMMON.BLOG}</div>
@@ -123,28 +133,6 @@ export default function SlideOver(props) {
 }
 
 /**
- * 一个包含图标的按钮
- */
-function DarkModeBlockButton() {
-  const darkModeRef = useRef()
-  const { isDarkMode, locale } = useGlobal()
-
-  function handleChangeDarkMode() {
-    darkModeRef?.current?.handleChangeDarkMode()
-  }
-  return (
-    <button
-      onClick={handleChangeDarkMode}
-      className={
-        'group duration-200 hover:text-[var(--heo-color-primary-text)] hover:shadow-md hover:bg-[var(--heo-color-primary)] flex justify-between items-center px-2 py-2 border dark:border-gray-600 bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-accent)] rounded-lg'
-      }>
-      <DarkModeButton cRef={darkModeRef} className='group-hover:text-white' />{' '}
-      {isDarkMode ? locale.MENU.LIGHT_MODE : locale.MENU.DARK_MODE}
-    </button>
-  )
-}
-
-/**
  * 一个简单的按钮
  */
 function Button({ title, url }) {
@@ -152,7 +140,7 @@ function Button({ title, url }) {
     <SmartLink
       href={url}
       className={
-        'duration-200 hover:text-[var(--heo-color-primary-text)] hover:shadow-md flex cursor-pointer justify-between items-center px-2 py-2 border dark:border-gray-600 bg-[var(--heo-color-card)] hover:bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-card-dark)] rounded-lg'
+        'min-h-11 duration-200 hover:text-white hover:shadow-md flex cursor-pointer justify-between items-center px-3 py-2 border dark:border-gray-600 bg-white hover:bg-blue-600 dark:bg-[#1e1e1e] rounded-lg'
       }>
       {title}
     </SmartLink>

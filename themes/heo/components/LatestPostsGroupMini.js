@@ -2,8 +2,34 @@ import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 // import Image from 'next/image'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
+
+const getLatestPostKey = (post, index) => {
+  if (post?.id) return post.id
+  const fallback = post?.slug || post?.href || post?.title || 'latest-post'
+  return `${fallback}-${index}`
+}
+
+function getPostHref(post, subPath = '') {
+  if (post?.href) return post.href
+  if (!post?.slug) return '#'
+
+  const rawSlug = String(post.slug)
+  if (/^https?:\/\//i.test(rawSlug)) return rawSlug
+
+  const slug = rawSlug.startsWith('/') ? rawSlug : `/${rawSlug}`
+  return `${subPath}${slug}` || '/'
+}
+
+function getPostTitle(post) {
+  const title = post?.title
+  if (Array.isArray(title)) return title.filter(Boolean).join(' ') || '未命名'
+  if (typeof title === 'string' || typeof title === 'number') {
+    return String(title).trim() || '未命名'
+  }
+  return '未命名'
+}
 
 /**
  * 最新文章列表
@@ -16,8 +42,11 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
   const currentPath = useRouter().asPath
   const { locale } = useGlobal()
   const SUB_PATH = siteConfig('SUB_PATH', '')
+  const posts = Array.isArray(latestPosts)
+    ? latestPosts.filter(post => post?.href || post?.slug)
+    : []
 
-  return latestPosts ? (
+  return posts.length > 0 ? (
     <>
       <div className=' mb-2 px-1 flex flex-nowrap justify-between'>
         <div>
@@ -25,25 +54,43 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
           {locale.COMMON.LATEST_POSTS}
         </div>
       </div>
-      {latestPosts.map(post => {
+      {posts.map((post, index) => {
+        const href = getPostHref(post, SUB_PATH)
         const selected =
-          currentPath === `${SUB_PATH}/${post.slug}`
-        const headerImage = post?.pageCoverThumbnail
-          ? post.pageCoverThumbnail
-          : siteInfo?.pageCover
+          href !== '#' &&
+          !/^https?:\/\//i.test(href) &&
+          currentPath.split(/[?#]/)[0] === href
+        const headerImage =
+          post?.pageCoverThumbnail || post?.pageCover || siteInfo?.pageCover
+        const title = getPostTitle(post)
+        const lastEditedDay =
+          typeof post?.lastEditedDay === 'string' ||
+          typeof post?.lastEditedDay === 'number'
+            ? String(post.lastEditedDay)
+            : ''
 
         return (
           <SmartLink
-            key={post.id}
-            title={post.title}
-            href={post?.href}
+            key={getLatestPostKey(post, index)}
+            title={title}
+            href={href}
             passHref
-            className={'my-3 flex'}>
-            <div className='w-20 h-14 overflow-hidden relative'>
-              <LazyImage
-                src={`${headerImage}`}
-                className='object-cover w-full h-full rounded-lg'
-              />
+            className={'my-3 flex items-center'}>
+            <div className='heo-post-cover w-24 flex-shrink-0 overflow-hidden relative pointer-events-none rounded-lg'>
+              {headerImage ? (
+                <LazyImage
+                  src={headerImage}
+                  alt={title}
+                  width={303}
+                  height={132}
+                  sizes='96px'
+                  className='object-cover object-center w-full h-full'
+                />
+              ) : (
+                <div className='w-full h-full rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400'>
+                  <i className='fas fa-file-lines' />
+                </div>
+              )}
             </div>
             <div
               className={
@@ -52,8 +99,10 @@ export default function LatestPostsGroupMini({ latestPosts, siteInfo }) {
                 ' dark:hover:text-[var(--heo-color-accent)] cursor-pointer items-center flex'
               }>
               <div>
-                <div className='line-clamp-2 menu-link'>{post.title}</div>
-                <div className='text-gray-400'>{post.lastEditedDay}</div>
+                <div className='line-clamp-2 menu-link'>{title}</div>
+                {lastEditedDay && (
+                  <div className='text-gray-400'>{lastEditedDay}</div>
+                )}
               </div>
             </div>
           </SmartLink>

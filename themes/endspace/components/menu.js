@@ -1,3 +1,4 @@
+import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
 
@@ -28,9 +29,14 @@ const normalizeIcon = link => {
 }
 
 const normalizeHref = link => {
-  const value = link?.href || link?.path || link?.url || link?.slug || ''
+  const value =
+    link?.href || link?.path || link?.to || link?.url || link?.slug || ''
   if (!value) return ''
-  if (value.startsWith('/') || value.startsWith('http') || value.startsWith('#')) {
+  if (
+    value.startsWith('/') ||
+    value.startsWith('http') ||
+    value.startsWith('#')
+  ) {
     return value
   }
   return `/${value}`
@@ -57,9 +63,7 @@ const normalizeMenuItem = (link, index) => {
 }
 
 const normalizeMenu = links =>
-  (Array.isArray(links) ? links : [])
-    .map(normalizeMenuItem)
-    .filter(Boolean)
+  (Array.isArray(links) ? links : []).map(normalizeMenuItem).filter(Boolean)
 
 export const getEndspaceMenuItems = ({ customNav, customMenu } = {}) => {
   const defaultLinks = [
@@ -96,7 +100,11 @@ export const getEndspaceMenuItems = ({ customNav, customMenu } = {}) => {
   if (Array.isArray(customNav) && customNav.length > 0) {
     links = links.concat(customNav)
   }
-  if (siteConfig('CUSTOM_MENU') && Array.isArray(customMenu)) {
+  if (
+    siteConfig('CUSTOM_MENU', BLOG.CUSTOM_MENU) &&
+    Array.isArray(customMenu) &&
+    customMenu.length > 0
+  ) {
     links = customMenu
   }
 
@@ -105,19 +113,20 @@ export const getEndspaceMenuItems = ({ customNav, customMenu } = {}) => {
 
 export const getEndspaceActiveMenuName = (menuItems, asPath = '/') => {
   const cleanPath = asPath.split(/[?#]/)[0] || '/'
-  const activeItem = menuItems
-    .find(item => {
-      const activeSubMenu = item.subMenus?.some(subItem => {
-        if (!subItem.path || subItem.path.startsWith('http') || subItem.path.startsWith('#')) {
-          return false
-        }
-        return cleanPath === subItem.path || cleanPath.startsWith(`${subItem.path}/`)
-      })
-      if (activeSubMenu) return true
-      if (!item.path || item.path.startsWith('http') || item.path.startsWith('#')) return false
-      if (item.path === '/') return cleanPath === '/'
-      return cleanPath === item.path || cleanPath.startsWith(`${item.path}/`)
-    })
+  const isActivePath = item => {
+    if (
+      !item?.path ||
+      item.path.startsWith('http') ||
+      item.path.startsWith('#')
+    ) {
+      return false
+    }
+    if (item.path === '/') return cleanPath === '/'
+    return cleanPath === item.path || cleanPath.startsWith(`${item.path}/`)
+  }
+  const activeItem = menuItems.find(
+    item => isActivePath(item) || item.subMenus?.some(isActivePath)
+  )
 
   return activeItem?.name || menuItems[0]?.name || ''
 }

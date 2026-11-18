@@ -1,4 +1,5 @@
 import { useGlobal } from '@/lib/global'
+import { siteConfig } from '@/lib/config'
 import SmartLink from '@/components/SmartLink'
 import CONFIG from '../config'
 
@@ -16,19 +17,19 @@ const MenuGroupCard = props => {
       name: locale.COMMON.ARTICLE,
       href: '/archive',
       slot: archiveSlot,
-      show: CONFIG.MENU_ARCHIVE
+      show: siteConfig('COMMERCE_MENU_ARCHIVE', true, CONFIG)
     },
     {
       name: locale.COMMON.CATEGORY,
       href: '/category',
       slot: categorySlot,
-      show: CONFIG.MENU_CATEGORY
+      show: siteConfig('COMMERCE_MENU_CATEGORY', true, CONFIG)
     },
     {
       name: locale.COMMON.TAGS,
       href: '/tag',
       slot: tagSlot,
-      show: CONFIG.MENU_TAG
+      show: siteConfig('COMMERCE_MENU_TAG', true, CONFIG)
     }
   ]
 

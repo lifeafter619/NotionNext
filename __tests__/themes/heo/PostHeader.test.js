@@ -1,6 +1,18 @@
 import { renderToStaticMarkup } from 'react-dom/server.node'
 import PostHeader from '@/themes/heo/components/PostHeader'
 
+jest.mock('next/router', () => ({
+  useRouter: () => ({
+    pathname: '/[prefix]/[slug]',
+    query: {},
+    push: jest.fn()
+  })
+}))
+
+jest.mock('@/lib/global', () => ({
+  useGlobal: () => ({ setOnLoading: jest.fn() })
+}))
+
 jest.mock('@/components/LazyImage', () => ({
   __esModule: true,
   default: () => <span data-testid='lazy-image' />

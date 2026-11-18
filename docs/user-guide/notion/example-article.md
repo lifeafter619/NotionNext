@@ -1,4 +1,5 @@
 # Notion文章示例
+
 > 迁移自：[Notion文章示例](https://docs.tangly1024.com/article/example-1)
 > 发布日期：2021-11-5
 > 最后编辑：2024-10-28
@@ -13,7 +14,6 @@
 ::: tip 提示
 生活的意义并不是与他人争高下，而在于享受努力实现目标的过程，结果只是对自己行动的嘉奖。
 :::
-
 
 ### **将进酒**
 
@@ -36,9 +36,7 @@
 
 记录思考、分享我的学习笔记
 
-
 ## 特殊段落
-
 
 ### 1.代码
 
@@ -67,6 +65,7 @@ plugins=(git z zsh-autosuggestions zsh-syntax-highlighting)
 ```Bash
 ps -ef | grep java | awk '{print $2}' | xargs kill -9
 ```
+
 ```Java
 @Test
 public void test11() {
@@ -84,6 +83,7 @@ public void test11() {
   System.out.println("useTime:"+useTime);
 }
 ```
+
 ```Python
 #!/usr/bin/python3
 import json
@@ -99,6 +99,7 @@ json_str = json.dumps(data)
 print ("Python 原始数据：", repr(data))
 print ("JSON 对象：", json_str)
 ```
+
 ```R
 # R 语言
 #file.edit(path.expand(file.path("~", ".Renviron")))
@@ -108,11 +109,13 @@ library(stringr)
 bot = Bot(token = bot_token('your_bot'))
 usr_list &lt;- c(12344566, 12345566)
 ```
+
 ```CSS
 html {
 	background-color: red;
 }
 ```
+
 ```cpp
 #include &lt;iostream&gt;
 using namespace std;
@@ -125,6 +128,7 @@ int main()
    return 0;
 }
 ```
+
 ```csharp
 using System;
 namespace HelloWorldApplication
@@ -139,6 +143,7 @@ namespace HelloWorldApplication
    }
 }
 ```
+
 ```asm6502
 .section __TEXT,__text,regular,pure_instructions
 .macosx_version_min 10, 13
@@ -192,28 +197,27 @@ retq
 
 </details>
 
-
 ### 2.公式
 
 - 数学公式
-f\left(\left[\frac{1+\{x, y\}}{\left(\frac{x}{y}+\frac{y}{x}\right)(u+1)}+a\right]^{3 / 2}\right)\tag{行标}
+  f\left(\left[\frac{1+\{x, y\}}{\left(\frac{x}{y}+\frac{y}{x}\right)(u+1)}+a\right]^{3 / 2}\right)\tag{行标}
 
 - 化学方程
-⁍
+  ⁍
 
 <details>
 <summary>其他更多公式</summary>
 
 \begin{aligned}
 AACD \Rightarrow AAAD &= \frac 1 3\\
-AACD \Rightarrow AACD &= \frac 1 3 + \frac 1 6 = \frac 1 2  \\
+AACD \Rightarrow AACD &= \frac 1 3 + \frac 1 6 = \frac 1 2 \\
 AACD \Rightarrow AACC &= \frac 1 6 \end{aligned}
 \begin{bmatrix}
-		c_{0}&c_{n-1}&c_{n-2}&\cdots &c_{1}\\
-		c_{1}&c_{0}&c_{n-1} &  \cdots &c_{2}\\
-		c_{2}&c_{1}&c_{0}&\cdots  &c_3 \\
-		\vdots &\vdots& \vdots&\ddots &\vdots \\
-		c_{n-1}&c_{n-2}&c_{n-3}&\dots &c_{0}
+c*{0}&c*{n-1}&c*{n-2}&\cdots &c*{1}\\
+c*{1}&c*{0}&c*{n-1} & \cdots &c*{2}\\
+c*{2}&c*{1}&c*{0}&\cdots &c_3 \\
+\vdots &\vdots& \vdots&\ddots &\vdots \\
+c*{n-1}&c*{n-2}&c*{n-3}&\dots &c\_{0}
 \end{bmatrix}
 \begin{aligned} \sin 2\theta & = 2\sin \theta \cos \theta \\ & = \cfrac{2 \tan \theta}{1+\tan^2 \theta} \end{aligned}
 AACD\Rightarrow \left\{\begin{matrix}
@@ -226,7 +230,6 @@ C,D & C,D &= 2 \times \frac 1 4 \times \frac 1 3= \frac 1 6 &\Rightarrow CCAA
 
 </details>
 
-
 ### 3. 图表
 
 ```Mermaid
@@ -238,19 +241,15 @@ graph LR;
 公司架构--&gt;产品
 ```
 
-
 ### 4. PDF嵌入
 
 tailwindcss.pdf
-
 
 ### 5.下载附件
 
 下载PDF附件.pdf
 
-
 ### 6. 照片集
-
 
 ### 7. 内嵌网页
 
@@ -268,7 +267,6 @@ Notion 2026 年新增的 HTML Block 可以在 Notion 中通过 Notion AI 生成�
 - 适合无后端的小工具；需要数据库、登录态、支付等能力时，仍应做成独立应用后再用普通 Embed 嵌入。
 - 为避免页面数据过大，单个 HTML artifact 建议控制在 512KB 以内。
 
-
 ### 5.代办
 
 家庭
@@ -277,7 +275,6 @@ Notion 2026 年新增的 HTML Block 可以在 Notion 中通过 Notion AI 生成�
 事业
 开会
 加班
-
 
 ### 6.折叠列表
 
@@ -300,7 +297,6 @@ Notion 2026 年新增的 HTML Block 可以在 Notion 中通过 Notion AI 生成�
 
 ---
 
-
 ### 8. 同步块
 
 Notion支持将不同页面的块进行同步，即 SyncBlock，以下是来自另一个页面的块：
@@ -311,41 +307,39 @@ Notion支持将不同页面的块进行同步，即 SyncBlock，以下是来自�
 ![Untitled](/legacy/0583aa5143d9cb20.png)
 :::
 
-
 ## 多级目录
 
 heading标题在博客中自动转为目录
 
-
 ### 二级目录1
+
 二级内容 1
 
 ### 二级目录2
-二级内容2
 
+二级内容2
 
 ### 二级目录3
 
-
 #### 三级目录3.1
+
 不同级别的heading代表不同级别的目录
 
 #### 三级目录3.2
-高一级目录嵌套低一级目录
 
+高一级目录嵌套低一级目录
 
 ### 多级列表
 
 - 事物的必然性
 
 1. 事物按规律变化，也有一种不可避免的性质．这种性质就叫做**必然性**
-  1. 事物的必然性，是事物本身的性质（我们反对宿命论的是其认为这一切是受神明的支配，而不是反对事物发展中存在的不可避免的性质的事实）
-    1. 第三级别列表
-    1. 第三级别列表
-  1. 其决定于它自己本身发展的情况和周围的条件
-    1. 第三级别列表
-      1. 第三级别列表
-
+1. 事物的必然性，是事物本身的性质（我们反对宿命论的是其认为这一切是受神明的支配，而不是反对事物发展中存在的不可避免的性质的事实）
+1. 第三级别列表
+1. 第三级别列表
+1. 其决定于它自己本身发展的情况和周围的条件
+1. 第三级别列表
+1. 第三级别列表
 
 ## 模板使用说明
 
@@ -356,7 +350,6 @@ heading标题在博客中自动转为目录
 演示站点描述
 
 Notion页面中，每篇文章都将有以下属性🤔：
-
 
 ## 评论插件
 

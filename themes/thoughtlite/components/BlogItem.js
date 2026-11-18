@@ -31,7 +31,7 @@ const BlogItem = ({ post, variant = 'default' }) => {
           </SmartLink>
           {post?.type !== 'Page' && post?.category && (
             <SmartLink
-              href={`/category/${post.category}`}
+              href={`/category/${encodeURIComponent(post.category)}`}
               className='text-xs text-[var(--tl-faint)] no-underline hover:text-[var(--tl-accent)]'>
               #{post.category}
             </SmartLink>
@@ -73,15 +73,14 @@ const BlogItem = ({ post, variant = 'default' }) => {
 
         <div className='mb-4 text-sm text-[var(--tl-muted)]'>
           by{' '}
-          <span className='text-[var(--tl-muted)]'>{siteConfig('AUTHOR')}</span>
-          {' '}
+          <span className='text-[var(--tl-muted)]'>{siteConfig('AUTHOR')}</span>{' '}
           on {post.date?.start_date || post.createdTime}
           <TwikooCommentCount post={post} className='pl-1' />
           {post.category && (
             <>
               <span className='font-bold mx-1'> | </span>
               <SmartLink
-                href={`/category/${post.category}`}
+                href={`/category/${encodeURIComponent(post.category)}`}
                 className='text-[var(--tl-muted)] hover:underline'>
                 {post.category}
               </SmartLink>

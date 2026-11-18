@@ -25,7 +25,8 @@ function extFrom(url, contentType) {
 
   const parsed = new URL(url)
   const ext = path.extname(parsed.pathname).toLowerCase()
-  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif'].includes(ext)) return ext
+  if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif'].includes(ext))
+    return ext
   return '.png'
 }
 
@@ -43,13 +44,17 @@ async function download(url) {
   const res = await fetch(url, {
     headers: {
       'user-agent': 'NotionNext-docs-image-localizer/1.0',
-      accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      accept:
+        'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       referer: 'https://docs.tangly1024.com/'
     }
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const contentType = res.headers.get('content-type') || ''
-  if (!contentType.startsWith('image/') && !url.includes('source.unsplash.com')) {
+  if (
+    !contentType.startsWith('image/') &&
+    !url.includes('source.unsplash.com')
+  ) {
     throw new Error(`not an image: ${contentType || 'unknown content-type'}`)
   }
   const bytes = Buffer.from(await res.arrayBuffer())

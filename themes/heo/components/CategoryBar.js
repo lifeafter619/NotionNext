@@ -1,6 +1,6 @@
 import { ChevronDoubleLeft, ChevronDoubleRight } from '@/components/HeroIcons'
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 
@@ -13,6 +13,9 @@ export default function CategoryBar(props) {
   const { categoryOptions, border = true } = props
   const { locale } = useGlobal()
   const [scrollRight, setScrollRight] = useState(false)
+  const safeCategoryOptions = Array.isArray(categoryOptions)
+    ? categoryOptions.filter(category => category?.name)
+    : []
   // 创建一个ref引用
   const categoryBarItemsRef = useRef(null)
 
@@ -37,27 +40,35 @@ export default function CategoryBar(props) {
       <div
         id='category-bar-items'
         ref={categoryBarItemsRef}
-        className='scroll-smooth max-w-4xl rounded-lg scroll-hidden flex justify-start flex-nowrap items-center overflow-x-scroll'>
+        className='scroll-smooth max-w-4xl min-w-0 flex-1 rounded-lg scroll-hidden flex justify-start flex-nowrap items-center overflow-x-auto'>
         <MenuItem href='/' name={locale.NAV.INDEX} />
-        {categoryOptions?.map((c, index) => (
-          <MenuItem key={index} href={`/category/${c.name}`} name={c.name} />
+        {safeCategoryOptions.map((c, index) => (
+          <MenuItem
+            key={index}
+            href={`/category/${encodeURIComponent(c.name)}`}
+            name={c.name}
+          />
         ))}
       </div>
 
-      <div id='category-bar-next' className='flex items-center justify-center'>
-        <div
+      <div
+        id='category-bar-next'
+        className='flex shrink-0 items-center justify-center'>
+        <button
           id='right'
-          className='cursor-pointer mx-2 dark:text-gray-300 dark:hover:text-[var(--heo-color-accent)] hover:text-[var(--heo-color-primary)]'
+          type='button'
+          aria-label={scrollRight ? '滚动到分类开头' : '滚动到分类末尾'}
+          className='cursor-pointer w-11 h-11 flex items-center justify-center rounded-full dark:text-gray-300 dark:hover:text-yellow-600 hover:text-indigo-600 hover:bg-black/5 dark:hover:bg-white/10'
           onClick={handleToggleScroll}>
           {scrollRight ? (
             <ChevronDoubleLeft className={'w-5 h-5'} />
           ) : (
             <ChevronDoubleRight className={'w-5 h-5'} />
           )}
-        </div>
+        </button>
         <SmartLink
           href='/category'
-          className='whitespace-nowrap font-bold text-gray-900 dark:text-white transition-colors duration-200 hover:text-[var(--heo-color-primary)] dark:hover:text-[var(--heo-color-accent)]'>
+          className='hidden min-[375px]:inline whitespace-nowrap font-bold text-gray-900 dark:text-white transition-colors duration-200 hover:text-indigo-600 dark:hover:text-yellow-600'>
           {locale.MENU.CATEGORY}
         </SmartLink>
       </div>
@@ -75,9 +86,10 @@ const MenuItem = ({ href, name }) => {
   const { category } = router.query
   const selected = category === name
   return (
-    <div
-      className={`whitespace-nowrap mr-2 duration-200 transition-all font-bold px-2 py-0.5 rounded-md text-gray-900 dark:text-white hover:text-[var(--heo-color-primary-text)] hover:bg-[var(--heo-color-primary)] dark:hover:bg-[var(--heo-color-accent)] ${selected ? 'text-[var(--heo-color-primary-text)] bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)]' : ''}`}>
-      <SmartLink href={href}>{name}</SmartLink>
-    </div>
+    <SmartLink
+      href={href}
+      className={`whitespace-nowrap mr-2 min-h-11 flex items-center duration-200 transition-colors font-bold px-2 py-1 rounded-md text-gray-900 dark:text-white hover:text-white hover:bg-indigo-600 dark:hover:bg-yellow-600 ${selected ? 'text-white bg-indigo-600 dark:bg-yellow-600' : ''}`}>
+      {name}
+    </SmartLink>
   )
 }

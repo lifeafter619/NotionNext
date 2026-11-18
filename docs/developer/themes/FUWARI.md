@@ -60,4 +60,3 @@ For migration guidance and pitfalls, see:
 
 - `docs/THEME_MIGRATION_GUIDE.md`
 - `docs/THEME_MIGRATION_GUIDE.zh-CN.md`
-

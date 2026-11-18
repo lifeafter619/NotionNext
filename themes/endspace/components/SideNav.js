@@ -6,14 +6,11 @@ import { useGlobal } from '@/lib/global'
 import SmartLink from '@/components/SmartLink'
 import { EndspacePlayer } from './EndspacePlayer'
 import NotionMenuIcon from './NotionMenuIcon'
-import {
-  IconBrandX,
-  IconChevronDown
-} from '@tabler/icons-react'
+import { IconBrandX, IconChevronDown } from '@tabler/icons-react'
 import RadarFillIcon from 'remixicon-react/RadarFillIcon'
 import { getEndspaceActiveMenuName, getEndspaceMenuItems } from './menu'
 
-  // Social Icons (Solid)
+// Social Icons (Solid)
 import GithubFillIcon from 'remixicon-react/GithubFillIcon'
 import WeiboFillIcon from 'remixicon-react/WeiboFillIcon'
 import BilibiliFillIcon from 'remixicon-react/BilibiliFillIcon'
@@ -49,22 +46,21 @@ const JuejinIcon = ({ size = 16 }) => (
   />
 )
 
-
 // Social icon mapping
 const SocialIconComponents = {
-  'CONTACT_GITHUB': GithubFillIcon,
-  'CONTACT_ORCID': OrcidIcon,
-  'CONTACT_CSDN': CsdnIcon,
-  'CONTACT_JUEJIN': JuejinIcon,
-  'CONTACT_TWITTER': IconBrandX,
-  'CONTACT_WEIBO': WeiboFillIcon,
-  'CONTACT_BILIBILI': BilibiliFillIcon,
-  'CONTACT_TELEGRAM': TelegramFillIcon,
-  'CONTACT_INSTAGRAM': InstagramFillIcon,
-  'CONTACT_YOUTUBE': YoutubeFillIcon,
-  'CONTACT_LINKEDIN': LinkedinBoxFillIcon,
-  'CONTACT_WEHCHAT_PUBLIC': WechatFillIcon,
-  'CONTACT_ZHISHIXINGQIU': GlobeFillIcon
+  CONTACT_GITHUB: GithubFillIcon,
+  CONTACT_ORCID: OrcidIcon,
+  CONTACT_CSDN: CsdnIcon,
+  CONTACT_JUEJIN: JuejinIcon,
+  CONTACT_TWITTER: IconBrandX,
+  CONTACT_WEIBO: WeiboFillIcon,
+  CONTACT_BILIBILI: BilibiliFillIcon,
+  CONTACT_TELEGRAM: TelegramFillIcon,
+  CONTACT_INSTAGRAM: InstagramFillIcon,
+  CONTACT_YOUTUBE: YoutubeFillIcon,
+  CONTACT_LINKEDIN: LinkedinBoxFillIcon,
+  CONTACT_WEHCHAT_PUBLIC: WechatFillIcon,
+  CONTACT_ZHISHIXINGQIU: GlobeFillIcon
 }
 
 const pathMatches = (asPath, path) => {
@@ -74,7 +70,7 @@ const pathMatches = (asPath, path) => {
   return cleanPath === path || cleanPath.startsWith(`${path}/`)
 }
 
-export const SideNav = (props) => {
+export const SideNav = props => {
   const router = useRouter()
   const { siteInfo } = useGlobal()
   const { customNav, customMenu } = props
@@ -85,9 +81,10 @@ export const SideNav = (props) => {
   const navRef = useRef(null)
   const itemRefs = useRef({})
   const emailIcon = useRef(null)
-  
+
   // Get avatar from props or global context (Hexo way uses props)
-  const avatarUrl = props?.siteInfo?.icon || siteInfo?.icon || siteConfig('AVATAR')
+  const avatarUrl =
+    props?.siteInfo?.icon || siteInfo?.icon || siteConfig('AVATAR')
 
   const menuItems = useMemo(
     () => getEndspaceMenuItems({ customNav, customMenu }),
@@ -106,22 +103,26 @@ export const SideNav = (props) => {
     { key: 'CONTACT_TELEGRAM', label: 'Telegram' },
     { key: 'CONTACT_INSTAGRAM', label: 'Instagram' },
     { key: 'CONTACT_YOUTUBE', label: 'YouTube' },
-    { key: 'CONTACT_XIAOHONGSHU', svg: '/svg/xiaohongshu.svg', label: 'Xiaohongshu' },
+    {
+      key: 'CONTACT_XIAOHONGSHU',
+      svg: '/svg/xiaohongshu.svg',
+      label: 'Xiaohongshu'
+    },
     { key: 'CONTACT_LINKEDIN', label: 'LinkedIn' },
     { key: 'CONTACT_ZHISHIXINGQIU', label: 'Zhishixingqiu' },
-    { key: 'CONTACT_WEHCHAT_PUBLIC', label: 'WeChat' },
+    { key: 'CONTACT_WEHCHAT_PUBLIC', label: 'WeChat' }
   ]
 
   const CONTACT_EMAIL = siteConfig('CONTACT_EMAIL')
 
   // Update indicator position - with validation to prevent stuck indicator
-  const updateIndicatorPosition = (tabName) => {
+  const updateIndicatorPosition = tabName => {
     const itemEl = itemRefs.current[tabName]
     const navEl = navRef.current
     if (itemEl && navEl) {
       const navRect = navEl.getBoundingClientRect()
       const itemRect = itemEl.getBoundingClientRect()
-      
+
       // Validate that elements have proper dimensions (not zero-height)
       if (itemRect.height > 0 && navRect.height > 0) {
         setIndicatorStyle({
@@ -144,7 +145,7 @@ export const SideNav = (props) => {
     })
     return () => cancelAnimationFrame(rafId)
   }, [activeTab])
-  
+
   // Also update on window resize to prevent stuck indicator
   useEffect(() => {
     const handleResize = () => {
@@ -159,8 +160,7 @@ export const SideNav = (props) => {
     const icon = item.pageIcon || item.customIcon || ''
     return (
       <span
-        className={`inline-flex h-5 w-5 items-center justify-center transition-all duration-300 ${isActive ? 'scale-110' : ''}`}
-      >
+        className={`inline-flex h-5 w-5 items-center justify-center transition-all duration-300 ${isActive ? 'scale-110' : ''}`}>
         <NotionMenuIcon icon={icon} active={isActive} />
       </span>
     )
@@ -169,7 +169,13 @@ export const SideNav = (props) => {
   // Render social icon
   const renderSocialIcon = (key, svg, label) => {
     if (svg) {
-      return <img src={svg} alt={label} className="w-3 h-3 opacity-60 hover:opacity-100" />
+      return (
+        <img
+          src={svg}
+          alt={label}
+          className='w-3 h-3 opacity-60 hover:opacity-100'
+        />
+      )
     }
     const IconComponent = SocialIconComponents[key]
     if (IconComponent) {
@@ -179,31 +185,33 @@ export const SideNav = (props) => {
   }
 
   return (
-    <div 
+    <div
       className={`fixed left-0 top-0 bottom-0 z-40 hidden md:flex flex-col bg-[var(--endspace-bg-base)] border-r border-[var(--endspace-border-base)] transition-all duration-300 ease-in-out shadow-md ${isHovered ? 'w-[16rem]' : 'w-[5rem]'}`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+      onMouseLeave={() => setIsHovered(false)}>
       {/* Avatar Section - Top of sidebar, clickable to personal page */}
       {/* Fixed height container to prevent layout shift when expanded */}
-      <div className="flex-shrink-0 h-[10rem] py-6 flex flex-col items-center">
-        <SmartLink href="/aboutme" title="Profile">
-          <div className="w-[3rem] h-[3rem] flex-shrink-0 transition-transform duration-300 cursor-pointer hover:scale-105">
-            <img 
+      <div className='flex-shrink-0 h-[10rem] py-6 flex flex-col items-center'>
+        <SmartLink href='/aboutme' title='Profile'>
+          <div className='w-[3rem] h-[3rem] flex-shrink-0 transition-transform duration-300 cursor-pointer hover:scale-105'>
+            <img
               src={avatarUrl}
-              alt="Avatar"
-              className="w-full h-full rounded-full object-cover shadow-lg transition-colors"
+              alt='Avatar'
+              className='w-full h-full rounded-full object-cover shadow-lg transition-colors'
             />
           </div>
         </SmartLink>
         {/* Author Info - shown when expanded, fills the reserved space below avatar */}
-        <div className={`mt-3 text-center transition-all duration-300 overflow-hidden ${isHovered ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0'}`}>
-          <SmartLink href="/aboutme" className="hover:text-[var(--endspace-accent-yellow)] transition-colors">
-            <div className="text-sm font-bold text-[var(--endspace-text-primary)] uppercase tracking-wider">
+        <div
+          className={`mt-3 text-center transition-all duration-300 overflow-hidden ${isHovered ? 'opacity-100 max-h-20' : 'opacity-0 max-h-0'}`}>
+          <SmartLink
+            href='/aboutme'
+            className='hover:text-[var(--endspace-accent-yellow)] transition-colors'>
+            <div className='text-sm font-bold text-[var(--endspace-text-primary)] uppercase tracking-wider'>
               {siteConfig('AUTHOR') || ''}
             </div>
           </SmartLink>
-          <div className="text-xs text-[var(--endspace-text-muted)] mt-1 px-3 line-clamp-3 leading-relaxed">
+          <div className='text-xs text-[var(--endspace-text-muted)] mt-1 px-3 line-clamp-3 leading-relaxed'>
             {siteConfig('BIO') || ''}
           </div>
         </div>
@@ -211,14 +219,16 @@ export const SideNav = (props) => {
 
       {/* MIDDLE SECTION - Navigation Items */}
       {/* Reverted to flex-1 as requested to restore original behavior */}
-      <div ref={navRef} className="flex-1 py-4 flex flex-col gap-2 overflow-y-auto overflow-x-hidden relative">
+      <div
+        ref={navRef}
+        className='flex-1 py-4 flex flex-col gap-2 overflow-y-auto overflow-x-hidden relative'>
         {/* Animated Active Indicator Bar - Higher z-index */}
-        <div 
-          className="absolute left-0 w-1.5 h-[3rem] bg-[var(--endspace-text-primary)] transition-all duration-300 ease-out z-10"
+        <div
+          className='absolute left-0 w-1.5 h-[3rem] bg-[var(--endspace-text-primary)] transition-all duration-300 ease-out z-10'
           style={{ top: indicatorStyle.top, opacity: indicatorStyle.opacity }}
         />
-        
-        {menuItems.map((item) => {
+
+        {menuItems.map(item => {
           const isActive = activeTab === item.name
           const hasSubMenu = item.subMenus?.length > 0
           const isOpen = openSubMenuId === item.id
@@ -226,28 +236,30 @@ export const SideNav = (props) => {
 
           const itemContent = (
             <div
-              ref={el => itemRefs.current[item.name] = el}
+              ref={el => (itemRefs.current[item.name] = el)}
               className={`nier-nav-item relative h-[3rem] flex items-center cursor-pointer group transition-colors duration-300 hover:bg-[#d4d4d8] ${isActive ? 'active bg-[#d4d4d8]' : ''}`}
               onClick={hasSubMenu ? toggleSubMenu : undefined}
               role={hasSubMenu ? 'button' : undefined}
               tabIndex={hasSubMenu ? 0 : undefined}
               aria-expanded={hasSubMenu ? isOpen : undefined}
-              onKeyDown={hasSubMenu
-                ? e => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      toggleSubMenu()
+              onKeyDown={
+                hasSubMenu
+                  ? e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggleSubMenu()
+                      }
                     }
-                  }
-                : undefined}
-            >
+                  : undefined
+              }>
               {/* Icon Container */}
-              <div className="endspace-menu-icon-wrap w-[5rem] flex-shrink-0 flex items-center justify-center z-10">
+              <div className='endspace-menu-icon-wrap w-[5rem] flex-shrink-0 flex items-center justify-center z-10'>
                 {renderIcon(item, isActive)}
               </div>
 
               {/* Text Label (Reveal on Hover) */}
-              <span className={`text-sm font-medium tracking-wide uppercase whitespace-nowrap transition-opacity duration-300 z-10 ${isHovered ? 'opacity-100 delay-75' : 'opacity-0 w-0'}`}>
+              <span
+                className={`text-sm font-medium tracking-wide uppercase whitespace-nowrap transition-opacity duration-300 z-10 ${isHovered ? 'opacity-100 delay-75' : 'opacity-0 w-0'}`}>
                 {item.name.toUpperCase()}
               </span>
               {hasSubMenu && (
@@ -262,16 +274,24 @@ export const SideNav = (props) => {
 
           return (
             <div key={item.id || item.name}>
-              {hasSubMenu ? itemContent : <SmartLink href={item.path}>{itemContent}</SmartLink>}
+              {hasSubMenu ? (
+                itemContent
+              ) : (
+                <SmartLink href={item.path}>{itemContent}</SmartLink>
+              )}
               {hasSubMenu && isOpen && isHovered && (
-                <div className="ml-[5rem] mr-3 border-l border-[var(--endspace-border-base)] py-1">
+                <div className='ml-[5rem] mr-3 border-l border-[var(--endspace-border-base)] py-1'>
                   {item.subMenus.map(subItem => (
-                    <SmartLink key={subItem.id || subItem.path} href={subItem.path} target={subItem.target}>
-                      <div className={`py-2 pl-4 pr-2 text-xs uppercase tracking-wide transition-colors hover:bg-[var(--endspace-bg-secondary)] ${
-                        pathMatches(router.asPath, subItem.path)
-                          ? 'font-bold text-[var(--endspace-text-primary)]'
-                          : 'text-[var(--endspace-text-secondary)]'
-                      }`}>
+                    <SmartLink
+                      key={subItem.id || subItem.path}
+                      href={subItem.path}
+                      target={subItem.target}>
+                      <div
+                        className={`py-2 pl-4 pr-2 text-xs uppercase tracking-wide transition-colors hover:bg-[#d4d4d8] ${
+                          pathMatches(router.asPath, subItem.path)
+                            ? 'font-bold text-black'
+                            : 'text-[var(--endspace-text-secondary)]'
+                        }`}>
                         {subItem.name}
                       </div>
                     </SmartLink>
@@ -285,28 +305,35 @@ export const SideNav = (props) => {
 
       {/* BOTTOM SECTION - Tools & Config */}
       {/* Music Player, Contact, and Toggle */}
-      <div className="flex-shrink-0 flex flex-col justify-end h-auto pb-4">
-        <div className={`mx-auto transition-[width] duration-300 ease-out ${isHovered ? 'w-[13.5rem]' : 'w-[3rem]'}`}>
-          <div className={`overflow-visible border border-gray-200 bg-gray-100/95 shadow-sm transition-[border-radius] duration-200 ${isHovered ? 'h-[7rem] rounded-2xl px-3 py-2' : 'h-[6.75rem] rounded-full px-1 py-2'}`}>
+      <div className='flex-shrink-0 flex flex-col justify-end h-auto pb-4'>
+        <div
+          className={`mx-auto transition-[width] duration-300 ease-out ${isHovered ? 'w-[13.5rem]' : 'w-[3rem]'}`}>
+          <div
+            className={`overflow-visible border border-gray-200 bg-gray-100/95 shadow-sm transition-[border-radius] duration-200 ${isHovered ? 'h-[7rem] rounded-2xl px-3 py-2' : 'h-[6.75rem] rounded-full px-1 py-2'}`}>
             {/* Music Player Section */}
-            <div className={`flex items-center justify-center ${isHovered ? 'h-[3rem]' : 'h-10'}`}>
+            <div
+              className={`flex items-center justify-center ${isHovered ? 'h-[3rem]' : 'h-10'}`}>
               <EndspacePlayer isExpanded={isHovered} embedded />
             </div>
 
-            <div className={`mx-auto h-px bg-gray-300/80 transition-[width] duration-300 ease-out ${isHovered ? 'my-1.5 w-full' : 'my-2 w-5'}`} />
+            <div
+              className={`mx-auto h-px bg-gray-300/80 transition-[width] duration-300 ease-out ${isHovered ? 'my-1.5 w-full' : 'my-2 w-5'}`}
+            />
 
             {/* Contact Links Section */}
-            <div className="flex h-10 items-center justify-center overflow-hidden">
+            <div className='flex h-10 items-center justify-center overflow-hidden'>
               {/* Collapsed State: Contact Button */}
-              <div className={`flex justify-center transition-opacity duration-150 ${isHovered ? 'pointer-events-none absolute opacity-0' : 'opacity-100'}`}>
-                <div className="w-10 h-10 flex items-center justify-center text-gray-500 rounded-full cursor-pointer hover:text-black hover:bg-gray-200 transition-colors">
+              <div
+                className={`flex justify-center transition-opacity duration-150 ${isHovered ? 'pointer-events-none absolute opacity-0' : 'opacity-100'}`}>
+                <div className='w-10 h-10 flex items-center justify-center text-gray-500 rounded-full cursor-pointer hover:text-black hover:bg-gray-200 transition-colors'>
                   <RadarFillIcon size={18} />
                 </div>
               </div>
 
               {/* Expanded State: Horizontal Icon Row */}
-              <div className={`transition-opacity duration-150 ${isHovered ? 'opacity-100' : 'pointer-events-none absolute opacity-0'}`}>
-                <div className="mx-auto flex w-full items-center justify-center gap-1.5 flex-nowrap px-1">
+              <div
+                className={`transition-opacity duration-150 ${isHovered ? 'opacity-100' : 'pointer-events-none absolute opacity-0'}`}>
+                <div className='mx-auto flex w-full items-center justify-center gap-1.5 flex-nowrap px-1'>
                   {CONTACT_EMAIL && (
                     <a
                       onClick={e =>
@@ -326,11 +353,10 @@ export const SideNav = (props) => {
                       <a
                         key={key}
                         href={url}
-                        target="_blank"
-                        rel="noreferrer"
+                        target='_blank'
+                        rel='noreferrer'
                         title={label}
-                        className="w-[1.75rem] h-[1.75rem] flex items-center justify-center text-gray-500 rounded-full hover:text-black hover:bg-gray-200 transition-colors flex-shrink-0"
-                      >
+                        className='w-[1.75rem] h-[1.75rem] flex items-center justify-center text-gray-500 rounded-full hover:text-black hover:bg-gray-200 transition-colors flex-shrink-0'>
                         {renderSocialIcon(key, svg, label)}
                       </a>
                     )
@@ -342,17 +368,16 @@ export const SideNav = (props) => {
         </div>
 
         {/* Bottom Toggle Button - Simple Black Triangle */}
-        <div className="py-4">
-          <div className="flex justify-center">
-            <div 
-              className="w-[2rem] h-[2rem] flex items-center justify-center cursor-pointer"
-              title={isHovered ? 'Collapse' : 'Expand'}
-            >
+        <div className='py-4'>
+          <div className='flex justify-center'>
+            <div
+              className='w-[2rem] h-[2rem] flex items-center justify-center cursor-pointer'
+              title={isHovered ? 'Collapse' : 'Expand'}>
               {/* Simple Black Triangle */}
-              <div 
+              <div
                 className={`w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent transition-transform duration-300 ${
-                  isHovered 
-                    ? 'border-r-[10px] border-r-[var(--endspace-text-primary)] border-l-0' 
+                  isHovered
+                    ? 'border-r-[10px] border-r-[var(--endspace-text-primary)] border-l-0'
                     : 'border-l-[10px] border-l-[var(--endspace-text-primary)] border-r-0'
                 }`}
               />

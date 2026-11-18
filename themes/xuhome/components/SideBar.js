@@ -65,7 +65,7 @@ export default function SideBar(props) {
             {categoryOptions.map(cat => (
               <SmartLink
                 key={cat.name}
-                href={`/category/${cat.name}`}
+                href={`/category/${encodeURIComponent(cat.name)}`}
                 className='no-underline'
               >
                 <div className='flex justify-between text-xs font-extrabold text-slate-600 dark:text-slate-400 hover:text-[#0284c7] py-1.5 px-1 border-l-[3px] border-transparent hover:border-[#fde68a] transition-all'>

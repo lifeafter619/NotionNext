@@ -10,14 +10,14 @@ function createMouseCanvas() {
     function n(t, e) {
       for (let i = 0; i < e.length; i++) {
         const n = e[i]
-        ;(n.enumerable = n.enumerable || !1),
+        ;((n.enumerable = n.enumerable || !1),
           (n.configurable = !0),
           'value' in n && (n.writable = !0),
-          Object.defineProperty(t, n.key, n)
+          Object.defineProperty(t, n.key, n))
       }
     }
     return function (t, e, i) {
-      return e && n(t.prototype, e), i && n(t, i), t
+      return (e && n(t.prototype, e), i && n(t, i), t)
     }
   })()
 
@@ -73,24 +73,24 @@ function createMouseCanvas() {
               e < t.length && !window.requestAnimationFrame;
               ++e
             )
-              (window.requestAnimationFrame =
+              ((window.requestAnimationFrame =
                 window[t[e] + 'RequestAnimationFrame']),
                 (window.cancelAnimationFrame =
                   window[t[e] + 'CancelAnimationFrame'] ||
-                  window[t[e] + 'CancelRequestAnimationFrame'])
-            window.requestAnimationFrame ||
+                  window[t[e] + 'CancelRequestAnimationFrame']))
+            ;(window.requestAnimationFrame ||
               (window.requestAnimationFrame = function (t, e) {
                 const i = new Date().getTime()
                 const n = Math.max(0, 16.7 - (i - a))
                 const o = window.setTimeout(function () {
                   t(i + n)
                 }, n)
-                return (a = i + n), o
+                return ((a = i + n), o)
               }),
               window.cancelAnimationFrame ||
                 (window.cancelAnimationFrame = function (t) {
                   clearTimeout(t)
-                })
+                }))
           })()
 
           // t 是要合并的对象
@@ -114,11 +114,11 @@ function createMouseCanvas() {
 
           // 判断类型，并调用相应的绘画函数
           const i = this.defaults.type
-          i >= 1 &&
+          ;(i >= 1 &&
             i < 11 &&
             this.mouseType1(this.defaults.type, this.defaults.color),
             i == 11 && this.mouseType2(),
-            i == 12 && this.mouseType3()
+            i == 12 && this.mouseType3())
         }
       },
       {
@@ -156,15 +156,15 @@ function createMouseCanvas() {
             g()
           })
           function g() {
-            ;(n = window.innerWidth),
+            ;((n = window.innerWidth),
               (o = window.innerHeight),
               (canvasDom.width = n),
               (canvasDom.height = o),
               (a = n / 2),
-              (h = o / 2)
+              (h = o / 2))
           }
-          window.addEventListener('mousemove', function (t) {
-            ;(a = t.pageX - getOffset(canvasDom).left),
+          ;(window.addEventListener('mousemove', function (t) {
+            ;((a = t.pageX - getOffset(canvasDom).left),
               (h = t.pageY - getOffset(canvasDom).top),
               type == 4 &&
                 (Math.random() <= 0.5
@@ -195,13 +195,13 @@ function createMouseCanvas() {
                       o: 1,
                       wx: a,
                       wy: h
-                    })
+                    }))
           }),
             (function t() {
               if (type == 1) {
                 ctx.clearRect(0, 0, n, o)
                 for (var e = 0; e < l.length; e++)
-                  (ctx.globalAlpha = l[e].o),
+                  ((ctx.globalAlpha = l[e].o),
                     (ctx.fillStyle = getColor),
                     ctx.beginPath(),
                     ctx.arc(l[e].x, l[e].y, l[e].r, 0, 2 * Math.PI),
@@ -209,10 +209,10 @@ function createMouseCanvas() {
                     ctx.fill(),
                     (l[e].r += c.r),
                     (l[e].o -= c.o),
-                    l[e].o <= 0 && (l.splice(e, 1), e--)
+                    l[e].o <= 0 && (l.splice(e, 1), e--))
               } else if (type == 2)
                 for (ctx.clearRect(0, 0, n, o), e = 0; e < l.length; e++)
-                  (ctx.globalAlpha = l[e].o),
+                  ((ctx.globalAlpha = l[e].o),
                     (ctx.fillStyle = getColor),
                     ctx.beginPath(),
                     (l[e].r = 10),
@@ -226,14 +226,14 @@ function createMouseCanvas() {
                     (l[e].v += c.a),
                     (l[e].y += l[e].v),
                     (l[e].y >= o + l[e].r || l[e].o <= 0) &&
-                      (l.splice(e, 1), e--)
+                      (l.splice(e, 1), e--))
               else if (type == 3)
                 for (
                   w += 5, ctx.clearRect(0, 0, n, o), e = 0;
                   e < l.length;
                   e++
                 )
-                  (ctx.globalAlpha = l[e].o),
+                  ((ctx.globalAlpha = l[e].o),
                     (ctx.fillStyle = getColor),
                     ctx.beginPath(),
                     (ctx.shadowBlur = 20),
@@ -248,10 +248,10 @@ function createMouseCanvas() {
                     (l[e].y -= c.s),
                     (l[e].x += 10 * Math.cos((l[e].y + w) / 100)),
                     (l[e].y <= 0 - l[e].r || l[e].o <= 0) &&
-                      (l.splice(e, 1), e--)
+                      (l.splice(e, 1), e--))
               else if (type == 4)
                 for (ctx.clearRect(0, 0, n, o), e = 0; e < l.length; e++)
-                  (ctx.globalAlpha = l[e].o),
+                  ((ctx.globalAlpha = l[e].o),
                     (ctx.fillStyle = getColor),
                     ctx.beginPath(),
                     (ctx.shadowBlur = 20),
@@ -266,9 +266,9 @@ function createMouseCanvas() {
                     ctx.closePath(),
                     ctx.fill(),
                     (ctx.shadowBlur = 0),
-                    l[e].o <= 0 && (l.splice(e, 1), e--)
+                    l[e].o <= 0 && (l.splice(e, 1), e--))
               else if (type == 5)
-                c.c || (m = 'hsl(' + (x += 0.1) + ',100%,80%)'),
+                (c.c || (m = 'hsl(' + (x += 0.1) + ',100%,80%)'),
                   ctx.clearRect(0, 0, n, o),
                   (p += 10),
                   (ctx.globalAlpha = 1),
@@ -315,10 +315,10 @@ function createMouseCanvas() {
                   ),
                   ctx.closePath(),
                   ctx.fill(),
-                  (ctx.shadowBlur = 0)
+                  (ctx.shadowBlur = 0))
               else if (type == 6)
                 for (ctx.clearRect(0, 0, n, o), e = 0; e < l.length; e++)
-                  (ctx.globalAlpha = l[e].o),
+                  ((ctx.globalAlpha = l[e].o),
                     (ctx.strokeStyle = getColor),
                     ctx.beginPath(),
                     (ctx.lineWidth = 2),
@@ -331,7 +331,7 @@ function createMouseCanvas() {
                     ctx.closePath(),
                     ctx.stroke(),
                     (l[e].o -= c.o),
-                    l[e].o <= 0 && (l.splice(e, 1), e--)
+                    l[e].o <= 0 && (l.splice(e, 1), e--))
               else if (type == 7)
                 for (
                   ctx.clearRect(0, 0, n, o),
@@ -347,7 +347,7 @@ function createMouseCanvas() {
                   e < l.length;
                   e++
                 )
-                  (ctx.globalAlpha = l[e].o),
+                  ((ctx.globalAlpha = l[e].o),
                     (ctx.fillStyle = getColor),
                     ctx.beginPath(),
                     (l[e].x += (a - l[e].x) / 10),
@@ -362,7 +362,7 @@ function createMouseCanvas() {
                         a + 100 * (Math.random() - 0.5) * Math.cos(l[e].h)),
                       (l[e].y =
                         h + 100 * (Math.random() - 0.5) * Math.sin(l[e].h)),
-                      (l[e].o = 1))
+                      (l[e].o = 1)))
               else if (type == 8)
                 for (
                   ctx.clearRect(0, 0, n, o),
@@ -408,7 +408,7 @@ function createMouseCanvas() {
                   e < l.length;
                   e++
                 )
-                  l[e].xv == 0 && l[e].yv == 0
+                  (l[e].xv == 0 && l[e].yv == 0
                     ? Math.random() < 0.5
                       ? Math.random() < 0.5
                         ? (l[e].xv = 3)
@@ -429,7 +429,7 @@ function createMouseCanvas() {
                     (l[e].x += l[e].xv),
                     (l[e].y += l[e].yv),
                     ctx.fillRect(l[e].x, l[e].y, 3, 3),
-                    l[e].o <= 0 && (l.splice(e, 1), e--)
+                    l[e].o <= 0 && (l.splice(e, 1), e--))
               else if (type == 10)
                 for (
                   ctx.clearRect(0, 0, n, o),
@@ -439,14 +439,14 @@ function createMouseCanvas() {
                   e < l.length;
                   e++
                 )
-                  (l[e].o -= c.o / 10),
+                  ((l[e].o -= c.o / 10),
                     (ctx.globalAlpha = l[e].o),
                     (l[e].x += 4 * (Math.random() - 0.5)),
                     --l[e].y,
                     ctx.fillRect(l[e].x, l[e].y, 2, 2),
-                    l[e].o <= 0 && (l.splice(e, 1), e--)
+                    l[e].o <= 0 && (l.splice(e, 1), e--))
               window.requestAnimationFrame(t)
-            })()
+            })())
         }
       },
       {
@@ -466,8 +466,8 @@ function createMouseCanvas() {
           let f = 0.5 * s
           let u = !1
           function e(t) {
-            ;(d = t.clientX - 0.5 * (window.innerWidth - h)),
-              (f = t.clientY - 0.5 * (window.innerHeight - s))
+            ;((d = t.clientX - 0.5 * (window.innerWidth - h)),
+              (f = t.clientY - 0.5 * (window.innerHeight - s)))
           }
           function y(t) {
             u = !0
@@ -488,19 +488,19 @@ function createMouseCanvas() {
               (f = t.touches[0].pageY - 0.5 * (window.innerHeight - s)))
           }
           function m() {
-            ;(h = window.innerWidth),
+            ;((h = window.innerWidth),
               (s = window.innerHeight),
               (t.width = h),
-              (t.height = s)
+              (t.height = s))
           }
           function x() {
-            u ? (r += 0.02 * (c - r)) : (r -= 0.02 * (r - l)),
+            ;(u ? (r += 0.02 * (c - r)) : (r -= 0.02 * (r - l)),
               (r = Math.min(r, c)),
-              o.clearRect(0, 0, o.canvas.width, o.canvas.height)
+              o.clearRect(0, 0, o.canvas.width, o.canvas.height))
             for (let t = 0, e = a.length; t < e; t++) {
               const i = a[t]
               const n = { x: i.position.x, y: i.position.y }
-              ;(i.offset.x += i.speed),
+              ;((i.offset.x += i.speed),
                 (i.offset.y += i.speed),
                 (i.shift.x += (d - i.shift.x) * i.speed),
                 (i.shift.y += (f - i.shift.y) * i.speed),
@@ -528,7 +528,7 @@ function createMouseCanvas() {
                   2 * Math.PI,
                   !0
                 ),
-                o.fill()
+                o.fill())
             }
             window.requestAnimationFrame(x)
           }
@@ -586,13 +586,13 @@ function createMouseCanvas() {
           vixcityDiv.style.pointerEvents = 'none'
 
           // 将 div 添加到 body 元素中
-          document.body.appendChild(vixcityDiv),
+          ;(document.body.appendChild(vixcityDiv),
             new ((function () {
               function i(t) {
                 return document.getElementById(t)
               }
               function t(t, e) {
-                ;(this.config = e || {}),
+                ;((this.config = e || {}),
                   (this.obj = i(t)),
                   (n = this.config.speed || 4),
                   (o = this.config.animR || 1),
@@ -601,7 +601,7 @@ function createMouseCanvas() {
                     y: 0.5 * i(t).offsetHeight
                   }),
                   this.setXY(),
-                  this.start()
+                  this.start())
               }
               let n
               let o
@@ -611,18 +611,18 @@ function createMouseCanvas() {
               t.prototype = {
                 setXY: function () {
                   let t, e
-                  this.obj,
+                  ;(this.obj,
                     (t = 'mousemove'),
                     (e = function (t) {
-                      ;(t = t || window.event),
+                      ;((t = t || window.event),
                         (a.x = t.clientX),
-                        (a.y = t.clientY)
+                        (a.y = t.clientY))
                     }),
                     window.addEventListener
                       ? window.addEventListener(t, e, !1)
                       : window.attachEvent('on' + t, function () {
                           e.call(window)
-                        })
+                        }))
                 },
                 start: function () {
                   Math.PI
@@ -634,7 +634,7 @@ function createMouseCanvas() {
                     for (let o = t, a = 10; a < 35; a += 1) {
                       const h = i(n, a).x
                       const s = i(n, a).y
-                      ;(r[l++] = e = new c(o, h, s)), (o = e)
+                      ;((r[l++] = e = new c(o, h, s)), (o = e))
                     }
                   setInterval(function () {
                     for (let t = 0; t < l; t++) r[t].run()
@@ -643,7 +643,7 @@ function createMouseCanvas() {
               }
               var c = function (t, e, i) {
                 const n = document.createElement('span')
-                ;(this.css = n.style),
+                ;((this.css = n.style),
                   (this.css.backgroundColor = '#2D8CF0'),
                   (this.css.width = '2px'),
                   (this.css.height = '2px'),
@@ -661,11 +661,11 @@ function createMouseCanvas() {
                   (this.y0 = 0),
                   (this.cx = e),
                   (this.cy = i),
-                  (this.parent = t)
+                  (this.parent = t))
               }
               return (
                 (c.prototype.run = function () {
-                  this.parent
+                  ;(this.parent
                     ? ((this.x0 = this.parent.x), (this.y0 = this.parent.y))
                     : ((this.x0 = a.x), (this.y0 = a.y)),
                     (this.x = this.PX +=
@@ -675,7 +675,7 @@ function createMouseCanvas() {
                       (this.ddy +=
                         (this.y0 - this.PY - this.ddy + this.cy) / o) / n),
                     (this.css.left = Math.round(this.x) + 'px'),
-                    (this.css.top = Math.round(this.y) + 'px')
+                    (this.css.top = Math.round(this.y) + 'px'))
                 }),
                 t
               )
@@ -688,7 +688,7 @@ function createMouseCanvas() {
                   y: (e / 4) * Math.sin(t)
                 }
               }
-            })
+            }))
         }
       },
       {
@@ -702,9 +702,9 @@ function createMouseCanvas() {
 
   // 赋值 给一个默认值
   function t() {
-    _classCallCheck(this, t),
+    ;(_classCallCheck(this, t),
       (this.defaults = { type: 1, color: !1 }),
-      (this.version = '0.0.1')
+      (this.version = '0.0.1'))
   }
 
   return function drawGoodCanvas(options) {

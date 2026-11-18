@@ -1,4 +1,5 @@
 import { useGlobal } from '@/lib/global'
+import { siteConfig } from '@/lib/config'
 import CONFIG from '../config'
 
 /**
@@ -12,13 +13,19 @@ import CONFIG from '../config'
 const JumpToTopButton = ({ showPercent = true, percent }) => {
   const { locale } = useGlobal()
 
-  if (!CONFIG.WIDGET_TO_TOP) {
+  if (!siteConfig('COMMERCE_WIDGET_TO_TOP', true, CONFIG)) {
     return <></>
   }
-  return (<div className='space-x-1 items-center justify-center transform hover:scale-105 duration-200 w-7 h-auto pb-1 text-center' onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} >
-        <div title={locale.POST.TOP} ><i className='fas fa-arrow-up text-xs' /></div>
-        {showPercent && (<div className='text-xs hidden lg:block'>{percent}</div>)}
-    </div>)
+  return (
+    <div
+      className='space-x-1 items-center justify-center transform hover:scale-105 duration-200 w-7 h-auto pb-1 text-center'
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+      <div title={locale.POST.TOP}>
+        <i className='fas fa-arrow-up text-xs' />
+      </div>
+      {showPercent && <div className='text-xs hidden lg:block'>{percent}</div>}
+    </div>
+  )
 }
 
 export default JumpToTopButton

@@ -10,7 +10,10 @@ import { DynamicLayout } from '@/themes/theme'
 jest.mock('@/lib/global', () => ({
   useGlobal: () => ({ locale: require('@/lib/lang/en-US').default })
 }))
-jest.mock('@/lib/config', () => ({ siteConfig: () => false }))
+jest.mock('@/lib/config', () => ({
+  siteConfig: () => false,
+  siteConfigBoolean: () => false
+}))
 jest.mock('@/lib/themeConsoleStyle', () => ({ themeConsoleStyle: () => '' }))
 jest.mock('@/components/NotionPage', () => ({
   __esModule: true,

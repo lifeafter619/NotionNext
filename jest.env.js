@@ -21,11 +21,14 @@ console.warn = (...args) => {
     'Warning: componentWillReceiveProps has been renamed',
     'Warning: componentWillUpdate has been renamed'
   ]
-  
+
   const message = args[0]
-  if (typeof message === 'string' && suppressedWarnings.some(warning => message.includes(warning))) {
+  if (
+    typeof message === 'string' &&
+    suppressedWarnings.some(warning => message.includes(warning))
+  ) {
     return
   }
-  
+
   originalWarn.apply(console, args)
 }

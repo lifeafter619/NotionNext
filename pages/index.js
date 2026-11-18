@@ -1,20 +1,14 @@
 import { getPublicPostBlockMap } from '@/lib/utils/publicPost'
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import {
-  cleanPostSummaries,
-  fetchGlobalAllData,
-  getPostBlocks
-} from '@/lib/db/SiteDataApi'
+import { fetchGlobalAllData, getPostBlocks } from '@/lib/db/SiteDataApi'
 import { formatNotionBlock } from '@/lib/db/notion/getPostBlocks'
-import { generateRobotsTxt } from '@/lib/utils/robots.txt'
-import { generateRss, shouldGenerateRssForLocale } from '@/lib/utils/rss'
-import { generateSitemapXml } from '@/lib/utils/sitemap.xml'
 import { DynamicLayout } from '@/themes/theme'
 import { generateRedirectJson } from '@/lib/utils/redirect'
 import { checkDataFromAlgolia } from '@/lib/plugins/algolia'
 import pLimit from 'p-limit'
 import { adapterNotionBlockMap } from '@/lib/utils/notion.util'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
 
 /**
  * 首页布局
@@ -24,6 +18,68 @@ import { adapterNotionBlockMap } from '@/lib/utils/notion.util'
 const Index = props => {
   const theme = siteConfig('THEME', BLOG.THEME, props.NOTION_CONFIG)
   return <DynamicLayout theme={theme} layoutName='LayoutIndex' {...props} />
+}
+
+const HEO_HOME_POST_FIELDS = [
+  'id',
+  'title',
+  'slug',
+  'href',
+  'summary',
+  'category',
+  'tagItems',
+  'pageIcon',
+  'pageCover',
+  'pageCoverThumbnail',
+  'blockMap'
+]
+
+const HEO_HOME_NAV_FIELDS = [
+  'title',
+  'slug',
+  'href',
+  'tags',
+  'lastEditedDate',
+  'pageCoverThumbnail'
+]
+
+const HEO_HOME_LATEST_FIELDS = [
+  'id',
+  'title',
+  'slug',
+  'href',
+  'pageCover',
+  'pageCoverThumbnail',
+  'lastEditedDay'
+]
+
+function pickDefinedFields(source, fields) {
+  if (!source || typeof source !== 'object') return source
+
+  const result = {}
+  fields.forEach(field => {
+    if (source[field] !== undefined) {
+      result[field] = source[field]
+    }
+  })
+  return result
+}
+
+function pickDefinedFieldsFromList(items, fields) {
+  if (!Array.isArray(items)) return items || []
+  return items.map(item => pickDefinedFields(item, fields))
+}
+
+function slimHeoIndexProps(props) {
+  props.posts = pickDefinedFieldsFromList(props.posts, HEO_HOME_POST_FIELDS)
+  props.allNavPages = pickDefinedFieldsFromList(
+    props.allNavPages,
+    HEO_HOME_NAV_FIELDS
+  )
+  props.latestPosts = pickDefinedFieldsFromList(
+    props.latestPosts,
+    HEO_HOME_LATEST_FIELDS
+  )
 }
 
 /**
@@ -65,7 +121,7 @@ export async function getStaticProps(req) {
     false,
     props?.NOTION_CONFIG
   )
-  props.posts = props.allPages?.filter(
+  props.posts = (props.allPages || []).filter(
     page => page.type === 'Post' && page.status === 'Published'
   )
 
@@ -89,14 +145,22 @@ export async function getStaticProps(req) {
     const previewLimit = pLimit(
       siteConfig('POST_PREVIEW_CONCURRENCY', 5, props?.NOTION_CONFIG)
     )
-    const previewTargets = props.posts.filter(
-      post => !post.password || post.password === ''
-    ).slice(0, POST_PREVIEW_MAX_COUNT)
+    const previewTargets = props.posts
+      .filter(post => !post.password || post.password === '')
+      .slice(0, POST_PREVIEW_MAX_COUNT)
     await Promise.all(
       previewTargets.map(post =>
         previewLimit(async () => {
-          const rawBlockMap = await getPostBlocks(post.id, 'slug', POST_PREVIEW_LINES)
-          post.blockMap = getPublicPostBlockMap(post, adapterNotionBlockMap(rawBlockMap), props.allPages)
+          const rawBlockMap = await getPostBlocks(
+            post.id,
+            'slug',
+            POST_PREVIEW_LINES
+          )
+          post.blockMap = getPublicPostBlockMap(
+          post,
+          adapterNotionBlockMap(rawBlockMap),
+          props.allPages
+        )
           if (post.blockMap?.block) {
             post.blockMap.block = formatNotionBlock(post.blockMap.block)
           }
@@ -108,14 +172,6 @@ export async function getStaticProps(req) {
     process.env.npm_lifecycle_event
   )
   if (isBuildLifecycle) {
-    // 生成robotTxt
-    generateRobotsTxt(props)
-    // 生成Feed订阅
-    if (shouldGenerateRssForLocale({ locale })) {
-      await generateRss(props)
-    }
-    // 生成
-    generateSitemapXml(props)
     // 检查数据是否需要从algolia删除
     await checkDataFromAlgolia(props)
     if (siteConfig('UUID_REDIRECT', false, props?.NOTION_CONFIG)) {
@@ -126,10 +182,14 @@ export async function getStaticProps(req) {
 
   // 生成全文索引 - 仅在 yarn build 时执行 && process.env.npm_lifecycle_event === 'build'
 
-  if (!POST_LIST_PREVIEW) {
-    props.posts = cleanPostSummaries(props.posts)
+  props.posts = cleanPostListForClient(props.posts, {
+    keepBlockMap: POST_LIST_PREVIEW
+  })
+  props.latestPosts = cleanPostListForClient(props.latestPosts)
+  const theme = siteConfig('THEME', BLOG.THEME, props?.NOTION_CONFIG)
+  if (theme === 'heo') {
+    slimHeoIndexProps(props)
   }
-  props.latestPosts = cleanPostSummaries(props.latestPosts)
   delete props.allPages
 
   return {

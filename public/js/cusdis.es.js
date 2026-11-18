@@ -13,7 +13,9 @@ function createIframe(targetElement) {
 }
 
 function setupIframe(iframe, targetElement) {
-  const colorSchemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  const colorSchemeMediaQuery = window.matchMedia(
+    '(prefers-color-scheme: dark)'
+  )
   const messageHandler = event => {
     try {
       const message = JSON.parse(event.data)
@@ -72,7 +74,9 @@ function generateIframeContent(element) {
 
 function setTheme(theme, data) {
   if (cusdisIframe) {
-    cusdisIframe.contentWindow.postMessage(JSON.stringify({ from: 'cusdis', event: theme, data: data }))
+    cusdisIframe.contentWindow.postMessage(
+      JSON.stringify({ from: 'cusdis', event: theme, data: data })
+    )
   }
 }
 
@@ -91,7 +95,9 @@ function initialRender() {
   } else if (document.querySelector('#cusdis_thread')) {
     element = document.querySelector('#cusdis_thread')
   } else if (document.querySelector('#cusdis')) {
-    console.warn('id `cusdis` is deprecated. Please use `cusdis_thread` instead')
+    console.warn(
+      'id `cusdis` is deprecated. Please use `cusdis_thread` instead'
+    )
     element = document.querySelector('#cusdis')
   }
 

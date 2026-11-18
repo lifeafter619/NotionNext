@@ -66,7 +66,9 @@ describe('proxio MenuList', () => {
     setupSiteConfig({ customMenuEnabled: true })
 
     render(
-      <MenuList customMenu={[{ name: 'Custom Entry', href: '/custom', show: true }]} />
+      <MenuList
+        customMenu={[{ name: 'Custom Entry', href: '/custom', show: true }]}
+      />
     )
 
     expect(screen.getByText('Custom Entry')).toBeInTheDocument()
@@ -77,11 +79,12 @@ describe('proxio MenuList', () => {
     setupSiteConfig({ customMenuEnabled: false })
 
     render(
-      <MenuList customNav={[{ name: 'External Nav', href: '/external', show: true }]} />
+      <MenuList
+        customNav={[{ name: 'External Nav', href: '/external', show: true }]}
+      />
     )
 
     expect(screen.getByText('External Nav')).toBeInTheDocument()
     expect(screen.getByText('Archive')).toBeInTheDocument()
   })
 })
-

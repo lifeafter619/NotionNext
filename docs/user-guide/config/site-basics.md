@@ -1,4 +1,5 @@
 # 基础信息
+
 > 迁移自：[基础信息](https://docs.tangly1024.com/article/notion-next-guide)
 > 发布日期：2023-2-10
 > 最后编辑：2024-10-30
@@ -16,9 +17,7 @@
 阅读本文前，请先确保已经部署好您的NotionNext站点，若您还没有自己的站点，请访问教程部署自己的站点: [/user-guide/intro](/user-guide/intro)
 :::
 
-
 ## 配置说明
-
 
 ### 1. 站点信息
 
@@ -55,7 +54,6 @@ CONTACT_YOUTUBE: process.env.NEXT_PUBLIC_CONTACT_YOUTUBE || '', // Youtube主页
 
 ![Untitled](/legacy/14e6e6a034876e68.png)
 
-
 #### 分享功能
 
 文章底部的分享条，需要配置您的站点地址，否则分享的路径都是默认地址，除此之外，LINK这个配置还用于feed订阅、sitemap站点地图生成的功能。
@@ -65,7 +63,6 @@ LINK: process.env.NEXT_PUBLIC_LINK || '/user-guide/intro', // 网站地址
 ```
 
 ![Untitled](/legacy/476ef048a1f71931.png)
-
 
 #### 自定义社交图标按钮
 
@@ -103,7 +100,6 @@ return &lt;div className='w-full justify-center flex-wrap flex'&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 ```
-
 
 #### 站点多语言
 
@@ -156,13 +152,13 @@ favicon在线制作,icon制作,网站图标,网站图标制作,ico图标制作
 
 </details>
 
-
 ### 4. 自定义样式、自定义脚本
 
 您可以自行决定站点的样式和执行的脚本，NotionNext支持两种方式引入您的css 和 js ：
 
 - 方法一：外部文件引入
-[blog.config.js](https://github.com/notionnext-org/NotionNext/blob/main/blog.config.js#L34-L35) 中 配置:`CUSTOM_EXTERNAL_JS `和`CUSTOM_EXTERNAL_CSS `即可
+  [blog.config.js](https://github.com/notionnext-org/NotionNext/blob/main/blog.config.js#L34-L35) 中 配置:`CUSTOM_EXTERNAL_JS `和`CUSTOM_EXTERNAL_CSS `即可
+
 ```Bash
 // 自定义外部脚本，外部样式
 CUSTOM_EXTERNAL_JS: [''], // e.g. ['http://xx.com/script.js','http://xx.com/script.js']
@@ -177,7 +173,6 @@ CUSTOM_EXTERNAL_CSS: [''], // e.g. ['http://xx.com/style.css','http://xx.com/sty
 ::: info 问题
 若引入js和css不能满足您的需求？试试参考《[NotionNext二次开发手册](/user-guide/development/getting-started)》进行自定义开发。
 :::
-
 
 ### 5. 文章路径
 
@@ -204,6 +199,16 @@ POST_URL_PREFIX: 'post',
 ```
 :::
 
+- 如果值为`空`，则文章路径为 `http://[域名]/[slug]`
+  > ```JavaScript
+  > POST_URL_PREFIX: '',
+  > ```
+  >
+  > - 如果为`post`，则文章路径为 `http://[域名]/post/[slug]`
+  >
+  > ```JavaScript
+  > POST_URL_PREFIX: 'post',
+  > ```
 
 ### 6. Notion字段名自定义
 
@@ -230,7 +235,6 @@ NOTION_PROPERTY_NAME: {
 },
 ```
 
-
 ### 7. 自定义菜单（二级菜单）
 
 在V3.13.0版本起，所有版本支持自定义菜单，效果如下：
@@ -243,7 +247,6 @@ NOTION_PROPERTY_NAME: {
 [NotionNext二级菜单使用说明 | TANGLY’s BLOG](/user-guide/menu-secondary)
 
 NotionNext 3.13.0上线，支持更灵活的菜单配置
-
 
 ### 8. 伪静态
 
@@ -260,17 +263,18 @@ PSEUDO_STATIC: false, // 伪静态路径，开启后所有文章URL都以 .html 
 NEXT_REVALIDATE_SECOND: process.env.NEXT_PUBLIC_REVALIDATE_SECOND || 5, // 更新内容缓存间隔 单位(秒)；即每个页面有5秒的纯静态期、此期间无论多少次访问都不会抓取notion数据；调大该值有助于节省Vercel资源、同时提升访问速率，但也会使文章更新有延迟。
 ```
 
-
 ### 9. 其它样式
 
 <details>
 <summary>备案: 域名备案、公安备案</summary>
 
 推荐在Notion_Config中添加配置：
+
 ```YAML
 BEI_AN: process.env.NEXT_PUBLIC_BEI_AN || '', // 备案号 闽ICP备XXXXXXX
 BEI_AN_GONGAN: '' , // 添加公安备案 京公网安备 xxxxx号
 ```
+
 公安备案样式如下；
 ![image.png](/legacy/ee4f784543d7254b.png)
 
@@ -282,6 +286,7 @@ BEI_AN_GONGAN: '' , // 添加公安备案 京公网安备 xxxxx号
 您可以选择，使用按钮分页，还是滚动鼠标无限加载分页；
 设置每页展示的文章数量。
 设置在列表页是否展示文章内容，还是只是展示标题和摘要。
+
 ```JavaScript
 POST_LIST_STYLE: 'page', // ['page','scroll'] 文章列表样式:页码分页、单页滚动加载
 POST_LIST_PREVIEW: process.env.NEXT_PUBLIC_POST_PREVIEW || 'false', //  是否在列表加载文章预览
@@ -310,6 +315,7 @@ PRISM_THEME_PATH: 'https://npm.elemecdn.com/prism-themes/themes/prism-a11y-dark.
 CODE_MAC_BAR: true, // 代码左上角显示mac的红黄绿图标
 CODE_LINE_NUMBERS: process.env.NEXT_PUBLIC_CODE_LINE_NUMBERS || 'false', // 是否显示行号
 ```
+
 修改 PRISM_THEME_PATH 参数 可以更换主题风格，可以访问[prism-themes](https://github.com/PrismJS/prism-themes)主页获取可选的主题。
 修改 CODE_MAC_BAR 参数可以控制代码左上角是否显示 红黄绿三个图标，模仿mac的样式。
 修改CODE_LINE_NUMBERS值为true，则代码最左侧将显示行号。（显示行号后代码将禁用横向滚动）
@@ -321,6 +327,7 @@ CODE_LINE_NUMBERS: process.env.NEXT_PUBLIC_CODE_LINE_NUMBERS || 'false', // 是�
 <summary>左右布局颠倒</summary>
 
 hexo主题下默认排版是：文章显示在左，站点信息显示在右，通过修改 `LAYOUT_SIDEBAR_REVERSE` 为true，将排版调整为 文章显示在右，站点信息显示在左
+
 ```JavaScript
 // 侧栏布局 是否反转(左变右,右变左) 已支持主题: hexo next medium fukasawa example
 LAYOUT_SIDEBAR_REVERSE: false,
@@ -360,7 +367,6 @@ STARRY_SKY: process.env.NEXT_PUBLIC_STARRY_SKY || false, // 开关
 ```
 
 </details>
-
 
 ## Notion隐私安全
 

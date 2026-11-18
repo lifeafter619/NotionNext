@@ -1,9 +1,9 @@
 # Gitbook主题
+
 > 迁移自：[Gitbook主题](https://docs.tangly1024.com/article/notionnext-gitbook)
 > 发布日期：2023-6-27
 > 最后编辑：2024-9-12
 > 原栏目：⭐ 主题参数
-
 
 ## 主题预览
 
@@ -20,7 +20,6 @@ V4.4.4 2024-04-25更新
 
 ![Untitled](/legacy/af82382495ca03d2.png)
 
-
 ### 三处注意
 
 1. 使用Category（分类）来控制左侧的一级标题
@@ -30,7 +29,6 @@ V4.4.4 2024-04-25更新
 1. 排序：站点开启了自动排序功能，优先将分类名相同的内容聚在一起，没有分类的文章则会被置顶，如果需要调整排序，则关闭GITBOOK_AUTO_SORT，手动拖拽文章排序，并将同分类的文章靠在一起即可。
 
 ![Untitled](/legacy/d539a228faaed6f0.png)
-
 
 ### gitbook支持的相关配置
 

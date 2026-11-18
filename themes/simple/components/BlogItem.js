@@ -74,7 +74,9 @@ export const BlogItem = props => {
 
             <div>
               {post.category && (
-                <SmartLink href={`/category/${post.category}`} className='p-1'>
+                <SmartLink
+                  href={`/category/${encodeURIComponent(post.category)}`}
+                  className='p-1'>
                   {' '}
                   <span className='hover:text-red-400 transition-all duration-200'>
                     <i className='fa-regular fa-folder mr-0.5' />

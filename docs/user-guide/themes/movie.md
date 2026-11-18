@@ -1,9 +1,9 @@
 # Movie主题
+
 > 迁移自：[Movie主题](https://docs.tangly1024.com/article/notionnext-movie)
 > 发布日期：2024-3-17
 > 最后编辑：2024-9-12
 > 原栏目：⭐ 主题参数
-
 
 ## 主题预览
 
@@ -17,27 +17,13 @@
 
 NotionNext搭建的影视分享网站
 
-
 ### 开启方式
 
 更新代码至最新的4.4.0；并配置主题为movie即可。
 
-### Movie 主题调色
-
-Movie 支持通过语义色变量调整主色和深色主色：
-
-```js
-MOVIE_COLOR_PRIMARY: '#2563eb',
-MOVIE_COLOR_PRIMARY_DARK: '#ca8a04'
-```
-
-主题工具中的调色板会展示当前值，并可直接复制配置项到 Notion Config。
-
-
 ## Movie 主题
 
 除了更简洁的排板，加入两个特色功能，分别是视频聚合、以及Dplayer播放器
-
 
 ### 视频聚合功能
 
@@ -61,6 +47,7 @@ movie主题，默认开启了视频聚合功能，如需关闭，请在/themes/m
 ![Untitled](/legacy/1d5f42866d2dffa4.png)
 
 ## 支持的视频源
+
 ![Untitled](/legacy/3d46a9393c3bbb87.png)
 
 本主题的视频来源，可以有以下三种方案嵌入：
@@ -71,20 +58,17 @@ movie主题，默认开启了视频聚合功能，如需关闭，请在/themes/m
 
 1. m3u8等在线视频源，借助dplayer播放器嵌入notion。
 
-
 ### Dplayer使用说明
 
 Dplayer是**一款免费、专业的视频和音乐播放器**，可以支持视频链接下载。 它支持所有视频格式，支持4K/超高清视频文件，并能够高清播放。 它也是一个高清音频播放器。 DPlayer可以支持mp4、mpk、3gp等多种格式的视频播放，还可以支持在线视频链接串流、例如m3u8等，这一切都是免费的。
-
 
 #### 自带一个Dplayer
 
 NotionNext项目内置了一个视频播放器，代码在/public/dplayer.htm中。只要访问您站点 `http://[你的域名]/dplayer.htm?n=[视频地址]` 即可播放。
 
-
 #### 示例
 
-例如： 站点是 https://[movie.tangly1024.com](http://movie.tangly1024.com) ,  视频地址是 `[https://yzzy.play-cdn2.com/20220407/8233_5a57bac6/index.m3u8](https://yzzy.play-cdn2.com/20220407/8233_5a57bac6/index.m3u8)`
+例如： 站点是 https://[movie.tangly1024.com](http://movie.tangly1024.com) , 视频地址是 `[https://yzzy.play-cdn2.com/20220407/8233_5a57bac6/index.m3u8](https://yzzy.play-cdn2.com/20220407/8233_5a57bac6/index.m3u8)`
 
 此时，只要将这个地址嵌入Notion即可播放 [https://movie.tangly1024.com/dplayer.htm?n=https%3A%2F%2Fyzzy.play-cdn2.com%2F20220407%2F8233_5a57bac6%2Findex.m3u8](https://movie.tangly1024.com/dplayer.htm?n=https%3A%2F%2Fyzzy.play-cdn2.com%2F20220407%2F8233_5a57bac6%2Findex.m3u8)。
 

@@ -32,7 +32,7 @@ const PostBannerGroupByCategory = props => {
             key={index}
             hasBg={index % 2 === 1}
             title={categoryGroup?.category}
-            href={`/category/${categoryGroup?.category}`}
+            href={`/category/${encodeURIComponent(categoryGroup?.category)}`}
             posts={categoryGroup?.items}
           />
         )

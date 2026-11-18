@@ -10,13 +10,22 @@ import Artalk from './Artalk'
 
 /**
  * 评论组件
- * 只有当前组件在浏览器可见范围内才会加载内容
+ *
+ * 加载策略（两条路径，任一满足即挂载评论）：
+ * 1. 预热路径：文章内容与图片加载完成后（window load），在浏览器空闲时
+ *    （requestIdleCallback，4s 超时兜底）挂载。让用户滚到评论区时几乎秒出，
+ *    不必再等待评论 JS 与第三方资源（如 Waline emoji bundle）下载。
+ * 2. 滚动路径：用户接近评论区（500px rootMargin）时挂载，作为 load 前的兜底
+ *    ——如果用户在页面 load 完成前就快速滚到底部，也不会干等。
+ * 此外深链直达（?target=comment / ?giscus）仍立即挂载。
  * @param {*} param0
  * @returns
  */
 const Comment = ({ frontMatter, className }) => {
   const router = useRouter()
-  const [shouldLoad, setShouldLoad] = useState(false)
+  const articleId = frontMatter?.id
+  const [loadedCommentId, setLoadedCommentId] = useState(null)
+  const shouldLoad = Boolean(articleId && loadedCommentId === articleId)
   const commentRef = useRef(null)
 
   const COMMENT_ARTALK_SERVER = siteConfig('COMMENT_ARTALK_SERVER')
@@ -33,26 +42,78 @@ const Comment = ({ frontMatter, className }) => {
     siteConfig('COMMENT_NOTION_ENABLE') === 'true'
 
   useEffect(() => {
-    // Check if the component is visible in the viewport
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setShouldLoad(true)
-          observer.unobserve(entry.target)
-        }
-      })
-    })
+    // 滚动接近即加载：作为 load 完成前的兜底路径
+    const target = commentRef.current
+    if (typeof IntersectionObserver !== 'function') {
+      setLoadedCommentId(articleId)
+      return undefined
+    }
 
-    if (commentRef.current) {
-      observer.observe(commentRef.current)
+    // Only initialize the comment provider when the reader approaches it.
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setLoadedCommentId(articleId)
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      // 提前 500px 触发，用户接近评论区之前就开始加载
+      { rootMargin: '500px' }
+    )
+
+    if (target) {
+      observer.observe(target)
     }
 
     return () => {
-      if (commentRef.current) {
-        observer.unobserve(commentRef.current)
+      observer.disconnect()
+    }
+  }, [articleId])
+
+  // 空闲预热路径：文章内容与图片加载完成后，浏览器空闲时挂载评论。
+  // 用户滚到评论区时评论资源多已就绪，几乎秒出。
+  useEffect(() => {
+    if (!isBrowser || !articleId) return undefined
+
+    let cancelled = false
+    let idleHandle = null
+    let fallbackTimer = null
+    const mount = () => {
+      if (cancelled) return
+      setLoadedCommentId(current =>
+        current === articleId ? current : articleId
+      )
+    }
+
+    // 等到 window load（文章正文、首屏及懒加载图片均完成）后，
+    // 再在空闲时段挂载，绝不抢占首屏带宽与主线程
+    const scheduleIdle = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        idleHandle = window.requestIdleCallback(mount, { timeout: 4000 })
+      } else {
+        fallbackTimer = window.setTimeout(mount, 1500)
       }
     }
-  }, [frontMatter])
+
+    if (document.readyState === 'complete') {
+      scheduleIdle()
+    } else {
+      window.addEventListener('load', scheduleIdle, { once: true })
+    }
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('load', scheduleIdle)
+      if (idleHandle !== null && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleHandle)
+      }
+      if (fallbackTimer !== null) {
+        window.clearTimeout(fallbackTimer)
+      }
+    }
+  }, [articleId])
 
   useEffect(() => {
     if (!isBrowser || !router.isReady) {
@@ -71,6 +132,8 @@ const Comment = ({ frontMatter, className }) => {
         .catch(() => {})
     }
     if (scrollComment || hasGiscus) {
+      // 深链直达评论区时立即挂载，不等待空闲预加载
+      setLoadedCommentId(articleId)
       const t = window.setTimeout(() => {
         document
           ?.getElementById('comment')
@@ -78,7 +141,7 @@ const Comment = ({ frontMatter, className }) => {
       }, 400)
       return () => window.clearTimeout(t)
     }
-  }, [router.isReady, router.asPath, router.query])
+  }, [router.isReady, router.asPath, router.query, articleId])
 
   if (!frontMatter || !hasEnabledComments(siteConfig)) {
     return null
@@ -98,8 +161,7 @@ const Comment = ({ frontMatter, className }) => {
       key={frontMatter?.id}
       id='comment'
       ref={commentRef}
-      className={`comment mt-5 text-gray-800 dark:text-gray-300 ${className || ''}`}
-    >
+      className={`comment mt-5 text-gray-800 dark:text-gray-300 ${className || ''}`}>
       {/* 延迟加载评论区 */}
       {!shouldLoad && (
         <div className='text-center'>

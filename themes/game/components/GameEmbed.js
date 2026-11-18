@@ -54,8 +54,8 @@ export default function GameEmbed({ post, siteInfo }) {
   }
 
   function reloadIframe() {
-    var iframe = document.getElementById('game-wrapper')
-    iframe.contentWindow.location.reload()
+    const iframe = document.getElementById('game-wrapper')
+    iframe?.contentWindow?.location.reload()
   }
 
   // 定义一个函数来处理iframe加载成功事件
@@ -166,6 +166,7 @@ export default function GameEmbed({ post, siteInfo }) {
             <img
               src={game?.pageCoverThumbnail}
               className='w-full h-full object-cover blur-md absolute top-0 left-0 z-0'
+              referrerPolicy='no-referrer'
             />
           )}
         </div>

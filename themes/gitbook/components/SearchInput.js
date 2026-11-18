@@ -3,6 +3,7 @@ import { deepClone } from '@/lib/utils'
 import { useGitBookGlobal } from '@/themes/gitbook'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 let lock = false
 
 /**
@@ -11,11 +12,7 @@ let lock = false
 const SearchInput = ({ currentSearch, cRef, className }) => {
   const searchInputRef = useRef()
   const { searchModal, setFilteredNavPages, allNavPages } = useGitBookGlobal()
-  const hasAlgolia = Boolean(
-    siteConfig('ALGOLIA_APP_ID') &&
-    siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY') &&
-    siteConfig('ALGOLIA_INDEX')
-  )
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   useImperativeHandle(cRef, () => {
     return {
@@ -36,8 +33,9 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
 
   const handleSearch = () => {
     // 使用Algolia
-    if (hasAlgolia) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
+      return
     }
     let keyword = searchInputRef.current.value
     if (keyword) {
@@ -68,7 +66,7 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
    */
   const handleKeyUp = e => {
     // 使用Algolia
-    if (hasAlgolia) {
+    if (algoliaEnabled) {
       // Esc closes the dialog on keydown and returns focus here before keyup.
       if (e.key !== 'Escape' && e.keyCode !== 27) {
         searchModal?.current?.openSearch()
@@ -87,7 +85,7 @@ const SearchInput = ({ currentSearch, cRef, className }) => {
 
   const handleFocus = () => {
     // 使用Algolia
-    if (hasAlgolia) {
+    if (algoliaEnabled) {
       searchModal?.current?.openSearch()
     }
   }

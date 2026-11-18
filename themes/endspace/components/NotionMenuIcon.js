@@ -58,7 +58,11 @@ const isNotionBuiltinIcon = icon => {
   )
 }
 
-export default function NotionMenuIcon({ icon, active = false, className = '' }) {
+export default function NotionMenuIcon({
+  icon,
+  active = false,
+  className = ''
+}) {
   const resolvedIcon = resolveIcon(icon)
   const [imageFailed, setImageFailed] = useState(false)
 
@@ -69,7 +73,7 @@ export default function NotionMenuIcon({ icon, active = false, className = '' })
   const fallback = (
     <span
       className={`endspace-notion-menu-dot inline-block h-2.5 w-2.5 rounded-full ${active ? 'is-active' : ''} ${className}`}
-      aria-hidden="true"
+      aria-hidden='true'
     />
   )
 
@@ -82,7 +86,7 @@ export default function NotionMenuIcon({ icon, active = false, className = '' })
         size={20}
         stroke={1.8}
         className={`endspace-notion-menu-svg-icon ${active ? 'is-active' : ''} ${className}`}
-        aria-hidden="true"
+        aria-hidden='true'
       />
     )
   }
@@ -91,7 +95,7 @@ export default function NotionMenuIcon({ icon, active = false, className = '' })
     return (
       <i
         className={`endspace-notion-menu-class-icon ${active ? 'is-active' : ''} ${resolvedIcon} ${className}`}
-        aria-hidden="true"
+        aria-hidden='true'
       />
     )
   }
@@ -103,18 +107,22 @@ export default function NotionMenuIcon({ icon, active = false, className = '' })
     return (
       <img
         src={iconSrc}
-        alt=""
+        alt=''
         className={`endspace-notion-menu-image ${active ? 'is-active' : ''} ${
-          isNotionBuiltinIcon(resolvedIcon) ? 'endspace-notion-menu-image-monochrome' : ''
+          isNotionBuiltinIcon(resolvedIcon)
+            ? 'endspace-notion-menu-image-monochrome'
+            : ''
         } ${className}`}
-        aria-hidden="true"
+        aria-hidden='true'
         onError={() => setImageFailed(true)}
+        referrerPolicy='no-referrer'
       />
     )
   }
 
   return (
-    <span className={`endspace-notion-menu-emoji ${active ? 'is-active' : ''} ${className}`}>
+    <span
+      className={`endspace-notion-menu-emoji ${active ? 'is-active' : ''} ${className}`}>
       {resolvedIcon}
     </span>
   )

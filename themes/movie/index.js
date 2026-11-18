@@ -5,8 +5,9 @@ import Comment from '@/components/Comment'
 import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
 import ShareBar from '@/components/ShareBar'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { loadWowJS } from '@/lib/plugins/wow'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -78,7 +79,7 @@ const LayoutBase = props => {
           <div
             id='container-wrapper'
             className={
-              (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+              (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
                 ? 'flex-row-reverse'
                 : '') + 'relative mx-auto justify-center md:flex items-start'
             }>
@@ -157,7 +158,9 @@ const LayoutSlug = props => {
     // 用js 实现将页面中的多个视频聚合为一个分集的视频
     function combineVideo() {
       // 找到 id 为 notion-article 的元素
-      const notionArticle = document.querySelector('#article-wrapper #notion-article')
+      const notionArticle = document.querySelector(
+        '#article-wrapper #notion-article'
+      )
       if (!notionArticle) return // 如果找不到对应的元素，则退出函数
 
       // 找到所有的 .notion-asset-wrapper 元素
@@ -283,27 +286,29 @@ const LayoutSlug = props => {
       }
     }
 
-    setTimeout(() => {
+    const combineTimer = setTimeout(() => {
       combineVideo()
     }, 1500)
 
     // 404
+    let redirectTimer
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      redirectTimer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
     }
     return () => {
+      clearTimeout(combineTimer)
+      clearTimeout(redirectTimer)
       // 获取所有 class="video-wrapper" 的元素
       const videoWrappers = document.querySelectorAll('.video-wrapper')
 
@@ -312,25 +317,27 @@ const LayoutSlug = props => {
         wrapper.parentNode.removeChild(wrapper) // 从 DOM 中移除元素
       })
     }
-  }, [post])
+  }, [post, router, waiting404])
 
   return (
     <>
-      {!lock ? post && (
-        <div
-          id='article-wrapper'
-          className='px-2 max-w-5xl 2xl:max-w-[70%] mx-auto'>
-          {/* 标题 */}
-          <ArticleInfo post={post} />
-          {/* 页面元素 */}
-          <NotionPage post={post} />
-          {/* 推荐 */}
-          <BlogRecommend {...props} />
-          {/* 分享栏目 */}
-          <ShareBar post={post} />
-          {/* 评论区 */}
-          <Comment frontMatter={post} />
-        </div>
+      {!lock ? (
+        post && (
+          <div
+            id='article-wrapper'
+            className='px-2 max-w-5xl 2xl:max-w-[70%] mx-auto'>
+            {/* 标题 */}
+            <ArticleInfo post={post} />
+            {/* 页面元素 */}
+            <NotionPage post={post} />
+            {/* 推荐 */}
+            <BlogRecommend {...props} />
+            {/* 分享栏目 */}
+            <ShareBar post={post} />
+            {/* 评论区 */}
+            <Comment frontMatter={post} />
+          </div>
+        )
       ) : (
         <ArticleLock validPassword={validPassword} />
       )}
@@ -347,18 +354,19 @@ const Layout404 = props => {
   const { locale } = useGlobal()
   const { searchModal } = useMovieGlobal()
   const router = useRouter()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
   // 展示搜索框
   const toggleShowSearchInput = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     }
   }
 
   const onKeyUp = e => {
     if (e.keyCode === 13) {
-      const search = document.getElementById('search').value
+      const search = document.getElementById('search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + search })
+        router.push({ pathname: '/search', query: { s: search } })
       }
     }
   }

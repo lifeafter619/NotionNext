@@ -225,20 +225,20 @@ EdgeOne 构建阶段会按仓库中的 `.nvmrc` 切换 Node 版本。若控制�
 
 **可尝试：**
 
-1. **向 EdgeOne / 腾讯云工单反馈**：说明构建任务在 `yarn install` 阶段 `ENOSPC`，申请更大构建盘或确认是否为平台侧临时配额。  
-2. **减少单次写入体积**（若控制台支持自定义安装命令）：  
-   - 使用 `yarn install --frozen-lockfile --prefer-offline` 且**开启依赖缓存**（命中缓存时少下载）；或  
-   - 在构建前增加 `yarn cache clean`（会多下载，仅当怀疑缓存损坏时尝试，**不一定**缓解 ENOSPC）。  
-3. **自定义 Yarn 缓存目录**（若平台文档支持挂载更大分区）：设置环境变量 **`YARN_CACHE_FOLDER`** 到有足够剩余空间的路径（具体以 EdgeOne 构建环境说明为准）。  
+1. **向 EdgeOne / 腾讯云工单反馈**：说明构建任务在 `yarn install` 阶段 `ENOSPC`，申请更大构建盘或确认是否为平台侧临时配额。
+2. **减少单次写入体积**（若控制台支持自定义安装命令）：
+   - 使用 `yarn install --frozen-lockfile --prefer-offline` 且**开启依赖缓存**（命中缓存时少下载）；或
+   - 在构建前增加 `yarn cache clean`（会多下载，仅当怀疑缓存损坏时尝试，**不一定**缓解 ENOSPC）。
+3. **自定义 Yarn 缓存目录**（若平台文档支持挂载更大分区）：设置环境变量 **`YARN_CACHE_FOLDER`** 到有足够剩余空间的路径（具体以 EdgeOne 构建环境说明为准）。
 4. **换构建方案**：在磁盘更大的 CI（如 GitHub Actions）完成 `yarn build` / `next build`，将产物同步到 EdgeOne（仅静态托管），绕过 Pages 内置构建机容量限制。
 
 **备选：怀疑「构建/文件缓存」把空间占满时**
 
-| 做法 | 适用阶段 | 说明 |
-|------|----------|------|
-| **关闭 EdgeOne「依赖/构建缓存」再构建** | `yarn install` 前后 | 若平台在恢复缓存后又解压一份 `node_modules`，可能出现「缓存 + 工作区」双份占用 **`/dev/shm`**。在控制台**关闭缓存恢复**后重试（构建会变慢，但有时能腾出空间；视平台实现而定）。 |
-| **`YARN_CACHE_FOLDER` 指到大磁盘路径** | `yarn install` | 避免 Yarn 默认缓存与仓库同落在小容量分区；路径以 **EdgeOne 官方文档** 为准。 |
-| **构建环境变量 `ENABLE_CACHE=false`** | **`next build` 阶段** | 关闭 Notion 数据**读**盘缓存为主，会**增加 Notion 请求与耗时**；**锁文件/会话目录仍可能写入**。对日志里 **`yarn install` 拷贝 `node_modules` 即失败**的 ENOSPC **通常无效**，因尚未执行到 Next 构建。 |
+| 做法                                    | 适用阶段              | 说明                                                                                                                                                                                                  |
+| --------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **关闭 EdgeOne「依赖/构建缓存」再构建** | `yarn install` 前后   | 若平台在恢复缓存后又解压一份 `node_modules`，可能出现「缓存 + 工作区」双份占用 **`/dev/shm`**。在控制台**关闭缓存恢复**后重试（构建会变慢，但有时能腾出空间；视平台实现而定）。                       |
+| **`YARN_CACHE_FOLDER` 指到大磁盘路径**  | `yarn install`        | 避免 Yarn 默认缓存与仓库同落在小容量分区；路径以 **EdgeOne 官方文档** 为准。                                                                                                                          |
+| **构建环境变量 `ENABLE_CACHE=false`**   | **`next build` 阶段** | 关闭 Notion 数据**读**盘缓存为主，会**增加 Notion 请求与耗时**；**锁文件/会话目录仍可能写入**。对日志里 **`yarn install` 拷贝 `node_modules` 即失败**的 ENOSPC **通常无效**，因尚未执行到 Next 构建。 |
 
 仓库本身无法通过改 `package.json` 消除平台磁盘上限；根本解决依赖 **构建环境配额** 或 **外置构建**。
 
@@ -301,7 +301,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - NOTION_PAGE_ID=${NOTION_PAGE_ID}
@@ -313,7 +313,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -358,35 +358,35 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build
-      run: yarn export
-      env:
-        NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
-        
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./out
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: yarn export
+        env:
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
 ```
 
 2. **配置 Secrets**
@@ -451,6 +451,7 @@ NEXT_PUBLIC_ANALYTICS_GOOGLE_ID=G-XXXXXXXXXX
 ### 常见问题
 
 1. **构建失败**
+
    ```bash
    # 清理缓存
    yarn clean
@@ -460,6 +461,7 @@ NEXT_PUBLIC_ANALYTICS_GOOGLE_ID=G-XXXXXXXXXX
    ```
 
 2. **环境变量问题**
+
    ```bash
    # 检查环境变量
    yarn quality

@@ -1,0 +1,167 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
+import { checkStrIsNotionId, getLastPartOfUrl } from '@/lib/utils'
+import { idToUuid } from 'notion-utils'
+import BLOG from './blog.config'
+
+/**
+ * Clerk 身份验证代理
+ */
+export const config = {
+  // 这里设置白名单，防止静态资源被拦截
+  matcher: ['/((?!.*\\..*|_next|/sign-in|/auth).*)', '/', '/(api|trpc)(.*)']
+}
+
+// 限制登录访问的路由
+const isTenantRoute = createRouteMatcher([
+  '/user/organization-selector(.*)',
+  '/user/orgid/(.*)',
+  '/dashboard',
+  '/dashboard/(.*)'
+])
+
+// 限制权限访问的路由
+const isTenantAdminRoute = createRouteMatcher([
+  '/admin/(.*)/memberships',
+  '/admin/(.*)/domain'
+])
+
+// 浏览器与未知代理：只允许 5 分钟
+const PUBLIC_PAGE_CACHE_CONTROL =
+  'public, max-age=300, stale-while-revalidate=86400'
+// Vercel 边缘：每次部署自动失效，可安全缓存 24 小时；该头被 Vercel 消费，不会下发
+const VERCEL_CDN_CACHE_CONTROL =
+  'public, s-maxage=86400, stale-while-revalidate=604800'
+// Cloudflare 边缘（66619.eu.org 橙云代理）：感知不到 Vercel 的重新部署，
+// HTML 缓存过久会继续引用旧构建的 /_next/static/<buildId>/ 资源（已 404 导致白屏），
+// 因此只允许 5 分钟，过期回源自愈
+const CLOUDFLARE_CDN_CACHE_CONTROL = 'public, s-maxage=300'
+
+const NON_PUBLIC_PAGE_ROOTS = new Set([
+  'api',
+  'trpc',
+  '_next',
+  'auth',
+  'sign-in',
+  'sign-up',
+  'dashboard',
+  'admin',
+  'user'
+])
+
+let redirectJsonPromise: Promise<Record<string, string>> | null = null
+
+function getRouteRoot(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean)
+  if (segments.length === 0) return ''
+  const firstSegment = segments[0] || ''
+  if (NON_PUBLIC_PAGE_ROOTS.has(firstSegment)) return firstSegment
+  return segments[1] || firstSegment
+}
+
+function shouldCachePublicPage(req: NextRequest) {
+  const method = req.method.toUpperCase()
+  if (method !== 'GET' && method !== 'HEAD') return false
+
+  if (NON_PUBLIC_PAGE_ROOTS.has(getRouteRoot(req.nextUrl.pathname)))
+    return false
+
+  if (req.headers.get('authorization')) return false
+
+  const cookie = req.headers.get('cookie') || ''
+  return (
+    !cookie.includes('__prerender_bypass') &&
+    !cookie.includes('__next_preview_data')
+  )
+}
+
+function withPublicPageCache(req: NextRequest, response: NextResponse) {
+  if (shouldCachePublicPage(req)) {
+    response.headers.set('Cache-Control', PUBLIC_PAGE_CACHE_CONTROL)
+    response.headers.set('Vercel-CDN-Cache-Control', VERCEL_CDN_CACHE_CONTROL)
+    response.headers.set(
+      'Cloudflare-CDN-Cache-Control',
+      CLOUDFLARE_CDN_CACHE_CONTROL
+    )
+  }
+  return response
+}
+
+/**
+ * 没有配置权限相关功能的返回
+ * @param req
+ * @param ev
+ * @returns
+ */
+const getUuidRedirect = async (req: NextRequest) => {
+  const enabled =
+    BLOG.UUID_REDIRECT === true ||
+    ['true', '1', 'yes', 'on'].includes(
+      String(BLOG.UUID_REDIRECT).trim().toLowerCase()
+    )
+  if (!enabled) return null
+
+  let lastPart = getLastPartOfUrl(req.nextUrl.pathname) as string
+  if (!lastPart || !checkStrIsNotionId(lastPart)) return null
+  lastPart = idToUuid(lastPart)
+
+  if (!redirectJsonPromise) {
+    redirectJsonPromise = fetch(`${req.nextUrl.origin}/redirect.json`)
+      .then(async response => {
+        if (!response.ok) throw new Error(`redirect.json: ${response.status}`)
+        return (await response.json()) as Record<string, string>
+      })
+      .catch(error => {
+        redirectJsonPromise = null
+        console.error('Error fetching static redirect map:', error)
+        return {}
+      })
+  }
+
+  const redirectJson = await redirectJsonPromise
+  if (!redirectJson[lastPart]) return null
+
+  const redirectToUrl = req.nextUrl.clone()
+  redirectToUrl.pathname = '/' + redirectJson[lastPart]
+  console.log(
+    `redirect from ${req.nextUrl.pathname} to ${redirectToUrl.pathname}`
+  )
+  return NextResponse.redirect(redirectToUrl, 308)
+}
+
+const noAuthProxy = async (req: NextRequest) => {
+  return withPublicPageCache(req, NextResponse.next())
+}
+/**
+ * 鉴权代理
+ */
+const authProxy = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  ? clerkMiddleware(async (auth, req) => {
+      const { userId } = await auth()
+      // 处理 /dashboard 路由的登录保护
+      if (isTenantRoute(req)) {
+        if (!userId) {
+          // 用户未登录，重定向到 /sign-in
+          const url = new URL('/sign-in', req.url)
+          url.searchParams.set('redirectTo', req.url) // 保存重定向目标
+          return NextResponse.redirect(url)
+        }
+      }
+
+      // 处理管理员相关权限保护
+      if (isTenantAdminRoute(req)) {
+        await auth.protect(has => {
+          return has({ role: 'org:admin' })
+        })
+      }
+
+      // 默认继续处理请求
+      return withPublicPageCache(req, NextResponse.next())
+    })
+  : noAuthProxy
+
+export default async function proxy(req: NextRequest, event: NextFetchEvent) {
+  const redirect = await getUuidRedirect(req)
+  if (redirect) return redirect
+  return authProxy(req, event)
+}

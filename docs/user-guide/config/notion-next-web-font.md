@@ -1,4 +1,5 @@
 # 字体字号
+
 > 迁移自：[字体字号](https://docs.tangly1024.com/article/notion-next-web-font)
 > 发布日期：2023-7-30
 > 最后编辑：2024-6-17
@@ -84,7 +85,6 @@ FONT_AWESOME: process.env.NEXT_PUBLIC_FONT_AWESOME_PATH || 'https://cdnjs.cloudf
 
 如果开启 Web Font 后发现 WebPageTest、Lighthouse 或浏览器 Network 面板中字体请求明显增多，可以先清空 `FONT_URL`，改用系统字体对比 FCP、LCP 和总请求数。
 
-
 ## 字体使用说明
 
 先确定是`font-sans`，`font-serif`, 然后在对应的FONT_SANS 和FONT_SERIF 里面配置字体名。衬线字体serif适用于正式的官网等场景，非衬线则显得比较轻松，按需选取。
@@ -111,9 +111,7 @@ FONT_SERIF: [
 
 FONT_STYLE 还支持配置字体粗细， font-light 表示细的字体，不配置则是默认粗细，更多可以参考《[TailwindCSS font-weight](https://www.tailwindcss.cn/docs/font-weight)》
 
-
 ## 配置说明
-
 
 ### 修改示范
 
@@ -177,38 +175,42 @@ FONT_AWESOME: process.env.NEXT_PUBLIC_FONT_AWESOME_PATH || 'https://cdnjs.cloudf
 - 直接添加一个 [FONT_URL](https://www.notion.so/tanghh/8f4fe6b17a9e43e0bcfb6edb50f10a62?pvs=4) 配置即可覆盖，便于自行配置web字体的路径。
 
 - 同时，如果要自定义除了 `sans` 或 `serif` 之外的字体，建议在GLOBAL_CSS 中配置 font-family 的CSS样式，例如
-![1DA44854-4AB3-40D9-AA8E-A497DB539281.png](/legacy/430c853ba15465ec.png)
-
+  ![1DA44854-4AB3-40D9-AA8E-A497DB539281.png](/legacy/430c853ba15465ec.png)
 
 ## 字号修改
 
 想要调整网页的字体大小怎么做？两种方案，一是通过css手动指定某个元素的字号，二是通过调整[tailwindCSS的配置](https://www.tailwindcss.cn/docs/font-size)，整体调整不同字体的大小；
 
 - 方法一，调整个例
-在notion-config的自定义样式配置中，或者custom.css中直接指定某个元素的字体，示例：
+  在notion-config的自定义样式配置中，或者custom.css中直接指定某个元素的字体，示例：
+
 ```CSS
 #bannerGroup a div {
     color: red;
     font-size: 2rem;
 }
 ```
+
 效果如下：
 ![Untitled](/legacy/dd7b7898028b260c.png)
 
 - 文章字体
-如果只想调整文章正文的字体，可以通过添加css实现 , 在你的notionconfig中修改GLOBAL_CSS即可。
-默认字体是`1rem`。
+  如果只想调整文章正文的字体，可以通过添加css实现 , 在你的notionconfig中修改GLOBAL_CSS即可。
+  默认字体是`1rem`。
+
 ```CSS
 .notion {
   font-size: 1.5rem;
 }
 ```
+
 只会影响正文部分
 ![Untitled](/legacy/be9b53a86164ddcd.png)
 
 - 方法二，项目底层（高级用法请小心尝试）
-在tailwind.config.js 中添加如下配置，其中base是默认字号，其它则是项目中有用到的更大或更小字号。这种方案其实不做推荐，因为整体字号要适配主题的样式，任意调整会导致样式不协调。
+  在tailwind.config.js 中添加如下配置，其中base是默认字号，其它则是项目中有用到的更大或更小字号。这种方案其实不做推荐，因为整体字号要适配主题的样式，任意调整会导致样式不协调。
   1. 在主题的`BaseLayout`中设置全局默认字体`text-base`，例如/theme/heo/index.js → &lt;LayoutBase&gt;中：
+
 ```HTML
 &lt;div
   id="theme-heo"
@@ -217,9 +219,11 @@ FONT_AWESOME: process.env.NEXT_PUBLIC_FONT_AWESOME_PATH || 'https://cdnjs.cloudf
 ...
 &lt;/div&gt;
 ```
-  1. 修改 tailwind.config.js
-![Untitled](/legacy/1b6b0711a74179c1.png)
-代码内容,如果把base调整为1.5rem，则整体字号会大一些：
+
+1. 修改 tailwind.config.js
+   ![Untitled](/legacy/1b6b0711a74179c1.png)
+   代码内容,如果把base调整为1.5rem，则整体字号会大一些：
+
 ```Bash
 fontSize: {
       xs: '.75rem',

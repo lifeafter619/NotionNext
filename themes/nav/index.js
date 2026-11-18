@@ -7,7 +7,7 @@
  */
 
 import NotionIcon from '@/components/NotionIcon'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -20,15 +20,20 @@ import CONFIG from './config'
 import { Style } from './style'
 
 const WWAds = dynamic(() => import('@/components/WWAds'), { ssr: false })
-const AdSlot = dynamic(() => import('@/components/GoogleAdsense').then(mod => mod.AdSlot), {
-  ssr: false
-})
+const AdSlot = dynamic(
+  () => import('@/components/GoogleAdsense').then(mod => mod.AdSlot),
+  {
+    ssr: false
+  }
+)
 const Comment = dynamic(() => import('@/components/Comment'), { ssr: false })
 const Live2D = dynamic(() => import('@/components/Live2D'), { ssr: false })
 const NotionPage = dynamic(() => import('@/components/NotionPage'), {
   ssr: true
 })
-const Announcement = dynamic(() => import('./components/Announcement'), { ssr: true })
+const Announcement = dynamic(() => import('./components/Announcement'), {
+  ssr: true
+})
 const BlogArchiveItem = dynamic(() => import('./components/BlogArchiveItem'), {
   ssr: true
 })
@@ -50,10 +55,15 @@ const JumpToTopButton = dynamic(() => import('./components/JumpToTopButton'), {
   ssr: false
 })
 const LogoBar = dynamic(() => import('./components/LogoBar'), { ssr: true })
-const MenuItem = dynamic(() => import('./components/MenuItem').then(mod => mod.MenuItem), {
+const MenuItem = dynamic(
+  () => import('./components/MenuItem').then(mod => mod.MenuItem),
+  {
+    ssr: true
+  }
+)
+const PageNavDrawer = dynamic(() => import('./components/PageNavDrawer'), {
   ssr: true
 })
-const PageNavDrawer = dynamic(() => import('./components/PageNavDrawer'), { ssr: true })
 const TagItemMini = dynamic(() => import('./components/TagItemMini'), {
   ssr: true
 })
@@ -101,7 +111,7 @@ const LayoutBase = props => {
         return {
           id: c.name,
           title: `# ${c.name}`,
-          href: `/category/${c.name}`,
+          href: `/category/${encodeURIComponent(c.name)}`,
           show: true
         }
       })
@@ -133,7 +143,7 @@ const LayoutBase = props => {
         <main
           id='wrapper'
           className={
-            (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+            (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
               ? 'flex-row-reverse'
               : '') + ' relative flex justify-between w-full h-screen mx-auto'
           }>
@@ -280,21 +290,23 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      const timer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return (
     <>
       {/* 文章锁 */}
@@ -321,11 +333,12 @@ const LayoutSlug = props => {
               {/* <ShareBar post={post} /> */}
               {/* 文章分类和标签信息 */}
               <div className='flex justify-between'>
-                {CONFIG.POST_DETAIL_CATEGORY && post?.category && (
+                {siteConfig('NAV_POST_DETAIL_CATEGORY', true, CONFIG) &&
+                  post?.category && (
                   <CategoryItem category={post.category} />
                 )}
                 <div>
-                  {CONFIG.POST_DETAIL_TAG &&
+                  {siteConfig('NAV_POST_DETAIL_TAG', true, CONFIG) &&
                     post?.tagItems?.map(tag => (
                       <TagItemMini key={tag.name} tag={tag} />
                     ))}
@@ -401,16 +414,21 @@ const Layout404 = props => {
     }, 3000)
   }, [])
 
-  return <>
-        <div className='md:-mt-20 text-black w-full h-screen text-center justify-center content-center items-center flex flex-col'>
-            <div className='dark:text-gray-200'>
-                <h2 className='inline-block border-r-2 border-gray-600 mr-2 px-3 py-2 align-top'><i className='mr-2 fas fa-spinner animate-spin' />404</h2>
-                <div className='inline-block text-left h-32 leading-10 items-center'>
-                    <h2 className='m-0 p-0'>页面无法加载，即将返回首页</h2>
-                </div>
-            </div>
+  return (
+    <>
+      <div className='md:-mt-20 text-black w-full h-screen text-center justify-center content-center items-center flex flex-col'>
+        <div className='dark:text-gray-200'>
+          <h2 className='inline-block border-r-2 border-gray-600 mr-2 px-3 py-2 align-top'>
+            <i className='mr-2 fas fa-spinner animate-spin' />
+            404
+          </h2>
+          <div className='inline-block text-left h-32 leading-10 items-center'>
+            <h2 className='m-0 p-0'>页面无法加载，即将返回首页</h2>
+          </div>
         </div>
+      </div>
     </>
+  )
 }
 
 /**
@@ -431,7 +449,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <div

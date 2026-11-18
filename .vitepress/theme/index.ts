@@ -22,11 +22,17 @@ export default {
     const route = useRoute()
     const { theme } = useData()
     const getUpdatedDocs = () =>
-      ((theme.value as DefaultThemeConfig.Config & { updatedDocs?: RecentUpdatedDoc[] })
-        .updatedDocs || [])
+      (
+        theme.value as DefaultThemeConfig.Config & {
+          updatedDocs?: RecentUpdatedDoc[]
+        }
+      ).updatedDocs || []
     const getRecentDocs = () =>
-      ((theme.value as DefaultThemeConfig.Config & { recentUpdatedDocs?: RecentUpdatedDoc[] })
-        .recentUpdatedDocs || [])
+      (
+        theme.value as DefaultThemeConfig.Config & {
+          recentUpdatedDocs?: RecentUpdatedDoc[]
+        }
+      ).recentUpdatedDocs || []
 
     onMounted(() => {
       void syncUnreadUpdates(getUpdatedDocs(), getRecentDocs(), route.path)

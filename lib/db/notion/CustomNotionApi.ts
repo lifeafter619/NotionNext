@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const NOTION_API_VERSION = '2026-03-11'
+
 // 定义内容项的接口
 interface ContentItem {
   type: string
@@ -16,7 +18,7 @@ interface NotionBlock {
 // 发送 Notion API 请求
 async function postNotion(
   properties: Record<string, unknown>,
-  databaseId: string,
+  dataSourceId: string,
   listContentMain: ContentItem[],
   token: string
 ): Promise<{ status: number; data: Record<string, unknown> }> {
@@ -49,14 +51,14 @@ async function postNotion(
     .filter(Boolean)
 
   const payload = {
-    parent: { database_id: databaseId },
+    parent: { data_source_id: dataSourceId },
     properties,
     children
   }
 
   const headers = {
     accept: 'application/json',
-    'Notion-Version': '2022-06-28',
+    'Notion-Version': NOTION_API_VERSION,
     'content-type': 'application/json',
     Authorization: `Bearer ${token}`
   }

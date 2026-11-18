@@ -1,6 +1,7 @@
 import { siteConfig } from '@/lib/config'
-import { useRef } from 'react'
 import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
+import { useRef } from 'react'
+import SmartLink from './HeoLink'
 
 /**
  * 社交联系方式按钮组
@@ -8,6 +9,7 @@ import { handleEmailClick } from '@/lib/plugins/mailEncrypt'
  * @constructor
  */
 const SocialButton = () => {
+  const emailIcon = useRef(null)
   const CONTACT_GITHUB = siteConfig('CONTACT_GITHUB')
   const CONTACT_ORCID = siteConfig('CONTACT_ORCID')
   const CONTACT_CSDN = siteConfig('CONTACT_CSDN')
@@ -21,14 +23,19 @@ const SocialButton = () => {
   const ENABLE_RSS = siteConfig('ENABLE_RSS')
   const CONTACT_BILIBILI = siteConfig('CONTACT_BILIBILI')
   const CONTACT_YOUTUBE = siteConfig('CONTACT_YOUTUBE')
-
-  const emailIcon = useRef(null)
   const iconClass =
     'transform hover:scale-125 duration-150 dark:hover:text-[var(--heo-color-accent)] hover:text-[var(--heo-color-primary)]'
 
+  const handleEmailKeyDown = e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleEmailClick(e, emailIcon, CONTACT_EMAIL)
+    }
+  }
+
   return (
-    <div className='w-full justify-center flex-wrap flex'>
-      <div className='space-x-12 text-3xl text-gray-600 dark:text-gray-300 '>
+    <div className='w-full flex justify-center'>
+      <div className='flex flex-wrap justify-center gap-x-6 gap-y-4 sm:gap-x-12 text-3xl text-gray-600 dark:text-gray-300'>
         {CONTACT_GITHUB && (
           <a
             target='_blank'
@@ -112,21 +119,24 @@ const SocialButton = () => {
         )}
         {CONTACT_EMAIL && (
           <a
+            ref={emailIcon}
+            role='link'
+            tabIndex={0}
             onClick={e => handleEmailClick(e, emailIcon, CONTACT_EMAIL)}
+            onKeyDown={handleEmailKeyDown}
             title='email'
-            className='cursor-pointer'
-            ref={emailIcon}>
-            <i className={`${iconClass} fas fa-envelope`} />
+            className='cursor-pointer'>
+            <i className='transform hover:scale-125 duration-150 fas fa-envelope dark:hover:text-indigo-400 hover:text-indigo-600' />
           </a>
         )}
         {ENABLE_RSS && (
-          <a
+          <SmartLink
             target='_blank'
             rel='noreferrer'
-            title={'RSS'}
-            href={'/rss/feed.xml'}>
+            title='RSS'
+            href='/rss/feed.xml'>
             <i className={`${iconClass} fas fa-rss`} />
-          </a>
+          </SmartLink>
         )}
         {CONTACT_BILIBILI && (
           <a

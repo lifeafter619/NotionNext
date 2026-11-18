@@ -1,4 +1,5 @@
 # API_BASE_URL
+
 > 迁移自：[API_BASE_URL](https://docs.tangly1024.com/article/notion-next-api_base_url)
 > 发布日期：2025-10-8
 > 最后编辑：2025-10-11
@@ -9,7 +10,6 @@
 :::
 
 相关提交与说明可参考：[https://github.com/notionnext-org/NotionNext/pull/3632](https://github.com/notionnext-org/NotionNext/pull/3632)
-
 
 ## 配置的作用
 
@@ -24,7 +24,6 @@ API_BASE_URL: process.env.API_BASE_URL || 'https://app.notion.com/api/v3', // AP
 ![image.png](/legacy/de41efcb078c74fc.png)
 
 解决方法：如果当你阅读此文时，此API页面仍未修复，临时可以使用备用域名进行访问，待notion的dns网络恢复后可以无需再启用此配置。
-
 
 ### 如何获取自定义的url地址：
 

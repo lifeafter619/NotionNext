@@ -19,12 +19,35 @@ export const LoadingCover = () => {
   const displayProgressRef = useRef(0)
 
   // Configurable texts
-  const siteName = siteConfig('ENDSPACE_LOADING_SITE_NAME', null, CONFIG) || siteConfig('TITLE') || 'CLOUD09_SPACE'
-  const textInit = siteConfig('ENDSPACE_LOADING_TEXT_INIT', 'INITIALIZING', CONFIG)
-  const textLoading = siteConfig('ENDSPACE_LOADING_TEXT_LOADING', 'LOADING', CONFIG)
-  const textComplete = siteConfig('ENDSPACE_LOADING_TEXT_COMPLETE', 'READY', CONFIG)
-  const textSweeping = siteConfig('ENDSPACE_LOADING_TEXT_SWEEPING', 'LAUNCHING', CONFIG)
-  const textFadeout = siteConfig('ENDSPACE_LOADING_TEXT_FADEOUT', 'WELCOME', CONFIG)
+  const siteName =
+    siteConfig('ENDSPACE_LOADING_SITE_NAME', null, CONFIG) ||
+    siteConfig('TITLE') ||
+    'CLOUD09_SPACE'
+  const textInit = siteConfig(
+    'ENDSPACE_LOADING_TEXT_INIT',
+    'INITIALIZING',
+    CONFIG
+  )
+  const textLoading = siteConfig(
+    'ENDSPACE_LOADING_TEXT_LOADING',
+    'LOADING',
+    CONFIG
+  )
+  const textComplete = siteConfig(
+    'ENDSPACE_LOADING_TEXT_COMPLETE',
+    'READY',
+    CONFIG
+  )
+  const textSweeping = siteConfig(
+    'ENDSPACE_LOADING_TEXT_SWEEPING',
+    'LAUNCHING',
+    CONFIG
+  )
+  const textFadeout = siteConfig(
+    'ENDSPACE_LOADING_TEXT_FADEOUT',
+    'WELCOME',
+    CONFIG
+  )
   // Custom Loading Image
   const loadingImage = siteConfig('ENDSPACE_LOADING_IMAGE', null, CONFIG)
 
@@ -46,17 +69,21 @@ export const LoadingCover = () => {
     const countResources = () => {
       const images = document.images
       totalResources = Math.max(1, images.length)
-      
+
       // Count already loaded images
       for (let i = 0; i < images.length; i++) {
         if (images[i].complete) loadedResources++
       }
-      
+
       // Add event listeners for remaining images
       for (let i = 0; i < images.length; i++) {
         if (!images[i].complete) {
-          images[i].addEventListener('load', () => { loadedResources++ })
-          images[i].addEventListener('error', () => { loadedResources++ })
+          images[i].addEventListener('load', () => {
+            loadedResources++
+          })
+          images[i].addEventListener('error', () => {
+            loadedResources++
+          })
         }
       }
     }
@@ -67,7 +94,7 @@ export const LoadingCover = () => {
     const animate = () => {
       const target = targetProgressRef.current
       const current = displayProgressRef.current
-      
+
       if (current < target) {
         // Smooth easing - larger step when further from target
         const diff = target - current
@@ -75,23 +102,27 @@ export const LoadingCover = () => {
         displayProgressRef.current = Math.min(target, current + step)
         setDisplayProgress(Math.floor(displayProgressRef.current))
       }
-      
+
       rafId = requestAnimationFrame(animate)
     }
     rafId = requestAnimationFrame(animate)
 
     // Update target progress based on actual loading
     const progressInterval = setInterval(() => {
-      const realProgress = totalResources > 0 
-        ? Math.floor((loadedResources / totalResources) * 100) 
-        : 0
-      
+      const realProgress =
+        totalResources > 0
+          ? Math.floor((loadedResources / totalResources) * 100)
+          : 0
+
       // When onLoading becomes false, go to 100
       if (!onLoading) {
         targetProgressRef.current = 100
       } else {
         // Use real progress, cap at 90 until fully loaded
-        targetProgressRef.current = Math.min(90, Math.max(targetProgressRef.current, realProgress))
+        targetProgressRef.current = Math.min(
+          90,
+          Math.max(targetProgressRef.current, realProgress)
+        )
       }
     }, 30)
 
@@ -115,10 +146,10 @@ export const LoadingCover = () => {
   useEffect(() => {
     if (displayProgress >= 100 && !hasCompletedRef.current) {
       hasCompletedRef.current = true
-      
+
       // Immediately start exit sequence
       setPhase('complete')
-      
+
       const sweepTimer = setTimeout(() => {
         setPhase('sweeping')
         setTimeout(() => {
@@ -136,33 +167,31 @@ export const LoadingCover = () => {
   return (
     <div
       className={`loading-cover ${phase}`}
-      style={{ '--progress': `${displayProgress}%`, '--progress-num': displayProgress }}
-    >
+      style={{
+        '--progress': `${displayProgress}%`,
+        '--progress-num': displayProgress
+      }}>
       {/* Left side - Vertical Progress Bar (thicker) */}
-      <div className="progress-container">
-        <div className="progress-track">
-          <div className="progress-fill" />
+      <div className='progress-container'>
+        <div className='progress-track'>
+          <div className='progress-fill' />
         </div>
       </div>
 
       {/* Center - Loading Image and Site Name (horizontal, stacked) */}
-      <div className="center-content">
+      <div className='center-content'>
         {loadingImage && (
-          <img src={loadingImage} alt="Loading" className="loading-image" />
+          <img src={loadingImage} alt='Loading' className='loading-image' />
         )}
-        <div className="site-name">
-          {siteName}
-        </div>
+        <div className='site-name'>{siteName}</div>
       </div>
 
       {/* Progress Info - follows progress bar */}
-      <div className="progress-info">
-        <div className="progress-percent">
-          {Math.floor(displayProgress)}%
-        </div>
-        <div className="status-line">
-          <span className="status-dot" />
-          <span className="status-text">
+      <div className='progress-info'>
+        <div className='progress-percent'>{Math.floor(displayProgress)}%</div>
+        <div className='status-line'>
+          <span className='status-dot' />
+          <span className='status-text'>
             {phase === 'init' && textInit}
             {phase === 'loading' && textLoading}
             {phase === 'complete' && textComplete}
@@ -173,7 +202,7 @@ export const LoadingCover = () => {
       </div>
 
       {/* Sweep overlay - full screen cover from left to right */}
-      <div className="sweep-overlay" />
+      <div className='sweep-overlay' />
 
       <style jsx>{`
         .loading-cover {
@@ -240,7 +269,7 @@ export const LoadingCover = () => {
           left: 0;
           width: 100%;
           height: var(--progress);
-          background: #FBFB46;
+          background: #fbfb46;
           transition: height 0.05s linear;
         }
 
@@ -262,7 +291,7 @@ export const LoadingCover = () => {
           font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace;
           font-size: clamp(32px, 5vw, 48px);
           font-weight: 700;
-          color: #FBFB46;
+          color: #fbfb46;
           letter-spacing: 2px;
           line-height: 1;
         }
@@ -276,7 +305,7 @@ export const LoadingCover = () => {
         .status-dot {
           width: 6px;
           height: 6px;
-          background: #FBFB46;
+          background: #fbfb46;
           border-radius: 50%;
           animation: blink 0.8s ease-in-out infinite;
         }
@@ -297,7 +326,7 @@ export const LoadingCover = () => {
           left: 0;
           width: 100%;
           height: 100%;
-          background: #FBFB46;
+          background: #fbfb46;
           transform: scaleX(0);
           transform-origin: left;
           pointer-events: none;
@@ -317,11 +346,14 @@ export const LoadingCover = () => {
           transform: scaleX(1);
         }
 
-
-
         @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.3;
+          }
         }
 
         @keyframes sweepCover {
@@ -363,7 +395,7 @@ export const LoadingCover = () => {
             bottom: 30px;
             left: 0;
           }
-          
+
           .progress-fill {
             width: var(--progress);
             height: 100%;
@@ -375,7 +407,9 @@ export const LoadingCover = () => {
             top: auto;
             bottom: 24px;
             left: 0;
-            transform: translateX(calc((100vw - 6rem) * var(--progress-num) / 100 + 12px));
+            transform: translateX(
+              calc((100vw - 6rem) * var(--progress-num) / 100 + 12px)
+            );
             flex-direction: row;
             gap: 8px;
             padding-bottom: 0;

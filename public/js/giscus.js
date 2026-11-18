@@ -32,19 +32,19 @@
     dataset.hash = ''
     let url = dataset.toString()
     if (paramsSession)
-      localStorage.setItem('giscus-session', JSON.stringify(paramsSession)),
-        history.replaceState(void 0, document.title, url)
+      (localStorage.setItem('giscus-session', JSON.stringify(paramsSession)),
+        history.replaceState(void 0, document.title, url))
     else if (localStorageSession) {
       try {
         paramsSession = JSON.parse(localStorageSession)
       } catch (a) {
-        localStorage.removeItem('giscus-session'),
+        ;(localStorage.removeItem('giscus-session'),
           console.warn(
             ''.concat(
               handleError(a === null || void 0 === a ? void 0 : a.message),
               ' Session has been cleared.'
             )
-          )
+          ))
       }
     }
 
@@ -124,10 +124,10 @@
       for (; paramsSession.firstChild; ) paramsSession.firstChild.remove()
       paramsSession.appendChild(giscusIframe)
     } else
-      (paramsSession = document.createElement('div')),
+      ((paramsSession = document.createElement('div')),
         paramsSession.setAttribute('class', 'giscus'),
         paramsSession.appendChild(giscusIframe),
-        giscusContainer.insertAdjacentElement('afterend', paramsSession)
+        giscusContainer.insertAdjacentElement('afterend', paramsSession))
   }
 
   // 处理接收消息

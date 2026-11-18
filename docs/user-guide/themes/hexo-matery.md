@@ -1,4 +1,5 @@
 # Hexo/Matery主题
+
 > 迁移自：[Hexo/Matery主题](https://docs.tangly1024.com/article/notion-next-greetings)
 > 发布日期：2023-6-27
 > 最后编辑：2024-9-12
@@ -102,7 +103,6 @@ button.bg-indigo-700{
 
 直接填写在您的 NOTION_CONFIG 中的GLOBAL_CSS这一栏即可。更多配置方法可参考 ‣
 
-
 ## 首页欢迎语
 
 Hexo和matery主题首页支持动态打字的效果显示欢迎语。
@@ -110,7 +110,6 @@ Hexo和matery主题首页支持动态打字的效果显示欢迎语。
 ![Untitled](/legacy/f2cb671a33544619.png)
 
 ![Untitled](/legacy/4c70c6c5cba1fa29.png)
-
 
 ### 配置方式
 
@@ -140,13 +139,14 @@ GREETING_WORDS: process.env.NEXT_PUBLIC_GREETING_WORDS || '您好，欢迎访问
   // 欢迎语打字效果回退速度
   GREETING_WORDS_BACK_SPEED:
     process.env.NEXT_PUBLIC_GREETING_WORDS_BACK_SPEED || 100,
-    
+
 ```
 
 ### 注意点
 
 1. 只能修改单引号内部的内容，不要擅自修改格式、不要添加多组单引号
-错误示范：
+   错误示范：
+
 ```JavaScript
 // 修改成了中括号数组 ['xx','xx','xx']
 GREETING_WORDS:  ['Hi，我是一个程序员,',' Hi，我是一个打工人,','Hi，我是一个干饭人,欢迎来到我的博客🎉']
@@ -156,12 +156,15 @@ GREETING_WORDS:  process.env.NEXT_PUBLIC_GREETING_WORDS || 'Hi，我是一个程
 ```
 
 1. 如果需要打印多句话，可以用**英文逗号**作为分隔符隔开
-中文逗号将被识别为普通的文字，而不是分隔符。
-正确示例
+   中文逗号将被识别为普通的文字，而不是分隔符。
+   正确示例
+
 ```JavaScript
 '语句一,语句二,语句三'
 ```
-错误示范：` , ` → ` ``**，**`** **（注意区别中文和英文分隔符）
+
+错误示范：`,` → ` ``**，**`\*\* \*\*（注意区别中文和英文分隔符）
+
 ```JavaScript
 '语句一，语句二，语句三'
 ```

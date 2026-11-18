@@ -359,8 +359,9 @@ it.each(['Published', 'Invisible'])('allows a nested page only after verifying i
   expect(JSON.stringify(locked)).not.toContain(digest)
   const unlocked = await resolvePostProps({ prefix: child, password: secret })
   expect(JSON.stringify(unlocked.post)).toContain(marker)
-  expect(unlocked.post.blockMap.block[child]).toBeDefined()
-  expect(unlocked.post.blockMap.block[id]).toBeUndefined()
+  // 本地版 cleanPostForClient 会把 blockMap 压缩为 packed array（配套补丁版 react-notion-x），
+  // 无法按键访问；改为断言祖先块内容（标题 'Title'）已被剪除
+  expect(JSON.stringify(unlocked.post)).not.toContain('"Title"')
   expect(JSON.stringify(unlocked)).not.toContain(digest)
   expect(JSON.stringify(unlocked)).not.toContain(secret)
 })
@@ -375,7 +376,7 @@ it('allows an unprotected child of an Invisible catalog page without a password'
   blocks.block[textId].value.parent_id = child
   fetchPageFromNotion.mockResolvedValueOnce({ id: child, title: 'Child', slug: child, type: 'Page', tags: [], blockMap: blocks })
   const props = await resolvePostProps({ prefix: child })
-  expect(props.post.blockMap.block[child]).toBeDefined()
-  expect(props.post.password).toBeFalsy()
+  // 本地版 blockMap 为压缩格式，改断言正文 marker 存在
   expect(JSON.stringify(props.post)).toContain(marker)
+  expect(props.post.password).toBeFalsy()
 })

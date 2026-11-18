@@ -71,12 +71,22 @@ const json = (body: unknown, init: ResponseInit = {}) =>
     }
   })
 
+const allowedOrigins = (env: Env) =>
+  env.DOCS_CHAT_CORS_ORIGINS?.split(',')
+    .map(item => item.trim())
+    .filter(Boolean) || DEFAULT_CORS_ORIGINS
+
+// Origin 缺失（同源请求、curl 等）视为放行；带 Origin 时必须命中白名单
+const isOriginAllowed = (request: Request, env: Env) => {
+  const origin = request.headers.get('origin')
+  if (!origin) return true
+  const allowed = allowedOrigins(env)
+  return allowed.includes('*') || allowed.includes(origin)
+}
+
 const corsHeaders = (request: Request, env: Env) => {
   const origin = request.headers.get('origin')
-  const allowed =
-    env.DOCS_CHAT_CORS_ORIGINS?.split(',')
-      .map(item => item.trim())
-      .filter(Boolean) || DEFAULT_CORS_ORIGINS
+  const allowed = allowedOrigins(env)
 
   if (!origin || !allowed?.length) {
     return {}
@@ -131,6 +141,12 @@ export const onRequestOptions = ({ request, env }: PagesContext) =>
   })
 
 export const onRequestPost = async ({ request, env }: PagesContext) => {
+  // 非白名单 Origin 直接 403：浏览器本就读不到响应，
+  // 继续调用 LLM 只会白白消耗 token 配额
+  if (!isOriginAllowed(request, env)) {
+    return json({ error: 'Origin not allowed.' }, { status: 403 })
+  }
+
   const headers = corsHeaders(request, env)
   const contentLength = Number(request.headers.get('content-length') || 0)
   const shouldStream = new URL(request.url).searchParams.get('stream') !== 'false'

@@ -1,13 +1,15 @@
 import Collapse from '@/components/Collapse'
 import DarkModeButton from '@/components/DarkModeButton'
+import { SignedIn, SignedOut } from '@/components/ClerkAuthState'
 import DashboardButton from '@/components/ui/dashboard/DashboardButton'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { SignInButton, UserButton } from '@clerk/nextjs'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 import { useMagzineGlobal } from '..'
 import CONFIG from '../config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import LogoBar from './LogoBar'
 import { MenuBarMobile } from './MenuBarMobile'
 import { MenuItemDrop } from './MenuItemDrop'
@@ -24,31 +26,32 @@ export default function Header(props) {
   const { locale } = useGlobal()
   const router = useRouter()
   const { searchModal } = useMagzineGlobal()
+  const algoliaEnabled = isAlgoliaSearchEnabled(siteConfig)
 
   const defaultLinks = [
     {
       icon: 'fas fa-th',
       name: locale.COMMON.CATEGORY,
       href: '/category',
-      show: CONFIG.MENU_CATEGORY
+      show: siteConfig('MAGZINE_MENU_CATEGORY', true, CONFIG)
     },
     {
       icon: 'fas fa-tag',
       name: locale.COMMON.TAGS,
       href: '/tag',
-      show: CONFIG.MENU_TAG
+      show: siteConfig('MAGZINE_MENU_TAG', true, CONFIG)
     },
     {
       icon: 'fas fa-archive',
       name: locale.NAV.ARCHIVE,
       href: '/archive',
-      show: CONFIG.MENU_ARCHIVE
+      show: siteConfig('MAGZINE_MENU_ARCHIVE', true, CONFIG)
     },
     {
       icon: 'fas fa-search',
       name: locale.NAV.SEARCH,
       href: '/search',
-      show: CONFIG.MENU_SEARCH
+      show: siteConfig('MAGZINE_MENU_SEARCH', true, CONFIG)
     }
   ]
 
@@ -66,8 +69,8 @@ export default function Header(props) {
 
   // 展示搜索框
   const toggleShowSearchInput = () => {
-    if (siteConfig('ALGOLIA_APP_ID')) {
-      searchModal.current.openSearch()
+    if (algoliaEnabled) {
+      searchModal.current?.openSearch()
     } else {
       changeShowSearchInput(!showSearchInput)
     }
@@ -75,9 +78,9 @@ export default function Header(props) {
 
   const onKeyUp = e => {
     if (e.keyCode === 13) {
-      const search = document.getElementById('simple-search').value
+      const search = document.getElementById('simple-search')?.value?.trim()
       if (search) {
-        router.push({ pathname: '/search/' + search })
+        router.push({ pathname: '/search', query: { s: search } })
       }
     }
   }

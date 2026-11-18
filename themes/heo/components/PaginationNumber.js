@@ -1,6 +1,6 @@
 import { ChevronDoubleRight } from '@/components/HeroIcons'
 import { useGlobal } from '@/lib/global'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
@@ -35,9 +35,14 @@ const PaginationNumber = ({ page, totalPage }) => {
    * 调到指定页
    */
   const jumpToPage = () => {
-    if (value) {
+    const parsedValue = parseInt(value, 10)
+    if (Number.isFinite(parsedValue)) {
+      const maxPage = Math.max(1, Number(totalPage) || 1)
+      const targetPage = Math.min(Math.max(parsedValue, 1), maxPage)
       router.push(
-        value === 1 ? `${pagePrefix}/` : `${pagePrefix}/page/${value}`
+        targetPage === 1
+          ? `${pagePrefix}/`
+          : `${pagePrefix}/page/${targetPage}`
       )
     }
   }
@@ -74,12 +79,19 @@ const PaginationNumber = ({ page, totalPage }) => {
             <input
               value={value}
               className='w-0 group-hover:w-20 group-hover:px-3 transition-all duration-200 bg-gray-100 border-none outline-none h-full rounded-lg'
-              onInput={handleInputChange}></input>
-            <div
+              onInput={handleInputChange}
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
+                  jumpToPage()
+                }
+              }}></input>
+            <button
+              type='button'
+              aria-label='跳转到输入页码'
               onClick={jumpToPage}
               className='cursor-pointer hover:bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-card-dark)] dark:hover:bg-[var(--heo-color-accent)] hover:text-[var(--heo-color-primary-text)] px-4 py-2 group-hover:px-2 group-hover:mx-1 group-hover:rounded bg-[var(--heo-color-card)]'>
               <ChevronDoubleRight className={'w-4 h-4'} />
-            </div>
+            </button>
           </div>
         </div>
 

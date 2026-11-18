@@ -46,49 +46,48 @@ LANDING_COLOR_PRIMARY: '#ef4444'
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `LANDING_COLOR_PRIMARY` | 主题强调色 |
-| `LANDING_HEADER_BUTTON_1_TITLE` | 见 config.js |
-| `LANDING_HEADER_BUTTON_1_URL` | 见 config.js |
-| `LANDING_HEADER_BUTTON_2_TITLE` | 见 config.js |
-| `LANDING_HEADER_BUTTON_2_URL` | 见 config.js |
-| `LANDING_HERO_TITLE_1` | 见 config.js |
-| `LANDING_HERO_P_1` | 见 config.js |
-| `LANDING_HERO_BUTTON_1_TEXT` | 见 config.js |
-| `LANDING_HERO_BUTTON_1_LINK` | 见 config.js |
-| `LANDING_HERO_BUTTON_2_TEXT` | 见 config.js |
-| `LANDING_HERO_BUTTON_2_LINK` | 见 config.js |
-| `LANDING_HERO_VIDEO_IMAGE` | 见 config.js |
-| `LANDING_HERO_VIDEO_IFRAME` | 见 config.js |
-| `LANDING_HERO_VIDEO_TIPS` | 见 config.js |
-| `LANDING_FEATURES_HEADER_1` | 见 config.js |
-| `LANDING_FEATURES_HEADER_1_P` | 见 config.js |
-| `LANDING_FEATURES_HEADER_2` | 见 config.js |
-| `LANDING_FEATURES_HEADER_2_P` | 见 config.js |
-| `LANDING_FEATURES_CARD_1_TITLE` | 见 config.js |
-| `LANDING_FEATURES_CARD_1_P` | 见 config.js |
-| `LANDING_FEATURES_CARD_2_TITLE` | 见 config.js |
-| `LANDING_FEATURES_CARD_2_P` | 见 config.js |
-| `LANDING_FEATURES_CARD_3_TITLE` | 见 config.js |
-| `LANDING_FEATURES_CARD_3_P` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_HEADER` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_P` | 见 config.js |
+| 配置键                           | 说明         |
+| -------------------------------- | ------------ |
+| `LANDING_HEADER_BUTTON_1_TITLE`  | 见 config.js |
+| `LANDING_HEADER_BUTTON_1_URL`    | 见 config.js |
+| `LANDING_HEADER_BUTTON_2_TITLE`  | 见 config.js |
+| `LANDING_HEADER_BUTTON_2_URL`    | 见 config.js |
+| `LANDING_HERO_TITLE_1`           | 见 config.js |
+| `LANDING_HERO_P_1`               | 见 config.js |
+| `LANDING_HERO_BUTTON_1_TEXT`     | 见 config.js |
+| `LANDING_HERO_BUTTON_1_LINK`     | 见 config.js |
+| `LANDING_HERO_BUTTON_2_TEXT`     | 见 config.js |
+| `LANDING_HERO_BUTTON_2_LINK`     | 见 config.js |
+| `LANDING_HERO_VIDEO_IMAGE`       | 见 config.js |
+| `LANDING_HERO_VIDEO_IFRAME`      | 见 config.js |
+| `LANDING_HERO_VIDEO_TIPS`        | 见 config.js |
+| `LANDING_FEATURES_HEADER_1`      | 见 config.js |
+| `LANDING_FEATURES_HEADER_1_P`    | 见 config.js |
+| `LANDING_FEATURES_HEADER_2`      | 见 config.js |
+| `LANDING_FEATURES_HEADER_2_P`    | 见 config.js |
+| `LANDING_FEATURES_CARD_1_TITLE`  | 见 config.js |
+| `LANDING_FEATURES_CARD_1_P`      | 见 config.js |
+| `LANDING_FEATURES_CARD_2_TITLE`  | 见 config.js |
+| `LANDING_FEATURES_CARD_2_P`      | 见 config.js |
+| `LANDING_FEATURES_CARD_3_TITLE`  | 见 config.js |
+| `LANDING_FEATURES_CARD_3_P`      | 见 config.js |
+| `LANDING_FEATURES_BLOCK_HEADER`  | 见 config.js |
+| `LANDING_FEATURES_BLOCK_P`       | 见 config.js |
 | `LANDING_FEATURES_BLOCK_1_TITLE` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_1_P` | 见 config.js |
+| `LANDING_FEATURES_BLOCK_1_P`     | 见 config.js |
 | `LANDING_FEATURES_BLOCK_2_TITLE` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_2_P` | 见 config.js |
+| `LANDING_FEATURES_BLOCK_2_P`     | 见 config.js |
 | `LANDING_FEATURES_BLOCK_3_TITLE` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_3_P` | 见 config.js |
+| `LANDING_FEATURES_BLOCK_3_P`     | 见 config.js |
 | `LANDING_FEATURES_BLOCK_4_TITLE` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_4_P` | 见 config.js |
+| `LANDING_FEATURES_BLOCK_4_P`     | 见 config.js |
 | `LANDING_FEATURES_BLOCK_5_TITLE` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_5_P` | 见 config.js |
+| `LANDING_FEATURES_BLOCK_5_P`     | 见 config.js |
 | `LANDING_FEATURES_BLOCK_6_TITLE` | 见 config.js |
-| `LANDING_FEATURES_BLOCK_6_P` | 见 config.js |
-| `LANDING_TESTIMONIALS_HEADER` | 见 config.js |
-| `LANDING_TESTIMONIALS_P` | 见 config.js |
-| `LANDING_TESTIMONIALS_AVATAR` | 见 config.js |
+| `LANDING_FEATURES_BLOCK_6_P`     | 见 config.js |
+| `LANDING_TESTIMONIALS_HEADER`    | 见 config.js |
+| `LANDING_TESTIMONIALS_P`         | 见 config.js |
+| `LANDING_TESTIMONIALS_AVATAR`    | 见 config.js |
 
 共 **65** 项，上表列出前 40 项，完整列表见 [config.js](https://github.com/notionnext-org/NotionNext/blob/main/themes/landing/config.js)。
 

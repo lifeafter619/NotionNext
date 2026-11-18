@@ -77,6 +77,7 @@ const GameItem = ({ item }) => {
         className='w-24 h-24 absolute object-cover group-hover:scale-105 duration-100 transition-all'
         src={img}
         alt={title}
+        referrerPolicy='no-referrer'
       />
     </SmartLink>
   )

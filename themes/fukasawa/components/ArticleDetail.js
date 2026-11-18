@@ -53,7 +53,7 @@ export default function ArticleDetail(props) {
               {post?.category && (
                 <>
                   <SmartLink
-                    href={`/category/${post.category}`}
+                    href={`/category/${encodeURIComponent(post.category)}`}
                     passHref
                     className='cursor-pointer text-md mr-2 hover:text-black dark:hover:text-white border-b dark:border-gray-500 border-dashed'>
                     <i className='mr-1 fas fa-folder-open' />

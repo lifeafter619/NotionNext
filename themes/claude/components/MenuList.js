@@ -39,7 +39,9 @@ export const MenuList = ({ customNav, customMenu }) => {
       /(^|\s)fa[srldb]?\s/.test(normalizedIcon) ||
       /(^|\s)fa-[\w-]+/.test(normalizedIcon)
     if (isFontAwesomeIcon) {
-      return <i className={`${normalizedIcon} claude-nav-icon`} aria-hidden='true' />
+      return (
+        <i className={`${normalizedIcon} claude-nav-icon`} aria-hidden='true' />
+      )
     }
 
     return (
@@ -74,7 +76,9 @@ export const MenuList = ({ customNav, customMenu }) => {
       return renderLeafLink(link)
     }
 
-    const childActive = link.subMenus?.some(s => pathMatches(router.asPath, s.href))
+    const childActive = link.subMenus?.some(s =>
+      pathMatches(router.asPath, s.href)
+    )
     const parentLooksActive = childActive
 
     return (
@@ -111,13 +115,18 @@ export const MenuList = ({ customNav, customMenu }) => {
                   : 'Expand submenu'
             }
             onClick={() => toggleSub(link.id)}>
-            <i className={`fas fa-angle-down claude-nav-chevron ${isOpen ? 'claude-nav-chevron-open' : ''}`} />
+            <i
+              className={`fas fa-angle-down claude-nav-chevron ${isOpen ? 'claude-nav-chevron-open' : ''}`}
+            />
           </button>
         </div>
         {isOpen && (
           <div id={`claude-submenu-${link.id}`} className='claude-nav-submenu'>
             {link.subMenus.map(sub => (
-              <SmartLink key={sub.id || sub.href} href={sub.href} target={sub.target}>
+              <SmartLink
+                key={sub.id || sub.href}
+                href={sub.href}
+                target={sub.target}>
                 <div
                   className={`claude-nav-link claude-nav-sublink ${pathMatches(router.asPath, sub.href) ? 'active' : ''}`}>
                   {renderMenuIcon(sub.icon)}
@@ -145,7 +154,9 @@ export const MenuList = ({ customNav, customMenu }) => {
         )}
       </div>
 
-      <div id='nav-menu-mobile' className='flex md:hidden flex-col gap-0.5 w-full'>
+      <div
+        id='nav-menu-mobile'
+        className='flex md:hidden flex-col gap-0.5 w-full'>
         {links.map((link, index) =>
           link.subMenus?.length
             ? renderGroup({ ...link, id: link.id ?? `menu-${index}` })

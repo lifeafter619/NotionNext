@@ -1,5 +1,6 @@
 import BLOG from '@/blog.config'
 import { clearDataCache } from '@/lib/cache/cache_manager'
+import { secureCompare } from '@/lib/server/secureCompare'
 import {
   collectRevalidationPaths,
   normalizeRevalidationPath,
@@ -31,7 +32,8 @@ export default async function handler(req, res) {
   const receivedToken = authHeader.startsWith('Bearer ')
     ? authHeader.slice(7)
     : req.body?.token || ''
-  if (receivedToken !== token)
+  // 常量时间比较，避免令牌逐字节猜测
+  if (!secureCompare(receivedToken, token))
     return res.status(401).json({ ok: false, message: 'Unauthorized' })
 
   const { path, paths, all, invalidateData, batchSize = 25 } = req.body || {}

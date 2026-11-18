@@ -20,7 +20,7 @@ const notices = [
 beforeEach(() => {
   jest.useFakeTimers()
   siteConfig.mockImplementation((key, fallback, config) =>
-    key === 'HEO_NOTICE_BAR' ? notices : (config[key] ?? fallback)
+    key === 'HEO_NOTICE_BAR' ? notices : (config?.[key] ?? fallback)
   )
 })
 
@@ -32,7 +32,7 @@ afterEach(() => {
 it('preserves the default 3000 ms interval and link destination', () => {
   render(<NoticeBar />)
   expect(screen.getByRole('link')).toHaveAttribute('href', '/first')
-  expect(screen.getByRole('link')).toHaveAttribute('rel', 'noopener noreferrer')
+  expect(screen.getByRole('link')).not.toHaveAttribute('target')
   act(() => jest.advanceTimersByTime(2999))
   expect(screen.getByRole('link')).toHaveTextContent(notices[0].title)
   act(() => jest.advanceTimersByTime(1))
@@ -40,8 +40,12 @@ it('preserves the default 3000 ms interval and link destination', () => {
 })
 
 it('accepts a Notion JSON notice list and string interval', () => {
-  siteConfig.mockImplementation(key =>
-    key === 'HEO_NOTICE_BAR' ? JSON.stringify(notices) : '5000'
+  siteConfig.mockImplementation((key, fallback) =>
+    key === 'HEO_NOTICE_BAR'
+      ? JSON.stringify(notices)
+      : key === 'HEO_NOTICE_BAR_INTERVAL'
+        ? '5000'
+        : fallback
   )
   render(<NoticeBar />)
   act(() => jest.advanceTimersByTime(4999))
@@ -53,8 +57,12 @@ it('accepts a Notion JSON notice list and string interval', () => {
 it.each([0, -100, '', 'invalid', Infinity, NaN, 2147483648, true, {}])(
   'falls back to 3000 ms for invalid interval %p',
   value => {
-    siteConfig.mockImplementation(key =>
-      key === 'HEO_NOTICE_BAR' ? notices : value
+    siteConfig.mockImplementation((key, fallback) =>
+      key === 'HEO_NOTICE_BAR'
+        ? notices
+        : key === 'HEO_NOTICE_BAR_INTERVAL'
+          ? value
+          : fallback
     )
     render(<NoticeBar />)
     act(() => jest.advanceTimersByTime(2999))

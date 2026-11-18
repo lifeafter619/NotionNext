@@ -13,7 +13,6 @@ const Hero = ({ topPosts = [], subPosts = [] }) => {
 
   return (
     <div className='w-full mx-auto max-w-screen-3xl xl:flex justify-between gap-10'>
-      
       {/* 左侧主文章 */}
       <div className='basis-1/2 mb-6 px-2 lg:px-5'>
         {postTop && <PostItemCardTop post={postTop} />}

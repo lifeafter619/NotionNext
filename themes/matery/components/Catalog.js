@@ -1,5 +1,5 @@
 import { useGlobal } from '@/lib/global'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Progress from './Progress'
@@ -76,7 +76,7 @@ const Catalog = ({ toc }) => {
         ref={tRef}>
         <nav className='h-full  text-black'>
           {toc.map(tocItem => {
-            const id = uuidToId(tocItem.id)
+            const id = uuidToId(tocItem.id || '')
             tocIds.push(id)
             return (
               <a

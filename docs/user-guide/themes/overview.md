@@ -1,4 +1,5 @@
 # 主题功能说明
+
 > 迁移自：[主题功能说明](https://docs.tangly1024.com/article/notion-next-themes)
 > 发布日期：2023-6-27
 > 最后编辑：2026-5-2
@@ -11,7 +12,6 @@
 NotionNext会扫描/themes目录下的文件夹，并根据文件夹的名字生成一个主题，只要在配置中将您的当前主题设置为**对应文件夹名字**即可，注意都是**小写**。
 ![主题文件夹](/legacy/d72e7a174586dd05.png)
 
-
 ## 主题预览
 
 内置主题以 GitHub 仓库 `[themes/](https://github.com/notionnext-org/NotionNext/tree/main/themes)` 目录为准（会随版本迭代增减）。当前主线常见主题包括：`simple`（**新建仓库默认**，见 `blog.config.js` 的 `THEME`）、`next`、`medium`、`hexo`、`fukasawa`、`gitbook`、`matery`、`heo`、`nobelium`、`plog`、`landing`、`nav`、`starter`、`commerce`、`magzine`、`photo`、`movie`、`game`、`fuwari`、`claude`、`proxio`、`typography`、`example` 等。
@@ -22,7 +22,6 @@ NotionNext会扫描/themes目录下的文件夹，并根据文件夹的名字生
 
 ![image.png](/legacy/3b8fc39f232c4fa7.png)
 ![image.png](/legacy/93ce46e019651e0a.png)
-
 
 ### 主题目录构成
 
@@ -37,7 +36,6 @@ NotionNext会扫描/themes目录下的文件夹，并根据文件夹的名字生
 - index.js 存放主题的基础布局和对应的路由关系
 
 - style.js 自定义的css样式
-
 
 ## 如何修改默认主题？
 
@@ -72,15 +70,15 @@ NEXT_PUBLIC_WIDGET_PET_SWITCH_THEME=false
 可以改变blog.config.js配置中`THEME`这一项的值；示例如下：
 
 - 方法1：改动github中的源代码：
+
 ```JavaScript
 THEME: process.env.NEXT_PUBLIC_THEME || 'simple', // 与当前主仓库默认值一致；可按需改为 hexo、next 等文件夹名（小写）
 ```
 
 - 方法2 ， 在vercel后台添加环境变量: `NEXT_PUBLIC_THEME`
-![添加环境变量后记得在Deployment中重新部署](/legacy/54989b0a8ef22f5a.png)
+  ![添加环境变量后记得在Deployment中重新部署](/legacy/54989b0a8ef22f5a.png)
 
 - 方法3： 使用Notion_config，在您的notion笔记中配置默认主题
-
 
 ### 在线切换主题
 
@@ -96,13 +94,7 @@ THEME_SWITCH: process.env.NEXT_PUBLIC_THEME_SWITCH || false, // 是否显示切�
 
 ![Untitled](/legacy/8887786b5f3ad411.png)
 
-### 主题控制台与调色板
-
-新版主题切换工具同时提供“主题切换”和“主题控制台”两个入口。主题控制台可以实时调整当前主题的信息配置与配色，确认效果后复制到 `notion_config`。详细使用方式见 [主题控制台与调色板](./theme-console.md)。
-
-
 ## 如何个性化您的主题
-
 
 ### 主题的微调
 
@@ -111,13 +103,12 @@ THEME_SWITCH: process.env.NEXT_PUBLIC_THEME_SWITCH || false, // 是否显示切�
 ![Untitled](/legacy/844fc33bec7482e4.png)
 
 - 另外您可以参考开发指引中的教程来自定义您的主题。
-[NotionNext开发先导 | NotionNext帮助手册](/user-guide/development/getting-started)
+  [NotionNext开发先导 | NotionNext帮助手册](/user-guide/development/getting-started)
 
 小白入门如何开发notionnext，下载NotionNext、启动NotionNext、提交合并到NotionNext等。
 [NotionNext用配置调整样式 | NotionNext帮助手册](/user-guide/development/custom-style)
 
 不会react、不会 nextjs、不会webpack、不会TailWindCSS如何调整样式
-
 
 ### 创建您的主题
 
@@ -128,7 +119,6 @@ THEME_SWITCH: process.env.NEXT_PUBLIC_THEME_SWITCH || false, // 是否显示切�
 简单几步骤即可创建属于自己的主题
 
 也欢迎您将自己开发设计的主题，通过PR的方式提交到NotionNext中央仓库中，提供给更多站友们使用。
-
 
 ## 最后
 

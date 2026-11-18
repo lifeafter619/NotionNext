@@ -12,7 +12,7 @@
 
 ## 正文
 
-```md
+````md
 大家好，
 
 NotionNext 文档站新增了「用户作品墙」：
@@ -34,19 +34,20 @@ https://notionnext.tangly1024.com/user-guide/showcase
 
 请按这个格式回复：
 
-| 字段 | 内容 |
-| --- | --- |
-| 站点名 | 你的站点名称 |
-| 站点链接 | https://example.com |
-| 用途 | 博客 / 作品集 / 知识库 / 产品官网 / 导航站等 |
-| 主题 | 使用的 NotionNext 主题 ID，例如 `simple`、`gitbook`、`starter` |
-| 提交人 | GitHub 用户名或站点作者名 |
+| 字段     | 内容                                                           |
+| -------- | -------------------------------------------------------------- |
+| 站点名   | 你的站点名称                                                   |
+| 站点链接 | https://example.com                                            |
+| 用途     | 博客 / 作品集 / 知识库 / 产品官网 / 导航站等                   |
+| 主题     | 使用的 NotionNext 主题 ID，例如 `simple`、`gitbook`、`starter` |
+| 提交人   | GitHub 用户名或站点作者名                                      |
 
 也可以直接用一行格式：
 
 ```md
 | [站点名](https://example.com) | 个人博客 | simple | @yourname |
 ```
+````
 
 ### 收录规则
 
@@ -56,8 +57,10 @@ https://notionnext.tangly1024.com/user-guide/showcase
 - 如果你后续换主题、换域名或不想继续展示，可以在本帖回复更新。
 
 感谢每一位愿意展示站点的朋友。真实案例会让后来者少走很多弯路。
+
 ```
 
 ## 发布后维护
 
 发布后建议把链接补到 `docs/user-guide/showcase.md` 的提交说明里，方便新用户直接跳转到征集帖。
+```

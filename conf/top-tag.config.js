@@ -12,4 +12,3 @@
 module.exports = {
   TOP_TAG: process.env.NEXT_PUBLIC_TOP_TAG || process.env.TOP_TAG || ''
 }
-

@@ -1,5 +1,5 @@
 import { useGlobal } from '@/lib/global'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
 import { useEffect, useRef, useState } from 'react'
 
@@ -41,7 +41,9 @@ const Catalog = ({ toc }) => {
         break
       }
       setActiveSection(currentSectionId)
-      const index = toc?.findIndex(obj => uuidToId(obj.id) === currentSectionId)
+      const index = toc?.findIndex(
+        obj => uuidToId(obj.id || '') === currentSectionId
+      )
       tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
     }, throttleMs)
 
@@ -68,7 +70,7 @@ const Catalog = ({ toc }) => {
         ref={tRef}
         className='flex-1 overflow-auto  overscroll-none scroll-hidden   text-black mb-6'>
         {toc.map(tocItem => {
-          const id = uuidToId(tocItem.id)
+          const id = uuidToId(tocItem.id || '')
           return (
             <a
               key={id}

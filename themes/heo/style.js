@@ -1,20 +1,17 @@
 /* eslint-disable react/no-unknown-property */
-import CONFIG from './config'
+import { useEffect } from 'react'
 import { siteConfig } from '@/lib/config'
 import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
-import { useEffect } from 'react'
+import CONFIG from './config'
+
 /**
  * 此处样式只对当前主题生效
  * 此处不支持tailwindCSS的 @apply 语法
  * @returns
  */
 const Style = () => {
-  const bgColor = siteConfig('HEO_COLOR_BG', CONFIG.HEO_COLOR_BG, CONFIG)
-  const bgDarkColor = siteConfig(
-    'HEO_COLOR_BG_DARK',
-    CONFIG.HEO_COLOR_BG_DARK,
-    CONFIG
-  )
+  const bgColor = siteConfig('HEO_COLOR_BG', '#f7f9fe', CONFIG)
+  const bgDarkColor = siteConfig('HEO_COLOR_BG_DARK', '#18171d', CONFIG)
 
   useEffect(() => {
     const rootStyle = document.documentElement.style
@@ -35,19 +32,44 @@ const Style = () => {
   return (
     <style jsx global>{`
       #theme-heo {
+        --heo-post-cover-aspect-ratio: 505 / 220;
         --heo-color-primary: #4f65f0;
-        --heo-color-primary-hover: #4f46e5;
-        --heo-color-primary-text: #ffffff;
-        --heo-color-accent: #ca8a04;
+        --heo-color-primary-hover: ${siteConfig(
+          'HEO_COLOR_PRIMARY_HOVER',
+          '#4f46e5',
+          CONFIG
+        )};
+        --heo-color-primary-text: ${siteConfig(
+          'HEO_COLOR_PRIMARY_TEXT',
+          '#ffffff',
+          CONFIG
+        )};
+        --heo-color-accent: ${siteConfig(
+          'HEO_COLOR_ACCENT',
+          '#ca8a04',
+          CONFIG
+        )};
         --heo-color-bg: ${bgColor};
         --heo-color-bg-dark: ${bgDarkColor};
         --heo-color-card: #ffffff;
         --heo-color-card-dark: #1e1e1e;
-        --heo-color-card-muted: #f1f3f8;
+        --heo-color-card-muted: ${siteConfig(
+          'HEO_COLOR_CARD_MUTED',
+          '#f1f3f8',
+          CONFIG
+        )};
         --heo-color-border: #4f46e5;
         --heo-color-border-dark: #ca8a04;
-        --heo-color-text-light: #000000;
-        --heo-color-text-secondary-light: #4b5563;
+        --heo-color-text-light: ${siteConfig(
+          'HEO_COLOR_TEXT',
+          '#000000',
+          CONFIG
+        )};
+        --heo-color-text-secondary-light: ${siteConfig(
+          'HEO_COLOR_TEXT_SECONDARY',
+          '#4b5563',
+          CONFIG
+        )};
         --heo-color-text-dark: #f3f4f6;
         --heo-color-text-secondary-dark: #d1d5db;
         --heo-color-text: var(--heo-color-text-light);
@@ -57,6 +79,7 @@ const Style = () => {
       }
 
       .dark #theme-heo {
+        --heo-color-primary: var(--heo-color-primary-dark);
         --heo-color-text: var(--heo-color-text-dark);
         --heo-color-text-secondary: var(--heo-color-text-secondary-dark);
         background-color: var(--heo-color-bg-dark);
@@ -143,7 +166,7 @@ const Style = () => {
         background-color: var(--heo-color-bg-dark, ${bgDarkColor});
       }
 
-      // 公告栏中的字体固定白色
+      /* 公告栏中的字体固定白色 */
       #theme-heo #announcement-content .notion {
         color: white;
       }
@@ -163,9 +186,40 @@ const Style = () => {
         white-space: nowrap;
       }
 
+      #theme-heo #notion-article {
+        overflow: visible;
+      }
+
+      #theme-heo .heo-post-cover {
+        aspect-ratio: var(--heo-post-cover-aspect-ratio);
+      }
+      /* .heo-post-cover-card 不再强制固定比例，封面按原图完整显示、卡片高度自适应 */
+
+      #theme-heo #notion-article .notion-text,
+      #theme-heo #notion-article .notion-h,
+      #theme-heo #notion-article .notion-list,
+      #theme-heo #notion-article .notion-quote,
+      #theme-heo #notion-article .notion-callout,
+      #theme-heo #notion-article .notion-toggle,
+      #theme-heo #notion-article .notion-table-of-contents,
+      #theme-heo #notion-article .notion-bookmark,
+      #theme-heo #notion-article .notion-page-link {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+
+      #theme-heo #notion-article .notion-asset-wrapper,
+      #theme-heo #notion-article .notion-code,
+      #theme-heo #notion-article .notion-table,
+      #theme-heo #notion-article .notion-board,
+      #theme-heo #notion-article .notion-gallery,
+      #theme-heo #notion-article .notion-simple-table {
+        max-width: 100%;
+      }
+
       .today-card-cover {
-        -webkit-mask-image: linear-gradient(to top, transparent 5%, black 70%);
-        mask-image: linear-gradient(to top, transparent 5%, black 70%);
       }
 
       .recent-top-post-group::-webkit-scrollbar {
@@ -180,9 +234,10 @@ const Style = () => {
         box-sizing: border-box;
       }
 
-      // 标签滚动动画
+      /* 标签滚动动画 */
       .tags-group-wrapper {
         animation: rowup 60s linear infinite;
+        will-change: transform;
       }
 
       @keyframes rowup {
@@ -194,8 +249,25 @@ const Style = () => {
         }
       }
 
+      @media (prefers-reduced-motion: reduce) {
+        .tags-group-wrapper {
+          animation: none;
+          transform: none;
+        }
+      }
+
       ${themeConsoleStyle('heo', CONFIG)}
-  `}</style>
+
+      #theme-heo {
+        --heo-color-text: var(--heo-color-text-light);
+        --heo-color-text-secondary: var(--heo-color-text-secondary-light);
+      }
+
+      .dark #theme-heo {
+        --heo-color-text: var(--heo-color-text-dark);
+        --heo-color-text-secondary: var(--heo-color-text-secondary-dark);
+      }
+    `}</style>
   )
 }
 

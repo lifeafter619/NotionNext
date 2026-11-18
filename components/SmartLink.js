@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { siteConfig } from '@/lib/config'
+import { useRouter } from 'next/router'
 
 // 过滤 <a> 标签不能识别的 props
 const filterDOMProps = props => {
@@ -8,6 +9,12 @@ const filterDOMProps = props => {
     legacyBehavior,
     placeholderSrc,
     fallbackSrc,
+    prefetch,
+    replace,
+    scroll,
+    shallow,
+    locale,
+    onNavigate,
     ...rest
   } = props
   return rest
@@ -31,8 +38,18 @@ const filterLinkProps = props => {
   return rest
 }
 
-const SmartLink = ({ href, children, ...rest }) => {
+// 允许跨页面保留的查询参数白名单：主题预览与语言切换。
+// 不能透传全部参数——否则搜索的 ?keyword=、文章解锁的 ?password=、
+// utm 等一次性参数会被复制到页面上所有内链并无限传播
+const PERSISTED_QUERY_KEYS = ['theme', 'locale', 'lang', 'lite']
+
+const SmartLink = ({ href, children, prefetch, ...rest }) => {
   const LINK = siteConfig('LINK')
+  const router = useRouter()
+  const shouldPrefetch = normalizeBoolean(
+    prefetch,
+    normalizeBoolean(siteConfig('PREFETCH_LINKS', false), false)
+  )
 
   // 获取 URL 字符串用于判断是否是外链
   let urlString = ''
@@ -47,26 +64,41 @@ const SmartLink = ({ href, children, ...rest }) => {
     urlString = href.pathname
   }
 
-  const isExternal = urlString.startsWith('http') && !urlString.startsWith(LINK)
+  const siteOrigin = getUrlOrigin(LINK)
+  const resolvedUrl = resolveUrl(urlString, LINK)
+  const isHttpUrl = ['http:', 'https:'].includes(resolvedUrl?.protocol)
+  const isExternal = Boolean(
+    isHttpUrl && siteOrigin && resolvedUrl.origin !== siteOrigin
+  )
+  const isDirectProtocol = ['mailto:', 'tel:', 'sms:'].includes(
+    resolvedUrl?.protocol
+  )
+  const isBlockedProtocol = ['javascript:', 'data:', 'vbscript:'].includes(
+    resolvedUrl?.protocol
+  )
 
   const getPersistedQuery = () => {
-    if (typeof window === 'undefined') return {}
-    const queryString = window.location.search?.slice(1) || ''
-    const params = new URLSearchParams(queryString)
     const preserved = {}
-    for (const [key, value] of params.entries()) {
-      if (value !== '') preserved[key] = value
+    for (const key of PERSISTED_QUERY_KEYS) {
+      const queryValue = router.query?.[key]
+      const value = Array.isArray(queryValue) ? queryValue[0] : queryValue
+      if (value !== undefined && value !== null && value !== '') {
+        preserved[key] = String(value)
+      }
     }
     return preserved
   }
 
   const mergePreservedQueryForStringHref = value => {
-    if (typeof value !== 'string' || !value || value.startsWith('#')) return value
+    if (typeof value !== 'string' || !value || value.startsWith('#'))
+      return value
     const preservedQuery = getPersistedQuery()
     if (Object.keys(preservedQuery).length === 0) return value
 
-    const isAbsolute = value.startsWith('http://') || value.startsWith('https://')
-    const url = new URL(value, LINK)
+    const isAbsolute =
+      value.startsWith('http://') || value.startsWith('https://')
+    const url = resolveUrl(value, LINK)
+    if (!url) return value
     Object.entries(preservedQuery).forEach(([key, paramValue]) => {
       if (!url.searchParams.has(key)) {
         url.searchParams.set(key, paramValue)
@@ -95,15 +127,28 @@ const SmartLink = ({ href, children, ...rest }) => {
     const externalUrl =
       typeof href === 'string' ? href : new URL(href.pathname, LINK).toString()
 
+    const domProps = filterDOMProps(rest)
     return (
       <a
+        {...domProps}
         href={externalUrl}
         target='_blank'
-        rel='noopener noreferrer'
-        {...filterDOMProps(rest)}>
+        rel='noopener noreferrer'>
         {children}
       </a>
     )
+  }
+
+  if (isDirectProtocol) {
+    return (
+      <a {...filterDOMProps(rest)} href={urlString}>
+        {children}
+      </a>
+    )
+  }
+
+  if (isBlockedProtocol) {
+    return <span {...filterDOMProps(rest)}>{children}</span>
   }
 
   // 内部链接（可为对象形式）
@@ -113,10 +158,44 @@ const SmartLink = ({ href, children, ...rest }) => {
       : mergePreservedQueryForObjectHref(href)
 
   return (
-    <Link href={mergedHref} {...filterLinkProps(rest)}>
+    <Link
+      href={mergedHref}
+      prefetch={shouldPrefetch}
+      {...filterLinkProps(rest)}>
       {children}
     </Link>
   )
 }
 
 export default SmartLink
+
+function resolveUrl(value, baseUrl) {
+  if (!value || typeof value !== 'string') return null
+  try {
+    return new URL(value, getValidBaseUrl(baseUrl))
+  } catch {
+    return null
+  }
+}
+
+function getValidBaseUrl(value) {
+  try {
+    return new URL(value).toString()
+  } catch {
+    return 'https://notionnext.local/'
+  }
+}
+
+function getUrlOrigin(value) {
+  try {
+    return new URL(value).origin
+  } catch {
+    return null
+  }
+}
+
+function normalizeBoolean(value, fallback) {
+  if (value === undefined || value === null || value === '') return fallback
+  if (typeof value === 'boolean') return value
+  return String(value).toLowerCase() === 'true'
+}

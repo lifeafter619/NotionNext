@@ -1,7 +1,7 @@
 import { ArrowRightCircle } from '@/components/HeroIcons'
 import LazyImage from '@/components/LazyImage'
 import { siteConfig } from '@/lib/config'
-import SmartLink from '@/components/SmartLink'
+import SmartLink from './HeoLink'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 import CONFIG from '../config'
@@ -57,7 +57,11 @@ export function InfoCard(props) {
   const url2 = siteConfig('HEO_INFO_CARD_URL2', null, CONFIG)
   const icon2 = siteConfig('HEO_INFO_CARD_ICON2', null, CONFIG)
   const orcidUrl = siteConfig('CONTACT_ORCID')
-  const orcidIcon = siteConfig('HEO_INFO_CARD_ICON_ORCID', 'fab fa-orcid', CONFIG)
+  const orcidIcon = siteConfig(
+    'HEO_INFO_CARD_ICON_ORCID',
+    'fab fa-orcid',
+    CONFIG
+  )
   const csdnUrl = siteConfig('CONTACT_CSDN')
   const csdnIcon = siteConfig('HEO_INFO_CARD_ICON_CSDN', 'fab fa-csdn', CONFIG)
   const juejinUrl = siteConfig('CONTACT_JUEJIN')
@@ -76,23 +80,24 @@ export function InfoCard(props) {
     avatarBlurEnabled
   )
   return (
-    <Card className='wow fadeInUp bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] text-[var(--heo-color-primary-text)] flex flex-col w-72 overflow-hidden relative'>
+    <Card className='bg-[var(--heo-color-primary)] dark:bg-[var(--heo-color-accent)] text-white flex flex-col w-72 overflow-hidden relative'>
       {/* 信息卡牌第一行 */}
       <div className='flex justify-between'>
         {/* 问候语 */}
         <GreetingsWords />
-        {/* 头像 */}
+        {/* 头像 - 禁止点击；模糊模式下需要接收 hover 才能触发淡出效果 */}
         <div
           className={`${
             useBlurAvatar
               ? 'absolute right-0 -mt-8 -mr-6 hover:opacity-0 hover:scale-150 blur'
-              : 'cursor-pointer'
+              : 'cursor-default pointer-events-none'
           } justify-center items-center flex dark:text-gray-100 transform transition-all duration-200`}>
           <LazyImage
-            src={siteInfo?.icon}
+            src={siteConfig('BLOG_FAVICON') || siteInfo?.icon}
             className='rounded-full'
             width={useBlurAvatar ? 100 : 28}
             height={useBlurAvatar ? 100 : 28}
+            sizes={useBlurAvatar ? '100px' : '28px'}
             alt={siteConfig('AUTHOR')}
           />
         </div>
@@ -194,10 +199,12 @@ function GreetingsWords() {
   }
 
   return (
-    <div
+    <button
+      type='button'
+      aria-label='切换问候语'
       onClick={handleChangeGreeting}
-      className=' select-none cursor-pointer py-1 px-2 bg-[var(--heo-color-primary-hover)] hover:bg-[var(--heo-color-card-muted)]  hover:text-[var(--heo-color-text)] dark:bg-[var(--heo-color-accent)] dark:hover:text-white dark:hover:bg-black text-sm rounded-lg  duration-200 transition-colors'>
+      className='select-none cursor-pointer py-1 px-2 bg-[var(--heo-color-primary-hover)] hover:bg-[var(--heo-color-card-muted)] hover:text-[var(--heo-color-text)] dark:bg-[var(--heo-color-accent)] dark:text-gray-950 dark:hover:text-white dark:hover:bg-black text-sm rounded-lg duration-200 transition-colors'>
       {greeting}
-    </div>
+    </button>
   )
 }

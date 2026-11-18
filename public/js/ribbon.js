@@ -37,15 +37,14 @@ function createRibbon() {
             { x: 0, y: 0.7 * l - d }
           ];
         r[1].x < a + d;
-
       )
         y(r[0], r[1])
     }
     function y(t, e) {
-      o.beginPath(), o.moveTo(t.x, t.y), o.lineTo(e.x, e.y)
+      ;(o.beginPath(), o.moveTo(t.x, t.y), o.lineTo(e.x, e.y))
       const n = e.x + (2 * m() - 0.25) * d,
         i = b(e.y)
-      o.lineTo(n, i),
+      ;(o.lineTo(n, i),
         o.closePath(),
         (h -= g / -50),
         (o.fillStyle =
@@ -57,12 +56,12 @@ function createRibbon() {
           ).toString(16)),
         o.fill(),
         (r[0] = r[1]),
-        (r[1] = { x: n, y: i })
+        (r[1] = { x: n, y: i }))
     }
     function b(t) {
-      return (s = t + (2 * m() - 1.1) * d), s > l || s < 0 ? b(t) : s
+      return ((s = t + (2 * m() - 1.1) * d), s > l || s < 0 ? b(t) : s)
     }
-    ;(i.width = a * c),
+    ;((i.width = a * c),
       (i.height = l * c),
       o.scale(c, c),
       (o.globalAlpha = e.a),
@@ -74,7 +73,7 @@ function createRibbon() {
         ';width:100%;height:100%;pointer-events:none;'),
       document.getElementsByTagName('body')[0].appendChild(i),
       'false' !== e.c && ((document.onclick = x), (document.ontouchstart = x)),
-      x()
+      x())
   })()
 }
 

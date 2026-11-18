@@ -1,7 +1,8 @@
 import { AdSlot } from '@/components/GoogleAdsense'
 import replaceSearchResult from '@/components/Mark'
 import NotionPage from '@/components/NotionPage'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
+import { isAlgoliaSearchEnabled } from '@/lib/plugins/algoliaConfig'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -89,7 +90,7 @@ const LayoutBase = props => {
         <div
           id='container-wrapper'
           className={
-            (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+            (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
               ? 'flex-row-reverse'
               : '') + ' w-full flex-1 flex items-start max-w-9/10 mx-auto pt-12'
           }>
@@ -182,7 +183,7 @@ const LayoutSearch = props => {
     }
   }, [])
 
-  const slotTop = siteConfig('ALGOLIA_APP_ID') ? null : (
+  const slotTop = isAlgoliaSearchEnabled(siteConfig) ? null : (
     <SearchInput {...props} />
   )
 
@@ -225,7 +226,8 @@ const LayoutSlug = props => {
       {lock && <ArticleLock validPassword={validPassword} />}
 
       {!lock && post && (
-        <div className={`px-2  ${fullWidth ? '' : 'xl:max-w-4xl 2xl:max-w-6xl'}`}>
+        <div
+          className={`px-2  ${fullWidth ? '' : 'xl:max-w-4xl 2xl:max-w-6xl'}`}>
           {/* 文章信息 */}
           <ArticleInfo post={post} />
 
@@ -271,21 +273,23 @@ const Layout404 = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      const timer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return <>404 Not found.</>
 }
 
@@ -303,7 +307,7 @@ const LayoutCategoryIndex = props => {
           return (
             <SmartLink
               key={category.name}
-              href={`/category/${category.name}`}
+              href={`/category/${encodeURIComponent(category.name)}`}
               passHref
               legacyBehavior>
               <div

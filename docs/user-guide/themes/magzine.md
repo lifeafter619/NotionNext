@@ -1,9 +1,9 @@
 # Magzine主题
+
 > 迁移自：[Magzine主题](https://docs.tangly1024.com/article/notion-next-magzine)
 > 发布日期：2024-9-14
 > 最后编辑：2024-9-14
 > 原栏目：⭐ 主题参数
-
 
 ## 主题预览
 
@@ -20,11 +20,9 @@
 ![桌面端](/legacy/e5089e1db6109fc0.png)
 ![移动端](/legacy/aa0f0b759ff50dec.png)
 
-
 ## 首页说明
 
 这个主题的风格更偏向简约、扁平、专业化。同时首页将文章按照分类栏目陈列，展示逻辑更加清晰。
-
 
 ### 首屏更加突出重点：
 
@@ -36,18 +34,15 @@
 
 ![image.png](/legacy/68eb43ec152ffbce.png)
 
-
 ### 接下来是最新文章栏目：
 
 Notion中排名靠前的文章，除了首屏展示的文章，剩下的依次排列在这里，最多展示4个，点击查看全部则跳转到归档页面，从而按照发布时间查看所有文章。
-
 
 ### 接下来是分类栏目：
 
 将所有的文章按照分类分组，依次排列，一行就是一组分类的文章，点击全部则是查看这个分类下全部的文章。
 
 ![image.png](/legacy/57e778fec3f55d49.png)
-
 
 ### 接下来是推荐文章
 
@@ -57,18 +52,15 @@ Notion中排名靠前的文章，除了首屏展示的文章，剩下的依次�
 
 ![image.png](/legacy/7f77dc58f53fb13e.png)
 
-
 ### 然后是公告
 
 公告在Notion中用Notice编辑，这里公告的背景色是绿色，暂时无法通过配置修改，可以通过css样式的方式自行微调。
 
 ![image.png](/legacy/a664d6044de7702f.png)
 
-
 ### 然后是页脚
 
 黑色背景的页脚，左侧显示作者信息和网站标题，右侧是自定义的导航菜单，例如友情链接等可以放在这里，菜单是分组的，顶部显示分组名下方陈列菜单名称，点击可以跳转。这些链接需要在config.js中配置，后面会展开说明配置方法。
-
 
 ## 文章详情页面说明
 
@@ -87,7 +79,6 @@ Notion中排名靠前的文章，除了首屏展示的文章，剩下的依次�
 再往下滚动，会显示一个宣传栏，左侧显示的是站点封面图，右侧显示的内容和主页右上角的广告内容一致。
 
 ![image.png](/legacy/1a03465abe8b4d24.png)
-
 
 ## 配置部分
 
@@ -190,7 +181,6 @@ export default CONFIG
 
 </details>
 
-
 ### 页脚菜单详细
 
 页脚菜单结构是 [分组,分组,分组,…] 支持无数个分组。
@@ -237,7 +227,6 @@ export default CONFIG
   ]
 ```
 
-
 ### 在Notion_Config中配置
 
 这个菜单支持在Notion_Config中配置.（其实基本上所有配置都支持在Notion_Config中配置），不过因为这个参数是一个数组对象,因此要用JSON的形式配置：
@@ -250,6 +239,7 @@ export default CONFIG
 <summary>可以直接复制使用的模板配置 - 点击展开</summary>
 
 直接复制这里的内容，粘贴到NOTION_CONFIG中的 MAGZINE_FOOTER_LINKS后面即可。
+
 ```JavaScript
 [
     {
@@ -336,7 +326,6 @@ export default CONFIG
 效果如下：
 
 ![image.png](/legacy/708c8c565be1518f.png)
-
 
 ## 最后
 

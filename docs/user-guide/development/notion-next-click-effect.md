@@ -1,4 +1,5 @@
 # 实操案例-自定义鼠标特效
+
 > 迁移自：[实操案例-自定义鼠标特效](https://docs.tangly1024.com/article/notion-next-click-effect)
 > 发布日期：2023-8-14
 > 最后编辑：2024-9-12
@@ -13,7 +14,6 @@
 
 ![Untitled](/legacy/b9132a24d96e5159.gif)
 
-
 ## 操作步骤
 
 您需要分别修改项目中的两个文件 /public/js/custom.js 以及 /public/css/custom.css ， 即可实现该点击特效。
@@ -21,7 +21,6 @@
 当然您也可以选择不改动源代码，而在Notion的配置中心添加，配置中心的`GLOBAL_JS`对应源代码的`/public/js/custom`.js，`GLOBAL_CSS`对应代码中的`/public/css/custom_css`：
 
 ![image.png](/legacy/5eeb6f9cc9696459.png)
-
 
 ### 1. 脚本
 
@@ -75,7 +74,6 @@ fnTextPopup(['❤富强❤', '❤民主❤', '❤文明❤', '❤和谐❤', '�
 
 ![Untitled](/legacy/698fe2c5fffaa5e9.png)
 
-
 ### 2. 动画样式
 
 在 [/public/css/custom.css](https://github.com/tanglyqq/NotionNext/blob/main/public/css/custom.css) 中添加如下样式
@@ -105,7 +103,6 @@ fnTextPopup(['❤富强❤', '❤民主❤', '❤文明❤', '❤和谐❤', '�
 如图
 
 ![Untitled](/legacy/173c5777988fe50b.png)
-
 
 ## 结束
 

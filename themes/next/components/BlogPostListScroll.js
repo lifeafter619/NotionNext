@@ -41,7 +41,9 @@ const BlogPostListScroll = ({
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null
       const scrollS = window.scrollY + window.outerHeight
-      const clientHeight = targetRef.current ? targetRef.current.clientHeight : 0
+      const clientHeight = targetRef.current
+        ? targetRef.current.clientHeight
+        : 0
       if (scrollS > clientHeight + 100) {
         handleGetMore()
       }

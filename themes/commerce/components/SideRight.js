@@ -33,15 +33,25 @@ const FaceBookPage = dynamic(
  */
 export default function SideRight(props) {
   const {
-    post, currentCategory, categories, latestPosts, tags,
-    currentTag, showCategory, showTag, rightAreaSlot, notice
+    post,
+    currentCategory,
+    categories,
+    latestPosts,
+    tags,
+    currentTag,
+    showCategory,
+    showTag,
+    rightAreaSlot,
+    notice
   } = props
 
   const { locale } = useGlobal()
   return (
     <div id='sideRight' className={'space-y-4 lg:w-80 lg:pt-0 px-2 pt-4'}>
       <InfoCard {...props} />
-      {CONFIG.WIDGET_ANALYTICS && <AnalyticsCard {...props} />}
+      {siteConfig('COMMERCE_WIDGET_ANALYTICS', false, CONFIG) && (
+        <AnalyticsCard {...props} />
+      )}
 
       {showCategory && (
         <Card>
@@ -59,24 +69,30 @@ export default function SideRight(props) {
           <TagGroups tags={tags} currentTag={currentTag} />
         </Card>
       )}
-      {CONFIG.WIDGET_LATEST_POSTS && latestPosts && latestPosts.length > 0 && <Card>
-        <LatestPostsGroup {...props} />
-      </Card>}
+      {siteConfig('COMMERCE_WIDGET_LATEST_POSTS', true, CONFIG) &&
+        latestPosts &&
+        latestPosts.length > 0 && (
+        <Card>
+          <LatestPostsGroup {...props} />
+        </Card>
+      )}
 
-      <Announcement post={notice}/>
+      <Announcement post={notice} />
 
-      {siteConfig('COMMENT_WALINE_SERVER_URL') && siteConfig('COMMENT_WALINE_RECENT') && <HexoRecentComments/>}
+      {siteConfig('COMMENT_WALINE_SERVER_URL') &&
+        siteConfig('COMMENT_WALINE_RECENT') && <HexoRecentComments />}
 
       <div className='sticky top-20'>
-        {post && post.toc && post.toc.length > 1 && <Card>
-          <Catalog toc={post.toc} />
-        </Card>}
+        {post && post.toc && post.toc.length > 1 && (
+          <Card>
+            <Catalog toc={post.toc} />
+          </Card>
+        )}
 
         {rightAreaSlot}
-        <FaceBookPage/>
+        <FaceBookPage />
         <Live2D />
       </div>
-
     </div>
   )
 }

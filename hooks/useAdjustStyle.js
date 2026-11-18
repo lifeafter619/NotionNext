@@ -1,5 +1,5 @@
-import { isBrowser } from '@/lib/utils';
-import { useEffect } from 'react';
+import { isBrowser } from '@/lib/utils'
+import { useEffect } from 'react'
 
 /**
  * 样式调整的补丁
@@ -10,41 +10,43 @@ const useAdjustStyle = () => {
    */
   const adjustCalloutImg = () => {
     const updates = []
-    const callOuts = document.querySelectorAll('.notion-callout-text');
-    callOuts.forEach((callout) => {
-      const images = callout.querySelectorAll('figure.notion-asset-wrapper.notion-asset-wrapper-image > div');
-      const calloutWidth = callout.offsetWidth;
-      images.forEach((container) => {
-        const imageWidth = container.offsetWidth;
+    const callOuts = document.querySelectorAll('.notion-callout-text')
+    callOuts.forEach(callout => {
+      const images = callout.querySelectorAll(
+        'figure.notion-asset-wrapper.notion-asset-wrapper-image > div'
+      )
+      const calloutWidth = callout.offsetWidth
+      images.forEach(container => {
+        const imageWidth = container.offsetWidth
         if (imageWidth + 50 > calloutWidth) {
-          updates.push(container);
+          updates.push(container)
         }
-      });
-    });
+      })
+    })
     requestAnimationFrame(() => {
-      updates.forEach(container => container.style.setProperty('width', '100%'));
-    });
-  };
+      updates.forEach(container => container.style.setProperty('width', '100%'))
+    })
+  }
 
   useEffect(() => {
     if (isBrowser) {
-      let resizeTimer = null;
+      let resizeTimer = null
       const scheduleAdjust = () => {
-        window.clearTimeout(resizeTimer);
-        resizeTimer = window.setTimeout(adjustCalloutImg, 120);
-      };
-      if (window.requestIdleCallback) {
-        window.requestIdleCallback(adjustCalloutImg, { timeout: 2000 });
-      } else {
-        window.setTimeout(adjustCalloutImg, 1000);
+        window.clearTimeout(resizeTimer)
+        resizeTimer = window.setTimeout(adjustCalloutImg, 120)
       }
-      window.addEventListener('resize', scheduleAdjust);
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(adjustCalloutImg, { timeout: 2000 })
+      } else {
+        window.setTimeout(adjustCalloutImg, 1000)
+      }
+      window.addEventListener('resize', scheduleAdjust)
       return () => {
-        window.clearTimeout(resizeTimer);
-        window.removeEventListener('resize', scheduleAdjust);
-      };
+        window.clearTimeout(resizeTimer)
+        window.removeEventListener('resize', scheduleAdjust)
+      }
     }
-  }, []);
-};
+  }, [])
+}
 
-export default useAdjustStyle;
+export default useAdjustStyle

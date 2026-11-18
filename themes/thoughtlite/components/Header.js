@@ -1,6 +1,7 @@
 import SmartLink from '@/components/SmartLink'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import { useRouter } from 'next/router'
 import CONFIG from '../config'
 import { MenuList } from './MenuList'
 
@@ -9,9 +10,10 @@ import { MenuList } from './MenuList'
  */
 export const Header = props => {
   const { isDarkMode, toggleDarkMode } = useGlobal()
+  const router = useRouter()
 
   const openSearch = () => {
-    window.location.href = '/search'
+    router.push('/search')
   }
 
   return (
@@ -40,7 +42,9 @@ export const Header = props => {
             className='tl-icon-btn'
             onClick={toggleDarkMode}
             aria-label={isDarkMode ? 'Light mode' : 'Dark mode'}>
-            <span className='text-base leading-none'>{isDarkMode ? '☀' : '☾'}</span>
+            <span className='text-base leading-none'>
+              {isDarkMode ? '☀' : '☾'}
+            </span>
           </button>
         </div>
       </div>

@@ -24,7 +24,7 @@ export async function getStaticProps({ locale, revalidateReason }) {
   const props = await resolvePostProps({
     prefix,
     locale,
-    revalidateReason,
+    revalidateReason
   })
 
   return {
@@ -32,10 +32,10 @@ export async function getStaticProps({ locale, revalidateReason }) {
     revalidate: process.env.EXPORT
       ? undefined
       : siteConfig(
-        'NEXT_REVALIDATE_SECOND',
-        BLOG.NEXT_REVALIDATE_SECOND,
-        props.NOTION_CONFIG
-      )
+          'NEXT_REVALIDATE_SECOND',
+          BLOG.NEXT_REVALIDATE_SECOND,
+          props.NOTION_CONFIG
+        )
   }
 }
 

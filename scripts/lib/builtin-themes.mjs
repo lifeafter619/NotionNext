@@ -9,7 +9,8 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const REPO_ROOT = path.resolve(__dirname, '../..')
 export const THEMES_DIR = path.join(REPO_ROOT, 'themes')
-export const GITHUB_BLOB = 'https://github.com/notionnext-org/NotionNext/blob/main'
+export const GITHUB_BLOB =
+  'https://github.com/notionnext-org/NotionNext/blob/main'
 
 /** @returns {string[]} */
 export function getBuiltinThemeIds() {

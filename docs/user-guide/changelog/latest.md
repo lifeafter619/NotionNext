@@ -39,7 +39,7 @@
 
 - **PWA 安装入口**：新增可选配置 `PWA_ENABLE=true`，开启后 Android Chrome 可将博客安装到桌面；主题色可通过 `PWA_THEME_COLOR` 配置，manifest 使用固定路径 `/manifest.json`；默认关闭，不影响未开启站点。使用方法见 [PWA 安装入口](../config/pwa-install.md)。
 - **NotionNext Content MCP**（可选）：内置零依赖 MCP 服务器，让 Claude Code、Codex、Cursor 等 AI 助手按 NotionNext 数据契约管理 Notion 内容。见 [NotionNext Content MCP](../../developer/NOTIONNEXT_CONTENT_MCP.md)。
-- RSS：`RSS_FULL_CONTENT=false` 时只输出摘要（默认全文）。订阅地址统一为 `/rss/feed.xml`（另有 `/rss/atom.xml`、`/rss/feed.json`），页面 `<head>` 已输出 `rel="alternate"` 自动发现声明，浏览器和 Feedly 等阅读器可直接识别；旧地址 `/feed` 仍以 308 跳转到它。
+- RSS：订阅地址为 `/rss/feed.xml`，与 `/api/rss` 共用轻量运行时生成器，仅输出公开文章摘要；Atom 和 JSON 格式可使用 `/api/rss?format=atom`、`/api/rss?format=json`。开启 `ENABLE_RSS` 后页面 `<head>` 输出 `rel="alternate"` 自动发现声明。静态生成器支持 `RSS_FULL_CONTENT`，并补齐 feed ID 和子路径链接规范化。
 - 多个主题新增 CSDN、稀土掘金联系入口（`NEXT_PUBLIC_CONTACT_CSDN`、`NEXT_PUBLIC_CONTACT_JUEJIN`）；公告改用 Notion 页面标题；simple 主题页头页脚新增站点访问统计；统计卡片改用站点 PV，与页脚口径一致。
 
 ### 主题
@@ -185,18 +185,20 @@
 
 ## 4.10.8 发布要点
 
-本版本新增 Cloudflare Worker 版 Notion 图片反代示例，并补充完整站长教程。站长可以把 Notion 素材统一映射到自己的 CDN 域名，例如 `https://cdn.example.com`，让 `www.notion.so/image/...` 和 Notion 内置封面图经过自己的 Cloudflare 缓存。
+本版本新增 Cloudflare Worker 版 Notion 图片与文件反代示例，并补充完整站长教程。站长可以把 Notion 素材统一映射到自己的 CDN 域名，例如 `https://cdn.example.com`，让 `www.notion.so/image/...`、Notion 内置封面图和 `/signed/...` 文件入口经过自己的 Cloudflare 缓存。
 
-### Notion 图片反代
+### Notion 图片与文件反代
 
-- 新增 `cloudflare/notion-image-proxy` 最小 Worker 工程，默认只放行 `/image/` 和 `/images/`。
-- Worker 支持 Notion 签名图片跳转链路，并使用 `caches.default` 显式缓存响应，重复访问同一图片可观察到 `X-Notion-Image-Proxy-Cache: HIT`。
-- 示例配置使用 Cloudflare Custom Domain，生产示例域名为 `cdn.tangly1024.com`。
+- 新增 `cloudflare/notion-image-proxy` Worker 工程，放行 `/image/`、`/images/` 和 `/signed/`。
+- Worker 支持 Notion 签名图片跳转链路，按图片类型区分缓存策略，并拒绝缓存非图片错误响应。
+- 文件代理保留下载文件名、大小和 Range 响应；动态部署下 CDN 探测失败时回退 `/api/notion-file`，不影响文件可用性。
+- Worker v6 对完整下载保留缓存，并将视频 Range 原样透传且标记为 `no-store`；Workers Cache 保持关闭，避免超过免费版 512 MB 缓存上限的视频被错误转换成整文件 `200`。
+- 示例配置使用 Cloudflare Custom Domain，当前仓库的生产绑定为 `img.cdn.619.pp.ua`；部署到其他站点时请替换为自己的域名。
 - 保持 NotionNext 侧接入方式不变：只需配置 `NEXT_PUBLIC_NOTION_HOST=https://你的CDN域名`。
 
 ### 文档
 
-- 新增 Notion 图片反代教程，覆盖 Worker 部署、API Token 权限、Custom Domain 限制、本地预览、`yarn start` / `yarn export` 兼容性和缓存验证方式。
+- 新增 Notion 图片与文件反代教程，覆盖 Worker 部署、API Token 权限、Custom Domain 限制、本地预览、`yarn start` / `yarn export` 兼容性和缓存验证方式。
 - 记录常见坑：`Write all resources` 仍缺 `User -> Memberships -> Read`、Custom Domain 不能带路径、浏览器内存缓存会显示旧的 `CF-Cache-Status: MISS`、`prod-files-secure` 不能直接请求 S3 原始地址。
 - VitePress 部署目录新增「Notion 图片反代」入口。
 - 新增原创存证教程，说明 `NEXT_PUBLIC_ORIGINALITY_PROOF_ENABLE`、Notion `proof` / `proofTime` / `proofHash` / `proofUrl` 字段，以及本地内容哈希的证明边界。
@@ -207,13 +209,14 @@
 ### 升级说明
 
 - 该能力是可选增强，不影响默认 `https://www.notion.so` 图片加载。
+- CDN 图片失败时会先恢复到 `https://www.notion.so` 原图，动态部署下再尝试站内 `/api/proxy-image`；文件 CDN 失败时回退 Vercel 的 `/api/notion-file`。
 - 动态部署和静态导出都可使用；静态站点只要重新构建，让 HTML 输出新的 `NEXT_PUBLIC_NOTION_HOST` 即可。
 - 图片请求量大的站点建议使用 Workers Paid，因为每张图片请求都会计入 Worker request。
 
 ### 验证
 
 - `node --check cloudflare/notion-image-proxy/worker.mjs`：通过。
-- `curl -I` 连续请求真实 Notion 图片：第二次返回 `CF-Cache-Status: HIT` 与 `X-Notion-Image-Proxy-Cache: HIT`。
+- `curl -I` 连续请求真实 Notion 图片：后续请求可观察到 `X-Notion-Image-Proxy: v6` 与 `X-Notion-Image-Proxy-Origin-Cache: HIT`。
 - `git diff --check`：通过，仅保留 Windows 工作区 LF/CRLF 提示。
 
 ## 2026-08-05 自动部署流程事故记录

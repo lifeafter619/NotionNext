@@ -3,10 +3,9 @@ import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
 
 /**
- * 璺宠浆鍒扮綉椤甸《閮?
- * 褰撳睆骞曚笅婊?00鍍忕礌鍚庝細鍑虹幇璇ユ帶浠?
- * @param targetRef 鍏宠仈楂樺害鐨勭洰鏍噃tml鏍囩
- * @param showPercent 鏄惁鏄剧ず鐧惧垎姣?
+ * 跳转到网页底部
+ * 当屏幕下滑 100 像素后会出现该控件
+ * @param showPercent 是否显示百分比
  * @returns {JSX.Element}
  * @constructor
  */
@@ -71,7 +70,7 @@ const JumpToBottomButton = ({ showPercent = false }) => {
     }
   }, [scrollListener, updateState])
 
-  function scrollToBottom () {
+  function scrollToBottom() {
     const targetRef = document.getElementById('wrapper')
     window.scrollTo({ top: targetRef.clientHeight, behavior: 'smooth' })
   }

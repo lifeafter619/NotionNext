@@ -1,6 +1,8 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
+import { cleanPostListForClient } from '@/lib/utils/clientPost'
+import { isExport } from '@/lib/utils/buildMode'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -17,14 +19,12 @@ export async function getStaticProps({ params: { category }, locale }) {
   const from = 'category-props'
   let props = await fetchGlobalAllData({ from, locale })
 
-  // 过滤状态
-  props.posts = props.allPages?.filter(
-    page => page.type === 'Post' && page.status === 'Published'
+  // 过滤状态；allPages 缺失时兜底为空列表，避免 fallback 请求期间构建崩溃
+  props.posts = (props.allPages || []).filter(
+    page => page?.type === 'Post' && page.status === 'Published'
   )
   // 处理过滤
-  props.posts = props.posts.filter(
-    post => post && post.category && post.category.includes(category)
-  )
+  props.posts = props.posts.filter(post => post?.category === category)
 
   // 处理文章页数
   props.postCount = props.posts.length
@@ -43,13 +43,14 @@ export async function getStaticProps({ params: { category }, locale }) {
     )
   }
 
+  props.posts = cleanPostListForClient(props.posts)
   delete props.allPages
 
   props = { ...props, category }
 
   return {
     props,
-    revalidate: process.env.EXPORT
+    revalidate: isExport()
       ? undefined
       : siteConfig(
           'NEXT_REVALIDATE_SECOND',
@@ -62,11 +63,16 @@ export async function getStaticProps({ params: { category }, locale }) {
 export async function getStaticPaths() {
   const from = 'category-paths'
   const { categoryOptions } = await fetchGlobalAllData({ from })
-  const categories = Array.isArray(categoryOptions) ? categoryOptions : []
+  const categories = Array.isArray(categoryOptions)
+    ? categoryOptions.filter(
+        category =>
+          typeof category?.name === 'string' && category.name.length > 0
+      )
+    : []
   return {
     paths: categories.map(category => ({
       params: { category: category?.name }
     })),
-    fallback: true
+    fallback: isExport() ? false : 'blocking'
   }
 }

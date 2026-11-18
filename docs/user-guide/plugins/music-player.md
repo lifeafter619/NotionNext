@@ -1,4 +1,5 @@
 # 音乐播放器
+
 > 迁移自：[音乐播放器](https://docs.tangly1024.com/article/notion-next-plugin-music-player)
 > 发布日期：2023-8-4
 > 最后编辑：2024-9-7
@@ -6,7 +7,7 @@
 
 ## 开启方式
 
-后台添加环境变量 `NEXT_PUBLIC_MUSIC_PLAYER`  值为 `true`，即可打开音乐播放器功能。
+后台添加环境变量 `NEXT_PUBLIC_MUSIC_PLAYER` 值为 `true`，即可打开音乐播放器功能。
 
 更多关于播放器配置说明，可以参考APlayer官网
 

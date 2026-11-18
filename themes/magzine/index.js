@@ -127,8 +127,7 @@ const LayoutBase = props => {
             <div
               id='main'
               role='main'
-              className='flex-grow min-h-[60vh] bg-[#f6f6f1] dark:bg-black'
-            >
+              className='flex-grow min-h-[60vh] bg-[#f6f6f1] dark:bg-black'>
               {children}
             </div>
 
@@ -158,7 +157,7 @@ const LayoutIndex = props => {
     return <IndexSkeleton />
   }
 
-   // ===== 1. Hero区域 =====
+  // ===== 1. Hero区域 =====
   const heroTopPosts = posts.slice(0, 1)
   const heroSubPosts = posts.slice(
     heroTopPosts.length,
@@ -166,12 +165,13 @@ const LayoutIndex = props => {
   )
 
   // ===== 2. 剩余文章 =====
-  const remainingPosts = posts.slice(
-    heroTopPosts.length + heroSubPosts.length
-  )
+  const remainingPosts = posts.slice(heroTopPosts.length + heroSubPosts.length)
 
   // ===== 3. 最新文章 =====
-  const newPosts = remainingPosts.slice(0, siteConfig('MAGZINE_LATEST_POST_COUNT', 4, CONFIG))
+  const newPosts = remainingPosts.slice(
+    0,
+    siteConfig('MAGZINE_LATEST_POST_COUNT', 4, CONFIG)
+  )
 
   return (
     <div className='pt-10 md:pt-18'>
@@ -235,7 +235,7 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post && router?.route?.indexOf('/[prefix]') === 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (isBrowser) {
           const article = document.querySelector(
             '#article-wrapper #notion-article'
@@ -247,8 +247,11 @@ const LayoutSlug = props => {
           }
         }
       }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [router])
+    return undefined
+  }, [post, router, waiting404])
 
   return (
     <>
@@ -484,7 +487,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <div

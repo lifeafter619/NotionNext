@@ -97,7 +97,9 @@ const categoryDirs = [
 ]
 
 function slugOf(page) {
-  return (page.slug || page.href || '').replace(/^\/?article\//, '').replace(/^\//, '')
+  return (page.slug || page.href || '')
+    .replace(/^\/?article\//, '')
+    .replace(/^\//, '')
 }
 
 function stripEmoji(text = '') {
@@ -108,7 +110,8 @@ function targetFor(page) {
   const slug = slugOf(page)
   if (explicitPathMap[slug]) return explicitPathMap[slug]
   const category = stripEmoji(page.category)
-  const dir = categoryDirs.find(([name]) => category.includes(name))?.[1] || 'legacy'
+  const dir =
+    categoryDirs.find(([name]) => category.includes(name))?.[1] || 'legacy'
   return `${dir}/${slug.toLowerCase()}.md`
 }
 
@@ -120,7 +123,8 @@ function textOf(richText) {
       if (!out) return ''
       for (const decorator of decorators || []) {
         const [type, value] = decorator
-        if (type === 'a' && value) out = `[${escapeLinkLabel(out)}](${normalizeUrl(value)})`
+        if (type === 'a' && value)
+          out = `[${escapeLinkLabel(out)}](${normalizeUrl(value)})`
         if (type === 'b') out = `**${out}**`
         if (type === 'i') out = `_${out}_`
         if (type === 'c') out = `\`${out.replace(/`/g, '\\`')}\``
@@ -167,7 +171,7 @@ function imageUrl(blockMap, block) {
 
 function renderChildren(blockMap, block, depth) {
   return (block.content || [])
-    .map((id) => renderBlock(blockMap, getBlock(blockMap, id), depth + 1))
+    .map(id => renderBlock(blockMap, getBlock(blockMap, id), depth + 1))
     .filter(Boolean)
     .join('\n')
 }
@@ -204,7 +208,9 @@ function renderBlock(blockMap, block, depth = 0) {
     }
     case 'image': {
       const url = imageUrl(blockMap, block)
-      const caption = escapeImageAlt(textOf(block.properties?.caption) || title || 'image')
+      const caption = escapeImageAlt(
+        textOf(block.properties?.caption) || title || 'image'
+      )
       return url ? `![${caption}](${url})` : ''
     }
     case 'video':
@@ -239,30 +245,38 @@ function normalizeMarkdown(text) {
 
 async function fetchPage(slug) {
   const url = slug === 'about' ? `${BASE}/about` : `${BASE}/article/${slug}`
-  const res = await fetch(url, { headers: { 'user-agent': 'NotionNext-docs-importer/1.0' } })
+  const res = await fetch(url, {
+    headers: { 'user-agent': 'NotionNext-docs-importer/1.0' }
+  })
   if (!res.ok) throw new Error(`${url} HTTP ${res.status}`)
   const html = await res.text()
   const dom = new JSDOM(html)
-  const script = dom.window.document.querySelector('#__NEXT_DATA__')?.textContent
+  const script =
+    dom.window.document.querySelector('#__NEXT_DATA__')?.textContent
   if (!script) throw new Error(`${url} missing __NEXT_DATA__`)
   const data = JSON.parse(script)
   const post = data.props.pageProps.post
   if (post?.id && post?.blockMap) {
     try {
       const freshRecordMap = await notion.getPage(post.id)
-      post.blockMap.signed_urls = freshRecordMap.signed_urls || post.blockMap.signed_urls
+      post.blockMap.signed_urls =
+        freshRecordMap.signed_urls || post.blockMap.signed_urls
     } catch (error) {
-      process.stderr.write(`signed url refresh failed ${slug}: ${error.message}\n`)
+      process.stderr.write(
+        `signed url refresh failed ${slug}: ${error.message}\n`
+      )
     }
   }
   return data.props.pageProps
 }
 
 function collectPages(home) {
-  const pages = [{ ...home.post, slug: 'about', href: '/about', category: '入门' }]
+  const pages = [
+    { ...home.post, slug: 'about', href: '/about', category: '入门' }
+  ]
   for (const page of home.allNavPages || []) {
     const slug = slugOf(page)
-    if (slug && !pages.some((item) => slugOf(item) === slug)) pages.push(page)
+    if (slug && !pages.some(item => slugOf(item) === slug)) pages.push(page)
   }
   return pages
 }
@@ -272,12 +286,13 @@ function pageToMarkdown(pageProps, sourcePage) {
   const blockMap = post.blockMap
   const body = normalizeMarkdown(
     (post.content || [])
-      .map((id) => renderBlock(blockMap, getBlock(blockMap, id)))
+      .map(id => renderBlock(blockMap, getBlock(blockMap, id)))
       .filter(Boolean)
       .join('\n\n')
   )
   const slug = slugOf(sourcePage)
-  const sourceUrl = slug === 'about' ? `${BASE}/about` : `${BASE}/article/${slug}`
+  const sourceUrl =
+    slug === 'about' ? `${BASE}/about` : `${BASE}/article/${slug}`
   const meta = [
     `# ${post.title || sourcePage.title || slug}`,
     '',
@@ -316,7 +331,11 @@ async function writeArticleIndex(rows) {
     )
   }
   lines.push('')
-  await fs.writeFile(path.join(USER_GUIDE, 'ARTICLE_INDEX.md'), lines.join('\n'), 'utf8')
+  await fs.writeFile(
+    path.join(USER_GUIDE, 'ARTICLE_INDEX.md'),
+    lines.join('\n'),
+    'utf8'
+  )
 }
 
 async function main() {
@@ -333,7 +352,11 @@ async function main() {
       const file = path.join(USER_GUIDE, target)
       await fs.mkdir(path.dirname(file), { recursive: true })
       await fs.writeFile(file, markdown, 'utf8')
-      rows.push({ slug, category: props.post.category || page.category, target })
+      rows.push({
+        slug,
+        category: props.post.category || page.category,
+        target
+      })
     } catch (error) {
       process.stderr.write(`skip ${slug}: ${error.message}\n`)
     }

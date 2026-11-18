@@ -17,20 +17,22 @@ jest.mock('next/router', () => ({
       events: {
         on: jest.fn(),
         off: jest.fn(),
-        emit: jest.fn(),
+        emit: jest.fn()
       },
-      isFallback: false,
+      isFallback: false
     }
-  },
+  }
 }))
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props) => {
+  default: props => {
+    const { unoptimized, ...imgProps } = props
+    void unoptimized
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} />
-  },
+    return <img {...imgProps} />
+  }
 }))
 
 // Mock Next.js Head component
@@ -39,7 +41,7 @@ jest.mock('next/head', () => {
     __esModule: true,
     default: ({ children }) => {
       return <>{children}</>
-    },
+    }
   }
 })
 
@@ -79,8 +81,8 @@ if (typeof window !== 'undefined') {
       removeListener: jest.fn(), // deprecated
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
+      dispatchEvent: jest.fn()
+    }))
   })
 }
 
@@ -89,7 +91,7 @@ const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn(),
+  clear: jest.fn()
 }
 global.localStorage = localStorageMock
 
@@ -98,12 +100,20 @@ const sessionStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
-  clear: jest.fn(),
+  clear: jest.fn()
 }
 global.sessionStorage = sessionStorageMock
 
 // Mock fetch
 global.fetch = jest.fn()
+
+// Mock scrollTo because jsdom exposes it but logs a not-implemented error.
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'scrollTo', {
+    writable: true,
+    value: jest.fn()
+  })
+}
 
 // Mock console methods for cleaner test output
 const originalError = console.error
@@ -134,7 +144,7 @@ global.testUtils = {
     THEME: 'test',
     LINK: 'https://test.com'
   },
-  
+
   // Mock post data
   mockPost: {
     id: 'test-id',
@@ -148,7 +158,7 @@ global.testUtils = {
     status: 'Published',
     type: 'Post'
   },
-  
+
   // Mock site info
   mockSiteInfo: {
     title: 'Test Site',
@@ -162,19 +172,19 @@ global.testUtils = {
 beforeEach(() => {
   // Clear all mocks before each test
   jest.clearAllMocks()
-  
+
   // Reset localStorage
   localStorageMock.getItem.mockClear()
   localStorageMock.setItem.mockClear()
   localStorageMock.removeItem.mockClear()
   localStorageMock.clear.mockClear()
-  
+
   // Reset sessionStorage
   sessionStorageMock.getItem.mockClear()
   sessionStorageMock.setItem.mockClear()
   sessionStorageMock.removeItem.mockClear()
   sessionStorageMock.clear.mockClear()
-  
+
   // Reset fetch mock
   fetch.mockClear()
 })

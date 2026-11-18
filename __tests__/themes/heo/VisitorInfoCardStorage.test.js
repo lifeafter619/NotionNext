@@ -1,0 +1,140 @@
+import { render, screen, waitFor } from '@testing-library/react'
+import VisitorInfoCard from '@/themes/heo/components/VisitorInfoCard'
+import CONFIG from '@/themes/heo/config'
+
+const mockSiteConfig = jest.fn()
+
+jest.mock('@/lib/config', () => ({
+  siteConfig: (...args) => mockSiteConfig(...args)
+}))
+
+jest.mock('@/themes/heo/components/Card', () => {
+  return function Card({ children }) {
+    return <div>{children}</div>
+  }
+})
+
+describe('HEO VisitorInfoCard storage and privacy handling', () => {
+  let getItem
+  let setItem
+
+  beforeEach(() => {
+    mockSiteConfig.mockReturnValue(false)
+    getItem = jest
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation(function () {
+        return this === window.localStorage ? 'not-a-number' : null
+      })
+    setItem = jest.spyOn(Storage.prototype, 'setItem')
+    window.requestIdleCallback = jest.fn(callback => {
+      callback()
+      return 1
+    })
+    window.cancelIdleCallback = jest.fn()
+    fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ city: '上海市' })
+    })
+  })
+
+  it.each([undefined, false])(
+    'does not request visitor location when the flag is %p',
+    async enabled => {
+      mockSiteConfig.mockReturnValue(enabled)
+
+      render(<VisitorInfoCard />)
+
+      expect(screen.getByText('欢迎您的来访~')).toBeInTheDocument()
+      expect(screen.queryByText('加载中...')).not.toBeInTheDocument()
+      await waitFor(() => expect(fetch).not.toHaveBeenCalled())
+    }
+  )
+
+  it('uses the same-origin location endpoint when explicitly enabled', async () => {
+    mockSiteConfig.mockReturnValue(true)
+
+    render(<VisitorInfoCard />)
+
+    expect(screen.getByText('加载中...')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByText('上海市')).toBeInTheDocument()
+    )
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/visitor-location',
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    )
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(setItem).toHaveBeenCalledWith(
+      'heo_visitor_location',
+      '上海市'
+    )
+  })
+
+  it('shows an unknown location when the location endpoint fails', async () => {
+    mockSiteConfig.mockReturnValue(true)
+    fetch.mockRejectedValue(new Error('location service unavailable'))
+
+    render(<VisitorInfoCard />)
+
+    await waitFor(() =>
+      expect(screen.getByText('未知地区')).toBeInTheDocument()
+    )
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('reuses the session location without another request', async () => {
+    mockSiteConfig.mockReturnValue(true)
+    getItem.mockImplementation(function () {
+      return this === window.sessionStorage ? '北京市' : 'not-a-number'
+    })
+
+    render(<VisitorInfoCard />)
+
+    expect(screen.getByText('北京市')).toBeInTheDocument()
+    await waitFor(() => expect(fetch).not.toHaveBeenCalled())
+  })
+
+  it('describes Busuanzi site views as cumulative views', () => {
+    const siteViews = document.createElement('span')
+    siteViews.className = 'busuanzi_value_site_pv'
+    siteViews.textContent = '42'
+    document.body.appendChild(siteViews)
+
+    render(<VisitorInfoCard />)
+
+    expect(
+      screen.getByText(
+        (_, element) =>
+          element.tagName === 'SPAN' &&
+          element.textContent === '本站内容已被浏览 42 次'
+      )
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/今天的第/)).not.toBeInTheDocument()
+  })
+
+  it('shows visitor location by default in the HEO project config', () => {
+    expect(CONFIG.HEO_VISITOR_LOCATION_ENABLE).toBe(true)
+  })
+
+  it('falls back to zero minutes when stored reading time is invalid', async () => {
+    render(<VisitorInfoCard />)
+
+    await waitFor(() => {
+      expect(screen.queryByText('NaN')).not.toBeInTheDocument()
+      expect(screen.getByText('0')).toBeInTheDocument()
+    })
+  })
+
+  it('does not refresh the displayed clock every second', () => {
+    const setIntervalSpy = jest
+      .spyOn(global, 'setInterval')
+      .mockImplementation(() => 0)
+
+    const { unmount } = render(<VisitorInfoCard />)
+
+    expect(setIntervalSpy).not.toHaveBeenCalledWith(expect.any(Function), 1000)
+
+    unmount()
+    setIntervalSpy.mockRestore()
+  })
+})

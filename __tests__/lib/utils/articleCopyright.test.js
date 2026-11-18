@@ -47,6 +47,24 @@ describe('resolveArticleCopyrightText', () => {
     ).toBe('')
   })
 
+  it('normalizes string modes from Notion config', () => {
+    expect(
+      resolveArticleCopyrightText({
+        post: { copyright: 'custom notice' },
+        locale,
+        mode: ' FALSE '
+      })
+    ).toBe('')
+
+    expect(
+      resolveArticleCopyrightText({
+        post: {},
+        locale,
+        mode: ' CUSTOM '
+      })
+    ).toBe('')
+  })
+
   it('shows only posts with custom copyright in custom mode', () => {
     expect(
       resolveArticleCopyrightText({

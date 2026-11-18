@@ -3,7 +3,8 @@ const { Client } = require('@notionhq/client')
 let _client = null
 function client() {
   if (!_client) {
-    if (!process.env.NOTION_TOKEN) throw new Error('NOTION_TOKEN 未设置（请检查项目根目录 .env.local）')
+    if (!process.env.NOTION_TOKEN)
+      throw new Error('NOTION_TOKEN 未设置（请检查项目根目录 .env.local）')
     _client = new Client({ auth: process.env.NOTION_TOKEN })
   }
   return _client
@@ -27,7 +28,9 @@ async function withRetry(fn, label = 'notion-call', maxAttempts = 4) {
         err.code === 'ECONNRESET'
       if (!transient || attempt >= maxAttempts) throw err
       const backoff = Math.min(1000 * 2 ** (attempt - 1), 8000)
-      console.warn(`[重试 ${attempt}/${maxAttempts - 1}] ${label}: ${err.message || err}; 等待 ${backoff}ms`)
+      console.warn(
+        `[重试 ${attempt}/${maxAttempts - 1}] ${label}: ${err.message || err}; 等待 ${backoff}ms`
+      )
       await sleep(backoff)
     }
   }
@@ -41,13 +44,18 @@ function normalizeId(id) {
 
 function extractIdFromInput(input) {
   if (!input) throw new Error('未提供页面 id')
-  const match = String(input).match(/[0-9a-fA-F]{32}/) || String(input).match(/[0-9a-fA-F-]{36}/)
+  const match =
+    String(input).match(/[0-9a-fA-F]{32}/) ||
+    String(input).match(/[0-9a-fA-F-]{36}/)
   if (!match) throw new Error(`无法从输入中解析 Notion id: ${input}`)
   return normalizeId(match[0])
 }
 
 async function fetchPage(pageId) {
-  return withRetry(() => client().pages.retrieve({ page_id: pageId }), `fetchPage ${pageId}`)
+  return withRetry(
+    () => client().pages.retrieve({ page_id: pageId }),
+    `fetchPage ${pageId}`
+  )
 }
 
 async function fetchAllBlocks(blockId) {
@@ -55,7 +63,12 @@ async function fetchAllBlocks(blockId) {
   let cursor
   do {
     const res = await withRetry(
-      () => client().blocks.children.list({ block_id: blockId, start_cursor: cursor, page_size: 100 }),
+      () =>
+        client().blocks.children.list({
+          block_id: blockId,
+          start_cursor: cursor,
+          page_size: 100
+        }),
       `fetchAllBlocks ${blockId}`
     )
     blocks.push(...res.results)
@@ -69,7 +82,13 @@ async function queryDatabase(databaseId, filter) {
   let cursor
   do {
     const res = await withRetry(
-      () => client().databases.query({ database_id: databaseId, start_cursor: cursor, filter, page_size: 100 }),
+      () =>
+        client().databases.query({
+          database_id: databaseId,
+          start_cursor: cursor,
+          filter,
+          page_size: 100
+        }),
       `queryDatabase ${databaseId}`
     )
     results.push(...res.results)
@@ -79,18 +98,28 @@ async function queryDatabase(databaseId, filter) {
 }
 
 async function createPage({ parent, properties, children, cover, icon }) {
-  return withRetry(() => client().pages.create({ parent, properties, children, cover, icon }), 'createPage')
+  return withRetry(
+    () => client().pages.create({ parent, properties, children, cover, icon }),
+    'createPage'
+  )
 }
 
 async function updatePageProperties(pageId, properties) {
-  return withRetry(() => client().pages.update({ page_id: pageId, properties }), `updatePage ${pageId}`)
+  return withRetry(
+    () => client().pages.update({ page_id: pageId, properties }),
+    `updatePage ${pageId}`
+  )
 }
 
 async function appendBlocks(blockId, children) {
   const CHUNK = 100
   for (let i = 0; i < children.length; i += CHUNK) {
     const slice = children.slice(i, i + CHUNK)
-    await withRetry(() => client().blocks.children.append({ block_id: blockId, children: slice }), `appendBlocks ${blockId}`)
+    await withRetry(
+      () =>
+        client().blocks.children.append({ block_id: blockId, children: slice }),
+      `appendBlocks ${blockId}`
+    )
   }
 }
 
@@ -98,7 +127,10 @@ async function deleteAllChildBlocks(blockId) {
   const existing = await fetchAllBlocks(blockId)
   for (const b of existing) {
     try {
-      await withRetry(() => client().blocks.delete({ block_id: b.id }), `deleteBlock ${b.id}`)
+      await withRetry(
+        () => client().blocks.delete({ block_id: b.id }),
+        `deleteBlock ${b.id}`
+      )
     } catch (err) {
       if (!String(err.message || '').includes('archived')) throw err
     }

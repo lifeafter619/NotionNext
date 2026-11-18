@@ -1,41 +1,9 @@
-import { useGlobal } from '@/lib/global'
-import { useEffect, useState } from 'react'
-
 /**
  * 文章波浪动画
  */
 export default function WavesArea() {
-  const { isDarkMode } = useGlobal()
-  const color = isDarkMode ? 'var(--heo-color-bg-dark)' : 'var(--heo-color-bg)'
-  const [showWave, setShowWave] = useState(true)
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 800) {
-        setShowWave(false)
-      } else {
-        setShowWave(true)
-      }
-    }
-
-    // Initial check
-    handleResize()
-
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize)
-
-    // Cleanup event listener on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-
-  if (!showWave) {
-    return null
-  }
-
   return (
-    <section className='main-hero-waves-area waves-area w-full absolute left-0 z-10 bottom-0'>
+    <section className='main-hero-waves-area waves-area hidden min-[800px]:block w-full absolute left-0 z-10 bottom-0'>
       <svg
         className='waves-svg w-full h-[60px]'
         xmlns='http://www.w3.org/2000/svg'
@@ -66,25 +34,25 @@ export default function WavesArea() {
           .parallax > use:nth-child(1) {
             animation-delay: -2s;
             animation-duration: 7s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
             opacity: 0.5;
           }
           .parallax > use:nth-child(2) {
             animation-delay: -3s;
             animation-duration: 10s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
             opacity: 0.6;
           }
           .parallax > use:nth-child(3) {
             animation-delay: -4s;
             animation-duration: 13s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
             opacity: 0.7;
           }
           .parallax > use:nth-child(4) {
             animation-delay: -5s;
             animation-duration: 20s;
-            fill: ${color};
+            fill: var(--heo-color-bg);
           }
 
           @keyframes move-forever {
@@ -93,6 +61,16 @@ export default function WavesArea() {
             }
             100% {
               transform: translate3d(85px, 0, 0);
+            }
+          }
+
+          .dark #theme-heo .parallax > use {
+            fill: var(--heo-color-bg-dark);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .parallax > use {
+              animation: none;
             }
           }
         `}

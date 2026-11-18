@@ -1,6 +1,6 @@
 import Collapse from '@/components/Collapse'
 import DarkModeButton from '@/components/DarkModeButton'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import LogoBar from './LogoBar'
 import { MenuBarMobile } from './MenuBarMobile'

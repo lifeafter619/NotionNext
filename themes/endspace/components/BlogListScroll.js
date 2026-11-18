@@ -5,9 +5,9 @@ import { BlogPostCard } from './BlogPostCard'
  */
 export const BlogListScroll = ({ posts = [] }) => {
   return (
-    <div className="w-full">
-      <div id="posts-wrapper">
-        {posts?.map((post) => (
+    <div className='w-full'>
+      <div id='posts-wrapper'>
+        {posts?.map(post => (
           <BlogPostCard key={post.id} post={post} showSummary={true} />
         ))}
       </div>

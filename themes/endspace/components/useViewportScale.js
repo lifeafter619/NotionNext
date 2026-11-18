@@ -73,12 +73,12 @@ const useViewportScale = (options = {}) => {
     // Clamp font size to reasonable bounds
     fontSize = Math.max(minFontSize, Math.min(maxFontSize, fontSize))
 
-    // Apply to html element
+    // CSS owns the initial html font-size to avoid hydration-time layout shift.
     const html = document.documentElement
-    html.style.fontSize = `${fontSize}px`
-
-    // Also set CSS custom properties for additional flexibility
-    html.style.setProperty('--endspace-viewport-scale', (fontSize / baseFontSize).toString())
+    html.style.setProperty(
+      '--endspace-viewport-scale',
+      (fontSize / baseFontSize).toString()
+    )
     html.style.setProperty('--endspace-base-font-size', `${fontSize}px`)
   }, [landscapeBase, portraitBase, baseFontSize, minFontSize, maxFontSize])
 

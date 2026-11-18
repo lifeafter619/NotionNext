@@ -4,7 +4,7 @@ import AlgoliaSearchModal from '@/components/AlgoliaSearchModal'
 import { AdSlot } from '@/components/GoogleAdsense'
 import replaceSearchResult from '@/components/Mark'
 import WWAds from '@/components/WWAds'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
@@ -59,7 +59,7 @@ const LayoutBase = props => {
 
         <div
           className={
-            (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE'))
+            (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE')
               ? 'flex-row-reverse'
               : '') + ' flex'
           }>
@@ -120,7 +120,7 @@ const LayoutPostList = props => {
       <div className='w-full p-2'>
         <WWAds className='w-full' orientation='horizontal' />
       </div>
-      { POST_LIST_STYLE=== 'page' ? (
+      {POST_LIST_STYLE === 'page' ? (
         <BlogListPage {...props} />
       ) : (
         <BlogListScroll {...props} />
@@ -141,27 +141,29 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      const timer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return (
     <>
       {lock ? (
         <ArticleLock validPassword={validPassword} />
-      ) : post && (
-        <ArticleDetail {...props} />
+      ) : (
+        post && <ArticleDetail {...props} />
       )}
     </>
   )
@@ -228,16 +230,21 @@ const Layout404 = props => {
     }, 3000)
   }, [])
 
-  return <>
-        <div className='md:-mt-20 text-black w-full h-screen text-center justify-center content-center items-center flex flex-col'>
-            <div className='dark:text-gray-200'>
-                <h2 className='inline-block border-r-2 border-gray-600 mr-2 px-3 py-2 align-top'><i className='mr-2 fas fa-spinner animate-spin' />404</h2>
-                <div className='inline-block text-left h-32 leading-10 items-center'>
-                    <h2 className='m-0 p-0'>{locale.NAV.PAGE_NOT_FOUND_REDIRECT}</h2>
-                </div>
-            </div>
+  return (
+    <>
+      <div className='md:-mt-20 text-black w-full h-screen text-center justify-center content-center items-center flex flex-col'>
+        <div className='dark:text-gray-200'>
+          <h2 className='inline-block border-r-2 border-gray-600 mr-2 px-3 py-2 align-top'>
+            <i className='mr-2 fas fa-spinner animate-spin' />
+            404
+          </h2>
+          <div className='inline-block text-left h-32 leading-10 items-center'>
+            <h2 className='m-0 p-0'>{locale.NAV.PAGE_NOT_FOUND_REDIRECT}</h2>
+          </div>
         </div>
+      </div>
     </>
+  )
 }
 
 /**
@@ -260,7 +267,7 @@ const LayoutCategoryIndex = props => {
             return (
               <SmartLink
                 key={category.name}
-                href={`/category/${category.name}`}
+                href={`/category/${encodeURIComponent(category.name)}`}
                 passHref
                 legacyBehavior>
                 <div

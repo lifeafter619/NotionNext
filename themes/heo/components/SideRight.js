@@ -1,25 +1,17 @@
-import Live2D from '@/components/Live2D'
 import dynamic from 'next/dynamic'
-import { AnalyticsCard } from './AnalyticsCard'
+import { siteConfig } from '@/lib/config'
+import { useGlobal } from '@/lib/global'
+import CONFIG from '../config'
+import { isHeoCommentServiceConfigured } from '../utils/commentEnabled'
 import Card from './Card'
 import Catalog from './Catalog'
 import { InfoCard } from './InfoCard'
-import LatestPostsGroupMini from './LatestPostsGroupMini'
-import TagGroups from './TagGroups'
-import TouchMeCard from './TouchMeCard'
+import { useArticleToc } from './useArticleToc'
+import { useEffect, useState } from 'react'
 
-const FaceBookPage = dynamic(
-  () => {
-    let facebook = <></>
-    try {
-      facebook = import('@/components/FacebookPage')
-    } catch (err) {
-      console.error(err)
-    }
-    return facebook
-  },
-  { ssr: false }
-)
+const SideRightDeferred = dynamic(() => import('./SideRightDeferred'), {
+  ssr: false
+})
 
 /**
  * Hexo主题右侧栏
@@ -27,50 +19,51 @@ const FaceBookPage = dynamic(
  * @returns
  */
 export default function SideRight(props) {
-  const { post, lock, tagOptions, currentTag, rightAreaSlot } = props
+  const { post, lock } = props
+  const { fullWidth } = useGlobal()
+  const toc = useArticleToc(post?.toc, Boolean(post) && !lock)
+  const [showDeferred, setShowDeferred] = useState(false)
+  const showCommentButton = Boolean(
+    !fullWidth &&
+      siteConfig('HEO_WIDGET_TO_COMMENT', true, CONFIG) &&
+      isHeoCommentServiceConfigured()
+  )
 
-  // 只摘取标签的前60个，防止右侧过长
-  const sortedTags = tagOptions?.slice(0, 60) || []
+  useEffect(() => {
+    let idleId = null
+    let timerId = null
+    const show = () => setShowDeferred(true)
+
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(show, { timeout: 1500 })
+    } else {
+      timerId = setTimeout(show, 0)
+    }
+
+    return () => {
+      clearTimeout(timerId)
+      if (idleId !== null) window.cancelIdleCallback?.(idleId)
+    }
+  }, [])
 
   return (
-    <div id='sideRight' className='hidden xl:block w-72 space-y-4 h-full'>
-      <InfoCard {...props} className='w-72 wow fadeInUp' />
+    <div
+      id='sideRight'
+      className='hidden xl:block w-72 flex-shrink-0 space-y-4 h-full overflow-visible'>
+      <div className='pointer-events-auto'>
+        <InfoCard {...props} className='w-72' />
+      </div>
 
-      <div className='sticky top-20 space-y-4'>
+      <div id='sideRightSticky' className='sticky top-20 space-y-4'>
         {/* 文章页显示目录（上锁文章不显示） */}
-        {!lock && post && post.toc && post.toc.length > 0 && (
-          <Card className='bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] wow fadeInUp'>
-            <Catalog toc={post.toc} />
-          </Card>
+        {!lock && post && toc.length > 0 && (
+          <div id='sideRightCatalog'>
+            <Card className='bg-white dark:bg-[#1e1e1e] wow fadeInUp'>
+              <Catalog toc={toc} showCommentButton={showCommentButton} />
+            </Card>
+          </div>
         )}
-
-        {/* 联系交流群 */}
-        <div className='wow fadeInUp'>
-          <TouchMeCard />
-        </div>
-
-        {/* 最新文章列表 */}
-        <div
-          className={
-            'border wow fadeInUp  hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] duration-200 dark:border-gray-700 dark:bg-[var(--heo-color-card-dark)] dark:text-white rounded-xl lg:p-6 p-4 hidden lg:block bg-[var(--heo-color-card)]'
-          }>
-          <LatestPostsGroupMini {...props} />
-        </div>
-
-        {rightAreaSlot}
-
-        <FaceBookPage />
-        <Live2D />
-
-        {/* 标签和成绩 */}
-        <Card
-          className={
-            'bg-[var(--heo-color-card)] dark:bg-[var(--heo-color-card-dark)] dark:text-white hover:border-[var(--heo-color-border)] dark:hover:border-[var(--heo-color-border-dark)] duration-200'
-          }>
-          <TagGroups tags={sortedTags} currentTag={currentTag} />
-          <hr className='mx-1 flex border-dashed relative my-4' />
-          <AnalyticsCard {...props} />
-        </Card>
+        {showDeferred && <SideRightDeferred {...props} />}
       </div>
     </div>
   )

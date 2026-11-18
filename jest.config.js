@@ -1,18 +1,24 @@
 const nextJest = require('next/jest')
+const fs = require('fs')
+const path = require('path')
+
+const worktreeIgnorePatterns = fs.existsSync(path.join(__dirname, '.worktrees'))
+  ? ['<rootDir>/.worktrees/']
+  : []
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
-  dir: './',
+  dir: './'
 })
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  
+
   // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
   moduleDirectories: ['node_modules', '<rootDir>/'],
-  
+
   // Module name mapping for path aliases
   moduleNameMapper: {
     // 与 next.config.js 的 webpack alias 保持一致：主题组件里 import 的
@@ -26,39 +32,41 @@ const customJestConfig = {
     '^@/types/(.*)$': '<rootDir>/types/$1',
     '^@/conf/(.*)$': '<rootDir>/conf/$1',
     '^@/themes/(.*)$': '<rootDir>/themes/$1',
+    '^@theme-components$': '<rootDir>/themes/__mocks__/theme-components.js'
   },
-  
+
   // Test environment
-  testEnvironment: 'jest-environment-jsdom',
-  
-  // Test file patterns
-  testMatch: [
-    '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/**/*.(test|spec).{js,jsx,ts,tsx}'
-  ],
-  
+  testEnvironment: '<rootDir>/jest.environment.js',
+
   // Files to ignore
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/out/',
+    '<rootDir>/output/',
+    ...worktreeIgnorePatterns,
     '<rootDir>/.vercel/'
   ],
-  
+
+  // Worktrees live inside the repository but must not participate in module
+  // discovery, otherwise duplicate manual mocks pollute targeted test runs.
+  modulePathIgnorePatterns: worktreeIgnorePatterns,
+  watchPathIgnorePatterns: worktreeIgnorePatterns,
+
   // Transform files
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
   },
-  
+
   // Transform ignore patterns
   transformIgnorePatterns: [
     '/node_modules/',
-    '^.+\\.module\\.(css|sass|scss)$',
+    '^.+\\.module\\.(css|sass|scss)$'
   ],
-  
+
   // Module file extensions
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  
+
   // Coverage configuration
   collectCoverage: false,
   collectCoverageFrom: [
@@ -71,47 +79,51 @@ const customJestConfig = {
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/.next/**',
+    '!**/.worktrees/**',
     '!**/out/**',
     '!**/coverage/**'
   ],
-  
+
   coverageReporters: ['text', 'lcov', 'html'],
   coverageDirectory: 'coverage',
   // Global 70% is far above current suite coverage; keep collection/reporting without failing CI.
   coverageThreshold: {},
-  
+
   // Setup files
   setupFiles: ['<rootDir>/jest.env.js'],
-  
+
   // Global variables
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.json'
     }
   },
-  
+
   // Verbose output
   verbose: true,
-  
+
   // Clear mocks between tests
   clearMocks: true,
-  
+
   // Restore mocks after each test
   restoreMocks: true,
-  
+
   // Error on deprecated features
   errorOnDeprecated: true,
-  
+
   // Timeout for tests
   testTimeout: 10000,
-  
+
   // Reporters
   reporters: [
     'default',
-    ['jest-junit', {
-      outputDirectory: 'test-results',
-      outputName: 'junit.xml'
-    }]
+    [
+      'jest-junit',
+      {
+        outputDirectory: 'test-results',
+        outputName: 'junit.xml'
+      }
+    ]
   ]
 }
 

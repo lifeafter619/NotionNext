@@ -12,13 +12,13 @@ const PerformanceMonitor = () => {
     }
 
     // 监控Core Web Vitals
-    const reportWebVitals = (metric) => {
+    const reportWebVitals = metric => {
       const { name, value, id } = metric
-      
+
       // 检查是否超出性能预算
       const budget = BLOG.PERFORMANCE_BUDGET
       let isOverBudget = false
-      
+
       switch (name) {
         case 'FCP':
           isOverBudget = value > budget.FCP
@@ -36,7 +36,9 @@ const PerformanceMonitor = () => {
 
       // 控制台输出性能指标
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Performance] ${name}: ${value}${isOverBudget ? ' ⚠️ Over Budget' : ' ✅'}`)
+        console.log(
+          `[Performance] ${name}: ${value}${isOverBudget ? ' ⚠️ Over Budget' : ' ✅'}`
+        )
       }
 
       // 可以在这里添加性能数据上报逻辑
@@ -52,15 +54,17 @@ const PerformanceMonitor = () => {
     }
 
     // 动态导入web-vitals库
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(reportWebVitals)
-      getFID(reportWebVitals)
-      getFCP(reportWebVitals)
-      getLCP(reportWebVitals)
-      getTTFB(reportWebVitals)
-    }).catch(err => {
-      console.warn('Failed to load web-vitals:', err)
-    })
+    import('web-vitals')
+      .then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+        getCLS(reportWebVitals)
+        getFID(reportWebVitals)
+        getFCP(reportWebVitals)
+        getLCP(reportWebVitals)
+        getTTFB(reportWebVitals)
+      })
+      .catch(err => {
+        console.warn('Failed to load web-vitals:', err)
+      })
 
     // 监控资源加载性能
     const monitorResourceTiming = () => {
@@ -69,8 +73,10 @@ const PerformanceMonitor = () => {
       }
 
       const resources = window.performance.getEntriesByType('resource')
-      const slowResources = resources.filter(resource => resource.duration > 1000)
-      
+      const slowResources = resources.filter(
+        resource => resource.duration > 1000
+      )
+
       if (slowResources.length > 0 && process.env.NODE_ENV === 'development') {
         console.warn('[Performance] Slow resources detected:', slowResources)
       }
@@ -78,7 +84,6 @@ const PerformanceMonitor = () => {
 
     // 延迟执行资源监控
     setTimeout(monitorResourceTiming, 5000)
-
   }, [])
 
   return null

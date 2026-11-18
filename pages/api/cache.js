@@ -1,4 +1,5 @@
 import { clearDataCache } from '@/lib/cache/cache_manager'
+import { secureCompare } from '@/lib/server/secureCompare'
 
 export const config = { maxDuration: 60 }
 
@@ -10,18 +11,28 @@ export const config = { maxDuration: 60 }
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store')
   if (req.method !== 'POST') {
-    return res.status(405).json({ status: 'error', message: 'Method not allowed' })
+    return res
+      .status(405)
+      .json({ status: 'error', message: 'Method not allowed' })
   }
 
+  // 与 /api/revalidate 的 REVALIDATION_TOKEN 分离：缓存维护使用独立令牌
   const token = process.env.CACHE_REVALIDATION_TOKEN
-  if (!token) return res.status(503).json({ status: 'error', message: 'Cache maintenance is disabled' })
-  if (req.headers.authorization !== `Bearer ${token}`) {
+  if (!token) {
+    return res.status(503).json({
+      status: 'error',
+      message: 'Cache maintenance is disabled'
+    })
+  }
+  if (!secureCompare(req.headers.authorization || '', `Bearer ${token}`)) {
     return res.status(401).json({ status: 'error', message: 'Unauthorized' })
   }
 
   try {
     const stores = await clearDataCache()
-    res.status(200).json({ status: 'success', message: 'Data cache cleared', stores })
+    res
+      .status(200)
+      .json({ status: 'success', message: 'Data cache cleared', stores })
   } catch (error) {
     console.error('Cache clean error:', error)
     res.status(503).json({ status: 'error', message: 'Cache invalidation failed' })

@@ -1,10 +1,10 @@
 # Starter主题
+
 > 迁移自：[Starter主题](https://docs.tangly1024.com/article/notionnext-starter)
 > 发布日期：2024-3-4
 > 最后编辑：2025-7-11
 > 原栏目：⭐ 主题参数
 > 摘要：如何使用Starter主题
-
 
 ## 主题预览
 
@@ -24,17 +24,15 @@ V4.3版本中加入的免费主题：为公司、创业者、独立开发者、�
 本文将介绍Starter主题的使用方式
 :::
 
-
 ### 如何切换至Starter主题？
 
 请先升级NotionNext至最新版，`&gt; V4.3`
 
 然后参考《[主题功能说明-如何修改默认主题进行配置](/user-guide/themes/overview#2d5076c82d854615b995c4eee08c2182)》修改您的默认主题即可。
 
-
 ## 配置说明
 
-页面上的文字\按钮 配置基本都可以在  `/themes/starter/config.js` 中找到配置； 您可以在NotionConfig中添加对应的配置，来一步步调整出您的页面。
+页面上的文字\按钮 配置基本都可以在 `/themes/starter/config.js` 中找到配置； 您可以在NotionConfig中添加对应的配置，来一步步调整出您的页面。
 
 站点支持配置的范围，按照首页的板块大致分为以下11个模块：
 
@@ -44,13 +42,11 @@ LOGO ， HERO，NAV、FEATURE、ABOUT、PRICING、TESTIMONIALS、TEAM、BLOG、C
 Starter主题需要自定配置的内容比较多，修改代码和配置环境变量会比较麻烦，您可以 借助《‣ 》来批量导入配置。
 :::
 
-
 ### 支持Notion_Config
 
 在目前的版本中，所有的主题配置都支持在Notion_Config中配置了。例如要修改作者成员，可以直接在Notion_config中添加如下配置
 
-
-## Starter主题调色
+## Starter主题配色
 
 Starter 主题默认是蓝色。现在推荐优先使用主题色变量调色，不再建议用 `GLOBAL_CSS` 覆盖 `.bg-primary`、`.text-primary` 这类 Tailwind 语义类名。
 
@@ -68,7 +64,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
 旧版本可以通过修改GLOBAL_CSS的方式来调整主题的颜色：修改方式如下图：
 
 ![image.png](/legacy/a3d3a1f5aa3ed592.png)
-
 
 ### 调色示例
 
@@ -88,8 +83,7 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
 
 [CSS 颜色代码大全 CSS颜色对照表-CSDN博客](https://blog.csdn.net/hnyanzijun1/article/details/118931973)
 
-文章浏览阅读5w次，点赞52次，收藏430次。HTML及CSS常用颜色英文词汇            黑色      银色      灰色      白色      茶色      红色      紫色      紫红               black       silver       gray       white       maroon       red       purple       fuchsia              #000000      #C0C0C0    _css颜色
-
+文章浏览阅读5w次，点赞52次，收藏430次。HTML及CSS常用颜色英文词汇 黑色 银色 灰色 白色 茶色 红色 紫色 紫红 black silver gray white maroon red purple fuchsia #000000 #C0C0C0 \_css颜色
 
 ### 调色示例2
 
@@ -103,7 +97,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
 
 ![image.png](/legacy/86057560eb7ad8a5.png)
 
-
 ### Logo
 
 `/themes/starter/config.js` 对应配置 ,我目前是没有设置图片，直接用站点标题作为logo ； 支持设置成图片： 建议是设置两个logo图，一个深色一个浅色。
@@ -116,7 +109,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
 
 ![Untitled](/legacy/c873f55d2195e897.png)
 ![Untitled](/legacy/ea41f17a01f208ae.png)
-
 
 ### Hero
 
@@ -140,7 +132,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
   STARTER_HERO_PREVIEW_IMAGE: '/images/starter/hero/hero-image.webp', // 产品预览图 ，默认读取public目录下图片； 您可以上传自己的图片至/public/starter/hero目录下；
 ```
 
-
 ### NAV 导航栏
 
 导航栏顶部中央菜单 在Notion中通过配置Menu菜单实现。右侧按钮在此配置
@@ -157,7 +148,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
 ```
 
 ![Untitled](/legacy/b2e1008d9686abef.png)
-
 
 ### Feature 特性介绍
 
@@ -192,7 +182,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
   STARTER_FEATURE_4_BUTTON_URL: '/user-guide/intro', // 特性4
 ```
 
-
 ### About 首页介绍
 
 ![Untitled](/legacy/96ff97def4e39994.png)
@@ -209,7 +198,6 @@ STARTER_COLOR_TEXT_MUTED: '#637381'
   STARTER_ABOUT_TIPS_2: '博客站点',
   STARTER_ABOUT_TIPS_3: '正在线上运行',
 ```
-
 
 ### Pricing 价格
 
@@ -255,7 +243,6 @@ NotionNext不提供电商购买相关服务，这里的价格链接可以借助�
   STARTER_PRICING_3_BUTTON_TEXT: '立即购买',
   STARTER_PRICING_3_BUTTON_URL: 'https://tangly1024.lemonsqueezy.com/checkout/buy/df924d66-09dc-42a4-a632-a6b0c5cc4f28',
 ```
-
 
 ### TESTIMONIALS 用户评价
 
@@ -316,7 +303,6 @@ STARTER_TESTIMONIALS_TITLE: '用户反馈',
   ],
 ```
 
-
 ### FAQ 常见问题
 
 支持4个
@@ -341,7 +327,6 @@ STARTER_TESTIMONIALS_TITLE: '用户反馈',
   STARTER_FAQ_4_QUESTION: '文章没有实时同步？',
   STARTER_FAQ_4_ANSWER: '先检查Notion_Page_ID是否正确配置，其次由于博客的每个页面都有独立缓存，刷新网页后即可解决',
 ```
-
 
 ### TEAM 团队成员
 
@@ -379,7 +364,6 @@ STARTER_TEAM_TITLE: '团队成员',
   ],
 ```
 
-
 ### BLOG 文章
 
 此处会显示最新的3篇文章，同时也支持设置数量
@@ -393,7 +377,6 @@ STARTER_TEAM_TITLE: '团队成员',
   STARTER_BLOG_TEXT_1: '最近的新闻',
   STARTER_BLOG_TEXT_2: '这里会发布一些关于NotionNext的最新动态，包括新的动向、新的未来计划，以及新功能的特性',
 ```
-
 
 ### Contact 联系我们
 
@@ -413,7 +396,6 @@ STARTER_TEAM_TITLE: '团队成员',
   // 嵌入外部表单
   STARTER_CONTACT_MSG_EXTERNAL_URL: 'https://noteforms.com/forms/yfctc7', // 基于NoteForm (https://noteforms.com/) 创建，将留言数据存在Notion中
 ```
-
 
 ### Brands 合作伙伴
 
@@ -456,7 +438,6 @@ STARTER_TEAM_TITLE: '团队成员',
     }
   ],
 ```
-
 
 ### Footer 页脚
 
@@ -508,7 +489,6 @@ STARTER_FOOTER_SLOGAN: '我们通过技术为品牌和公司创造数字体验�
   STARTER_FOOTER_PRIVACY_TERMS_OF_SERVICE_URL: '/terms-of-use',
 ```
 
-
 ### 其它配置
 
 404页面个性化
@@ -534,7 +514,6 @@ const CONFIG = {
 }
 export default CONFIG
 ```
-
 
 ## Lite模式
 

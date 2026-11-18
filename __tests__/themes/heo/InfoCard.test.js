@@ -1,3 +1,5 @@
+jest.mock('@/themes/heo/components/Announcement', () => () => null)
+
 import {
   normalizeInfoCardGreetings,
   shouldUseInfoCardBlurAvatar

@@ -13,6 +13,7 @@ const ArticleHeroCover = ({ coverSrc, title }) => {
           className='absolute inset-0 h-full w-full object-cover object-center'
           loading='eager'
           decoding='async'
+          referrerPolicy='no-referrer'
         />
       </div>
     </div>

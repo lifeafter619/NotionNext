@@ -1,4 +1,5 @@
 # 3.社群讨论
+
 > 迁移自：[3.社群讨论](https://docs.tangly1024.com/article/chat-community)
 > 发布日期：2021-3-18
 > 最后编辑：2025-8-20
@@ -52,13 +53,11 @@
 感谢您对 Notion 站长交流群的关注和支持，期待您的加入，共同打造一个积极、有益的交流平台！
 :::
 
-
 ## Telegram群
 
 > **https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f61bdcd6-773d-4c7f-85f9-d6a86e12ffce/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20230327101619.png** 主要面向海外国际友人，本人比较少使用telegram。
 >
-[NotionNext交流群](https://t.me/+sOvnlf2QKZQ3NDU1)
-
+> [NotionNext交流群](https://t.me/+sOvnlf2QKZQ3NDU1)
 
 ## 开发者社群
 
@@ -68,7 +67,6 @@
   - 您需要自行通过**issue讨论区**或其它方式，定位到需要改动的代码，并且提交一个**解决问题的PR**，PR成功通过合并后即可成为[NotionNext的开发者](https://github.com/notionnext-org/NotionNext/graphs/contributors)。
 
 - 开发者们请联系小助理加群或与我对接。
-
 
 ## 其它
 

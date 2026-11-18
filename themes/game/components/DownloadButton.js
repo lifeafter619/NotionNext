@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 import { useEffect, useState } from 'react'
 
 /**
@@ -18,7 +16,7 @@ export default function DownloadButton() {
 
     if ('serviceWorker' in navigator && !isInStandaloneMode()) {
       setShowButton(true)
-      window.addEventListener('load', () => {
+      const registerServiceWorker = () => {
         navigator.serviceWorker
           .register('/service-worker.js')
           .then(registration => {
@@ -27,16 +25,31 @@ export default function DownloadButton() {
           .catch(error => {
             console.log('Service Worker 注册失败:', error)
           })
-      })
+      }
 
-      window.addEventListener('beforeinstallprompt', event => {
+      const handleBeforeInstallPrompt = event => {
         // 阻止浏览器默认的安装提示
         event.preventDefault()
         // 保存安装提示的事件
         window.deferredPrompt = event
         // 在按钮上显示一个标识，提示用户可以安装应用
         setShowButton(true)
-      })
+      }
+
+      if (document.readyState === 'complete') {
+        registerServiceWorker()
+      } else {
+        window.addEventListener('load', registerServiceWorker, { once: true })
+      }
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+      return () => {
+        window.removeEventListener('load', registerServiceWorker)
+        window.removeEventListener(
+          'beforeinstallprompt',
+          handleBeforeInstallPrompt
+        )
+      }
     }
   }, [])
 

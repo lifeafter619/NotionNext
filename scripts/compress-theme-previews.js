@@ -7,9 +7,7 @@ let sharp
 try {
   sharp = require('sharp')
 } catch (error) {
-  console.error(
-    'Missing optional dependency "sharp". Run: yarn add -D sharp'
-  )
+  console.error('Missing optional dependency "sharp". Run: yarn add -D sharp')
   process.exit(1)
 }
 
@@ -48,7 +46,9 @@ async function main() {
     )
   }
 
-  console.log(`Done. Total estimated savings: ${(totalSaved / 1024).toFixed(1)} KB`)
+  console.log(
+    `Done. Total estimated savings: ${(totalSaved / 1024).toFixed(1)} KB`
+  )
 }
 
 main().catch(error => {

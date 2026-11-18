@@ -17,7 +17,9 @@ describe('generateSitemapXml', () => {
   })
 
   it('does not generate invalid duplicated-domain URLs for external links', () => {
-    const writeSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {})
+    const writeSpy = jest
+      .spyOn(fs, 'writeFileSync')
+      .mockImplementation(() => {})
 
     generateSitemapXml({
       NOTION_CONFIG: {
@@ -26,14 +28,17 @@ describe('generateSitemapXml', () => {
       allPages: [
         {
           slug: '/hello-world',
+          status: 'Published',
           publishDay: '2026-02-20'
         },
         {
           slug: 'https://external.com/landing',
+          status: 'Published',
           publishDay: '2026-02-20'
         },
         {
           slug: 'https://example.com/internal/page',
+          status: 'Published',
           publishDay: 'invalid-date'
         }
       ]
@@ -45,7 +50,9 @@ describe('generateSitemapXml', () => {
     expect(xml).toContain('<loc>https://example.com/hello-world</loc>')
     expect(xml).toContain('<loc>https://example.com/internal/page</loc>')
     expect(xml).not.toContain('<loc>https://external.com/landing</loc>')
-    expect(xml).not.toContain('https://example.com/https://external.com/landing')
+    expect(xml).not.toContain(
+      'https://example.com/https://external.com/landing'
+    )
     expect(xml).not.toContain('Invalid Date')
 
     writeSpy.mockRestore()

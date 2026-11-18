@@ -46,20 +46,19 @@ FUKASAWA_COLOR_BG: '#eeedee'
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `FUKASAWA_COLOR_BG` | 页面背景色 |
-| `FUKASAWA_MAILCHIMP_FORM` | 见 config.js |
-| `FUKASAWA_POST_LIST_COVER` | 见 config.js |
-| `FUKASAWA_POST_LIST_COVER_FORCE` | 见 config.js |
-| `FUKASAWA_POST_LIST_PREVIEW` | 见 config.js |
-| `FUKASAWA_POST_LIST_ANIMATION` | 见 config.js |
-| `FUKASAWA_MENU_CATEGORY` | 见 config.js |
-| `FUKASAWA_MENU_TAG` | 见 config.js |
-| `FUKASAWA_MENU_ARCHIVE` | 见 config.js |
-| `FUKASAWA_SIDEBAR_COLLAPSE_BUTTON` | 见 config.js |
+| 配置键                                    | 说明         |
+| ----------------------------------------- | ------------ |
+| `FUKASAWA_MAILCHIMP_FORM`                 | 见 config.js |
+| `FUKASAWA_POST_LIST_COVER`                | 见 config.js |
+| `FUKASAWA_POST_LIST_COVER_FORCE`          | 见 config.js |
+| `FUKASAWA_POST_LIST_PREVIEW`              | 见 config.js |
+| `FUKASAWA_POST_LIST_ANIMATION`            | 见 config.js |
+| `FUKASAWA_MENU_CATEGORY`                  | 见 config.js |
+| `FUKASAWA_MENU_TAG`                       | 见 config.js |
+| `FUKASAWA_MENU_ARCHIVE`                   | 见 config.js |
+| `FUKASAWA_SIDEBAR_COLLAPSE_BUTTON`        | 见 config.js |
 | `FUKASAWA_SIDEBAR_COLLAPSE_SATUS_DEFAULT` | 见 config.js |
-| `FUKASAWA_SIDEBAR_COLLAPSE_ON_SCROLL` | 见 config.js |
+| `FUKASAWA_SIDEBAR_COLLAPSE_ON_SCROLL`     | 见 config.js |
 
 <!-- /theme-config-table -->
 

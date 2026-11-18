@@ -1,5 +1,7 @@
 import { Client } from '@notionhq/client'
 import { createHash } from 'node:crypto'
+import { getClientIp } from '@/lib/middleware/security'
+import { globalRateLimiter } from '@/lib/utils/validation'
 import {
   formatNotionComment,
   getPlainText,
@@ -16,8 +18,14 @@ const requireApproval =
     ? anonymousMode
     : process.env.NOTION_COMMENT_REQUIRE_APPROVAL === 'true'
 const rateWindowMs = 60 * 1000
-const rateLimit = Number(process.env.NOTION_COMMENT_RATE_LIMIT || 5)
-const ipHits = new Map()
+const configuredRateLimit = Number.parseInt(
+  process.env.NOTION_COMMENT_RATE_LIMIT || '5',
+  10
+)
+const rateLimit =
+  Number.isFinite(configuredRateLimit) && configuredRateLimit > 0
+    ? configuredRateLimit
+    : 5
 
 const getClient = () => {
   if (!databaseId || !token) {
@@ -26,25 +34,12 @@ const getClient = () => {
   return new Client({ auth: token })
 }
 
-const getClientIp = req => {
-  const forwardedFor = req.headers['x-forwarded-for']
-  return String(
-    Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || ''
-  )
-    .split(',')[0]
-    .trim()
-}
-
 const isRateLimited = ip => {
-  const now = Date.now()
-  const hits = (ipHits.get(ip) || []).filter(time => now - time < rateWindowMs)
-  if (hits.length >= rateLimit) {
-    ipHits.set(ip, hits)
-    return true
-  }
-  hits.push(now)
-  ipHits.set(ip, hits)
-  return false
+  return globalRateLimiter.isRateLimited(
+    `notion-comments:${ip}`,
+    rateLimit,
+    rateWindowMs
+  )
 }
 
 const hasProperty = (properties, name, type) =>
@@ -58,32 +53,31 @@ const getDatabaseProperties = async notion => {
 const hashEmail = email =>
   createHash('sha256').update(email).digest('hex').slice(0, 32)
 
-const fetchComments = async postId => {
+const fetchComments = async ({ postId, cursor, parentId, pageSize }) => {
   const notion = getClient()
-  const comments = []
-  let startCursor
+  const response = await notion.databases.query({
+    database_id: databaseId,
+    start_cursor: cursor || undefined,
+    page_size: pageSize,
+    filter: {
+      and: [
+        { property: 'PostId', title: { equals: postId } },
+        {
+          property: 'ParentId',
+          rich_text: parentId ? { equals: parentId } : { is_empty: true }
+        }
+      ]
+    },
+    sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
+  })
 
-  do {
-    const response = await notion.databases.query({
-      database_id: databaseId,
-      start_cursor: startCursor,
-      page_size: 100,
-      filter: {
-        property: 'PostId',
-        title: { equals: postId }
-      },
-      sorts: [{ timestamp: 'created_time', direction: 'ascending' }]
-    })
-    comments.push(
-      ...response.results
-        .filter(page => 'properties' in page)
-        .map(formatNotionComment)
-        .filter(isPublicComment)
-    )
-    startCursor = response.has_more ? response.next_cursor : undefined
-  } while (startCursor)
-
-  return comments
+  return {
+    comments: response.results
+      .filter(page => 'properties' in page)
+      .map(formatNotionComment)
+      .filter(isPublicComment),
+    nextCursor: response.has_more ? response.next_cursor : null
+  }
 }
 
 const getParentLevel = async (notion, parentId, postId) => {
@@ -103,11 +97,19 @@ const getParentLevel = async (notion, parentId, postId) => {
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     const postId = String(req.query.postId || '').trim()
+    const parentId = String(req.query.parentId || '').trim() || null
+    const cursor = String(req.query.cursor || '').trim() || null
+    const pageSize = Math.min(
+      50,
+      Math.max(1, Number.parseInt(req.query.pageSize, 10) || 10)
+    )
     if (!postId) {
       return res.status(400).json({ error: 'Missing postId' })
     }
     try {
-      return res.status(200).json(await fetchComments(postId))
+      return res
+        .status(200)
+        .json(await fetchComments({ postId, parentId, cursor, pageSize }))
     } catch (error) {
       console.error('Failed to fetch Notion comments:', error)
       return res.status(500).json({ error: 'Failed to fetch comments' })
@@ -131,7 +133,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true })
     }
 
-    const ip = getClientIp(req) || 'unknown'
+    const ip = getClientIp(req)
     if (isRateLimited(ip)) {
       return res.status(429).json({ error: 'Too many comments' })
     }

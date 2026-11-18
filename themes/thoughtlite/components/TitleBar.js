@@ -38,10 +38,14 @@ export default function TitleBar(props) {
     <div className='relative overflow-hidden border-b border-[var(--tl-border)] bg-[var(--tl-bg)] px-4 py-8 text-center'>
       <div className='relative z-10 mx-auto max-w-3xl'>
         <h1 className='tl-article-title mb-2'>
-          {siteConfig('POST_TITLE_ICON') && <NotionIcon icon={siteInfo?.pageIcon} />}
+          {siteConfig('POST_TITLE_ICON') && (
+            <NotionIcon icon={siteInfo?.pageIcon} />
+          )}
           {title}
         </h1>
-        <p className='m-0 text-sm text-[var(--tl-muted)] leading-relaxed'>{description}</p>
+        <p className='m-0 text-sm text-[var(--tl-muted)] leading-relaxed'>
+          {description}
+        </p>
       </div>
       {TITLE_BG && headerImage ? (
         <>

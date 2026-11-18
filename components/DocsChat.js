@@ -1,5 +1,13 @@
 import { siteConfig } from '@/lib/config'
-import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { useEffect, useRef, useState } from 'react'
+
+const REQUEST_TIMEOUT_MS = 30_000
+
+export const sanitizeChatPath = asPath => {
+  const path = String(asPath || '/').split(/[?#]/, 1)[0] || '/'
+  return path.startsWith('/') ? path.slice(0, 500) || '/' : '/'
+}
 
 const makeMessage = (role, text) => ({
   id: `${role}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -8,6 +16,7 @@ const makeMessage = (role, text) => ({
 })
 
 export default function DocsChat() {
+  const router = useRouter()
   const aiChatApi = siteConfig('AI_CHAT_API')
   const api = aiChatApi || siteConfig('DOCS_CHAT_API')
   const title = aiChatApi
@@ -26,6 +35,14 @@ export default function DocsChat() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [messages, setMessages] = useState([makeMessage('assistant', welcome)])
+  // 进行中请求的 AbortController，卸载时中止避免响应落到已卸载组件
+  const abortRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort()
+    }
+  }, [])
 
   if (!api) return null
 
@@ -39,12 +56,21 @@ export default function DocsChat() {
     setInput('')
     setLoading(true)
 
+    const controller = new AbortController()
+    abortRef.current = controller
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
     try {
       const separator = api.includes('?') ? '&' : '?'
+      const currentPath = sanitizeChatPath(router.asPath)
       const response = await fetch(`${api}${separator}stream=false`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages.slice(-6) })
+        body: JSON.stringify({
+          messages: nextMessages.slice(-6),
+          currentPath
+        }),
+        signal: controller.signal
       })
       const data = await response.json()
       const reply = response.ok ? data.text : data.error
@@ -52,12 +78,15 @@ export default function DocsChat() {
         ...nextMessages,
         makeMessage('assistant', reply || '请求失败，请稍后再试。')
       ])
-    } catch {
-      setMessages([
-        ...nextMessages,
-        makeMessage('assistant', '网络请求失败，请稍后再试。')
-      ])
+    } catch (error) {
+      const reason =
+        error?.name === 'AbortError'
+          ? '请求超时，请稍后再试。'
+          : '网络请求失败，请稍后再试。'
+      setMessages([...nextMessages, makeMessage('assistant', reason)])
     } finally {
+      clearTimeout(timeout)
+      if (abortRef.current === controller) abortRef.current = null
       setLoading(false)
     }
   }
@@ -71,8 +100,7 @@ export default function DocsChat() {
             <button
               type='button'
               onClick={() => setOpen(false)}
-              aria-label='关闭 AI 助手'
-            >
+              aria-label='关闭 AI 助手'>
               ×
             </button>
           </header>
@@ -80,8 +108,7 @@ export default function DocsChat() {
             {messages.map(message => (
               <p
                 key={message.id}
-                className={`docs-chat-message ${message.role}`}
-              >
+                className={`docs-chat-message ${message.role}`}>
                 {message.parts?.[0]?.text}
               </p>
             ))}
@@ -100,8 +127,7 @@ export default function DocsChat() {
             <button
               type='submit'
               disabled={loading || !input.trim()}
-              aria-label='发送'
-            >
+              aria-label='发送'>
               ↑
             </button>
           </form>
@@ -110,8 +136,7 @@ export default function DocsChat() {
       <button
         className='docs-chat-fab'
         type='button'
-        onClick={() => setOpen(true)}
-      >
+        onClick={() => setOpen(true)}>
         {title}
       </button>
       <style jsx>{`

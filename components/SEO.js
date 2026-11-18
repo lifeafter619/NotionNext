@@ -2,10 +2,9 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { getPwaConfig } from '@/lib/pwa'
 import { createSiteUrl, normalizeSiteUrl } from '@/lib/sitemap-utils'
-import { isHttpLink, loadExternalResource } from '@/lib/utils'
+import { isHttpLink } from '@/lib/utils'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
 
 /**
  * 页面的Head头，有用于SEO
@@ -19,40 +18,22 @@ const SEO = props => {
     siteConfig('LINK', siteInfo?.link, NOTION_CONFIG)
   )
   const SUB_PATH = siteConfig('SUB_PATH', '')
+  const ENABLE_RSS = siteConfig('ENABLE_RSS')
+  const rssSubPath = String(SUB_PATH || '')
+    .trim()
+    .replace(/^\/+|\/+$/g, '')
+  const rssUrl = createSiteUrl(
+    rssSubPath ? `${LINK}/${rssSubPath}` : LINK,
+    'rss/feed.xml'
+  )
   let url = PATH?.length ? createSiteUrl(LINK, SUB_PATH) || LINK : LINK
   let image
   const router = useRouter()
   const meta = getSEOMeta(props, router, useGlobal()?.locale)
+  // 字体 CSS 由 _document.js 以 preload + requestIdleCallback 方式加载；
+  // 此处仅探测 Google Fonts 以按需输出 dns-prefetch / preconnect 提示
   const webFontUrl = siteConfig('FONT_URL')
-  const hasWebFontUrl = Array.isArray(webFontUrl)
-    ? webFontUrl.filter(Boolean).length > 0
-    : Boolean(webFontUrl)
   const hasGoogleFontsUrl = containsGoogleFontsUrl(webFontUrl)
-
-  useEffect(() => {
-    if (!hasWebFontUrl) return
-
-    const timeoutId = window.setTimeout(() => {
-      // 使用WebFontLoader字体加载
-      loadExternalResource(
-        'https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js',
-        'js'
-      ).then(url => {
-        const WebFont = window?.WebFont
-        if (WebFont) {
-          // console.log('LoadWebFont', webFontUrl)
-          WebFont.load({
-            custom: {
-              // families: ['"LXGW WenKai"'],
-              urls: webFontUrl
-            }
-          })
-        }
-      })
-    }, 1500)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [hasWebFontUrl, webFontUrl])
 
   // SEO关键词
   const KEYWORDS = siteConfig('KEYWORDS')
@@ -68,17 +49,7 @@ const SEO = props => {
   const title = meta?.title || TITLE
   const description = meta?.description || `${siteInfo?.description}`
   const type = meta?.type === 'Post' ? 'article' : meta?.type || 'website'
-  const ENABLE_RSS = siteConfig('ENABLE_RSS')
-  // 订阅文件的绝对地址，与 lib/utils/rss.js 的静态输出路径保持一致
-  const rssSubPath = String(SUB_PATH || '')
-    .trim()
-    .replace(/^\/+|\/+$/g, '')
-  const rssUrl = createSiteUrl(
-    rssSubPath ? `${LINK}/${rssSubPath}` : LINK,
-    'rss/feed.xml'
-  )
-  const language =
-    router?.locale || siteConfig('LANG', 'zh-CN', NOTION_CONFIG)
+  const language = router?.locale || siteConfig('LANG', 'zh-CN', NOTION_CONFIG)
   const lang = String(language).replace('-', '_') // Facebook OpenGraph 要 zh_CN 這樣的格式才抓得到語言
   const category = Array.isArray(meta?.category)
     ? meta?.category?.[0]
@@ -120,11 +91,6 @@ const SEO = props => {
     null,
     NOTION_CONFIG
   )
-  const ANALYTICS_BUSUANZI_ENABLE = siteConfig(
-    'ANALYTICS_BUSUANZI_ENABLE',
-    null,
-    NOTION_CONFIG
-  )
 
   const FACEBOOK_PAGE = siteConfig('FACEBOOK_PAGE', null, NOTION_CONFIG)
   const TWITTER_SITE = siteConfig('TWITTER_SITE', '', NOTION_CONFIG)
@@ -135,6 +101,14 @@ const SEO = props => {
     <Head>
       <link rel='icon' href={favicon} />
       <title>{title}</title>
+      {ENABLE_RSS && rssUrl && (
+        <link
+          rel='alternate'
+          type='application/rss+xml'
+          title={`${TITLE} RSS`}
+          href={rssUrl}
+        />
+      )}
       <meta
         name='theme-color'
         content={pwaEnabled ? pwaConfig.themeColor : BACKGROUND_DARK}
@@ -143,7 +117,10 @@ const SEO = props => {
         name='viewport'
         content='width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0'
       />
-      <meta name='robots' content='follow, index, max-snippet:-1, max-image-preview:large, max-video-preview:-1' />
+      <meta
+        name='robots'
+        content='follow, index, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
+      />
       <meta charSet='UTF-8' />
       <meta name='format-detection' content='telephone=no' />
       <meta name='mobile-web-app-capable' content='yes' />
@@ -174,15 +151,6 @@ const SEO = props => {
 
       {/* 基础SEO元数据 */}
       <link rel='canonical' href={url} />
-      {/* RSS 自动发现：浏览器地址栏与阅读器依赖此声明 */}
-      {ENABLE_RSS && rssUrl && (
-        <link
-          rel='alternate'
-          type='application/rss+xml'
-          title={`${TITLE} RSS`}
-          href={rssUrl}
-        />
-      )}
       <meta name='keywords' content={keywords} />
       <meta name='description' content={description} />
       <meta name='author' content={AUTHOR} />
@@ -233,14 +201,14 @@ const SEO = props => {
         </>
       )}
 
-      {ANALYTICS_BUSUANZI_ENABLE && (
-        <meta name='referrer' content='no-referrer-when-downgrade' />
-      )}
       {/* 文章特定元数据 */}
       {meta?.type === 'Post' && (
         <>
           {meta.publishTime && (
-            <meta property='article:published_time' content={meta.publishTime} />
+            <meta
+              property='article:published_time'
+              content={meta.publishTime}
+            />
           )}
           {meta.modifiedTime && (
             <meta
@@ -398,7 +366,7 @@ const getIsoTime = value => {
  */
 const getSEOMeta = (props, router, locale) => {
   const { post, siteInfo, tag, category, page } = props
-  const keyword = router?.query?.s
+  const keyword = router?.query?.keyword || router?.query?.s
 
   const TITLE = siteConfig('TITLE')
   switch (router.route) {
@@ -506,8 +474,7 @@ const getSEOMeta = (props, router, locale) => {
         publishDay: post?.publishDay,
         lastEditedDay: post?.lastEditedDay,
         publishTime:
-          getIsoTime(post?.publishDate) ||
-          getIsoTime(post?.date?.start_date),
+          getIsoTime(post?.publishDate) || getIsoTime(post?.date?.start_date),
         modifiedTime: getIsoTime(post?.lastEditedTime || post?.lastEditedDate)
       }
   }

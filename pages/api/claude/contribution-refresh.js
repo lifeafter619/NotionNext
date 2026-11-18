@@ -1,14 +1,12 @@
 import { markContributionCacheDirty } from '@/lib/server/claude/contributionStore'
+import { secureCompare } from '@/lib/server/secureCompare'
 
 const getTokenFromRequest = req => {
-  const queryToken = Array.isArray(req.query?.token)
-    ? req.query.token[0]
-    : req.query?.token
   const headerToken =
     req.headers['x-contribution-trigger-token'] ||
     req.headers['x-contrib-trigger-token'] ||
     ''
-  return String(queryToken || headerToken || '')
+  return String(headerToken || '')
 }
 
 const ALLOWED_REVALIDATE_PATHS = ['/', '/archive', '/category', '/tag']
@@ -20,7 +18,7 @@ const normalizeRevalidatePath = rawPath => {
 }
 
 export default async function handler(req, res) {
-  if (!['GET', 'POST'].includes(req.method || '')) {
+  if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, message: 'Method Not Allowed' })
   }
 
@@ -28,17 +26,20 @@ export default async function handler(req, res) {
   if (!expectedToken) {
     return res.status(503).json({
       ok: false,
-      message: 'Contribution refresh is disabled: missing CLAUDE_CONTRIBUTION_TRIGGER_TOKEN'
+      message:
+        'Contribution refresh is disabled: missing CLAUDE_CONTRIBUTION_TRIGGER_TOKEN'
     })
   }
 
   const receivedToken = getTokenFromRequest(req)
-  if (!receivedToken || receivedToken !== expectedToken) {
+  if (!receivedToken || !secureCompare(receivedToken, expectedToken)) {
     return res.status(401).json({ ok: false, message: 'Unauthorized' })
   }
 
   const shouldRevalidate = String(req.query?.revalidate || '1') !== '0'
-  const requestedPath = (Array.isArray(req.query?.path) ? req.query.path[0] : req.query?.path) || '/'
+  const requestedPath =
+    (Array.isArray(req.query?.path) ? req.query.path[0] : req.query?.path) ||
+    '/'
   const path = normalizeRevalidatePath(requestedPath)
   if (!path) {
     return res.status(400).json({

@@ -37,7 +37,9 @@ export function shouldHideFuwariSidebar(post) {
 function parseTruthyFlag(raw) {
   const value = Array.isArray(raw) ? raw[0] : raw
   if (typeof value === 'string') {
-    return !['false', '0', 'no', '否', 'off'].includes(value.trim().toLowerCase())
+    return !['false', '0', 'no', '否', 'off'].includes(
+      value.trim().toLowerCase()
+    )
   }
   return Boolean(value)
 }

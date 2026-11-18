@@ -1,6 +1,6 @@
 import Live2D from '@/components/Live2D'
 import Tabs from '@/components/Tabs'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import CONFIG from '../config'
 import Card from './Card'
@@ -27,7 +27,7 @@ const SideAreaLeft = props => {
     <aside
       id='left'
       className={
-        (JSON.parse(siteConfig('LAYOUT_SIDEBAR_REVERSE')) ? 'ml-4' : 'mr-4') +
+        (siteConfigBoolean('LAYOUT_SIDEBAR_REVERSE') ? 'ml-4' : 'mr-4') +
         ' hidden lg:block flex-col w-60 relative z-30'
       }>
       <section className='w-60'>

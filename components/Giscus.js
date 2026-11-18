@@ -27,7 +27,9 @@ const GiscusComponent = () => {
         return
       }
       window.history.replaceState(window.history.state, '', clean)
-      Router.replace(clean, undefined, { scroll: false, shallow: true }).catch(() => {})
+      Router.replace(clean, undefined, { scroll: false, shallow: true }).catch(
+        () => {}
+      )
     }
 
     loadExternalResource('/js/giscus.js', 'js').then(() => {
@@ -60,8 +62,7 @@ const GiscusComponent = () => {
       data-theme={theme}
       data-lang={siteConfig('COMMENT_GISCUS_LANG')}
       data-loading={siteConfig('COMMENT_GISCUS_LOADING')}
-      crossOrigin={siteConfig('COMMENT_GISCUS_CROSSORIGIN')}
-    ></div>
+      crossOrigin={siteConfig('COMMENT_GISCUS_CROSSORIGIN')}></div>
   )
 }
 

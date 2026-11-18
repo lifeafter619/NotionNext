@@ -8,16 +8,16 @@ import SmartLink from '@/components/SmartLink'
 export default function BlogArchiveItem({ archiveTitle, archivePosts }) {
   return (
     <div key={archiveTitle} className='pb-16'>
-      <div id={archiveTitle} className='text-[#111827] opacity-30 pb-2 text-3xl dark:text-gray-300'>
+      <div
+        id={archiveTitle}
+        className='text-[#111827] opacity-30 pb-2 text-3xl dark:text-gray-300'>
         {archiveTitle}
       </div>
 
       <ul>
         {archivePosts.map(post => {
           return (
-            <li
-              key={post.id}
-              className='p-1 pl-0 text-base items-center mb-3'>
+            <li key={post.id} className='p-1 pl-0 text-base items-center mb-3'>
               <div id={post?.publishDay} className='flex justify-between'>
                 <SmartLink
                   href={post?.href}

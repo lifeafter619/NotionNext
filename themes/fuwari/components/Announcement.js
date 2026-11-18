@@ -18,4 +18,3 @@ const Announcement = ({ post, className = '', title = 'Announcement' }) => {
 }
 
 export default Announcement
-

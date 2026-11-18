@@ -12,11 +12,19 @@ export const MenuBarMobile = props => {
     {
       name: locale.COMMON.CATEGORY,
       href: '/category',
-      show: CONFIG.MENU_CATEGORY
+      show: siteConfig('COMMERCE_MENU_CATEGORY', true, CONFIG)
     },
-    { name: locale.COMMON.TAGS, href: '/tag', show: CONFIG.MENU_TAG },
-    { name: locale.NAV.ARCHIVE, href: '/archive', show: CONFIG.MENU_ARCHIVE }
-    // { name: locale.NAV.SEARCH, href: '/search', show: CONFIG.MENU_SEARCH }
+    {
+      name: locale.COMMON.TAGS,
+      href: '/tag',
+      show: siteConfig('COMMERCE_MENU_TAG', true, CONFIG)
+    },
+    {
+      name: locale.NAV.ARCHIVE,
+      href: '/archive',
+      show: siteConfig('COMMERCE_MENU_ARCHIVE', true, CONFIG)
+    }
+    // { name: locale.NAV.SEARCH, href: '/search', show: CONFIG.COMMERCE_MENU_SEARCH }
   ]
 
   if (customNav) {

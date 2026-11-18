@@ -1,4 +1,5 @@
 # 多数据库：多语言/多板块
+
 > 迁移自：[多数据库：多语言/多板块](https://docs.tangly1024.com/article/notion-next-mulity-languages)
 > 发布日期：2024-4-12
 > 最后编辑：2024-6-18
@@ -11,15 +12,16 @@
 原先NOTION_PAGE_ID 只能有一个，新版本中支持一个站点配置多个数据源，借此可以实现多语言、或多板块的功能。
 
 - 旧版NOTION_PAGE_ID
+
 ```JavaScript
 xxxxxxx
 ```
 
 - 新版NOTION_PAGE_ID
+
 ```JavaScript
 xxxxxxx**,en:xxxxx,zh:xxxxx,blog:xxxxxx,product:xxxxx,docs:xxxxxx**
 ```
-
 
 ## 适用场景
 
@@ -29,14 +31,13 @@ xxxxxxx**,en:xxxxx,zh:xxxxx,blog:xxxxxx,product:xxxxx,docs:xxxxxx**
 
 1. 需要将一个站点切分成多个子版块，根据路径区分访问哪个版块的数据。
 
-
 ### 效果预览
 
 - 根据url路径不同访问到不同的数据库；例如
-[https://preview.tangly1024.com/](https://preview.tangly1024.com/)是中文站；
-[https://preview.tangly1024.com/en](https://preview.tangly1024.com/en#google_vignette)是英文站 ， 两个站点的数据库是独立隔离的。
-![Untitled](/legacy/33ab3cc22d1a940c.png)
-![Untitled](/legacy/0287f598b771d396.png)
+  [https://preview.tangly1024.com/](https://preview.tangly1024.com/)是中文站；
+  [https://preview.tangly1024.com/en](https://preview.tangly1024.com/en#google_vignette)是英文站 ， 两个站点的数据库是独立隔离的。
+  ![Untitled](/legacy/33ab3cc22d1a940c.png)
+  ![Untitled](/legacy/0287f598b771d396.png)
 
 - 自动化多语言跳转：
 ::: tip 提示
@@ -49,7 +50,6 @@ xxxxxxx**,en:xxxxx,zh:xxxxx,blog:xxxxxx,product:xxxxx,docs:xxxxxx**
 
 - 理论上可以配置无数种语言。
 
-
 ## 使用方法
 
 ::: warning 注意
@@ -57,7 +57,6 @@ xxxxxxx**,en:xxxxx,zh:xxxxx,blog:xxxxxx,product:xxxxx,docs:xxxxxx**
 :::
 
 若要用静态导出方案，可以用多域名站点解决：例如创建多个不同的域名：`xxx.cn `,` xxx.en`, `xxx.jp` 等； 或者用二级域名 `cn.xxx.com` , `jp.xxx.com`, cn.xxx.com
-
 
 ### 1. 网站准备多个数据库
 
@@ -71,7 +70,6 @@ NotionNext Blog
 
 一个NotionNext搭建的博客
 
-
 ### 2. 配置`NOTION_PAGE_ID`。
 
 在`blog.config.js`中将NOTION_PAGE_ID设置成多个（用英文逗号隔开）：
@@ -83,9 +81,7 @@ NotionNext Blog
 
 而逗号后面的ID要以`语言名`开头且ID中间用`英文冒号:`隔开。例如缩写`en:xxxx` 表示英文站点使用`xxxx`这个数据库，访问站点的` [domain.com]/en` 读取的站点数据来自`xxxx` 这个数据库。
 
-
 ### 3. 路径与数据库映射
-
 
 ### 多语言示例
 
@@ -103,7 +99,6 @@ NOTION_PAGE_ID = 'xxJPxx,en:xxENxx,zh:xxZHxx,es:xxESxx'
 
 至此大功告成。
 
-
 ### **子版块用法**
 
 这里的路径名，可以不是标准语言名，而是任意英文，这样可以用来区分子版块业务。
@@ -112,18 +107,15 @@ NOTION_PAGE_ID = 'xxJPxx,en:xxENxx,zh:xxZHxx,es:xxESxx'
 
 结合[Notion_CONFIG](/user-guide/config-site#3edb6a42a64247b689ef89cceadb83dd)的功能，你可以为每个版块配置不同的主题。
 
-
 ### 4. 切换语言
 
-只要让用户跳转到对应的语言路径即可，例如我的默认语言是中文，设置一个菜单让用户点击后切换到英文路径 `/en`   即可。
+只要让用户跳转到对应的语言路径即可，例如我的默认语言是中文，设置一个菜单让用户点击后切换到英文路径 `/en` 即可。
 
-但是多语言的菜单处理会比较特殊，不能使用相对路径，例如  /en , /zh , /jp 这种作为菜单的slug，而是要用全路径。
+但是多语言的菜单处理会比较特殊，不能使用相对路径，例如 /en , /zh , /jp 这种作为菜单的slug，而是要用全路径。
 
 例如默认中文主页是 [https://preview.tangly1024.com/](https://preview.tangly1024.com/) ， 则要切换成英文，则需要创建一个菜单，slug是 [https://preview.tangly1024.com/en](https://preview.tangly1024.com/en)。 否则会切换异常。
 
-
 ## 其它
-
 
 #### 为什么用这种多数据库的方案实现？
 

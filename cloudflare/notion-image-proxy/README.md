@@ -1,10 +1,8 @@
-# Notion image proxy
+# Notion asset proxy
 
-Cloudflare Worker proxy for NotionNext images.
-
-It keeps Notion attachment URLs in the browser and at Cloudflare's edge for one
-year. Fresh browser cache entries need no network request; explicit
-revalidation is answered with `304 Not Modified` when the validator matches.
+Cloudflare Worker proxy for Notion-hosted images, video, audio, uploaded files,
+and allowlisted Waline emoji assets used by NotionNext. Ordinary external URLs
+are deliberately excluded.
 
 ## Deploy
 
@@ -29,31 +27,135 @@ NEXT_PUBLIC_NOTION_HOST=https://cdn.example.com
 
 ```bash
 curl -I "https://cdn.example.com/images/page-cover/gradients_11.jpg"
+# For a Notion uploaded file, use its stable /signed/ URL:
+curl -I "https://cdn.example.com/signed/<encoded-source>?table=block&id=<block-id>"
+# Waline emoji images and picker metadata use a strict package route:
+curl -I "https://cdn.example.com/external/waline-emojis/1.2.0/tieba/tieba_agree.png"
+curl -I "https://cdn.example.com/external/waline-emojis/1.2.0/tieba/info.json"
 ```
 
-Expected headers after repeat requests:
+Expected headers for a successful image response:
 
 ```text
-X-Notion-Image-Proxy: 1
-X-Notion-Image-Proxy-Cache: HIT
-CF-Cache-Status: HIT
-Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable
-ETag: W/"..."
+Content-Type: image/*
+X-Notion-Image-Proxy: v11
+X-Notion-Image-Proxy-Edge-Cache: MISS    # first request anywhere
+X-Notion-Image-Proxy-Edge-Cache: R2-HIT  # colo cold, served from R2
+X-Notion-Image-Proxy-Edge-Cache: HIT     # served from the local colo cache
+X-Notion-Image-Proxy-Origin-Cache: HIT   # upstream fetch cache, plan-dependent
 ```
 
-Verify conditional requests with the `Last-Modified` value returned above:
+## Image-bed route: `/f/<key>`
+
+Objects uploaded manually to the bucket are served read-only at
+`https://<cdn-domain>/f/<key>` — e.g. object `2026/photo.webp` becomes
+`https://cdn.example.com/f/2026/photo.webp`. Content type comes from the
+object metadata (set automatically by dashboard/wrangler/S3 uploads) with an
+extension-based fallback. Responses carry `Cache-Control: max-age=86400`
+(not immutable, so overwriting a key propagates within a day) plus the R2
+ETag for cheap revalidation, and repeats are served from the colo cache.
+
+Upload options:
 
 ```bash
-curl -I -H "If-Modified-Since: <Last-Modified value>" "https://cdn.example.com/image/..."
+# Dashboard: R2 → notion-image-proxy-cache → Upload (drag & drop)
+# Wrangler:
+npx wrangler r2 object put notion-image-proxy-cache/photo.webp --file ./photo.webp
+# PicGo / PicList / any S3 client: R2 is S3-compatible — endpoint
+# https://<account_id>.r2.cloudflarestorage.com, bucket
+# notion-image-proxy-cache, custom URL prefix https://<cdn-domain>/f/
 ```
 
-The expected status is `304 Not Modified` with no image body.
+The `v1/` prefix is the proxy's internal cache namespace: it is hidden from
+`/f/` and is the only prefix covered by the bucket's auto-expiry lifecycle
+rule, so manual uploads are never deleted automatically. Avoid naming your
+own files under `v1/`.
 
-## Test
+## Hotlink protection (防盗链)
+
+All routes (`/image`, `/signed`, `/images`, `/f`, and the Waline emoji proxy)
+check the request `Referer` against an allow-list:
+
+- **No `Referer` → allowed.** NotionNext sets `referrerPolicy: 'no-referrer'`
+  on every image request, so your own site's requests carry no `Referer` and
+  pass through. Direct opens of an image URL in the address bar also pass.
+- **`Referer` host matches an allow-listed domain (exact or subdomain) →
+  allowed.**
+- **Anything else → `403 Forbidden`.** A third-party site embedding your image
+  sends its own `Referer`, which is rejected.
+
+> **Limitations — this is soft hotlink protection.** Because "no `Referer` →
+> allowed" is required for the site's own `no-referrer` policy, any
+> third-party page can bypass the check by adding
+> `<meta name="referrer" content="no-referrer">` (or `referrerpolicy`
+> attributes), and non-browser clients can forge an allow-listed `Referer`
+> outright (`curl -H "Referer: https://619.pp.ua/"`). The default list also
+> includes `localhost`/`127.0.0.1` for local development, which is trivially
+> forgeable in production. This blocks only casual hotlinking; for stronger
+> guarantees use `Origin`/`Sec-Fetch-Site` checks or the signed-URL routes.
+
+The allow-list defaults to `619.pp.ua`, `66619.eu.org`,
+`619-project.eu.org`, `localhost`, `127.0.0.1`. Override it with the
+`ALLOWED_DOMAINS` environment variable (comma-separated, case-insensitive).
+Setting it **replaces** the default list entirely (it does not extend it),
+so include all the domains you need:
 
 ```bash
-node --test worker.test.mjs
+# Dashboard: Workers & Pages → notion-image-proxy → Settings → Variables
+ALLOWED_DOMAINS=619.pp.ua,66619.eu.org,619-project.eu.org,localhost,127.0.0.1
 ```
 
-The test also checks that the copy-paste code in the VitePress tutorial stays
-identical to `worker.mjs`.
+`keep_vars = true` in `wrangler.toml` means a `wrangler deploy` preserves
+dashboard-set variables, so you only set this once. To add a domain later,
+edit the variable in the dashboard (no redeploy needed for a value change;
+the Worker reads `env.ALLOWED_DOMAINS` on every request).
+
+Verify a blocked referer:
+
+```bash
+curl -I "https://cdn.example.com/images/page-cover/gradients_11.jpg" \
+  -H "Referer: https://evil.com/"
+# HTTP/2 403
+```
+
+
+
+Three independent layers, all available on every Cloudflare plan:
+
+1. **Cache API (`caches.default`)** — the Worker stores validated `200`
+   responses per colo and serves repeats locally. Errors, ranges, and partial
+   probes never enter this cache, so a bad upstream answer can never stick.
+   Query parameters are sorted so `?width=1080&cache=v2` and
+   `?cache=v2&width=1080` share one entry.
+2. **R2 persistence (`ASSET_BUCKET` binding, optional)** — validated assets
+   up to 100 MB are stored durably. A colo that has never seen an asset reads
+   it from R2 in ~100ms and repopulates its local cache, so Notion is only
+   contacted once per asset globally. Keys hash the normalized path+query, so
+   every hostname bound to the Worker shares one stored copy. Without the
+   binding the Worker silently skips this layer.
+3. **`fetch()` subrequest cache** — upstream fetches use
+   `cf: { cacheEverything, cacheTtl }`. `cacheTtl` (unlike `cacheEverything`
+   alone) also overrides Notion's `private`/`no-store` response directives,
+   which otherwise force a full origin round trip on every request. If a
+   cached subrequest entry turns out to be a stored upstream error, the Worker
+   bypasses the cache once and uses the live answer (self-healing), so a
+   poisoned entry only ever costs one extra hop.
+
+Recommended free dashboard toggle: **Caching → Tiered Cache → Smart Tiered
+Caching** for the zone, which lets `fetch()` subrequest cache hits be shared
+across colos instead of each colo going back to Notion.
+
+File responses additionally preserve `Content-Disposition`, `Content-Length`,
+`Content-Range`, and support `GET`, `HEAD`, `OPTIONS`, and byte ranges. The
+Worker returns `404` for paths outside `/image/`, `/images/`, `/signed/`, and
+the strict `/external/waline-emojis/<version>/<pack>/<file>` route. The Waline
+route accepts only the official `qq`, `tieba`, `weibo`, and `bilibili` packs,
+and only image files or `info.json`. `/image/` and `/signed/` still require a
+Notion-owned asset, so the Worker cannot be used as an open proxy. It rejects
+other methods and never caches upstream error pages. Full downloads remain
+cacheable, while byte ranges are passed through and marked `no-store`.
+Keep Wrangler's `[cache].enabled` set to `false`: Workers Cache removes the
+incoming `Range` header and would force videos larger than the 512 MB Free-plan
+cache limit into an unusable full-body `200` response. Repeat full-asset
+requests should normally show an origin cache `HIT`; the exact Cloudflare cache
+header depends on the zone and plan.

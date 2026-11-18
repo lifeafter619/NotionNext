@@ -1,4 +1,5 @@
 # 借助AI开发NotionNext
+
 > 迁移自：[借助AI开发NotionNext](https://docs.tangly1024.com/article/notion-next-develop-with-ai)
 > 发布日期：2025-4-25
 > 最后编辑：2026-5-2
@@ -10,11 +11,9 @@
 
 结论是可以的，但是会有些难，相当于完全没有某个行业的客户积累与产品积累，却要一下子开一家这个行业的公司。但是如果你擅长通过AI进行自主学习与挖掘的话，会有一定的帮助。
 
-
 ## 云环境
 
 建议先阅读‣ 这篇文章，其中介绍了开发NotionNext项目可能需要具备的一些基础知识。
-
 
 ### GitHub Codespaces
 
@@ -28,7 +27,6 @@ GitHub 本身自带 Codespaces 云环境，简单来说，在您的 GitHub 仓�
 
 Copilot会实时关注您当前打开的文件。通过对话，可以实现对文件的修改或建议。
 
-
 ### Google Firebase Studio
 
 Google推出了FirebaseStudio，支持将您的github项目导入这个云环境进行开发，其原理和Github的Codespace差不多。
@@ -38,7 +36,6 @@ Google推出了FirebaseStudio，支持将您的github项目导入这个云环境
 ![image.png](/legacy/43a9e2122e987f4d.png)
 
 因此我还是建议使用Codespace作为云开发环境，不但与github的集成更好，同时Copilot的AI性能更强大。
-
 
 ## 使用Firebase进行AI开发演示
 
@@ -64,11 +61,9 @@ Firebase会自动导入项目代码并进行环境安装。
 
 ![image.png](/legacy/9dfe4df0328b03da.png)
 
-
 ## 主题定制
 
 这里用firebase示范，codespace的使用方法基本一致。
-
 
 ### 复制一个主题文件夹
 
@@ -86,7 +81,6 @@ Firebase会自动导入项目代码并进行环境安装。
 
 ![image.png](/legacy/bdd104d76776fa20.png)
 
-
 ### 重命名主题
 
 我希望新主题名为dream，因此将example copy文件夹重命名，右键点击文件夹，选择rename，并且输入新的文件夹名称，按下回车确认即可。
@@ -94,7 +88,6 @@ Firebase会自动导入项目代码并进行环境安装。
 ![image.png](/legacy/f5ca83ba0b823745.png)
 
 ![image.png](/legacy/a94cfb41e1c57264.png)
-
 
 ## 修改主题内容
 
@@ -118,7 +111,6 @@ Firebase会自动导入项目代码并进行环境安装。
 ![image.png](/legacy/5aa43dd8558d246f.png)
 
 点击建议框右侧的Review changes可以审视修改的内容，点击左侧的Updates file，即可自动修改文件。
-
 
 ## 运行启动项目
 
@@ -149,7 +141,6 @@ firebase会自动分配一个临时网址用于访问调试页面。
 ![image.png](/legacy/024243b88fc53f56.png)
 
 接下来就是不停的和AI对话，告诉他需要改什么，给出结果，然后你点击更新文件即可。
-
 
 ## 保存代码
 
@@ -204,7 +195,6 @@ AI 修改代码时，不要只让它改组件或配置文件。凡是新增或�
 
 这里我们点击它，将内容同步到github云端。
 
-
 ### 授权Github
 
 > 如果用的是github提供的codespace环境则无需下列步骤。
@@ -231,7 +221,6 @@ AI 修改代码时，不要只让它改组件或配置文件。凡是新增或�
 
 ![image.png](/legacy/0f442d3f4d9d85bd.png)
 
-
 ## 代码提交同步完成
 
 此时再看你的SourceControl 页面，已经没有待提交、待审核、和带同步的任务了。
@@ -245,7 +234,6 @@ AI 修改代码时，不要只让它改组件或配置文件。凡是新增或�
 接下来vercel将会自动识别代码的修改并自动部署您的站点。
 
 以上就是一个完整的，借助云环境+AI开发一个小功能，并同步到Github的流程。
-
 
 ## 结尾
 

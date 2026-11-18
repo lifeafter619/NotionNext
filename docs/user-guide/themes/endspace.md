@@ -56,34 +56,27 @@ ENDSPACE_COLOR_BORDER: '#e4e4e7'
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `ENDSPACE_COLOR_BG_BASE` | 页面背景 |
-| `ENDSPACE_COLOR_SURFACE` | 卡片背景 |
-| `ENDSPACE_COLOR_TEXT` | 主文字 |
-| `ENDSPACE_COLOR_TEXT_SECONDARY` | 次级文字 |
-| `ENDSPACE_COLOR_ACCENT` | 强调色 |
-| `ENDSPACE_COLOR_ACCENT_DIM` | 弱强调色 |
-| `ENDSPACE_COLOR_BORDER` | 边框 |
-| `ENDSPACE_LOADING_COVER` | 见 config.js |
-| `ENDSPACE_LOADING_SITE_NAME` | 见 config.js |
-| `ENDSPACE_LOADING_TEXT_INIT` | 见 config.js |
-| `ENDSPACE_LOADING_TEXT_LOADING` | 见 config.js |
-| `ENDSPACE_LOADING_TEXT_COMPLETE` | 见 config.js |
-| `ENDSPACE_LOADING_TEXT_SWEEPING` | 见 config.js |
-| `ENDSPACE_LOADING_TEXT_FADEOUT` | 见 config.js |
-| `ENDSPACE_LOADING_IMAGE` | 见 config.js |
-| `ENDSPACE_BANNER_WATERMARK_TEXT` | 见 config.js |
-| `ENDSPACE_ARTICLE_WATERMARK_TEXT` | 见 config.js |
-| `ENDSPACE_MENU_CATEGORY` | 见 config.js |
-| `ENDSPACE_MENU_TAG` | 见 config.js |
-| `ENDSPACE_MENU_ARCHIVE` | 见 config.js |
-| `ENDSPACE_MENU_SEARCH` | 见 config.js |
-| `ENDSPACE_POST_LIST_COVER` | 见 config.js |
-| `ENDSPACE_POST_LIST_PREVIEW` | 见 config.js |
+| 配置键                             | 说明         |
+| ---------------------------------- | ------------ |
+| `ENDSPACE_LOADING_COVER`           | 见 config.js |
+| `ENDSPACE_LOADING_SITE_NAME`       | 见 config.js |
+| `ENDSPACE_LOADING_TEXT_INIT`       | 见 config.js |
+| `ENDSPACE_LOADING_TEXT_LOADING`    | 见 config.js |
+| `ENDSPACE_LOADING_TEXT_COMPLETE`   | 见 config.js |
+| `ENDSPACE_LOADING_TEXT_SWEEPING`   | 见 config.js |
+| `ENDSPACE_LOADING_TEXT_FADEOUT`    | 见 config.js |
+| `ENDSPACE_LOADING_IMAGE`           | 见 config.js |
+| `ENDSPACE_BANNER_WATERMARK_TEXT`   | 见 config.js |
+| `ENDSPACE_ARTICLE_WATERMARK_TEXT`  | 见 config.js |
+| `ENDSPACE_MENU_CATEGORY`           | 见 config.js |
+| `ENDSPACE_MENU_TAG`                | 见 config.js |
+| `ENDSPACE_MENU_ARCHIVE`            | 见 config.js |
+| `ENDSPACE_MENU_SEARCH`             | 见 config.js |
+| `ENDSPACE_POST_LIST_COVER`         | 见 config.js |
+| `ENDSPACE_POST_LIST_PREVIEW`       | 见 config.js |
 | `ENDSPACE_ARTICLE_LAYOUT_VERTICAL` | 见 config.js |
-| `ENDSPACE_ARTICLE_ADJACENT` | 见 config.js |
-| `ENDSPACE_WIDGET_DARK_MODE` | 见 config.js |
+| `ENDSPACE_ARTICLE_ADJACENT`        | 见 config.js |
+| `ENDSPACE_WIDGET_DARK_MODE`        | 见 config.js |
 
 <!-- /theme-config-table -->
 

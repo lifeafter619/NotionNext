@@ -1884,7 +1884,7 @@ const Style = () => {
       /* Dark mode — bold text white */
       .dark #article-wrapper b,
       .dark #article-wrapper strong {
-        color: var(--claude-text-strong) !important;
+        color: inherit !important;
       }
 
       /* Blockquotes — Claude Docs callout style */
@@ -1943,7 +1943,6 @@ const Style = () => {
       #theme-claude .notion-quote u,
       #theme-claude .notion-quote s,
       #theme-claude .notion-quote del,
-      #theme-claude .notion-quote span,
       #theme-claude .notion-quote :not(pre) > code,
       #theme-claude .notion-quote .notion-inline-code {
         color: inherit !important;
@@ -1966,12 +1965,16 @@ const Style = () => {
         padding: 16px 20px !important;
         border: 1px solid var(--claude-callout-tip-border) !important;
         border-radius: 16px !important;
-        background: var(--claude-callout-tip-bg) !important;
         color: var(--claude-callout-tip-text) !important;
         overflow: hidden !important;
         box-sizing: border-box !important;
         line-height: 1.75rem !important;
         font-size: 1rem !important;
+      }
+      .dark
+        #theme-claude
+        .notion-callout:not([class*='_background_co']) {
+        background: var(--claude-callout-tip-bg) !important;
       }
       .dark #theme-claude .notion-callout .notion-callout-text {
         margin-left: 0 !important;

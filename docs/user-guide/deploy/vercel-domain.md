@@ -1,4 +1,5 @@
 # Vercel绑定自定义域名
+
 > 迁移自：[Vercel绑定自定义域名](https://docs.tangly1024.com/article/vercel-domain)
 > 发布日期：2022-2-17
 > 最后编辑：2025-12-26
@@ -10,8 +11,7 @@
 为什么要绑定自定义域名？
 :::
 
-vercel默认提供的域名 *.vercel.app 由于滥用已被大陆屏蔽（DNS污染），如果需要在国内能访问到您的站点，请绑定一个新的域名即可
-
+vercel默认提供的域名 \*.vercel.app 由于滥用已被大陆屏蔽（DNS污染），如果需要在国内能访问到您的站点，请绑定一个新的域名即可
 
 ## 准备一个域名
 
@@ -26,7 +26,6 @@ vercel默认提供的域名 *.vercel.app 由于滥用已被大陆屏蔽（DNS污
 - [eu.org](https://zhuanlan.zhihu.com/p/538005306) （eu.org是欧盟组织的免费域名；需要英国的用户信息才能注册;）
 
 - ~~[Freenom](https://freenom.com)~~~~ （目前已逐步停止域名服务）~~
-
 
 #### 首推Namesilo
 
@@ -48,14 +47,13 @@ Namesilo 价格表：[Domain Pricing](https://www.namesilo.com/pricing.php?rid=f
 :::
 
 - **永久免费的隐私保护**
-Namesilo 提供永久免费的域名隐私保护，防止别人通过 WHOIS 查询获取域名所有者的个人注册信息。作为对比，Godaddy 的隐私保护是 60 元/年，Namecheap 则是免费提供第一年。
+  Namesilo 提供永久免费的域名隐私保护，防止别人通过 WHOIS 查询获取域名所有者的个人注册信息。作为对比，Godaddy 的隐私保护是 60 元/年，Namecheap 则是免费提供第一年。
 
 - **安全性高**
-支持账户登陆二次验证和 Domain Defender，保护账户和域名安全。登陆、解锁域名等，都可以设置邮件或短信提醒。
+  支持账户登陆二次验证和 Domain Defender，保护账户和域名安全。登陆、解锁域名等，都可以设置邮件或短信提醒。
 
 - **支付方便**
-支持支付宝、Paypal、信用卡等多种方式付款。
-
+  支持支付宝、Paypal、信用卡等多种方式付款。
 
 ## Vercel控制台添加域名
 
@@ -68,7 +66,6 @@ Namesilo 提供永久免费的域名隐私保护，防止别人通过 WHOIS 查�
 ![image](/legacy/b230574ba68381a8.png)
 
 这里推荐使用CNAME绑定。请按文档后续步骤配置对应的Cname解析。
-
 
 ## 域名服务商解析CNAME
 
@@ -102,7 +99,6 @@ Namesilo 提供永久免费的域名隐私保护，防止别人通过 WHOIS 查�
 
 :::
 
-
 ### 域名转CloudFlare托管
 
 域名服务商购买的域名，默认都会提供一个解析服务，但这个服务是可选的，我们可以通过修改Nameserver的方式，交给CloudFlare或其他DNS服务商进行解析和托管。
@@ -124,13 +120,12 @@ CloudFlare具有Worker.js、全球免费CDN、SSL证书，网站DDoS防火墙等
 ![b9d36b3aa2ca475b12b96afcc8fe80b.png](/legacy/93d490cad8cf1e20.png)
 :::
 
-
 ### CloudFlare 解析 CNAME
 
 - 打开CloudFlare控制台 [https://dash.cloudflare.com](https://dash.cloudflare.com)，并找到您的域名
 
 - 若您的域名没有解析任何服务器**（即没有添加过任何一条A记录）**，需要添加一条域名A记录指向Vercel服务器地址`76.76.21.21`
-![Untitled](/legacy/a695a6086d3c877b.png)
+  ![Untitled](/legacy/a695a6086d3c877b.png)
 
 - 按Vercel提示，添加一条CNAME记录值为Vercel的CNAME服务器：`cname-china.vercel-dns.com` ;（vercel默认推荐`cname.vercel-dns.com` ，但这个cname在大陆访问比较慢）
 下图是我的配置，这里举例使用的是二级域名 [hexo.tangly1024.com](http://hexo.tangly1024.com)
@@ -146,9 +141,9 @@ CloudFlare具有Worker.js、全球免费CDN、SSL证书，网站DDoS防火墙等
 :::
 
 - 添加成功后，还需要在ssl/tls配配置开启https完全加密 ， 否则会因为证书不匹配导致反复重定向而打不开网页。
-![Untitled](/legacy/5513d9ea3c704f4b.png)
-如果没有开启SSL完全加密，网站会打开失败
-![反复重定向，无法打开页面](/legacy/b623038b99687589.png)
+  ![Untitled](/legacy/5513d9ea3c704f4b.png)
+  如果没有开启SSL完全加密，网站会打开失败
+  ![反复重定向，无法打开页面](/legacy/b623038b99687589.png)
 
 如果域名服务配置正常，Vercel的卡片会变成如图的样子：
 
@@ -156,11 +151,9 @@ CloudFlare具有Worker.js、全球免费CDN、SSL证书，网站DDoS防火墙等
 
 > 接下来就可以通过设置的域名（如 [https://hexo.tangly1024.com](https://hexo.tangly1024.com) ）访问我们的网站了
 
-
 ### 关于根域名的配置
 
 以上举例使用的是二级域名，如果你想像我一样使用 [/user-guide/intro](/user-guide/intro) 这样的根域名，配置参考如下：
-
 
 #### Vercel后台
 
@@ -168,21 +161,19 @@ CloudFlare具有Worker.js、全球免费CDN、SSL证书，网站DDoS防火墙等
 
 ![Untitled](/legacy/6e4f4e171bbfcff7.png)
 
-
 #### 域名管理后台
 
 直接将根域名 解析到 vercel的服务器地址即可 ： 76.76.21.21
 
 ![Untitled](/legacy/0e277245ea2470c4.png)
 
-添加根域名的时候，vercel会提示选择以下三种方案，针对个人博客而言，为了让域名简洁，我推荐选择第一种方案，  将www开头的二级域名也重定向到根域名tangly1024.com。
+添加根域名的时候，vercel会提示选择以下三种方案，针对个人博客而言，为了让域名简洁，我推荐选择第一种方案， 将www开头的二级域名也重定向到根域名tangly1024.com。
 
 ![Untitled](/legacy/4dabe69fa62572f6.png)
 
 完成效果
 
 ![Untitled](/legacy/a11f1b9bb5dfb245.png)
-
 
 ## 域名与NotionNext配置
 

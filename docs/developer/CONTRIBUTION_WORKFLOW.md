@@ -89,4 +89,3 @@ yarn build
 ## 8. 用户文档（user-guide）
 
 修改或新增 `docs/user-guide/` 时，请遵循 [文档维护工作流](../user-guide/MAINTENANCE_WORKFLOW.md)：同步更新 `README.md`、`ARTICLE_INDEX.md`，并与 `conf/*.config.js` 中的配置键保持一致。
-

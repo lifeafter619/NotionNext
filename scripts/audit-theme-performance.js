@@ -10,9 +10,10 @@ const reportDir = path.join(root, '.perf', 'theme-audit')
 const rawDir = path.join(reportDir, 'raw')
 const docsPerfDir = path.join(root, 'docs', 'performance')
 const lighthouseBin = (() => {
-  const cmdBin = process.platform === 'win32'
-    ? path.join(root, 'node_modules', '.bin', 'lighthouse.cmd')
-    : path.join(root, 'node_modules', '.bin', 'lighthouse')
+  const cmdBin =
+    process.platform === 'win32'
+      ? path.join(root, 'node_modules', '.bin', 'lighthouse.cmd')
+      : path.join(root, 'node_modules', '.bin', 'lighthouse')
   if (fs.existsSync(cmdBin)) return cmdBin
 
   const cliJs = path.join(root, 'node_modules', 'lighthouse', 'cli', 'cli.js')
@@ -56,7 +57,8 @@ function runLighthouse(url, outputPath) {
     env: process.env
   })
   if (result.status !== 0) {
-    const errorText = result.stderr?.toString() || result.stdout?.toString() || ''
+    const errorText =
+      result.stderr?.toString() || result.stdout?.toString() || ''
     throw new Error(`Lighthouse failed for ${url}\n${errorText}`)
   }
 }
@@ -85,7 +87,9 @@ function getThemeResult(theme, lhr) {
       performance: Math.round((categories.performance?.score || 0) * 100),
       seo: Math.round((categories.seo?.score || 0) * 100),
       accessibility: Math.round((categories.accessibility?.score || 0) * 100),
-      bestPractices: Math.round((categories['best-practices']?.score || 0) * 100)
+      bestPractices: Math.round(
+        (categories['best-practices']?.score || 0) * 100
+      )
     },
     metrics: {
       lcpMs: toMs(audits['largest-contentful-paint']?.numericValue),
@@ -94,10 +98,12 @@ function getThemeResult(theme, lhr) {
       fcpMs: toMs(audits['first-contentful-paint']?.numericValue),
       tbtMs: toMs(audits['total-blocking-time']?.numericValue),
       speedIndexMs: toMs(audits['speed-index']?.numericValue),
-      jsKb: toKb(audits['total-byte-weight']?.details?.items?.reduce((sum, i) => {
-        if (i.resourceType === 'script') return sum + (i.transferSize || 0)
-        return sum
-      }, 0)),
+      jsKb: toKb(
+        audits['total-byte-weight']?.details?.items?.reduce((sum, i) => {
+          if (i.resourceType === 'script') return sum + (i.transferSize || 0)
+          return sum
+        }, 0)
+      ),
       totalKb: toKb(audits['total-byte-weight']?.numericValue)
     }
   }
@@ -113,7 +119,9 @@ function writeMarkdown(results, reportPath) {
   lines.push(`Base URL: ${baseUrl}`)
   lines.push(`Generated: ${new Date().toISOString()}`)
   lines.push('')
-  lines.push('| Theme | Perf | SEO | LCP(ms) | INP(ms) | CLS | JS(KB) | Total(KB) |')
+  lines.push(
+    '| Theme | Perf | SEO | LCP(ms) | INP(ms) | CLS | JS(KB) | Total(KB) |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|')
   for (const item of sorted) {
     lines.push(

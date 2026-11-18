@@ -1,0 +1,161 @@
+const mockGetGlobalSnapshot = jest.fn()
+
+jest.mock('@/lib/global', () => ({
+  getGlobalSnapshot: mockGetGlobalSnapshot
+}))
+
+jest.mock('@/blog.config', () => ({
+  BLOG_FALSE: false,
+  BLOG_ZERO: 0,
+  BLOG_EMPTY: '',
+  BLOG_NULL: null,
+  NEXT_REVALIDATE_SECOND: 'blog-special'
+}))
+
+const { siteConfig, siteConfigBoolean } = require('@/lib/config')
+
+describe('siteConfig explicit falsey values', () => {
+  beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_THEME_SWITCH
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: {},
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+  })
+
+  test.each([
+    ['false', false],
+    ['zero', 0],
+    ['empty string', '']
+  ])('preserves Notion %s values ahead of lower-priority sources', (_, value) => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { TEST_VALUE: value },
+      THEME_CONFIG: { TEST_VALUE: 'theme' },
+      siteInfo: {}
+    })
+
+    expect(
+      siteConfig('TEST_VALUE', 'default', { TEST_VALUE: 'extended' })
+    ).toBe(value)
+  })
+
+  test.each([null, undefined])(
+    'treats only %p as absent in the Notion source',
+    value => {
+      mockGetGlobalSnapshot.mockReturnValue({
+        NOTION_CONFIG: { TEST_VALUE: value },
+        THEME_CONFIG: { TEST_VALUE: 'theme' },
+        siteInfo: {}
+      })
+
+      expect(siteConfig('TEST_VALUE', 'default')).toBe('theme')
+    }
+  )
+
+  test('falls through absent theme and extend values to BLOG and then the default', () => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: {},
+      THEME_CONFIG: { BLOG_NULL: null },
+      siteInfo: {}
+    })
+
+    expect(siteConfig('BLOG_NULL', 'default', { BLOG_NULL: undefined })).toBe(
+      'default'
+    )
+  })
+
+  test.each([
+    ['BLOG_FALSE', false],
+    ['BLOG_ZERO', 0],
+    ['BLOG_EMPTY', '']
+  ])('preserves explicit falsey BLOG value for %s', (key, value) => {
+    expect(siteConfig(key, 'default')).toBe(value)
+  })
+
+  test.each([
+    ['false', false],
+    ['zero', 0],
+    ['empty string', '']
+  ])('preserves explicit falsey extendConfig %s values', (_, value) => {
+    expect(
+      siteConfig('NEXT_REVALIDATE_SECOND', 'default', {
+        NEXT_REVALIDATE_SECOND: value
+      })
+    ).toBe(value)
+  })
+
+  test.each([
+    ['false', false],
+    ['zero', 0],
+    ['empty string', '']
+  ])('preserves explicit falsey default %s values', (_, value) => {
+    expect(siteConfig('MISSING_VALUE', value)).toBe(value)
+  })
+
+  test('preserves an empty COMMENT_WALINE_SERVER_URL alias', () => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: {
+        WALINE_SERVER_URL: '',
+        NEXT_PUBLIC_WALINE_SERVER_URL: 'fallback-server'
+      },
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+
+    expect(siteConfig('COMMENT_WALINE_SERVER_URL', 'default-server')).toBe('')
+  })
+
+  test('preserves a false COMMENT_WALINE_RECENT alias', () => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: {
+        WALINE_RECENT: false,
+        NEXT_PUBLIC_WALINE_RECENT: true
+      },
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+
+    expect(siteConfig('COMMENT_WALINE_RECENT', true)).toBe(false)
+  })
+
+  test('lets an explicit environment value disable the theme switch', () => {
+    process.env.NEXT_PUBLIC_THEME_SWITCH = 'false'
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { THEME_SWITCH: true },
+      THEME_CONFIG: { THEME_SWITCH: true },
+      siteInfo: {}
+    })
+
+    expect(siteConfig('THEME_SWITCH', true)).toBe(false)
+  })
+
+  test.each([
+    ['true', true],
+    ['1', true],
+    ['yes', true],
+    ['on', true],
+    ['false', false],
+    ['0', false],
+    ['no', false],
+    ['off', false]
+  ])('parses boolean configuration value %s', (value, expected) => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { BOOLEAN_VALUE: value },
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+
+    expect(siteConfigBoolean('BOOLEAN_VALUE')).toBe(expected)
+  })
+
+  test('uses the boolean default for an unrecognized value', () => {
+    mockGetGlobalSnapshot.mockReturnValue({
+      NOTION_CONFIG: { BOOLEAN_VALUE: 'sometimes' },
+      THEME_CONFIG: {},
+      siteInfo: {}
+    })
+
+    expect(siteConfigBoolean('BOOLEAN_VALUE', true)).toBe(true)
+  })
+})

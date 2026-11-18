@@ -24,7 +24,7 @@ export default function BlogItem({ post }) {
 
           <div className='flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wider'>
             {post.category && (
-              <SmartLink href={`/category/${post.category}`}>
+              <SmartLink href={`/category/${encodeURIComponent(post.category)}`}>
                 <span className='inline-block border-2 border-[#0284c7] rounded-sm shadow-[1px_1px_0px_0px_#0284c7] px-2 py-0.5 text-[#0284c7] bg-[#fde68a] hover:bg-[#0284c7] hover:text-white transition-colors'>
                   {post.category}
                 </span>

@@ -2,7 +2,9 @@
  * 站点统计插件
  */
 module.exports = {
-  ANALYTICS_VERCEL: process.env.NEXT_PUBLIC_ANALYTICS_VERCEL || false, // vercel自带的统计 https://vercel.com/docs/concepts/analytics/quickstart https://github.com/notionnext-org/NotionNext/issues/897
+  ANALYTICS_VERCEL: process.env.NEXT_PUBLIC_ANALYTICS_VERCEL || true, // vercel自带的统计 https://vercel.com/docs/concepts/analytics/quickstart https://github.com/notionnext-org/NotionNext/issues/897
+  ANALYTICS_VERCEL_SPEED_INSIGHTS:
+    process.env.NEXT_PUBLIC_ANALYTICS_VERCEL_SPEED_INSIGHTS || true, // Vercel Speed Insights https://vercel.com/docs/speed-insights/quickstart
   ANALYTICS_BUSUANZI_ENABLE:
     process.env.NEXT_PUBLIC_ANALYTICS_BUSUANZI_ENABLE || true, // 展示网站阅读量、访问数
   // 不蒜子 / 兼容实现的脚本地址，官方 busuanzi.ibruce.info 自 2024 年起
@@ -40,8 +42,9 @@ module.exports = {
   // 微软 Clarity 站点分析
   CLARITY_ID: process.env.NEXT_PUBLIC_CLARITY_ID || null, // 只需要复制Clarity脚本中的ID部分，ID是一个十位的英文数字组合
 
-  UMAMI_HOST: process.env.NEXT_PUBLIC_UMAMI_HOST || 'https://cloud.umami.is/script.js', // umami的服务地址
-  UMAMI_ID: process.env.NEXT_PUBLIC_UMAMI_ID || '', // umami的id
+  UMAMI_HOST:
+    process.env.NEXT_PUBLIC_UMAMI_HOST || 'https://cloud.umami.is/script.js', // umami的服务地址
+  UMAMI_ID: process.env.NEXT_PUBLIC_UMAMI_ID || '' // umami的id
 
   // <---- 站点统计
 }

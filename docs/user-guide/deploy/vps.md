@@ -1,4 +1,5 @@
 # VPS本地服务器
+
 > 迁移自：[VPS本地服务器](https://docs.tangly1024.com/article/deploy-notion-next-on-vps)
 > 发布日期：2022-11-20
 > 最后编辑：2026-5-2
@@ -10,7 +11,6 @@
 更新记录：
 20250708，添加了用Docker运行项目的文档教程。
 :::
-
 
 ## 前言
 
@@ -32,7 +32,6 @@ NotionNext可以轻松地使用Vercel免费托管，不过免费的流量和函�
 
 个人博客
 
-
 ## 安装步骤
 
 ::: tip 提示
@@ -40,7 +39,6 @@ NotionNext可以轻松地使用Vercel免费托管，不过免费的流量和函�
 :::
 
 安装分为三个步骤，一是下载NotionNext代码；二是安装运行环境、三是启动项目。
-
 
 ### 一、NotionNext代码下载
 
@@ -138,6 +136,7 @@ Complete!
 </details>
 
 1. 从Github仓库拉取代码
+
 ```Bash
 # 来到您的用户主目录
 cd ~
@@ -148,17 +147,16 @@ git clone https://github.com/notionnext-org/NotionNext &&
 # 若您的服务器因为网络问题，无法访问github，可手动下载NotionNext代码 上传至服务器
 ```
 
-
 ## 二、运行项目
 
 可以使用Docker运行，或者系统安装NodeJS环境运行，出于兼容性和稳定性的考虑，这里推荐使用Docker方案运行。
-
 
 #### 1. Docker运行
 
 原先文档是推荐在服务器上使用NodeJS环境，奈何当前新版要用到 Node 22 及以上的环境，这里有部分服务器无法兼容安装。同时Docker本身的稳定性也更加适合在生产环境使用，因此我在2025年7月8日更新了这部分手册，加入了Docker运行方案。
 
 1. 安装Docker最新版(CentOS为例)
+
 ```Bash
 # 1.更新系统
 sudo yum update -y
@@ -171,6 +169,7 @@ sudo yum install -y docker-ce
 # 5.启动docker
 sudo systemctl start docker
 ```
+
 <details>
 <summary>其它操作系统-Debian</summary>
 
@@ -185,7 +184,8 @@ sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 </details>
 
 1. 创建Dockerfile文件
-由于国内防火墙的规定，Docker的镜像网络访问受限，现在Docker要下载官方NodeJs环境变得困难，因此推荐使用国内替代的镜像源下载(来自[https://docker.aityp.com/](https://docker.aityp.com/))。以下是我尝试成功的完整版本（已将镜像替换成国内版本，可能存在过期风险）。
+   由于国内防火墙的规定，Docker的镜像网络访问受限，现在Docker要下载官方NodeJs环境变得困难，因此推荐使用国内替代的镜像源下载(来自[https://docker.aityp.com/](https://docker.aityp.com/))。以下是我尝试成功的完整版本（已将镜像替换成国内版本，可能存在过期风险）。
+
 ```Bash
 # 1.确保当前目录是NotionNext代码文件夹
 cd NotionNext
@@ -244,38 +244,47 @@ EOF
 ```
 
 1. 开始构建
-以下命令将读取当前NotionNext文件夹下的Dockerfile文件，按照文件内容下载Nodejs环境，并将NotionNext代码包括blog.config.js等配置打包进环境中，成为一个可执行的Docker镜像，并且镜像名为my-app。
+   以下命令将读取当前NotionNext文件夹下的Dockerfile文件，按照文件内容下载Nodejs环境，并将NotionNext代码包括blog.config.js等配置打包进环境中，成为一个可执行的Docker镜像，并且镜像名为my-app。
+
 ```Bash
 docker build --build-arg NEXT_DEBUG=true -t my-app .
 ```
+
 根据服务器网络环境，首次打包过程可能要十分钟左右。
 ![image.png](/legacy/5a93178d5c15f55c.png)
 
 1. 使用docker运行项目
+
 ```Bash
 docker run -d -p 3000:3000 --name app --restart unless-stopped my-app
 ```
 
 1. 重启docker项目
+
 ```Bash
 docker restart app
 ```
+
 更多关于docker的用法，请查阅手册或借助AI使用。
 
 1. 更新项目
-拉取最新代码，或者修改对应的配置文件后，执行以下命令重新打包
+   拉取最新代码，或者修改对应的配置文件后，执行以下命令重新打包
+
 ```Bash
 docker build --build-arg NEXT_DEBUG=true -t my-app .
 ```
+
 然后关停旧的服务
+
 ```Bash
 docker rm -f app
 ```
+
 启动新服务
+
 ```Bash
 docker run -d -p 3000:3000 --name app --restart unless-stopped my-app
 ```
-
 
 #### 2. 系统中运行（本地安装NodeJS环境）
 
@@ -293,6 +302,7 @@ node: /lib64/libstdc++.so.6: version `GLIBCXX_3.4.21' not found (required by nod
 安装NVM与NodeJS步骤：
 
 1. 使用git下载nvm源代码
+
 ```Bash
 # 用git从github下载nvm源码。
 git clone https://github.com/cnpm/nvm.git ~/.nvm && cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`
@@ -304,6 +314,7 @@ git clone https://github.com/cnpm/nvm.git ~/.nvm && cd ~/.nvm && git checkout `g
 :::
 
 1. 使用nvm安装Nodejs
+
 ```Bash
 # 1. 将nvm设置为系统环境变量
 echo "source ~/.nvm/nvm.sh" &gt;&gt; ~/.bashrc
@@ -321,7 +332,8 @@ nvm install 22
 :::
 
 1. 安装yarn环境
-NodeJS 自带了 NPM（Node Package Manager），他可以用来安装打包编译NotionNext这类基于Webpack打包的项目。不过npm不太好用，这里安装一个npm升级版yarn。
+   NodeJS 自带了 NPM（Node Package Manager），他可以用来安装打包编译NotionNext这类基于Webpack打包的项目。不过npm不太好用，这里安装一个npm升级版yarn。
+
 ```Java
 # 1.【可选步骤】 NPM切换国内淘宝网镜像，便于加速安装。
 npm config set registry https://registry.npmmirror.com
@@ -333,14 +345,17 @@ npm install -g yarn
 NodeJs运行NotionNext
 
 1. 安装NotionNext依赖
+
 ```JavaScript
 # 执行以下命令，使用yarn安装项目所有依赖的脚本和库
 yarn
 ```
+
 如果你没有安装yarn，也可以用 `npm install` 命令进行安装依赖。
 
 1. 项目编译
-每次`修改代码`，包括`修改blog.config.js文件`的内容后，都需要重新执行这步骤。
+   每次`修改代码`，包括`修改blog.config.js文件`的内容后，都需要重新执行这步骤。
+
 ```Bash
 # 2.打包编译
 yarn build
@@ -350,10 +365,12 @@ NOTION_PAGE_ID=29d5ia78b858e4a3bbc13e51b5400fb82
 ```
 
 1. 启动项目
+
 ```JavaScript
 # 执行命令启动
 yarn start
 ```
+
 <details>
 <summary>执行效果记录</summary>
 
@@ -505,7 +522,6 @@ info  - Loaded env from /root/NotionNext/.env.local
 
 </details>
 
-
 ## 三、访问项目
 
 ::: tip 提示
@@ -541,7 +557,6 @@ info  - Loaded env from /root/NotionNext/.env.local
 
 直接使用 `yarn start`启动服务主要用于调试排查日志，一旦你关闭ssh终端或登出服务器，这个进程也会随之关闭。
 
-
 ### 方式一：nohup运行
 
 nohup是linux系统的指令，用于在系统后台不挂断地运行命令。为了让你的网站始终在后台保持运行，可以用以下方式：
@@ -549,6 +564,7 @@ nohup是linux系统的指令，用于在系统后台不挂断地运行命令。�
 1. 按`ctrl+c` 退出上面正运行的yarn进程
 
 1. 改用nohup运行
+
 ```Bash
 cd NotionNext
 
@@ -568,20 +584,17 @@ nohup yarn start &gt;/dev/null 2&gt;&1 &
 
 </details>
 
-
 #### 如何关闭进程
 
 ```Bash
 pkill -f "yarn start"
 ```
 
-
 ### 方式二：使用PM2管理NotionNext
 
 PM2作为Node的进程管理工具，可以提升您维护站点的效率，您可以阅读《[**使用PM2启动Notionnext实现多开和进程守护**](https://jjdctg.com/pm2)**》获取帮助。**
 
 [https://jjdctg.com/pm2](https://jjdctg.com/pm2)
-
 
 ## 五、NodeJS网站崩溃问题
 
@@ -635,20 +648,22 @@ vim start_yarn.sh
 </details>
 
 1. 为这个脚本添加可执行的权限
+
 ```Bash
 chmod +x start_yarn.sh
 ```
 
 1. 运行启动脚本
+
 ```Bash
 nohup ./start_yarn.sh &gt; /dev/null 2&gt;&1 &
 ```
 
 1. 运行关闭脚本
+
 ```Bash
 pkill -f "yarn"
 ```
-
 
 ## 六、关于本地代码配置修改
 
@@ -664,6 +679,7 @@ pkill -f "yarn"
 :::
 
 - `NOTION_PAGE_ID`等诸多配置支持用环境变量配置。
+
 ```Bash
 # 1.设置环境变量
 NOTION_PAGE_ID=29d5ia78b858e4a3bbc13e51b5400fb82
@@ -678,7 +694,6 @@ nohup yarn start &gt;/dev/null 2&gt;&1 &
 
 - 支持环境变量的配置可参考[blog.config.js](https://github.com/notionnext-org/NotionNext/blob/main/blog.config.js) 文件
 
-
 ### 2.修改代码
 
 - 如果修改blog.config.js或其他代码文件，NodeJS环境需要重新执行 `yarn build` 才可 生效，Docker环境重新执行前面的docker build 相关命令即可重新构建镜像。
@@ -686,7 +701,6 @@ nohup yarn start &gt;/dev/null 2&gt;&1 &
 - 您可以在项目根目录的[`.env.local`](https://github.com/notionnext-org/NotionNext/blob/main/.env.local)文件中配置您的环境变量
 
 - 重新编译后需要先关闭旧进程，再用 `yarn start` 重启服务 。
-
 
 ### 3.自定义端口
 
@@ -703,12 +717,12 @@ yarn start -p 8080
 docker run -d -p 8080:3000 --name app my-app
 ```
 
-
 ## 隐藏端口：Nginx反向代理
 
 - 为了隐藏你的3000端口号，用一个nginx就可以，如果你有宝塔面板之类的运维工具可以很方便地一键配置。
 
 - 小白安装nginx
+
 ```Bash
 # 添加nginx源
 sudo rpm -ivh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
@@ -718,6 +732,7 @@ sudo yum install nginx
 sudo systemctl enable nginx
 sudo systemctl start nginx
 ```
+
 <details>
 <summary>安装成功访问服务器地址 效果：</summary>
 
@@ -726,7 +741,8 @@ sudo systemctl start nginx
 </details>
 
 - 反向代理配置参考
-修改相关配置文件 `/etc/nginx/conf.d/default.conf`
+  修改相关配置文件 `/etc/nginx/conf.d/default.conf`
+
 ```Bash
 # 用vi编辑器修改
 vi /etc/nginx/conf.d/default.conf
@@ -737,6 +753,7 @@ proxy_pass  http://127.0.0.1:3000;
 # 刷新ng配置
 sudo systemctl reload nginx
 ```
+
 ![Untitled](/legacy/d9c0b9c8993d87de.png)
 ![Untitled](/legacy/57309076477fc1c5.png)
 ::: tip 提示
@@ -744,8 +761,10 @@ sudo systemctl reload nginx
 :::
 
 ## VPS部署NotionNext如何自动更新？
+
 因为代码是在自己的服务器上拉取和部署，所以每次都要执行更新代码，编译代码，并重启服务的步骤，建议是创建一个`update.sh`脚本在服务器上。
 示例代码，仅供参考：
+
 ```Bash
 #!/bin/bash
 
@@ -761,6 +780,7 @@ yarn build
 # 启动
 yarn start
 ```
+
 这是最简易的自动脚本，当然也可以做成可交互的高级脚本。
 
 ## 原文链接

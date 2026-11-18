@@ -4,14 +4,14 @@ NotionNext 是开源项目，优先通过公开文档、GitHub Discussions 和 I
 
 ## 免费支持
 
-| 场景 | 推荐入口 |
-| --- | --- |
-| 第一次部署 | [从这里开始](../start-here.md) · [Vercel 部署](../deploy-vercel.md) |
-| 不知道选什么主题 | [场景模板入口](../templates.md) · [主题全览](../themes/THEMES_CATALOG.md) |
-| 配置项不清楚 | [全站功能与配置索引](../reference/features.md) |
-| 部署或配置问题 | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
-| 可复现 Bug | [提交 Issue](https://github.com/notionnext-org/NotionNext/issues/new/choose) |
-| 想展示自己的站点 | [用户作品墙](../showcase.md) |
+| 场景             | 推荐入口                                                                       |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 第一次部署       | [从这里开始](../start-here.md) · [Vercel 部署](../deploy-vercel.md)            |
+| 不知道选什么主题 | [场景模板入口](../templates.md) · [主题全览](../themes/THEMES_CATALOG.md)      |
+| 配置项不清楚     | [全站功能与配置索引](../reference/features.md)                                 |
+| 部署或配置问题   | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
+| 可复现 Bug       | [提交 Issue](https://github.com/notionnext-org/NotionNext/issues/new/choose)   |
+| 想展示自己的站点 | [用户作品墙](../showcase.md)                                                   |
 
 提问前建议准备：
 

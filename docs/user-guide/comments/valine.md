@@ -1,4 +1,5 @@
 # Valine
+
 > 迁移自：[Valine](https://docs.tangly1024.com/article/notionnext-valine)
 > 发布日期：2022-5-27
 > 最后编辑：2024-1-31
@@ -22,7 +23,6 @@ Valine和Waline都是支持云函数部署的快速、简洁的评论系统，�
 
 Zeabur (https://zeabur.com) 是一个帮助开发者们可以一键部署自己的服务的平台。整体和 Railway 比较类似，但是比它多了更多的功能，不需要绑定信用卡，免费额度也要比它高。 如何部署 点击 Fork (https://github.com/walinejs/zeabur-starter/fork) 按钮创建 Zeabur 启...
 
-
 ## 1. 注册LeanCloud
 
 两个插件均要借助LeanCloud提供的云函数，云数据存储等功能，对于普通开发者来说免费版已经足够使用。
@@ -30,7 +30,6 @@ Zeabur (https://zeabur.com) 是一个帮助开发者们可以一键部署自己�
 ::: tip 提示
 若您使用的是Zeabur的部署方案，则不需要额外注册一个LeanCloud。
 :::
-
 
 ### 获取APP ID 和 APP Key
 
@@ -47,7 +46,6 @@ Zeabur (https://zeabur.com) 是一个帮助开发者们可以一键部署自己�
 ![Untitled](/legacy/fd532d4e76f2541d.png)
 
 </details>
-
 
 ## 2.NotionNext中配置VALINE
 
@@ -76,7 +74,6 @@ Zeabur (https://zeabur.com) 是一个帮助开发者们可以一键部署自己�
 完成配置后重新部署一下Vercel项目即可生效。
 :::
 
-
 ### 其它可选的Valine配置
 
 <details>
@@ -94,20 +91,19 @@ valine没有自带后台，可以借助 [Valine-Admin](https://github.com/Desert
 
 </details>
 
-
 ## Q&A
 
 1. 博客底部没有显示评论
-  - 可能是NotionNext版本不是最新，请更新项目；
-  - 可能是Vercel后台没有配置Valine/Waline的环境变量，配置后需要redeploy
+
+- 可能是NotionNext版本不是最新，请更新项目；
+- 可能是Vercel后台没有配置Valine/Waline的环境变量，配置后需要redeploy
 
 1. 评论出现 ‘Unexpected end of JSON input’
-配置的Waline地址有误，检查一下，参考此[issue](https://github.com/notionnext-org/NotionNext/issues/308)的回答
+   配置的Waline地址有误，检查一下，参考此[issue](https://github.com/notionnext-org/NotionNext/issues/308)的回答
 
 1. 评论出现错误提示 ‘fail to fetch’ 或者 ‘Network Error’
-可能是Vercel部署的Waline出现了跨域网络限制，按F12打开控制台，查看是否有打印“缺少CORS头“，相关的错误提示。
-解决办法：换DETA部署试一下。
-
+   可能是Vercel部署的Waline出现了跨域网络限制，按F12打开控制台，查看是否有打印“缺少CORS头“，相关的错误提示。
+   解决办法：换DETA部署试一下。
 
 ## 更多
 

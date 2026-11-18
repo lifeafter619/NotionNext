@@ -1,4 +1,5 @@
 # URL风格自定义
+
 > 迁移自：[URL风格自定义](https://docs.tangly1024.com/article/notion-next-url-customize)
 > 发布日期：2024-5-8
 > 最后编辑：2024-9-29
@@ -16,10 +17,9 @@
 
 ![Untitled](/legacy/299c0c8acb078258.png)
 
-
 ### NotionNext中的URL
 
-目前博客列表的文章都有统一的`前缀`，默认是  `article` ； 因此访问您列表中的博客时默认打开的路径url是这样的：
+目前博客列表的文章都有统一的`前缀`，默认是 `article` ； 因此访问您列表中的博客时默认打开的路径url是这样的：
 
 ![Untitled](/legacy/36bccb6c804624bc.png)
 
@@ -27,13 +27,11 @@
 
 在以上链接中：URL 主要可以拆分为3个部分构成，绿色部分是你的站点域名， 红色部分是url前缀，蓝色部分则是取自数据库中的slug部分。
 
-
 ### URL优化有利于SEO
 
 URL最好能有明确的层级和语义，以便于搜索引擎抓取、收录、并更好地排名。
 
 我建议设置一个有意义的url，例如我的每一篇文章的url都是手动设置的，并且可以通过url推测这篇文章的内容。
-
 
 ## URL前缀配置
 
@@ -43,8 +41,7 @@ URL最好能有明确的层级和语义，以便于搜索引擎抓取、收录�
 POST_URL_PREFIX: process.env.NEXT_PUBLIC_POST_URL_PREFIX || 'article',
 ```
 
-默认填写的`article`  ，您可以任意填写为其它前缀，例如 `post`  、 `p` 等等。
-
+默认填写的`article` ，您可以任意填写为其它前缀，例如 `post` 、 `p` 等等。
 
 ### 变量配置
 
@@ -54,20 +51,17 @@ POST_URL_PREFIX: process.env.NEXT_PUBLIC_POST_URL_PREFIX || 'article',
 
 ![Untitled](/legacy/03c7f5722d5f3562.png)
 
-
 ### 使用示例
 
 例如《[SEO指南](https://seo.tangly1024.com/)》 这个站点的url分格就是用的`分类`：访问文章的链接格式如下：[https://seo.tangly1024.com/一、SEO概念入门/what-is-google-seo](https://seo.tangly1024.com/%E4%B8%80%E3%80%81SEO%E6%A6%82%E5%BF%B5%E5%85%A5%E9%97%A8/what-is-google-seo)
 
 ![Untitled](/legacy/a26d1153c677587f.png)
 
-
 ## 分类名映射
 
 如果分类名称是中文，希望url中分类名映射为英文，请更新到4.5.2之后的版本。
 
 url里分类名可以映射为自己想要的英文单词，便于统一url: `xx.com/知行合一/slug` -&gt; `xx.com/learning/slug`
-
 
 #### 使用方法
 
@@ -89,7 +83,6 @@ url里分类名可以映射为自己想要的英文单词，便于统一url: `x
 ![中文双引号的格式是非法的](/legacy/68fbc620fe5389f4.png)
 与双引号相关的配置都要格外小心，在其他的配置中也会出现类似的问题。
 :::
-
 
 ## 组合使用
 

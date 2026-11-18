@@ -29,35 +29,35 @@ const ArticleLock = props => {
     passwordInputRef.current.focus()
   }, [])
 
-  return (<div id='container' className="flex justify-center">
-    <div className="shadow md:hover:shadow-2xl overflow-x-auto max-w-5xl  w-screen md:w-full  py-10 px-5 lg:pt-24 md:px-24 min-h-screen dark:border-gray-700 bg-white dark:bg-gray-800 duration-200 subpixel-antialiased">
-      <div className="w-full flex justify-center items-center h-96 ">
-        <div className="text-center space-y-3 dark:text-gray-300 text-black">
-          <div className='font-bold'>{locale.COMMON.ARTICLE_LOCK_TIPS}</div>
-          <div className="flex mx-4">
-            <input
-              id="password" type='password'
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  submitPassword()
-                }
-              }}
-              ref={passwordInputRef} // 绑定ref到passwordInputRef变量
-              className="outline-none flex-1 min-w-0 text-sm pl-5 rounded-l transition focus:shadow-lg  font-light leading-10 bg-gray-100 dark:bg-gray-500"
-            ></input>
-            <div
-              onClick={() => { void submitPassword() }}
-              className="flex items-center justify-center whitespace-nowrap cursor-pointer px-4 leading-10 bg-gray-700 hover:bg-gray-400 text-white rounded-r duration-300 select-none"
-            >
-              <i className={'duration-200 cursor-pointer fas fa-key'} />
-              <span className='ml-1'>{locale.COMMON.SUBMIT}</span>
-            </div>
+  return (
+    <div id='container' className='flex justify-center'>
+      <div className='shadow md:hover:shadow-2xl overflow-x-auto max-w-5xl  w-screen md:w-full  py-10 px-5 lg:pt-24 md:px-24 min-h-screen dark:border-gray-700 bg-white dark:bg-gray-800 duration-200 subpixel-antialiased'>
+        <div className='w-full flex justify-center items-center h-96 '>
+          <div className='text-center space-y-3 dark:text-gray-300 text-black'>
+            <div className='font-bold'>{locale.COMMON.ARTICLE_LOCK_TIPS}</div>
+            <div className='flex mx-4'>
+              <input
+                id='password'
+                type='password'
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    void submitPassword()
+                  }
+                }}
+                ref={passwordInputRef} // 绑定ref到passwordInputRef变量
+                className='outline-none flex-1 min-w-0 text-sm pl-5 rounded-l transition focus:shadow-lg  font-light leading-10 bg-gray-100 dark:bg-gray-500'></input>
+              <div
+                onClick={() => void submitPassword()}
+                className='flex items-center justify-center whitespace-nowrap cursor-pointer px-4 leading-10 bg-gray-700 hover:bg-gray-400 text-white rounded-r select-none duration-300'>
+                <i className={'duration-200 cursor-pointer fas fa-key'} />
+            <span className='ml-1'>{locale.COMMON.SUBMIT}</span>
+              </div>            </div>
+            <div id='tips'></div>
           </div>
-          <div id="tips"></div>
         </div>
       </div>
     </div>
-  </div>)
+  )
 }
 
 export default ArticleLock

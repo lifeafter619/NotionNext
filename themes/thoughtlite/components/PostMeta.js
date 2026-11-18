@@ -15,7 +15,7 @@ export const PostMeta = props => {
         {post?.type !== 'Page' && (
           <>
             <SmartLink
-              href={`/category/${post?.category}`}
+              href={`/category/${encodeURIComponent(post?.category)}`}
               passHref
               className='cursor-pointer text-sm hover:text-[var(--tl-accent)]'>
               <i className='mr-1 fas fa-folder-open' />

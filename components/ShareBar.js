@@ -1,4 +1,4 @@
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import dynamic from 'next/dynamic'
 
 const ShareButtons = dynamic(() => import('@/components/ShareButtons'), {
@@ -10,9 +10,9 @@ const ShareButtons = dynamic(() => import('@/components/ShareButtons'), {
  * @param {} param0
  * @returns
  */
-const ShareBar = ({ post }) => {
+const ShareBar = ({ post, className }) => {
   if (
-    !JSON.parse(siteConfig('POST_SHARE_BAR_ENABLE')) ||
+    !siteConfigBoolean('POST_SHARE_BAR_ENABLE') ||
     !post ||
     post?.type !== 'Post'
   ) {
@@ -20,8 +20,9 @@ const ShareBar = ({ post }) => {
   }
 
   return (
-    <div className='m-1 overflow-x-auto scroll-hidden'>
-      <div className='flex w-max min-w-full flex-nowrap md:w-full md:justify-end [&>*]:shrink-0'>
+    <div className='m-1 overflow-visible'>
+      <div
+        className={`flex w-full flex-wrap items-center gap-y-2 ${className || 'justify-start md:justify-end'}`}>
         <ShareButtons post={post} />
       </div>
     </div>

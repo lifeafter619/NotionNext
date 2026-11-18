@@ -35,4 +35,3 @@ const HeroBanner = ({ siteInfo }) => {
 }
 
 export default HeroBanner
-

@@ -32,8 +32,8 @@ npx wrangler pages project create notionnext-docs --production-branch=main
 
 Cloudflare → **我的个人资料** → **API 令牌** → **创建令牌** → 使用模板 **编辑 Cloudflare Workers**，或自定义权限：
 
-| 权限 | 级别 |
-| --- | --- |
+| 权限                       | 级别 |
+| -------------------------- | ---- |
 | Account → Cloudflare Pages | Edit |
 | Account → Account Settings | Read |
 
@@ -45,24 +45,24 @@ Cloudflare → **我的个人资料** → **API 令牌** → **创建令牌** �
 
 仓库在 **组织**下时，建议在组织里配（组织 **Settings → Secrets and variables → Actions**），或在该仓库 **Settings → Secrets and variables → Actions**：
 
-| Secret 名称 | 内容 |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | 上一步的 API Token |
+| Secret 名称             | 内容                  |
+| ----------------------- | --------------------- |
+| `CLOUDFLARE_API_TOKEN`  | 上一步的 API Token    |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Account ID |
 
 可选 **Variables**（非敏感）：
 
-| Variable 名称 | 内容 |
-| --- | --- |
+| Variable 名称                   | 内容                                 |
+| ------------------------------- | ------------------------------------ |
 | `CLOUDFLARE_PAGES_PROJECT_NAME` | Pages 项目名，默认 `notionnext-docs` |
 
 组织仓库需确认：**Settings → Actions → General** 允许使用 Actions，且组织策略未禁止 `secrets` 传给 workflow。
 
-#### 4. 启用仓库自带 Workflow
+#### 4. 按需启用上游 Workflow
 
-本仓库已包含 [`.github/workflows/deploy-docs-site.yml`](https://github.com/notionnext-org/NotionNext/blob/main/.github/workflows/deploy-docs-site.yml)：
+NotionNext 上游提供 [`.github/workflows/deploy-docs-site.yml`](https://github.com/notionnext-org/NotionNext/blob/main/.github/workflows/deploy-docs-site.yml)。部分 fork（包括未启用文档自动部署的仓库）会删除该文件；如需使用，请先从上游复制到相同路径，再配置前述 Secrets 和 Variables：
 
-- `push` 到 `main` 且变更 `docs/**`、`.vitepress/**` 等 → 自动 `yarn docs:site:build` 并部署  
+- `push` 到 `main` 且变更 `docs/**`、`.vitepress/**` 等 → 自动 `yarn docs:site:build` 并部署
 - 也可在 GitHub **Actions** 页手动 **Run workflow**
 
 首次 push 含该 workflow 的文件后，到 **Actions** 查看 **Deploy docs site (VitePress)** 是否成功。
@@ -77,16 +77,16 @@ Cloudflare → **我的个人资料** → **API 令牌** → **创建令牌** �
 
 ## 方案对比
 
-| 方式 | 组织仓库 | 说明 |
-| --- | --- | --- |
-| **GitHub Actions + wrangler**（推荐） | 兼容好 | 只需 API Token，不装 CF GitHub App |
-| Cloudflare 连接 Git | 常出问题 | 需在组织安装 Cloudflare App 并授权仓库 |
-| 本地 `wrangler pages deploy` | 手动 | 适合调试，不适合日常自动更新 |
+| 方式                                  | 组织仓库 | 说明                                   |
+| ------------------------------------- | -------- | -------------------------------------- |
+| **GitHub Actions + wrangler**（推荐） | 兼容好   | 只需 API Token，不装 CF GitHub App     |
+| Cloudflare 连接 Git                   | 常出问题 | 需在组织安装 Cloudflare App 并授权仓库 |
+| 本地 `wrangler pages deploy`          | 手动     | 适合调试，不适合日常自动更新           |
 
 ### 若仍想用「连接 Git」（可选排查）
 
-1. GitHub **组织 Settings → GitHub Apps** → 安装 **Cloudflare Workers and Pages**，授权 **notionnext-org/NotionNext**。  
-2. 组织 **Third-party access** 策略允许该 App。  
+1. GitHub **组织 Settings → GitHub Apps** → 安装 **Cloudflare Workers and Pages**，授权 **notionnext-org/NotionNext**。
+2. 组织 **Third-party access** 策略允许该 App。
 3. Cloudflare 侧用有 **组织仓库访问权** 的账号登录并重新授权 GitHub。
 
 多数情况下不如直接使用上文 **Actions 方案**。
@@ -115,8 +115,8 @@ npx wrangler pages deploy .vitepress/dist --project-name=notionnext-docs
 
 ## Cloudflare「连接 Git」参考（个人仓库）
 
-| 配置项 | 值 |
-| --- | --- |
+| 配置项   | 值                                     |
+| -------- | -------------------------------------- |
 | 构建命令 | `yarn install && yarn docs:site:build` |
 | 输出目录 | `.vitepress/dist` |
 | 环境变量 `NODE_VERSION` | `22` |
@@ -136,15 +136,15 @@ npx wrangler pages deploy .vitepress/dist --project-name=notionnext-docs
 
 构建时注入环境变量后，教程页底显示 **文档反馈**（同步到 GitHub Discussions）：
 
-| 名称 | 类型 | 说明 |
-| --- | --- | --- |
-| `VITE_GISCUS_REPO_ID` | Secret | `R_kgDOGHdxTw`（`notionnext-org/NotionNext`） |
-| `VITE_GISCUS_CATEGORY_ID` | Secret | `DIC_kwDOGHdxT84CBR2I`（Discussions 分类 **General**） |
-| `VITE_GISCUS_ENABLED` | Variable | 设为 `false` 可关闭评论区 |
+| 名称                      | 类型     | 说明                                                   |
+| ------------------------- | -------- | ------------------------------------------------------ |
+| `VITE_GISCUS_REPO_ID`     | Secret   | `R_kgDOGHdxTw`（`notionnext-org/NotionNext`）          |
+| `VITE_GISCUS_CATEGORY_ID` | Secret   | `DIC_kwDOGHdxT84CBR2I`（Discussions 分类 **General**） |
+| `VITE_GISCUS_ENABLED`     | Variable | 设为 `false` 可关闭评论区                              |
 
 组织仓库 Actions 部署时通常已在 GitHub Secrets 配好；详见 [maintain-docs.md](../maintain-docs.md) 与根目录 `.env.docs.example`。
 
 ## 相关
 
-- [WEBSITE.md](../WEBSITE.md)  
+- [WEBSITE.md](../WEBSITE.md)
 - [cloudflare-pages.md](./cloudflare-pages.md) — 博客 `yarn export` 静态站

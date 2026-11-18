@@ -1,8 +1,4 @@
-import type {
-  SiteData,
-  FetchSiteParams,
-  NavPage
-} from './site.types.js'
+import type { SiteData, FetchSiteParams, NavPage } from './site.types.js'
 
 /**
  * 获取整个站点数据

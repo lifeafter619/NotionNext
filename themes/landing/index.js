@@ -9,7 +9,7 @@
 import Loading from '@/components/Loading'
 import ArticleLock from '@/components/ArticleLock'
 import NotionPage from '@/components/NotionPage'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { isBrowser } from '@/lib/utils'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
@@ -25,10 +25,15 @@ const FeaturesBlocks = dynamic(() => import('./components/FeaturesBlocks'), {
 const Testimonials = dynamic(() => import('./components/Testimonials'), {
   ssr: true
 })
-const Pricing = dynamic(() => import('./components/Pricing').then(mod => mod.Pricing), {
+const Pricing = dynamic(
+  () => import('./components/Pricing').then(mod => mod.Pricing),
+  {
+    ssr: true
+  }
+)
+const Newsletter = dynamic(() => import('./components/Newsletter'), {
   ssr: true
 })
-const Newsletter = dynamic(() => import('./components/Newsletter'), { ssr: true })
 const Footer = dynamic(() => import('./components/Footer'), { ssr: true })
 
 /**
@@ -89,24 +94,26 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      const timer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
 
   if (
-    JSON.parse(siteConfig('LANDING_POST_REDIRECT_ENABLE', null, CONFIG)) &&
+    siteConfigBoolean('LANDING_POST_REDIRECT_ENABLE', false, CONFIG) &&
     isBrowser &&
     router.route === '/[prefix]/[slug]'
   ) {

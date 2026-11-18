@@ -154,7 +154,7 @@ function setupGitHooks() {
 
   hooks.forEach(({ name, content }) => {
     const hookPath = path.join(hooksDir, name)
-    
+
     try {
       fs.writeFileSync(hookPath, content)
       fs.chmodSync(hookPath, '755') // 设置执行权限
@@ -166,7 +166,7 @@ function setupGitHooks() {
 
   log('🎉 Git钩子设置完成！', 'green')
   log('💡 现在提交代码时会自动运行代码质量检查', 'cyan')
-  
+
   return true
 }
 
@@ -188,7 +188,7 @@ function removeGitHooks() {
 
   hooks.forEach(hookName => {
     const hookPath = path.join(hooksDir, hookName)
-    
+
     if (fs.existsSync(hookPath)) {
       try {
         fs.unlinkSync(hookPath)
@@ -223,11 +223,11 @@ function checkGitHooks() {
 
   hooks.forEach(hookName => {
     const hookPath = path.join(hooksDir, hookName)
-    
+
     if (fs.existsSync(hookPath)) {
       const stats = fs.statSync(hookPath)
       const isExecutable = (stats.mode & parseInt('111', 8)) !== 0
-      
+
       if (isExecutable) {
         log(`✅ ${hookName} 钩子已安装且可执行`, 'green')
         installedCount++

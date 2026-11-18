@@ -2,6 +2,7 @@ import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
+import { selectCategoryPreviewPostsForClient } from '@/lib/utils/clientPost'
 
 /**
  * 分类首页
@@ -16,7 +17,14 @@ export default function Category(props) {
 }
 
 export async function getStaticProps({ locale }) {
-  const props = await fetchGlobalAllData({ from: 'category-index-props', locale })
+  const props = await fetchGlobalAllData({
+    from: 'category-index-props',
+    locale
+  })
+  props.categoryPreviewPosts = selectCategoryPreviewPostsForClient(
+    props.allPages,
+    props.categoryOptions
+  )
   delete props.allPages
   return {
     props,

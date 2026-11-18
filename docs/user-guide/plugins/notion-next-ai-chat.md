@@ -6,18 +6,20 @@ NotionNext 内置了一个轻量 AI 聊天入口，可以接入 DeepSeek 或其�
 
 DeepSeek 提供的是模型 API，不是 Chatbase、Coze 那种完整网页浮窗 SDK。API Key 不能写进 `NEXT_PUBLIC_*`、Notion 配置表或前端代码，否则访问者可以在浏览器里看到密钥。
 
-因此推荐架构是：
+因此在 Vercel 上推荐架构是：
 
-1. 站点前端配置 `NEXT_PUBLIC_AI_CHAT_API`，显示右下角 AI 助手。
-2. 服务端代理 `/api/ai-chat` 读取 `AI_CHAT_API_KEY`。
-3. 代理转发到 DeepSeek 或其它 OpenAI 兼容接口。
+1. 站点前端配置 `NEXT_PUBLIC_AI_CHAT_API=/api/ai-chat`，显示右下角 AI 助手。
+2. Next.js Pages API Route `/api/ai-chat` 读取 `AI_CHAT_API_KEY`。
+3. API Route 在服务端读取当前页面和相关公开文章的纯文本，再转发到 DeepSeek 或其它 OpenAI 兼容接口。
+
+仓库中的 `functions/api/ai-chat.ts` 是 Cloudflare Pages Functions 入口，只有部署到 Cloudflare Pages 时才会使用；Vercel 不会自动部署 `functions/` 目录。
 
 ## 前端配置
 
-在 Vercel、Cloudflare Pages、Netlify 或服务器环境变量中添加：
+在 Vercel 的 Project Settings → Environment Variables 中添加：
 
 ```bash
-NEXT_PUBLIC_AI_CHAT_API=https://你的域名/api/ai-chat
+NEXT_PUBLIC_AI_CHAT_API=/api/ai-chat
 NEXT_PUBLIC_AI_CHAT_TITLE=AI 助手
 NEXT_PUBLIC_AI_CHAT_WELCOME=你好，我是本站 AI 助手。你可以问我文章、主题和部署问题。
 ```
@@ -30,18 +32,39 @@ NEXT_PUBLIC_AI_CHAT_WELCOME=你好，我是本站 AI 助手。你可以问我文
 | `AI_CHAT_TITLE`   | 右下角按钮和窗口标题                                      |
 | `AI_CHAT_WELCOME` | 打开窗口后的第一句欢迎语                                  |
 
-## DeepSeek 代理配置
+## Vercel 配置
 
-如果你使用 Cloudflare Pages Functions，可以直接使用仓库内置的 `functions/api/ai-chat.ts`。在部署平台的服务端环境变量中添加：
+在 Vercel 中配置以下服务端变量（不要加 `NEXT_PUBLIC_` 前缀）：
 
 ```bash
 AI_CHAT_API_KEY=你的 DeepSeek API Key
+AI_CHAT_PUBLIC=true
+AI_CHAT_BASE_URL=https://api.deepseek.com
+AI_CHAT_MODEL=deepseek-v4-flash
+AI_CHAT_MAX_TOKENS=1200
+AI_CHAT_TEMPERATURE=0.3
+AI_CHAT_RATE_LIMIT=10,60,100
+```
+
+`AI_CHAT_PUBLIC=true` 是显式启用开关。代理默认关闭，缺少该变量时会返回 `403`。`AI_CHAT_RATE_LIMIT` 是每个运行实例的最佳努力限流，不是全局配额；高流量站点应在 Vercel/WAF 或模型服务商侧增加限流。
+
+AI Chat 会优先读取当前 URL 对应的公开文章，再按问题匹配标题、摘要、分类和标签，最多读取 3 篇正文。服务端只发送纯文本和文章元数据，图片、文件和块数据不会发送给模型；未发布或设置密码的文章会被排除。检索失败时，助手会明确说明无法核对本站事实，不会用猜测填充。
+
+## Cloudflare Pages 配置
+
+如果你使用 Cloudflare Pages，才使用仓库内置的 `functions/api/ai-chat.ts`，并在 Cloudflare 的服务端环境变量中添加：
+
+```bash
+AI_CHAT_API_KEY=你的 DeepSeek API Key
+AI_CHAT_PUBLIC=true
 AI_CHAT_BASE_URL=https://api.deepseek.com
 AI_CHAT_MODEL=deepseek-v4-flash
 AI_CHAT_CORS_ORIGINS=https://你的博客域名
 AI_CHAT_MAX_TOKENS=1200
 AI_CHAT_TEMPERATURE=0.3
 ```
+
+`AI_CHAT_PUBLIC=true` 是显式启用开关。代理默认关闭，缺少该变量时会返回 `403`，避免在未确认限额与费用前公开模型接口。可用 `AI_CHAT_RATE_LIMIT=10,60,100` 调整“每 60 秒 10 次、每天 100 次”的默认单 IP 限额。
 
 `AI_CHAT_CORS_ORIGINS` 可以填写多个域名，用英文逗号分隔：
 

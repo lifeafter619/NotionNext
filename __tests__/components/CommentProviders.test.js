@@ -22,6 +22,7 @@ it('does not render string-false providers alongside an enabled service', () => 
     }
     observe() {}
     unobserve() {}
+    disconnect() {}
   }
   try {
     siteConfig.mockImplementation(key =>

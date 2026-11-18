@@ -1,7 +1,56 @@
 import { useGlobal } from '@/lib/global'
-import throttle from 'lodash.throttle'
+import {
+  expandClosedToggleAncestors,
+  findNotionHeadingById
+} from '@/lib/utils/notionHashScroll'
+import throttle from '@/lib/utils/throttle'
 import { uuidToId } from 'notion-utils'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { getHeoCommentScrollTop, scrollToHeoComment, cancelHeoCommentSettle } from './commentScroll'
+
+const CATALOG_SCROLL_OFFSET = 80
+
+function getCatalogHeadingNode(id) {
+  if (typeof document === 'undefined') {
+    return null
+  }
+
+  return findNotionHeadingById(id)
+}
+
+function getCatalogHeadingScrollTop(id) {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  const targetNode = getCatalogHeadingNode(id)
+  if (!targetNode) {
+    return null
+  }
+
+  expandClosedToggleAncestors(targetNode)
+
+  const top =
+    targetNode.getBoundingClientRect().top +
+    window.scrollY -
+    CATALOG_SCROLL_OFFSET
+
+  return Math.max(0, top)
+}
+
+function updateCatalogHash(id) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const hash = `#${id}`
+  if (window.location.hash === hash) {
+    return
+  }
+
+  window.history.pushState(window.history.state, '', hash)
+}
 
 /**
  * 目录导航组件
@@ -9,52 +58,133 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * @returns {JSX.Element}
  * @constructor
  */
-const Catalog = ({ toc }) => {
+const Catalog = ({
+  toc,
+  onActiveSectionChange,
+  onItemClick,
+  className,
+  forceSpy,
+  showCommentButton = true
+}) => {
   const { locale } = useGlobal()
-  // 监听滚动事件
+  const [activeSection, setActiveSection] = useState(null)
+
+  // 统一的跳转提示 Toast 状态
+  const [toastState, setToastState] = useState({
+    show: false,
+    message: '',
+    savedScrollY: 0
+  })
+
+  // 目录自动滚动
+  const tRef = useRef(null)
+  const tocIds = useMemo(
+    () =>
+      Array.isArray(toc) ? toc.map(tocItem => uuidToId(tocItem?.id || '')) : [],
+    [toc]
+  )
+
+  const actionSectionScrollSpy = useMemo(
+    () =>
+      throttle(() => {
+        // 性能优化：如果目录不可见（如在折叠的浮动按钮中），不进行计算
+        if (!forceSpy && tRef.current && tRef.current.offsetParent === null) {
+          return
+        }
+        const tocIdSet = new Set(tocIds)
+        const sections = document.getElementsByClassName('notion-h')
+        let prevBBox = null
+        let currentSectionId = null
+        for (let i = 0; i < sections.length; ++i) {
+          const section = sections[i]
+          if (!section || !(section instanceof Element)) continue
+          const sectionId = section.getAttribute('data-id')
+          // 只在目录里出现的标题才参与定位，否则高亮会映射不到任何目录项
+          if (!sectionId || !tocIdSet.has(sectionId)) continue
+          // 折叠 toggle 内的标题没有布局盒（rect 全为 0），
+          // 恒满足 top-offset<0，会把高亮抢到不可见标题上，必须跳过
+          if (section.getClientRects().length === 0) continue
+          const bbox = section.getBoundingClientRect()
+          if (!currentSectionId) {
+            currentSectionId = sectionId
+          }
+          const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
+          const offset = Math.max(150, prevHeight / 4)
+          // GetBoundingClientRect returns values relative to viewport
+          if (bbox.top - offset < 0) {
+            currentSectionId = sectionId
+            prevBBox = bbox
+            continue
+          }
+          // No need to continue loop, if last element has been detected
+          break
+        }
+        setActiveSection(currentSectionId)
+        if (onActiveSectionChange) {
+          onActiveSectionChange(currentSectionId)
+        }
+        const index = Math.max(tocIds.indexOf(currentSectionId), 0)
+        if (tRef?.current) {
+          // 让当前阅读的目录项居中显示
+          const targetTop = 28 * index - tRef.current.clientHeight / 2 + 14
+          tRef.current.scrollTo({ top: targetTop, behavior: 'smooth' })
+        }
+      }, 200),
+    [forceSpy, onActiveSectionChange, tocIds]
+  )
+
+  // 目录变化时重绑监听，避免客户端切换文章后继续使用旧目录闭包。
   useEffect(() => {
     window.addEventListener('scroll', actionSectionScrollSpy, { passive: true })
     actionSectionScrollSpy()
     return () => {
       window.removeEventListener('scroll', actionSectionScrollSpy)
+      actionSectionScrollSpy.cancel?.()
+    }
+  }, [actionSectionScrollSpy])
+
+  // 处理跳转逻辑
+  const toastTimerRef = useRef(null)
+  const handleJump = (title, targetScrollY) => {
+    const currentScrollY = window.scrollY
+    setToastState({
+      show: true,
+      message: '已跳转至：\n' + title,
+      savedScrollY: currentScrollY
+    })
+
+    // 3秒后自动关闭；连续跳转时先清掉上一个定时器，避免提前关闭新提示
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current)
+    }
+    toastTimerRef.current = setTimeout(() => {
+      toastTimerRef.current = null
+      setToastState(prev => ({ ...prev, show: false }))
+    }, 3000)
+
+    // 如果有目标位置则滚动
+    if (typeof targetScrollY === 'number') {
+      window.scrollTo({ top: targetScrollY, behavior: 'smooth' })
+    }
+    if (onItemClick) {
+      onItemClick()
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current)
+      }
     }
   }, [])
 
-  // 目录自动滚动
-  const tRef = useRef(null)
-  const tocIds = []
-
-  // 同步选中目录事件
-  const [activeSection, setActiveSection] = useState(null)
-
-  const actionSectionScrollSpy = useCallback(
-    throttle(() => {
-      const sections = document.getElementsByClassName('notion-h')
-      let prevBBox = null
-      let currentSectionId = activeSection
-      for (let i = 0; i < sections.length; ++i) {
-        const section = sections[i]
-        if (!section || !(section instanceof Element)) continue
-        if (!currentSectionId) {
-          currentSectionId = section.getAttribute('data-id')
-        }
-        const bbox = section.getBoundingClientRect()
-        const prevHeight = prevBBox ? bbox.top - prevBBox.bottom : 0
-        const offset = Math.max(150, prevHeight / 4)
-        // GetBoundingClientRect returns values relative to viewport
-        if (bbox.top - offset < 0) {
-          currentSectionId = section.getAttribute('data-id')
-          prevBBox = bbox
-          continue
-        }
-        // No need to continue loop, if last element has been detected
-        break
-      }
-      setActiveSection(currentSectionId)
-      const index = tocIds.indexOf(currentSectionId) || 0
-      tRef?.current?.scrollTo({ top: 28 * index, behavior: 'smooth' })
-    }, 200)
-  )
+  const handleBack = () => {
+    // 评论跳转后的自动校正会和回滚抢滚动条，先取消
+    cancelHeoCommentSettle()
+    window.scrollTo({ top: toastState.savedScrollY, behavior: 'smooth' })
+    setToastState(prev => ({ ...prev, show: false }))
+  }
 
   // 无目录就直接返回空
   if (!toc || toc.length < 1) {
@@ -62,30 +192,40 @@ const Catalog = ({ toc }) => {
   }
 
   return (
-    <div className='px-3 py-1 dark:text-white text-black'>
-      <div className='w-full'>
+    <div
+      data-heo-catalog
+      className='px-3 py-1 dark:text-white text-black flex flex-col h-full'>
+      <div className='w-full flex-shrink-0'>
         <i className='mr-1 fas fa-stream' />
         {locale.COMMON.TABLE_OF_CONTENTS}
       </div>
       <div
-        className='overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden'
+        className={`${className || ''} overflow-y-auto max-h-36 lg:max-h-96 overscroll-none scroll-hidden flex-1`}
         ref={tRef}>
         <nav className='h-full'>
           {toc?.map(tocItem => {
-            const id = uuidToId(tocItem.id)
-            tocIds.push(id)
+            const id = uuidToId(tocItem.id || '')
             return (
               <a
                 key={id}
                 href={`#${id}`}
+                onClick={e => {
+                  e.preventDefault()
+                  const targetScrollY = getCatalogHeadingScrollTop(id)
+                  handleJump(tocItem.text, targetScrollY)
+                  setActiveSection(id)
+                  updateCatalogHash(id)
+                }}
                 className={`notion-table-of-contents-item duration-300 transform dark:text-gray-200
-            notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item `}>
+            notion-table-of-contents-item-indent-level-${tocItem.indentLevel} catalog-item
+            ${activeSection === id ? 'bg-indigo-50 dark:bg-yellow-900/40 text-indigo-600 dark:text-yellow-500 border-l-4 border-indigo-600 dark:border-yellow-500' : 'border-l-4 border-transparent'}
+            `}>
                 <span
                   style={{
                     display: 'inline-block',
                     marginLeft: tocItem.indentLevel * 16
                   }}
-                  className={`truncate ${activeSection === id ? 'font-bold text-[var(--heo-color-primary)]' : ''}`}>
+                  className={`truncate ${activeSection === id ? 'font-bold' : ''}`}>
                   {tocItem.text}
                 </span>
               </a>
@@ -93,7 +233,95 @@ const Catalog = ({ toc }) => {
           })}
         </nav>
       </div>
+
+      {showCommentButton && (
+        <div className='flex-shrink-0'>
+          <JumpToCommentButton onJump={(title, y) => handleJump(title, y)} />
+        </div>
+      )}
+
+      {/* 统一的 Toast 提示框 */}
+      {toastState.show &&
+        createPortal(
+          <div className='fixed bottom-20 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-md z-[99] animate-fade-in'>
+            <div className='bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 px-5 py-4 flex items-center justify-between gap-3 min-w-[300px]'>
+              <div className='flex items-center gap-2 flex-1 min-w-0'>
+                <svg
+                  className='w-5 h-5 text-blue-500 shrink-0 self-start mt-0.5'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z'
+                  />
+                </svg>
+                <div className='flex flex-col text-sm md:text-base text-gray-700 dark:text-gray-300'>
+                  <span className='font-bold whitespace-pre-wrap'>
+                    {toastState.message}
+                  </span>
+                </div>
+              </div>
+              <div className='flex items-center gap-2 shrink-0 self-start mt-0.5'>
+                <button
+                  type='button'
+                  onClick={handleBack}
+                  className='px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap'>
+                  回到原位置
+                </button>
+                <button
+                  type='button'
+                  aria-label='关闭跳转提示'
+                  onClick={() =>
+                    setToastState(prev => ({ ...prev, show: false }))
+                  }
+                  className='p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'>
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M6 18L18 6M6 6l12 12'
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
+  )
+}
+
+const JumpToCommentButton = ({ onJump }) => {
+  const handleJumpClick = () => {
+    if (getHeoCommentScrollTop() === null) {
+      return
+    }
+    // 先弹提示（此刻记录“回到原位置”的坐标），再交给 scrollToHeoComment
+    // 瞬时跳转并在懒加载布局位移后自动校正
+    if (onJump) {
+      onJump('评论区')
+    }
+    scrollToHeoComment()
+  }
+
+  return (
+    <button
+      type='button'
+      aria-label='跳转到评论区'
+      onClick={handleJumpClick}
+      className='mt-4 w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-yellow-300 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 font-bold text-sm text-gray-700 dark:text-gray-100'>
+      <i aria-hidden='true' className='fas fa-comments' />
+      跳转到评论区
+    </button>
   )
 }
 

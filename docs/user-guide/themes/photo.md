@@ -47,20 +47,18 @@ PHOTO_COLOR_PRIMARY_DARK: '#ca8a04'
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `PHOTO_COLOR_PRIMARY` | 主题主色 |
-| `PHOTO_COLOR_PRIMARY_DARK` | 深色模式主色 |
-| `PHOTO_MENU_CATEGORY` | 见 config.js |
-| `PHOTO_MENU_TAG` | 见 config.js |
-| `PHOTO_MENU_ARCHIVE` | 见 config.js |
-| `PHOTO_MENU_SEARCH` | 见 config.js |
-| `PHOTO_HOME_BACKGROUND` | 见 config.js |
-| `PHOTO_ARTICLE_RECOMMEND` | 见 config.js |
-| `PHOTO_VIDEO_COMBINE` | 见 config.js |
+| 配置键                                | 说明         |
+| ------------------------------------- | ------------ |
+| `PHOTO_MENU_CATEGORY`                 | 见 config.js |
+| `PHOTO_MENU_TAG`                      | 见 config.js |
+| `PHOTO_MENU_ARCHIVE`                  | 见 config.js |
+| `PHOTO_MENU_SEARCH`                   | 见 config.js |
+| `PHOTO_HOME_BACKGROUND`               | 见 config.js |
+| `PHOTO_ARTICLE_RECOMMEND`             | 见 config.js |
+| `PHOTO_VIDEO_COMBINE`                 | 见 config.js |
 | `PHOTO_VIDEO_COMBINE_SHOW_PAGE_FORCE` | 见 config.js |
-| `PHOTO_PREVIEW_CATEGORY_COUNT` | 见 config.js |
-| `PHOTO_POST_LIST_COVER` | 见 config.js |
+| `PHOTO_PREVIEW_CATEGORY_COUNT`        | 见 config.js |
+| `PHOTO_POST_LIST_COVER`               | 见 config.js |
 
 <!-- /theme-config-table -->
 

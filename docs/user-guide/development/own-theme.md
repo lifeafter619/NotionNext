@@ -1,4 +1,5 @@
 # NotionNext自建主题
+
 > 迁移自：[NotionNext自建主题](https://docs.tangly1024.com/article/your-own-theme)
 > 发布日期：2023-7-6
 > 最后编辑：2024-9-12
@@ -11,20 +12,17 @@
 
 在新上线的NotionNext4.0中，整体代码结构做了优化梳理，极大简化了用户自建主题的流程，我强烈推荐每个使用者创建自己的个性主题，并为其起一个自己的名字。
 
-
 ## 主题管理
 
 NotionNext会**自动扫描themes目录**下的所有文件夹。例如themes目录下有一个example文件夹，则您可以在blog.config.js 或环境变量中直接切换当前主题theme为文件夹的名字即可。
 
 ![Untitled](/legacy/9248a3565e6b9f40.png)
 
-
 ### 添加删除主题
 
 如需删除主题，只需将某个主题目录整个删除即可，例如删除整个example文件夹，而不影响网站使用。（强迫症福音）
 
 如需添加主题，可以将别人做好的主题文件夹直接放在themes目录下，或者参考已有的文件夹格式创建自己的主题文件夹。
-
 
 ### 如何创建主题
 
@@ -45,11 +43,9 @@ NotionNext会**自动扫描themes目录**下的所有文件夹。例如themes目
 ![Untitled](/legacy/07d8fd0a3557a567.png)
 ![Untitled](/legacy/bb5821a11534e838.png)
 
-
 ## 主题目录说明
 
 每个主题文件夹应有四个部分构成：
-
 
 ### 1. components
 
@@ -60,13 +56,11 @@ NotionNext会**自动扫描themes目录**下的所有文件夹。例如themes目
 ![Untitled](/legacy/f6d8e15b2f3ca245.png)
 ![Untitled](/legacy/e0bea6eac82e547e.png)
 
-
 ### 2. config.js
 
 主题中常用的一些开关，参数，颜色等等配置都可以提炼成为配置文件放在此处，便于统一维护修改。例如fukasawa主题的config.js中可以配置是否开关侧边栏。我建议一些可供用户个性化的配置都集中在此。
 
 ![Untitled](/legacy/1cbabe9a9241bd30.png)
-
 
 ### 3. index.js 布局
 
@@ -100,6 +94,7 @@ export {
 
 输出这些对象的作用如下参照
 即使是非必选的组件也要放回一个空页面元素，或直接返回基础的空白布局。例如
+
 ```Python
 const LayoutSearch = ()⇒ &lt;&gt;&lt;/&gt;
 
@@ -136,13 +131,11 @@ const LayoutArchive = ()⇒ &lt;LayoutBase&gt;空白页面&lt;/LayoutBase&gt;
 
 </details>
 
-
 ### 4. style.js 样式
 
 这里可以直接写css，只奏效于当前主题。
 
 ![Untitled](/legacy/ba8050fe4a709919.png)
-
 
 ## 关于前端知识
 

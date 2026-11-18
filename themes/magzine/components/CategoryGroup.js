@@ -20,7 +20,7 @@ const CategoryGroup = ({ currentCategory, categoryOptions }) => {
           return (
             <SmartLink
               key={index}
-              href={`/category/${category.name}`}
+              href={`/category/${encodeURIComponent(category.name)}`}
               passHref
               className={
                 (selected

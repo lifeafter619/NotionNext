@@ -47,7 +47,7 @@ const Announcement = ({ post, className }) => {
           {/* <div><i className='mr-2 fas fa-bullhorn' />{locale.COMMON.ANNOUNCEMENT}</div> */}
           {post && shouldRender && (
             <div id='announcement-content'>
-              <NotionPage post={post}/>
+              <NotionPage post={post} />
             </div>
           )}
         </section>

@@ -18,7 +18,6 @@ const PrefixSlug = props => {
   return <Slug {...props} />
 }
 
-
 export async function getStaticPaths() {
   return getStaticPathsBase({
     from: 'slug-paths',
@@ -43,24 +42,27 @@ export async function getStaticProps({
   locale,
   revalidateReason
 }) {
-
   const props = await resolvePostProps({
     prefix,
     slug,
     suffix,
     locale,
-    revalidateReason,
+    revalidateReason
   })
 
+  // 未找到文章时用短 revalidate：Notion 瞬时异常也会走到这里，
+  // 若按 NEXT_REVALIDATE_SECOND（默认一天）缓存 404，真实文章会被长时间误判
   return {
     props,
     revalidate: isStaticExport
       ? undefined
-      : siteConfig(
-        'NEXT_REVALIDATE_SECOND',
-        BLOG.NEXT_REVALIDATE_SECOND,
-        props.NOTION_CONFIG
-      ),
+      : props.post
+        ? siteConfig(
+            'NEXT_REVALIDATE_SECOND',
+            BLOG.NEXT_REVALIDATE_SECOND,
+            props.NOTION_CONFIG
+          )
+        : 60,
     notFound: !props.post
   }
 }

@@ -1,4 +1,5 @@
 # 网站公告
+
 > 迁移自：[网站公告](https://docs.tangly1024.com/article/notionnext-notice)
 > 发布日期：2023-5-25
 > 最后编辑：2024-1-31
@@ -18,9 +19,7 @@ NotionNext 3.10以后的版本开始支持网站公告，欢迎更新体验。
 
 ![Untitled](/legacy/36e055f2ef0f1828.png)
 
-
 ## 添加方式
-
 
 ### 前提
 
@@ -32,7 +31,6 @@ NotionNext 3.10以后的版本开始支持网站公告，欢迎更新体验。
 
 推荐版本号&gt;3.14.0，在此版本后，所有的主题都支持了公告功能的展示。
 
-
 ### 配置
 
 添加一个Type（类型）为Notice的页面即可，此页面是唯一的，网站只能有一个公告。
@@ -41,11 +39,9 @@ NotionNext 3.10以后的版本开始支持网站公告，欢迎更新体验。
 
 ![Untitled](/legacy/56d8cd9cf2c6ec48.png)
 
-
 ### 公告内容示例
 
 ![Untitled](/legacy/9a3bfe7e8e822f96.png)
-
 
 ## 特别说明
 
@@ -58,6 +54,7 @@ NotionNext 3.10以后的版本开始支持网站公告，欢迎更新体验。
 ![每个主题下都有一个公告组件](/legacy/860297c19e29d443.png)
 
 - 相关代码
+
 ```HTML
 &lt;div className={className}&gt;
     &lt;section id='announcement-wrapper' className="dark:text-gray-300 border dark:border-black rounded-xl lg:p-6 p-4 bg-white dark:bg-hexo-black-gray"&gt;

@@ -12,9 +12,7 @@ module.exports = {
     '',
   // 必填 公众号名称
   TECH_GROW_NAME:
-    process.env.NEXT_PUBLIC_TECH_GROW_NAME ||
-    process.env.TECH_GROW_NAME ||
-    '',
+    process.env.NEXT_PUBLIC_TECH_GROW_NAME || process.env.TECH_GROW_NAME || '',
   // 必填 公众号二维码
   TECH_GROW_QRCODE:
     process.env.NEXT_PUBLIC_TECH_GROW_QRCODE ||
@@ -62,4 +60,3 @@ module.exports = {
     process.env.TECH_GROW_BASE_URL ||
     ''
 }
-

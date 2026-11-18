@@ -1,4 +1,5 @@
 # Notion快捷键大全
+
 > 迁移自：[Notion快捷键大全](https://docs.tangly1024.com/article/notion-short-key)
 > 发布日期：2021-7-2
 > 最后编辑：2024-9-4
@@ -16,7 +17,6 @@ Notion 配备了完整的键盘和Markdown快捷键，因此您无需触摸鼠�
 **提示：**你将在以下的文章中看到大量的 `cmd/ctrl` ，他们分别的是Mac系统上的 `command` 键以及Windows和Linux上的`control` 键.
 :::
 
-
 ## 一、常用的6个快捷键 📝
 
 - 按 `cmd/ctrl` + `p` 打开搜索框或访问一个最近的页面
@@ -30,7 +30,6 @@ Notion 配备了完整的键盘和Markdown快捷键，因此您无需触摸鼠�
 - 按 `cmd/ctrl` + `shift` + `n` 或 `cmd/ctrl` + `click` 打开一个新的Notion窗口
 
 - 按 `cmd/ctrl` + `shift` + `l` 切换夜间模式
-
 
 ### 🤣 Emoji符号
 
@@ -70,12 +69,11 @@ Notion 配备了完整的键盘和Markdown快捷键，因此您无需触摸鼠�
 
 - **字体加粗**：在你的文字左右两侧输入 `**`
 
-- _斜体：_在你的文字左右两侧输入 `*`
+- *斜体：*在你的文字左右两侧输入 `*`
 
 - `行内代码` : 文字左右两侧输入 `\``
 
 - ~~删除线~~ :文字左右两侧输入 `~`
-
 
 ## 三、**创建和设计一个内容块**
 
@@ -89,7 +87,7 @@ Notion 配备了完整的键盘和Markdown快捷键，因此您无需触摸鼠�
 
 - 在选中文字后，按 `cmd/ctrl` + `b` 变成**粗体文字**.
 
-- 选择文本后，按 `cmd/ctrl` + `i` 变成_文本斜体_.
+- 选择文本后，按 `cmd/ctrl` + `i` 变成*文本斜体*.
 
 - 选中文本后，按 `cmd/ctrl` + `u` 添加下划线.
 
@@ -115,25 +113,25 @@ Notion 配备了完整的键盘和Markdown快捷键，因此您无需触摸鼠�
 <summary>数字组合快捷键<code>cmd/ctrl</code> + <code>option/shift</code> + <code>[num]</code> (我用的比较少)</summary>
 
 以下这些内容创建的快捷方式，在Mac上代表 `cmd` + `option` 组合，Windows 和 Linux 要用 `ctrl` + `shift` 组合：
-  - 按下 `cmd/ctrl` + `option/shift` + `0` 创建 文本.
-  - 按下 `cmd/ctrl` + `option/shift` + `1` 创建 一个1级标题.
-  - 按下 `cmd/ctrl` + `option/shift` + `2` 创建 二级标题.
-  - 按下 `cmd/ctrl` + `option/shift` + `3` 创建 三级标题.
-  - 按下 `cmd/ctrl` + `option/shift` + `4` 创建 代办复选框.
-  - 按下 `cmd/ctrl` + `option/shift` + `5` 创建 子弹列表.
-  - 按下 `cmd/ctrl` + `option/shift` + `6` 创建 数字列表.
-  - 按下 `cmd/ctrl` + `option/shift` + `7` 创建 折叠列表.
-  - 按下 `cmd/ctrl` + `option/shift` + `8` 创建 代码块.
-  - 按下 `cmd/ctrl` + `option/shift` + `9` 创建 一个新页面，或将你选中的行转为页面.
-  - 按下 `cmd/ctrl` + `+`来放大， 按下 `cmd/ctrl`+`-`以缩小。
-  - 按下 `cmd/ctrl` + `shift` + `U` 跳到到页面的上一级。
+
+- 按下 `cmd/ctrl` + `option/shift` + `0` 创建 文本.
+- 按下 `cmd/ctrl` + `option/shift` + `1` 创建 一个1级标题.
+- 按下 `cmd/ctrl` + `option/shift` + `2` 创建 二级标题.
+- 按下 `cmd/ctrl` + `option/shift` + `3` 创建 三级标题.
+- 按下 `cmd/ctrl` + `option/shift` + `4` 创建 代办复选框.
+- 按下 `cmd/ctrl` + `option/shift` + `5` 创建 子弹列表.
+- 按下 `cmd/ctrl` + `option/shift` + `6` 创建 数字列表.
+- 按下 `cmd/ctrl` + `option/shift` + `7` 创建 折叠列表.
+- 按下 `cmd/ctrl` + `option/shift` + `8` 创建 代码块.
+- 按下 `cmd/ctrl` + `option/shift` + `9` 创建 一个新页面，或将你选中的行转为页面.
+- 按下 `cmd/ctrl` + `+`来放大， 按下 `cmd/ctrl`+`-`以缩小。
+- 按下 `cmd/ctrl` + `shift` + `U` 跳到到页面的上一级。
 
 </details>
 
 - 当你拖拽一个内容块时，按下 `option/alt` 键，可以复制这个块。
 
 ![image](/legacy/4dcfe19e91e821bf.gif)
-
 
 ## 四、**编辑和移动块**
 
@@ -180,7 +178,6 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
   - 打开或关闭切换列表项
   - 使嵌入或图像全屏
 
-
 ## 五、`**@**`**命令**
 
 - **提及一个人 -**键入`@`和另一个工作区成员的姓名，以引起他们对某事的注意。他们会得到通知。在评论和讨论中很有用。
@@ -188,12 +185,11 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 - **提及页面 -**在工作区中键入`@`和另一个页面的名称以创建指向它的链接。如果您更改页面名称，此链接也会自动更改。
 
 - **提到一个日期** **-**键入`@`并输入任何格式的日期（或“yesterday”，“today”和“tomorrow”，甚至“next Wednesday”）。可以快速引入一个日期，例如 ‣
-![image](/legacy/d33d826470347de1.png)
+  ![image](/legacy/d33d826470347de1.png)
 
 - **添加提醒 -**键入`@remind`后跟任何格式的日期（包括“昨天”、“今天”、“明天”等）。您可以单击出现的链接来调整您想要提醒的日期和确切时间。届时您会收到通知。[**更多关于这里的提醒 →**](https://www.notion.so/notion/mentions-reminders-777c3d4b488c4e3696f2cc9940cceb2c#76f37acba4b1478f86fac388cc7aeaae)
 
 - 如果你仅仅是想输入`@`符号，按`ESC`撤销`@`指令菜单。
-
 
 ## 六、`**[[**`** 与 **`**+**`** 命令**
 
@@ -213,7 +209,6 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 
 - **链接页面 -**在工作区中键入`+`和另一个页面的名称以创建指向它的链接。如果您更改页面名称，此链接也会自动更改。
 
-
 ## 七、`/` 命令
 
 在Notion中按`/`会显示一个完整的内容块菜单，您可以用鼠标从中选择插入一种类型的块。
@@ -222,10 +217,9 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 
 你可以通过先按`/`然后输入您想要的块类型，来进一步快捷输入。以下是您的输入的类型名称：
 
-
 ### **基本斜线命令**
 
-- `/text`或`/plain`  创建一个新的文本块。
+- `/text`或`/plain` 创建一个新的文本块。
 
 - `/page`创建一个新页面（并在您按下`enter`时自动打开它）。
 
@@ -251,7 +245,6 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 
 - `esc`清除`/`菜单。如果您只是想在写作中使用 `/` ，则非常方便。
 
-
 ### **行内内容**
 
 - `/mention`可让您提及工作区中的页面或人员
@@ -261,7 +254,6 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 - `/equation`可让您根据文本添加 TeX 公式
 
 - `/emoji` 调出表情符号选择器
-
 
 ### **数据库**
 
@@ -281,7 +273,6 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 
 - `/linked`创建一个链接数据库——一个现有数据库的副本，您可以将其插入任何页面内嵌，并根据需要过滤或查看。有助于在同一页面上从同一数据库创建多个摘录。
 
-
 ## 八、插入多**媒体**
 
 - `/image`将显示上传或嵌入图像的选项，或从[Unsplash](http://unsplash.com/)添加图像。
@@ -289,7 +280,7 @@ Notion 中的一切都是一个`块` — 从一行文字（或段落）到一个
 - `/pdf`允许您将 URL 粘贴到任何 PDF 中，以便它会在您的页面上内嵌显示。
 
 - `/book`允许您将 URL 粘贴到任何网站以创建网络书签。像这样：
-[Notion - The all-in-one workspace for your notes, tasks, wikis, and databases.](http://notion.so)
+  [Notion - The all-in-one workspace for your notes, tasks, wikis, and databases.](http://notion.so)
 
 A new tool that blends your everyday work apps into one. It's the all-in-one workspace for you and your team.
 
@@ -302,7 +293,6 @@ A new tool that blends your everyday work apps into one. It's the all-in-one wor
 - `/file`允许您从计算机上传任何文件或创建嵌入。
 
 - `/embed`允许您添加与 Notion 可以兼容使用的 500 多种嵌入类型中的任何一种。[**在此处了解有关嵌入的更多信息**](https://notion.so/notion/Embed-content-6b7133323590447b9d8e963c136ebce5)。
-
 
 ## 九、其他高级内容
 
@@ -321,7 +311,6 @@ A new tool that blends your everyday work apps into one. It's the all-in-one wor
 - `/bread`插入一个面包屑菜单，显示当前页面在工作区中的位置。
 
 - `/math`或`/latex`允许您使用[TeX](https://www.math.brown.edu/~jhs/ReferenceCards/TeXRefCard.v1.5.pdf)编写数学方程和符号。
-
 
 ## 参考文章
 

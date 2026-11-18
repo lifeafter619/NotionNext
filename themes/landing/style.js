@@ -7,15 +7,13 @@ import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
  * @returns
  */
 const Style = () => {
-  return <style jsx global>{`
-
-    .test {
-      text-color: red;
-    }
-
-
-      ${themeConsoleStyle('landing', CONFIG)}
-  `}</style>
+  return (
+    <style jsx global>{`
+      .test {
+        text-color: red;
+      }
+    `}</style>
+  )
 }
 
 export { Style }

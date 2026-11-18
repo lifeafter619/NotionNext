@@ -8,7 +8,9 @@ export default function BlogListArchive({ archiveTitle, archivePosts }) {
   const sectionId = `archive-${String(archiveTitle).replace(/\s+/g, '-')}`
   return (
     <section className='tl-archive-section' aria-labelledby={sectionId}>
-      <h2 id={sectionId} className='tl-timeline-day-label mb-3 mt-10 first:mt-0'>
+      <h2
+        id={sectionId}
+        className='tl-timeline-day-label mb-3 mt-10 first:mt-0'>
         {archiveTitle}
       </h2>
       <ul className='tl-archive-rail m-0 list-none border-l border-[var(--tl-border)] pl-0'>

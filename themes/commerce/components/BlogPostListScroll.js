@@ -1,7 +1,8 @@
+import useThrottledScroll from '@/hooks/useThrottledScroll'
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { getListByPage } from '@/lib/utils'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import CONFIG from '../config'
 import BlogPostListEmpty from './BlogPostListEmpty'
 import ProductCard from './ProductCard'
@@ -16,7 +17,7 @@ import ProductCard from './ProductCard'
 const BlogPostListScroll = ({
   posts = [],
   currentSearch,
-  showSummary = CONFIG.POST_LIST_SUMMARY,
+  showSummary = siteConfig('COMMERCE_POST_LIST_SUMMARY', true, CONFIG),
   siteInfo
 }) => {
   const { NOTION_CONFIG } = useGlobal()
@@ -37,27 +38,15 @@ const BlogPostListScroll = ({
   }
 
   // 监听滚动自动分页加载
-  const scrollTrigger = () => {
+  useThrottledScroll(() => {
     requestAnimationFrame(() => {
       const scrollS = window.scrollY + window.outerHeight
-      const clientHeight = targetRef
-        ? targetRef.current
-          ? targetRef.current.clientHeight
-          : 0
-        : 0
+      const clientHeight = targetRef.current?.clientHeight ?? 0
       if (scrollS > clientHeight + 100) {
         handleGetMore()
       }
     })
-  }
-
-  // 监听滚动
-  useEffect(() => {
-    window.addEventListener('scroll', scrollTrigger, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', scrollTrigger)
-    }
-  })
+  }, 200)
 
   const targetRef = useRef(null)
   const { locale } = useGlobal()

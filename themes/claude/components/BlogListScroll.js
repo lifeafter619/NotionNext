@@ -1,6 +1,6 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BlogItem } from './BlogItem'
 
@@ -32,13 +32,14 @@ export default function BlogListScroll(props) {
 
   // 监听滚动自动分页加载
   const scrollTrigger = useMemo(
-    throttle(() => {
-      const scrollS = window.scrollY + window.innerHeight
-      const clientHeight = targetRef.current?.clientHeight ?? 0
-      if (scrollS > clientHeight + 100) {
-        handleGetMore()
-      }
-    }, 500),
+    () =>
+      throttle(() => {
+        const scrollS = window.scrollY + window.innerHeight
+        const clientHeight = targetRef.current?.clientHeight ?? 0
+        if (scrollS > clientHeight + 100) {
+          handleGetMore()
+        }
+      }, 500),
     [handleGetMore]
   )
 

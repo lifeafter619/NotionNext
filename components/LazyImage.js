@@ -1,8 +1,12 @@
 import { siteConfig } from '@/lib/config'
+import BLOG from '@/blog.config'
+import { buildNotionAssetFallbackCandidates } from '@/lib/notionAssetFallback'
+import { isNotionAssetProxyUrl } from '@/lib/notionAssetUrl'
+import { enqueueImagePrefetch } from '@/lib/utils/imagePrefetchQueue'
 import Head from 'next/head'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-const getTargetImageWidth = (width, maxWidth) => {
+const getImageTargetWidth = (width, maxWidth) => {
   const parsedWidth = Number(width)
   const parsedMaxWidth = Number(maxWidth)
 
@@ -17,6 +21,13 @@ const getTargetImageWidth = (width, maxWidth) => {
 
 /**
  * 图片懒加载
+ *
+ * 所有图片都在服务端直出真实 src，加载策略交给浏览器原生调度：
+ * - priority / eager 图片：loading=eager（+ priority 时 preload、fetchpriority=high）；
+ * - 其余图片：loading=lazy，浏览器在 HTML 解析阶段就为视口内及附近的图片发起
+ *   并行请求（自带并发与优先级控制），无需等待 JS 下载与 React 水合；
+ * - 远离视口的图片由原生 lazy 推迟；可选的空闲预取默认关闭，避免在首屏
+ *   完成后立即下载整页图片。
  * @param {*} param0
  * @returns
  */
@@ -32,138 +43,156 @@ export default function LazyImage({
   height,
   title,
   onLoad,
+  onError,
   onClick,
   style,
-  loading
+  sizes,
+  loading,
+  fetchPriority,
+  referrerPolicy = 'no-referrer'
 }) {
   const maxWidth = siteConfig('IMAGE_COMPRESS_WIDTH')
-  const targetImageWidth = getTargetImageWidth(width, maxWidth)
+  const targetImageWidth = getImageTargetWidth(width, maxWidth)
   const defaultPlaceholderSrc = siteConfig('IMG_LAZY_LOAD_PLACEHOLDER')
+  const optimizedImageSrc = adjustImgSize(src, targetImageWidth) || src
+  const isEager = Boolean(priority || loading === 'eager')
   const imageRef = useRef(null)
+  const fallbackIndexRef = useRef(0)
+  const cancelPrefetchRef = useRef(null)
   const [currentSrc, setCurrentSrc] = useState(
-    priority && src
-      ? adjustImgSize(src, targetImageWidth)
-      : placeholderSrc || defaultPlaceholderSrc
+    optimizedImageSrc || placeholderSrc || defaultPlaceholderSrc
   )
-  const [imageLoaded, setImageLoaded] = useState(Boolean(priority && src))
-
-  /**
-   * 占位图加载成功
-   */
-  const handleThumbnailLoaded = () => {
-    if (typeof onLoad === 'function') {
-      // onLoad() // 触发传递的onLoad回调函数
-    }
-  }
+  const [imageLoaded, setImageLoaded] = useState(Boolean(isEager && src))
 
   const handleImageError = useCallback(() => {
+    const fallbackCandidates = getFallbackCandidates([
+      fallbackSrc,
+      // 让 Notion 图片先走可恢复的真实资源，再使用视觉占位图。否则占位图
+      // 一旦加载成功，服务端代理和 notion.so 兜底永远不会被尝试。
+      ...buildNotionAssetFallbackCandidates({
+        src: optimizedImageSrc || src,
+        kind: 'image',
+        notionHost: BLOG.NOTION_HOST
+      }).map(c => c.url),
+      placeholderSrc,
+      defaultPlaceholderSrc
+    ])
+    let nextFallbackSrc = null
+
+    while (fallbackIndexRef.current < fallbackCandidates.length) {
+      const candidate = fallbackCandidates[fallbackIndexRef.current]
+      fallbackIndexRef.current += 1
+      if (candidate !== currentSrc) {
+        nextFallbackSrc = candidate
+        break
+      }
+    }
+
     if (imageRef.current) {
-      // 优先回退 fallbackSrc，再尝试 placeholderSrc，最后 defaultPlaceholderSrc
-      if (imageRef.current.src !== fallbackSrc && fallbackSrc) {
-        imageRef.current.src = fallbackSrc
-      } else if (imageRef.current.src !== placeholderSrc && placeholderSrc) {
-        imageRef.current.src = placeholderSrc
-      } else {
-        imageRef.current.src = defaultPlaceholderSrc
+      if (nextFallbackSrc) {
+        setCurrentSrc(nextFallbackSrc)
       }
       setImageLoaded(true)
       imageRef.current.classList.remove('lazy-image-placeholder')
     }
-  }, [defaultPlaceholderSrc, fallbackSrc, placeholderSrc])
+    if (typeof onError === 'function') {
+      onError()
+    }
+  }, [
+    currentSrc,
+    defaultPlaceholderSrc,
+    fallbackSrc,
+    onError,
+    optimizedImageSrc,
+    placeholderSrc,
+    src
+  ])
 
-  useEffect(() => {
-    const adjustedImageSrc =
-      adjustImgSize(src, targetImageWidth) || defaultPlaceholderSrc
-    const imageElement = imageRef.current
-    const handleImageLoaded = () => {
+  const handleImageLoaded = useCallback(
+    event => {
+      if (currentSrc !== optimizedImageSrc) return
+
+      fallbackIndexRef.current = 0
+      // 图片已由浏览器真实加载，空闲队列中的同图预热不再必要
+      if (cancelPrefetchRef.current) {
+        cancelPrefetchRef.current()
+        cancelPrefetchRef.current = null
+      }
       if (typeof onLoad === 'function') {
-        onLoad()
+        onLoad(event)
       }
       setImageLoaded(true)
       if (imageRef.current) {
         imageRef.current.classList.remove('lazy-image-placeholder')
       }
+    },
+    [currentSrc, onLoad, optimizedImageSrc]
+  )
+
+  useEffect(() => {
+    fallbackIndexRef.current = 0
+    setCurrentSrc(optimizedImageSrc || placeholderSrc || defaultPlaceholderSrc)
+
+    // 原生加载可能在 React 水合前就完成（此时不会触发 React 的 onLoad），
+    // 这里用 complete 补一次状态同步，移除占位样式。
+    const imageElement = imageRef.current
+    if (
+      imageElement &&
+      imageElement.complete &&
+      imageElement.naturalWidth > 0
+    ) {
+      setImageLoaded(true)
+      imageElement.classList.remove('lazy-image-placeholder')
     }
+  }, [optimizedImageSrc, defaultPlaceholderSrc, placeholderSrc])
 
-    // 如果是优先级图片，直接加载
-    if (priority) {
-      const img = new Image()
-      img.src = adjustedImageSrc
-      img.onload = () => {
-        setCurrentSrc(adjustedImageSrc)
-        handleImageLoaded(adjustedImageSrc)
-      }
-      img.onerror = handleImageError
-      return
+  // 构造 srcset 以支持响应式图片加载
+  const generateSrcSet = imageSrc =>
+    buildResponsiveSrcSet(imageSrc, targetImageWidth)
+
+  const shouldAttachRealSources = currentSrc === optimizedImageSrc
+  const srcSet = shouldAttachRealSources
+    ? generateSrcSet(optimizedImageSrc)
+    : undefined
+  const normalizedWidth = normalizeDimensionAttribute(width)
+  const normalizedHeight = normalizeDimensionAttribute(height)
+  const imageSizes = sizes || getDefaultImageSizes(normalizedWidth)
+
+  // 非优先图片加入空闲预取队列：首屏加载完成后由队列以受限并发在后台预热
+  // 尚未被原生 lazy 拉取的远视口图片，用户滚动到时直接命中 HTTP 缓存即时显示；
+  // 图片真实加载完成或组件卸载（路由切换）时自动取消
+  useEffect(() => {
+    if (isEager || !optimizedImageSrc) return undefined
+    const imageElement = imageRef.current
+    if (
+      imageElement &&
+      imageElement.complete &&
+      imageElement.naturalWidth > 0
+    ) {
+      return undefined
     }
-
-    // 检查浏览器是否支持IntersectionObserver
-    if (!window.IntersectionObserver) {
-      // 降级处理：直接加载图片
-      const img = new Image()
-      img.src = adjustedImageSrc
-      img.onload = () => {
-        setCurrentSrc(adjustedImageSrc)
-        handleImageLoaded(adjustedImageSrc)
-      }
-      img.onerror = handleImageError
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            // 预加载图片
-            const img = new Image()
-            // 设置图片解码优先级
-            if ('decoding' in img) {
-              img.decoding = 'async'
-            }
-            img.src = adjustedImageSrc
-            img.onload = () => {
-              setCurrentSrc(adjustedImageSrc)
-              handleImageLoaded(adjustedImageSrc)
-            }
-            img.onerror = handleImageError
-
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      {
-        rootMargin: siteConfig('LAZY_LOAD_THRESHOLD', '200px'),
-        threshold: 0.1
-      }
-    )
-
-    if (imageElement) {
-      observer.observe(imageElement)
-    }
-
+    const cancel = enqueueImagePrefetch({
+      src: optimizedImageSrc,
+      srcSet: buildResponsiveSrcSet(optimizedImageSrc, targetImageWidth),
+      sizes: imageSizes,
+      referrerPolicy
+    })
+    cancelPrefetchRef.current = cancel
     return () => {
-      if (imageElement) {
-        observer.unobserve(imageElement)
-      }
+      cancelPrefetchRef.current = null
+      cancel()
     }
-  }, [
-    src,
-    targetImageWidth,
-    priority,
-    defaultPlaceholderSrc,
-    fallbackSrc,
-    handleImageError,
-    onLoad,
-    placeholderSrc
-  ])
+  }, [isEager, optimizedImageSrc, targetImageWidth, imageSizes, referrerPolicy])
 
   // 动态添加width、height和className属性，仅在它们为有效值时添加
   const imgProps = {
     ref: imageRef,
     src: currentSrc,
+    srcSet,
+    sizes: imageSizes,
     'data-src': src, // 存储原始图片地址
-    alt: alt || 'Lazy loaded image',
-    onLoad: handleThumbnailLoaded,
+    alt: alt ?? '',
+    onLoad: handleImageLoaded,
     onError: handleImageError,
     className: `${className || ''}${imageLoaded ? '' : ' lazy-image-placeholder'}`,
     style: {
@@ -173,8 +202,15 @@ export default function LazyImage({
     },
     onClick,
     // 性能优化属性
-    loading: priority ? 'eager' : loading || 'lazy',
+    loading: isEager ? 'eager' : 'lazy',
+    fetchpriority: priority ? 'high' : fetchPriority || undefined,
     decoding: 'async',
+    // Do not leak the blog domain to image hosts. This also prevents generic
+    // hotlink-protection rules from blocking custom CDN and Vercel domains.
+    referrerPolicy,
+    // NotionPage has a capture-phase fallback for raw images. Mark this image
+    // so the React state machine remains its single owner.
+    'data-notion-next-fallback-managed': 'true',
     // 现代图片格式支持
     ...(siteConfig('WEBP_SUPPORT') && { 'data-webp': true }),
     ...(siteConfig('AVIF_SUPPORT') && { 'data-avif': true })
@@ -182,9 +218,8 @@ export default function LazyImage({
 
   if (id) imgProps.id = id
   if (title) imgProps.title = title
-  if (width) imgProps.width = width
-  if (height) imgProps.height = height
-  if (priority) imgProps.fetchpriority = 'high'
+  if (normalizedWidth !== undefined) imgProps.width = normalizedWidth
+  if (normalizedHeight !== undefined) imgProps.height = normalizedHeight
 
   if (!src) {
     return null
@@ -200,8 +235,11 @@ export default function LazyImage({
           <link
             rel='preload'
             as='image'
-            href={adjustImgSize(src, targetImageWidth)}
+            href={optimizedImageSrc}
+            imageSrcSet={srcSet}
+            imageSizes={imgProps.sizes}
             fetchpriority='high'
+            referrerPolicy={referrerPolicy}
           />
         </Head>
       )}
@@ -209,36 +247,109 @@ export default function LazyImage({
   )
 }
 
-/**
- * 根据窗口尺寸决定压缩图片宽度
- * @param {*} src
- * @param {*} maxWidth
- * @returns
- */
-const adjustImgSize = (src, maxWidth) => {
+function getFallbackCandidates(candidates) {
+  return [...new Set(candidates.filter(Boolean))]
+}
+
+function normalizeDimensionAttribute(value) {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return value
+  }
+
+  if (typeof value === 'string' && /^\d+$/.test(value)) {
+    return value
+  }
+
+  return undefined
+}
+
+function getDefaultImageSizes(width) {
+  if (width === undefined) {
+    return '100vw'
+  }
+
+  return `${width}px`
+}
+
+export function adjustImgSize(src, maxWidth) {
   if (!src) {
     return null
   }
-  const screenWidth =
-    (typeof window !== 'undefined' && window?.screen?.width) || maxWidth
-  const parsedMaxWidth = Number(maxWidth)
-  const targetWidth =
-    Number.isFinite(parsedMaxWidth) && parsedMaxWidth > 0
-      ? Math.min(screenWidth, parsedMaxWidth)
-      : screenWidth
 
-  // 屏幕尺寸大于默认图片尺寸，没必要再压缩
-  if (!targetWidth) {
-    return src
+  return replaceImageWidthParam(
+    src,
+    normalizeImageWidth(maxWidth),
+    isNotionAssetProxyUrl(src, BLOG.NOTION_HOST)
+  )
+}
+
+function normalizeImageWidth(width) {
+  const numericWidth = Number(width)
+  if (Number.isFinite(numericWidth) && numericWidth > 0) {
+    return Math.max(1, Math.round(numericWidth))
+  }
+  return 1080
+}
+
+export function buildResponsiveSrcSet(imageSrc, maxWidth) {
+  if (!imageSrc || (!imageSrc.includes('width=') && !imageSrc.includes('w='))) {
+    return undefined
   }
 
-  // 正则表达式，用于匹配 URL 中的 width 参数
-  const widthRegex = /width=\d+/
-  // 正则表达式，用于匹配 URL 中的 w 参数
-  const wRegex = /w=\d+/
+  const breakpoints = [
+    320, 480, 640, 680, 750, 828, 1080, 1200, 1920, 2048, 3840
+  ]
+  const maxImageWidth = normalizeImageWidth(maxWidth)
+  const candidateWidths = breakpoints.filter(w => w <= maxImageWidth)
 
-  // 使用正则表达式替换 width/w 参数
-  return src
-    .replace(widthRegex, `width=${targetWidth}`)
-    .replace(wRegex, `w=${targetWidth}`)
+  if (
+    maxImageWidth >= breakpoints[0] &&
+    !candidateWidths.includes(maxImageWidth)
+  ) {
+    candidateWidths.push(maxImageWidth)
+  }
+
+  const candidates = candidateWidths.map(w => {
+    const newSrc = replaceImageWidthParam(imageSrc, w)
+    return `${newSrc} ${w}w`
+  })
+
+  return candidates.length > 0 ? candidates.join(', ') : undefined
+}
+
+function replaceImageWidthParam(imageSrc, width, appendWidth = false) {
+  const hasWidthParam = imageSrc?.includes('width=') || imageSrc?.includes('w=')
+  if (!imageSrc || (!hasWidthParam && !appendWidth)) {
+    return imageSrc
+  }
+
+  try {
+    const isRelativePath =
+      imageSrc.startsWith('/') && !imageSrc.startsWith('//')
+    const url = new URL(
+      imageSrc,
+      isRelativePath ? 'https://notionnext.local' : undefined
+    )
+    const widthParam = url.searchParams.has('width')
+      ? 'width'
+      : url.searchParams.has('w')
+        ? 'w'
+        : null
+
+    if (!widthParam && !appendWidth) {
+      return imageSrc
+    }
+
+    url.searchParams.set(widthParam || 'width', String(width))
+
+    if (isRelativePath) {
+      return `${url.pathname}${url.search}${url.hash}`
+    }
+
+    return url.toString()
+  } catch (_) {
+    return imageSrc
+      .replace(/width=\d+/, `width=${width}`)
+      .replace(/w=\d+/, `w=${width}`)
+  }
 }

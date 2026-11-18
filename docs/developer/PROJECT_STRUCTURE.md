@@ -27,4 +27,3 @@
 - **主题视觉改动**：优先 `themes/<theme>/`
 - **配置项新增**：优先 `conf/*.config.js`，再由 `blog.config.js` 聚合
 - **避免在多个 `pages/*` 重复粘贴同一业务逻辑**
-

@@ -8,13 +8,13 @@
 
 文档站不再把“站长教程”和“开发者文档”做成访问边界。`user-guide/` 负责从部署、配置、主题使用开始，`developer/` 继续承接架构、贡献、主题迁移和维护决策。借助 AI 开发后，修改主题、排查问题、补文档和提交 PR 的门槛已经降低，文档应鼓励每个使用者逐步成为贡献者。
 
-| 目录 | 用途 |
-| --- | --- |
-| [`docs/user-guide/`](./user-guide/) | 部署、配置、Notion 数据库、菜单、升级等**用户教程**（从官方站点迁移并持续更新） |
-| [`docs/user-guide/reference/`](./user-guide/reference/) | **4.9.x 参考手册**：全站配置索引、Notion 新能力（与 `conf/` 同步维护） |
-| [`docs/user-guide/themes/THEMES_CATALOG.md`](./user-guide/themes/THEMES_CATALOG.md) | **26 个内置主题**全表与选型 |
-| [`docs/developer/`](./developer/) | 架构、贡献流程、维护手册、主题迁移、RFC 等进阶文档（在线站可见） |
-| [`docs/developer/themes/`](./developer/themes/) | 主题实现长文、迁移计划、上游来源与许可证说明 |
+| 目录                                                                                | 用途                                                                            |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`docs/user-guide/`](./user-guide/)                                                 | 部署、配置、Notion 数据库、菜单、升级等**用户教程**（从官方站点迁移并持续更新） |
+| [`docs/user-guide/reference/`](./user-guide/reference/)                             | **4.9.x 参考手册**：全站配置索引、Notion 新能力（与 `conf/` 同步维护）          |
+| [`docs/user-guide/themes/THEMES_CATALOG.md`](./user-guide/themes/THEMES_CATALOG.md) | **26 个内置主题**全表与选型                                                     |
+| [`docs/developer/`](./developer/)                                                   | 架构、贡献流程、维护手册、主题迁移、RFC 等进阶文档（在线站可见）                |
+| [`docs/developer/themes/`](./developer/themes/)                                     | 主题实现长文、迁移计划、上游来源与许可证说明                                    |
 
 ## 为何迁到 GitHub
 

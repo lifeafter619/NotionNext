@@ -1,3 +1,4 @@
+import Head from 'next/head'
 import { useEffect } from 'react'
 import { loadExternalResource } from '@/lib/utils'
 
@@ -5,12 +6,20 @@ export default function Live2DWife() {
   useEffect(() => {
     initLive2DWife()
   }, [])
-  return null
+  return (
+    <Head>
+      <link
+        rel='stylesheet'
+        href='https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css'
+      />
+    </Head>
+  )
 }
 
 function initLive2DWife() {
   // 注意：live2d_path 参数应使用绝对路径
-  const live2dPath = 'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/'
+  const live2dPath =
+    'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/'
   // const live2d_path = "/live2d-widget/";
 
   // 加载 waifu.css live2d.min.js waifu-tips.js

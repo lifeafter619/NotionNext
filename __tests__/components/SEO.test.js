@@ -8,7 +8,11 @@ jest.mock('@/lib/config', () => ({
 jest.mock('@/lib/global', () => ({
   useGlobal: () => ({
     locale: {
-      NAV: { ARCHIVE: 'Archive', SEARCH: 'Search', PAGE_NOT_FOUND: 'Not Found' },
+      NAV: {
+        ARCHIVE: 'Archive',
+        SEARCH: 'Search',
+        PAGE_NOT_FOUND: 'Not Found'
+      },
       COMMON: { CATEGORY: 'Category', TAGS: 'Tags' }
     }
   })
@@ -20,7 +24,6 @@ const baseSiteConfig = {
   AUTHOR: 'Example Author',
   BACKGROUND_DARK: '#ffffff',
   BLOG_FAVICON: '/favicon.ico',
-  ENABLE_RSS: true,
   FONT_URL: '',
   KEYWORDS: 'notion,next',
   LANG: 'en-US',
@@ -112,43 +115,6 @@ describe('SEO structured data', () => {
   })
 })
 
-describe('SEO RSS discovery', () => {
-  it('exposes an RSS alternate link for readers and browsers', () => {
-    const { container } = renderSeo('')
-    const rssLink = container.querySelector(
-      'link[rel="alternate"][type="application/rss+xml"]'
-    )
-
-    expect(rssLink).toBeInTheDocument()
-    expect(rssLink.getAttribute('href')).toBe(
-      'https://example.com/rss/feed.xml'
-    )
-  })
-
-  it('omits the alternate link when RSS is disabled', () => {
-    siteConfig.mockImplementation((key, defaultVal) => {
-      if (key === 'ENABLE_RSS') return false
-      return Object.prototype.hasOwnProperty.call(baseSiteConfig, key)
-        ? baseSiteConfig[key]
-        : defaultVal
-    })
-
-    const { container } = render(
-      <SEO
-        siteInfo={{
-          title: 'Example Blog',
-          description: 'Example description',
-          link: 'https://example.com'
-        }}
-      />
-    )
-
-    expect(
-      container.querySelector('link[type="application/rss+xml"]')
-    ).not.toBeInTheDocument()
-  })
-})
-
 describe('SEO font resource hints', () => {
   it('omits Google Fonts hints for non-Google font URLs', () => {
     const { container } = renderSeo(
@@ -174,6 +140,30 @@ describe('SEO font resource hints', () => {
     expect(
       container.querySelector('link[href="https://fonts.gstatic.com"]')
     ).toBeInTheDocument()
+  })
+})
+
+describe('RSS discovery', () => {
+  it('omits RSS discovery when RSS is disabled', () => {
+    siteConfig.mockImplementation(key =>
+      key === 'ENABLE_RSS' ? false : baseSiteConfig[key]
+    )
+    const { container } = render(<SEO siteInfo={{ title: 'Example Blog' }} />)
+    expect(
+      container.querySelector('link[type="application/rss+xml"]')
+    ).toBeNull()
+  })
+
+  it('normalizes sub-path deployment in the RSS discovery URL', () => {
+    siteConfig.mockImplementation(key => {
+      if (key === 'ENABLE_RSS') return true
+      if (key === 'SUB_PATH') return '/blog/'
+      return baseSiteConfig[key]
+    })
+    const { container } = render(<SEO siteInfo={{ title: 'Example Blog' }} />)
+    expect(
+      container.querySelector('link[type="application/rss+xml"]')
+    ).toHaveAttribute('href', 'https://example.com/blog/rss/feed.xml')
   })
 })
 

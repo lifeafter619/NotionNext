@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react'
+import { useEffect } from 'react'
 import Prism from 'prismjs'
 // 所有语言的prismjs 使用autoloader引入
 // import 'prismjs/plugins/autoloader/prism-autoloader'
@@ -34,7 +34,9 @@ const PrismMac = () => {
   const prismThemeLightPath = siteConfig('PRISM_THEME_LIGHT_PATH')
   const prismThemePrefixPath = siteConfig('PRISM_THEME_PREFIX_PATH')
 
-  const mermaidCDN = siteConfig('MERMAID_CDN')
+  const mermaidCDN =
+    siteConfig('MERMAID_CDN') ||
+    'https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js'
   const codeLineNumbers = siteConfig('CODE_LINE_NUMBERS')
 
   const codeCollapse = siteConfig('CODE_COLLAPSE')
@@ -43,34 +45,17 @@ const PrismMac = () => {
   useEffect(() => {
     let isDisposed = false
     let stopLineNumbers = () => {}
-    let stopMermaid = () => {}
+    let stopMermaidObserver = () => {}
     let observer = null
-    let newCodeBlocksObserver = null
     let initTimer = null
-    let enhancementTimer = null
     let hasInitialized = false
-
-    const cleanupPrism = () => {
-      try {
-        stopLineNumbers()
-      } catch (e) {
-        /* ignore */
-      }
-
-      try {
-        stopMermaid()
-      } catch (e) {
-        /* ignore */
-      }
-      stopLineNumbers = () => {}
-      stopMermaid = () => {}
-    }
+    // 行号需在主题样式生效后重新校准行高，保留主题加载 Promise
+    let prismThemeLoaded = null
 
     const renderCodeEnhancements = () => {
       if (isDisposed) return
 
       try {
-        cleanupPrism()
         if (typeof window !== 'undefined' && !window.Prism) {
           window.Prism = Prism
         }
@@ -78,59 +63,35 @@ const PrismMac = () => {
           window.Prism.plugins.autoloader.languages_path = prismjsPath
         }
 
-        const dispose = renderPrismMac(codeLineNumbers, codeMacBar)
+        try {
+          stopLineNumbers()
+        } catch (e) {
+          /* ignore */
+        }
+        try {
+          stopMermaidObserver()
+        } catch (e) {
+          /* ignore */
+        }
+
+        const dispose = renderPrismMac(
+          codeLineNumbers,
+          codeMacBar,
+          prismThemeLoaded
+        )
         stopLineNumbers = typeof dispose === 'function' ? dispose : () => {}
-        const disposeMermaid = renderMermaid(mermaidCDN)
-        stopMermaid =
-          typeof disposeMermaid === 'function' ? disposeMermaid : () => {}
+        const stopMermaid = renderMermaid(mermaidCDN, isDarkMode)
+        stopMermaidObserver =
+          typeof stopMermaid === 'function' ? stopMermaid : () => {}
         renderCollapseCode(codeCollapse, codeCollapseExpandDefault)
-        getNotionArticle()
-          ?.querySelectorAll('pre.notion-code')
-          .forEach(codeBlock => {
-            codeBlock.dataset.prismMacEnhanced = 'true'
-          })
       } catch (err) {
         console.warn('[PrismMac] render failed:', err)
       }
     }
 
-    const containsUnenhancedCodeBlock = node => {
-      if (node?.nodeType !== 1) return false
-      if (
-        node.matches?.('pre.notion-code') &&
-        node.dataset?.prismMacEnhanced !== 'true'
-      ) {
-        return true
-      }
-
-      return Array.from(node.querySelectorAll?.('pre.notion-code') || []).some(
-        codeBlock => codeBlock.dataset.prismMacEnhanced !== 'true'
-      )
-    }
-
-    const observeNewCodeBlocks = article => {
-      newCodeBlocksObserver?.disconnect()
-      newCodeBlocksObserver = new MutationObserver(mutations => {
-        const hasNewCodeBlock = mutations.some(mutation =>
-          Array.from(mutation.addedNodes).some(containsUnenhancedCodeBlock)
-        )
-        if (!hasNewCodeBlock || enhancementTimer) return
-
-        enhancementTimer = window.setTimeout(() => {
-          enhancementTimer = null
-          renderCodeEnhancements()
-        }, 0)
-      })
-      newCodeBlocksObserver.observe(article, {
-        childList: true,
-        // Tabs and toggles can insert code several levels below the article.
-        subtree: true
-      })
-    }
-
     const loadCodeStyleSheets = () => {
       // 加载 Prism 主题后再次移动 Mac 样式到最后，避免刷新时被异步主题 CSS 覆盖。
-      const prismThemeReady = loadPrismThemeCSS(
+      prismThemeLoaded = loadPrismThemeCSS(
         isDarkMode,
         prismThemeSwitch,
         prismThemeDarkPath,
@@ -139,7 +100,7 @@ const PrismMac = () => {
       )
       if (codeMacBar || codeCollapse) {
         loadPrismMacStyleCSS()
-        Promise.resolve(prismThemeReady)
+        Promise.resolve(prismThemeLoaded)
           .catch(err => {
             console.warn('[PrismMac] prism theme load failed:', err)
           })
@@ -152,9 +113,13 @@ const PrismMac = () => {
     const initCodeEnhancements = () => {
       if (isDisposed || hasInitialized) return true
 
+      // 性能优化：页面没有代码块或 Mermaid 图时不加载任何资源
       const article = getNotionArticle()
       const hasCodeBlocks = Boolean(article?.querySelector('pre.notion-code'))
-      if (!hasCodeBlocks) return false
+      const hasMermaidBlocks = Boolean(
+        article?.querySelector('.language-mermaid')
+      )
+      if (!hasCodeBlocks && !hasMermaidBlocks) return false
 
       hasInitialized = true
       observer?.disconnect()
@@ -168,11 +133,10 @@ const PrismMac = () => {
 
       // 先用本地 Prism 渲染，避免外部 autoloader 阻塞基础代码增强。
       renderCodeEnhancements()
-      observeNewCodeBlocks(article)
 
       loadExternalResource(prismjsAutoLoader, 'js')
         .then(() => {
-          if (!isDisposed) renderCodeEnhancements()
+          renderCodeEnhancements()
         })
         .catch(err => {
           console.warn('[PrismMac] prism autoloader load failed:', err)
@@ -190,11 +154,14 @@ const PrismMac = () => {
     return () => {
       isDisposed = true
       observer?.disconnect()
-      newCodeBlocksObserver?.disconnect()
       if (initTimer) clearTimeout(initTimer)
-      if (enhancementTimer) clearTimeout(enhancementTimer)
       closeCodeSidePanel()
-      cleanupPrism()
+      try {
+        stopLineNumbers()
+        stopMermaidObserver()
+      } catch (e) {
+        /* ignore */
+      }
     }
   }, [pathname, isDarkMode])
 
@@ -202,7 +169,9 @@ const PrismMac = () => {
 }
 
 const getNotionArticle = () => {
-  const inArticleWrapper = document.querySelector('#article-wrapper #notion-article')
+  const inArticleWrapper = document.querySelector(
+    '#article-wrapper #notion-article'
+  )
   if (inArticleWrapper) return inArticleWrapper
 
   const candidates = Array.from(document.querySelectorAll('#notion-article'))
@@ -210,8 +179,12 @@ const getNotionArticle = () => {
 
   // 多主题并存时可能有多个 notion-article，优先选择正文内容更完整的节点
   const score = el => {
-    const codeCount = el.querySelectorAll('pre.notion-code, .code-toolbar').length
-    const blockCount = el.querySelectorAll('.notion, .notion-page, .notion-text').length
+    const codeCount = el.querySelectorAll(
+      'pre.notion-code, .code-toolbar'
+    ).length
+    const blockCount = el.querySelectorAll(
+      '.notion, .notion-page, .notion-text'
+    ).length
     return codeCount * 10 + blockCount
   }
 
@@ -239,7 +212,7 @@ const loadPrismMacStyleCSS = () => {
 
 const CODE_SIDE_PANEL_ID = 'notion-code-side-panel'
 const CODE_SIDE_PANEL_DESKTOP_QUERY = '(min-width: 1024px)'
-const CODE_SIDE_PANEL_STATE = '__notionNextCodeSidePanelState'
+const CODE_SIDE_PANEL_KEYDOWN = '__notionNextCodeSidePanelKeydown'
 
 export const isCodeSidePanelSupported = () => {
   if (typeof window === 'undefined') return false
@@ -255,27 +228,10 @@ export const closeCodeSidePanel = () => {
   if (existing) existing.remove()
 
   if (typeof window !== 'undefined') {
-    const state = window[CODE_SIDE_PANEL_STATE]
-    if (state?.keydownHandler) {
-      document.removeEventListener('keydown', state.keydownHandler)
-    }
-    if (state?.desktopQuery && state.viewportHandler) {
-      if (typeof state.desktopQuery.removeEventListener === 'function') {
-        state.desktopQuery.removeEventListener('change', state.viewportHandler)
-      } else {
-        state.desktopQuery.removeListener?.(state.viewportHandler)
-      }
-    }
-    if (state && document.body) {
-      document.body.style.overflow = state.bodyOverflow
-    }
-    if (state && document.documentElement) {
-      document.documentElement.style.overflow = state.documentOverflow
-    }
-    delete window[CODE_SIDE_PANEL_STATE]
-
-    if (state?.returnFocus?.isConnected) {
-      state.returnFocus.focus()
+    const keydownHandler = window[CODE_SIDE_PANEL_KEYDOWN]
+    if (keydownHandler) {
+      document.removeEventListener('keydown', keydownHandler)
+      delete window[CODE_SIDE_PANEL_KEYDOWN]
     }
   }
 
@@ -285,8 +241,11 @@ export const closeCodeSidePanel = () => {
 const requestFrame = callback => {
   if (typeof window === 'undefined') return callback()
 
-  const raf = window.requestAnimationFrame || (cb => window.setTimeout(cb, 0))
-  return raf(callback)
+  const nativeRaf =
+    typeof window.requestAnimationFrame === 'function'
+      ? cb => window.requestAnimationFrame(cb)
+      : cb => window.setTimeout(() => cb(), 0)
+  return nativeRaf(callback)
 }
 
 export const openCodeSidePanel = ({
@@ -300,10 +259,6 @@ export const openCodeSidePanel = ({
     return false
   }
 
-  const returnFocus =
-    document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null
   closeCodeSidePanel()
 
   const root = document.createElement('div')
@@ -320,7 +275,7 @@ export const openCodeSidePanel = ({
   drawer.className = 'code-side-panel-drawer'
   drawer.setAttribute('role', 'dialog')
   drawer.setAttribute('aria-label', '代码预览侧栏')
-  drawer.setAttribute('aria-modal', 'true')
+  drawer.setAttribute('aria-modal', 'false')
 
   const header = document.createElement('div')
   header.className = 'code-side-panel-header'
@@ -392,59 +347,13 @@ export const openCodeSidePanel = ({
   root.appendChild(drawer)
 
   const keydownHandler = event => {
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      closeCodeSidePanel()
-      return
-    }
-    if (event.key !== 'Tab') return
-
-    const activeElement = document.activeElement
-    if (
-      event.shiftKey &&
-      (activeElement === copyButton || !drawer.contains(activeElement))
-    ) {
-      event.preventDefault()
-      closeButton.focus()
-    } else if (
-      !event.shiftKey &&
-      (activeElement === closeButton || !drawer.contains(activeElement))
-    ) {
-      event.preventDefault()
-      copyButton.focus()
-    }
+    if (event.key === 'Escape') closeCodeSidePanel()
   }
-  const desktopQuery =
-    typeof window.matchMedia === 'function'
-      ? window.matchMedia(CODE_SIDE_PANEL_DESKTOP_QUERY)
-      : null
-  const viewportHandler = event => {
-    if (!event.matches) closeCodeSidePanel()
-  }
-  if (typeof desktopQuery?.addEventListener === 'function') {
-    desktopQuery.addEventListener('change', viewportHandler)
-  } else {
-    desktopQuery?.addListener?.(viewportHandler)
-  }
-  window[CODE_SIDE_PANEL_STATE] = {
-    bodyOverflow: document.body?.style.overflow || '',
-    documentOverflow: document.documentElement?.style.overflow || '',
-    desktopQuery,
-    viewportHandler,
-    keydownHandler,
-    returnFocus
-  }
+  window[CODE_SIDE_PANEL_KEYDOWN] = keydownHandler
   document.addEventListener('keydown', keydownHandler)
-  if (document.body) document.body.style.overflow = 'hidden'
-  if (document.documentElement) {
-    document.documentElement.style.overflow = 'hidden'
-  }
 
   document.body.appendChild(root)
-  closeButton.focus()
-  requestFrame(() => {
-    if (root.isConnected) root.classList.add('is-open')
-  })
+  requestFrame(() => root.classList.add('is-open'))
 
   return true
 }
@@ -473,6 +382,8 @@ const createCodeSidePanelButton = ({ language, label, lineCount, code }) => {
 
 /**
  * 加载Prism主题样式
+ * 未配置远程主题时返回已完成的 Promise（使用内置本地主题 styles/prism-code.css）
+ * @returns {Promise} 主题CSS加载完成的Promise
  */
 const loadPrismThemeCSS = (
   isDarkMode,
@@ -491,20 +402,26 @@ const loadPrismThemeCSS = (
       PRISM_THEME = prismThemeLightPath
       PRISM_PREVIOUS = prismThemeDarkPath
     }
-    const previousTheme = document.querySelector(
-      `link[href="${PRISM_PREVIOUS}"]`
-    )
-    if (
-      previousTheme &&
-      previousTheme.parentNode &&
-      previousTheme.parentNode.contains(previousTheme)
-    ) {
-      previousTheme.parentNode.removeChild(previousTheme)
+    if (PRISM_PREVIOUS) {
+      const previousTheme = document.querySelector(
+        `link[href="${PRISM_PREVIOUS}"]`
+      )
+      if (
+        previousTheme &&
+        previousTheme.parentNode &&
+        previousTheme.parentNode.contains(previousTheme)
+      ) {
+        previousTheme.parentNode.removeChild(previousTheme)
+      }
     }
-    return loadExternalResource(PRISM_THEME, 'css')
   } else {
-    return loadExternalResource(prismThemePrefixPath, 'css')
+    PRISM_THEME = prismThemePrefixPath
   }
+
+  if (!PRISM_THEME) {
+    return Promise.resolve()
+  }
+  return loadExternalResource(PRISM_THEME, 'css')
 }
 
 /*
@@ -517,11 +434,11 @@ export const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
 
   const COLLAPSE_MIN_LINES = Number(siteConfig('CODE_COLLAPSE_MIN_LINES', 20))
   const codeBlocks = document.querySelectorAll('.code-toolbar')
-
   for (const codeBlock of codeBlocks) {
     try {
+      // 判断当前元素是否被包裹
       if (codeBlock.closest('.collapse-wrapper')) {
-        continue
+        continue // 如果被包裹了，跳过当前循环
       }
 
       const code = codeBlock.querySelector('code')
@@ -586,19 +503,44 @@ export const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
       parent.insertBefore(collapseWrapper, codeBlock)
       panel.appendChild(codeBlock)
 
-      function setExpanded(expanded) {
+      function setExpanded(expanded, animate = true) {
         panelWrapper.classList.toggle('is-expanded', expanded)
         panel.classList.toggle('is-expanded', expanded)
         header.setAttribute('aria-expanded', expanded ? 'true' : 'false')
-        panel.style.maxHeight = expanded ? `${panel.scrollHeight}px` : '0px'
+        if (expanded) {
+          if (!animate) {
+            // 初始状态直接放开高度限制，内容高度后续变化（行号校准等）不会被裁剪
+            panel.style.maxHeight = 'none'
+            return
+          }
+          panel.style.maxHeight = `${panel.scrollHeight}px`
+          // 过渡结束后在 transitionend 中释放为 none
+        } else {
+          if (panel.style.maxHeight === 'none') {
+            // 从"无限制"状态收起时，先固定当前高度再过渡到 0，保证动画生效
+            panel.style.maxHeight = `${panel.scrollHeight}px`
+            void panel.offsetHeight
+          }
+          panel.style.maxHeight = '0px'
+        }
       }
+
+      // 展开动画结束后释放高度限制，避免代码块后续增高（如行号重算）被裁剪
+      panel.addEventListener('transitionend', e => {
+        if (
+          e.propertyName === 'max-height' &&
+          panelWrapper.classList.contains('is-expanded')
+        ) {
+          panel.style.maxHeight = 'none'
+        }
+      })
 
       header.addEventListener('click', () => {
         const expanded = panelWrapper.classList.contains('is-expanded')
         setExpanded(!expanded)
       })
 
-      setExpanded(Boolean(codeCollapseExpandDefault))
+      setExpanded(Boolean(codeCollapseExpandDefault), false)
     } catch (err) {
       console.warn('[PrismMac] collapse code failed:', err)
     }
@@ -608,52 +550,422 @@ export const renderCollapseCode = (codeCollapse, codeCollapseExpandDefault) => {
 /**
  * 将mermaid语言 渲染成图片
  */
-const renderMermaid = mermaidCDN => {
+const renderMermaid = (mermaidCDN, isDarkMode) => {
   const articles = getNotionArticles()
   if (!articles || articles.length === 0) return () => {}
+  const interactionCleanups = new Set()
+  let disposed = false
+  let rendering = false
+  let mermaidLoadPromise = null
 
-  let hasMermaidBlocks = false
+  const getMermaidBlocks = () =>
+    articles.flatMap(article => {
+      const blocks = Array.from(
+        article.querySelectorAll('pre.language-mermaid')
+      )
+      for (const code of article.querySelectorAll('code.language-mermaid')) {
+        const pre = code.closest('pre')
+        if (pre && !blocks.includes(pre)) blocks.push(pre)
+      }
+      return blocks
+    })
 
-  for (const article of articles) {
-    const mermaidCodeBlocks = article.querySelectorAll(
-      '.notion-code.language-mermaid'
-    )
-    for (const codeBlock of mermaidCodeBlocks) {
-      const chart = codeBlock.querySelector('code')?.textContent
-      if (!chart) continue
-      hasMermaidBlocks = true
-      let mermaidChart = codeBlock.querySelector('.mermaid')
-      if (!mermaidChart) {
-        mermaidChart = document.createElement('pre')
-        mermaidChart.className = 'mermaid'
-        mermaidChart.textContent = chart
-        codeBlock.appendChild(mermaidChart)
+  if (getMermaidBlocks().length === 0) return () => {}
+
+  const resetGeneratedMermaid = () => {
+    for (const article of articles) {
+      article
+        .querySelectorAll('.mermaid-container[data-mermaid-generated="true"]')
+        .forEach(container => container.remove())
+      article.querySelectorAll('.mermaid').forEach(node => node.remove())
+      for (const block of getMermaidBlocks()) {
+        delete block.dataset.mermaidRendered
+        delete block.dataset.mermaidRendering
       }
     }
   }
 
-  if (!hasMermaidBlocks) return () => {}
+  // Mermaid marks rendered nodes with data-processed and skips them on later
+  // run() calls. Rebuild from the hidden source whenever this effect restarts.
+  resetGeneratedMermaid()
 
-  loadExternalResource(mermaidCDN, 'js')
-    .then(() => {
-      setTimeout(() => {
-        try {
-          const mermaid = window.mermaid
-          if (!mermaid) return
-          mermaid?.contentLoaded()
-        } catch (err) {
-          console.warn('[PrismMac] mermaid render failed:', err)
+  const getLoadPromise = () => {
+    if (!mermaidLoadPromise) {
+      mermaidLoadPromise = loadExternalResource(mermaidCDN, 'js')
+    }
+    return mermaidLoadPromise
+  }
+
+  const processMermaid = async () => {
+    if (disposed || rendering) return
+
+    const pending = []
+    for (const block of getMermaidBlocks()) {
+      if (block.dataset.mermaidRendered || block.dataset.mermaidRendering) {
+        continue
+      }
+      const code = block.querySelector('code.language-mermaid, code')
+      const chart = code?.textContent
+      if (!chart?.trim()) continue
+
+      block.querySelector('.mermaid')?.remove()
+      const node = document.createElement('div')
+      node.className = 'mermaid'
+      node.textContent = chart
+      block.dataset.mermaidRendering = 'true'
+      block.appendChild(node)
+      pending.push({ block, node })
+    }
+
+    if (pending.length === 0) return
+    rendering = true
+
+    try {
+      await getLoadPromise()
+      if (disposed) return
+      const mermaid = window.mermaid
+      if (!mermaid) throw new Error('Mermaid runtime is unavailable')
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDarkMode ? 'dark' : 'default',
+        securityLevel: 'loose',
+        flowchart: { useMaxWidth: true, htmlLabels: true },
+        sequence: { useMaxWidth: true },
+        gantt: { useMaxWidth: true }
+      })
+
+      await mermaid.run({ nodes: pending.map(item => item.node) })
+      if (disposed) return
+
+      for (const { block, node } of pending) {
+        const svg = node.querySelector('svg')
+        if (svg && !svg.closest('.mermaid-container')) {
+          const cleanup = wrapMermaid(svg)
+          if (typeof cleanup === 'function') interactionCleanups.add(cleanup)
         }
-      }, 60)
-    })
-    .catch(err => {
-      console.warn('[PrismMac] mermaid load failed:', err)
-    })
+        delete block.dataset.mermaidRendering
+        block.dataset.mermaidRendered = 'true'
+      }
+    } catch (err) {
+      console.error('Mermaid render error:', err)
+      for (const { block, node } of pending) {
+        delete block.dataset.mermaidRendering
+        node.remove()
+      }
+    } finally {
+      rendering = false
+    }
+  }
 
-  return () => {}
+  void processMermaid()
+
+  // 观察后续变化（例如动态加载），但进行去抖动或限制范围
+  const observer = new MutationObserver(mutationsList => {
+    let shouldProcess = false
+    for (const m of mutationsList) {
+      if (m.type === 'childList' && m.addedNodes.length > 0) {
+        if (
+          m.target.classList?.contains('language-mermaid') ||
+          (m.target.querySelector &&
+            m.target.querySelector('.language-mermaid'))
+        ) {
+          shouldProcess = true
+          break
+        }
+      }
+    }
+    if (shouldProcess) {
+      void processMermaid()
+    }
+  })
+
+  for (const article of articles) {
+    observer.observe(article, {
+      childList: true, // 仅观察子节点变化，不深度观察 subtree 除非必要
+      subtree: true // 仍然需要 subtree 因为 mermaid 块可能嵌套深
+    })
+  }
+
+  return () => {
+    disposed = true
+    observer.disconnect()
+    interactionCleanups.forEach(cleanup => cleanup())
+    interactionCleanups.clear()
+    resetGeneratedMermaid()
+  }
 }
 
-function renderPrismMac(codeLineNumbers, codeMacBar) {
+/**
+ * 包装 Mermaid SVG 以支持拖拽、缩放和链接点击（类似 GitHub）
+ */
+const wrapMermaid = svg => {
+  const container = document.createElement('div')
+  container.dataset.mermaidGenerated = 'true'
+  container.className =
+    'mermaid-container relative overflow-hidden bg-white dark:bg-[#1e1e1e] rounded-lg border border-gray-200 dark:border-gray-700 my-4 shadow-sm'
+  container.style.height = '400px' // 默认高度
+  container.style.cursor = 'grab'
+  container.style.minHeight = '200px'
+
+  const content = document.createElement('div')
+  content.className =
+    'mermaid-content w-full h-full flex items-center justify-center'
+  content.style.transformOrigin = 'center'
+  content.style.transition = 'transform 0.1s ease-out'
+
+  // 将容器插入到 svg 的父元素中 (即 .mermaid div)
+  // svg 已经在 .mermaid 中，所以 insertBefore 是在 .mermaid 中操作
+  svg.parentNode.insertBefore(container, svg)
+  content.appendChild(svg)
+  container.appendChild(content)
+
+  // 移动容器到代码块下方
+  const codeEl = container.closest('.language-mermaid')
+  if (codeEl && codeEl.parentNode) {
+    // 确保代码块显示
+    const pre = codeEl.closest('pre')
+    if (pre) pre.style.display = 'block'
+    // 将图表容器移动到代码块后面
+    codeEl.parentNode.insertBefore(container, codeEl.nextSibling)
+  }
+
+  // 初始化状态
+  let scale = 1
+  let contentX = 0
+  let contentY = 0
+  let isDragging = false
+  let startX = 0
+  let startY = 0
+
+  const updateTransform = () => {
+    content.style.transform = `translate(${contentX}px, ${contentY}px) scale(${scale})`
+  }
+
+  // 缩放比例显示
+  const zoomIndicator = document.createElement('div')
+  zoomIndicator.className =
+    'mermaid-zoom-indicator absolute top-3 left-3 px-2 py-1 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded text-xs text-gray-600 dark:text-gray-400 font-mono shadow border border-gray-200 dark:border-gray-700'
+  zoomIndicator.textContent = '100%'
+  container.appendChild(zoomIndicator)
+
+  const updateZoomIndicator = () => {
+    zoomIndicator.textContent = `${Math.round(scale * 100)}%`
+  }
+
+  // 启用 mermaid 图中的链接点击功能（类似 GitHub）
+  enableMermaidLinks(svg, container)
+
+  // 添加控制按钮面板（不含全屏按钮）
+  const controls = document.createElement('div')
+  controls.className =
+    'mermaid-controls absolute bottom-3 right-3 flex gap-1.5 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-1.5 shadow-lg border border-gray-200 dark:border-gray-700'
+  controls.innerHTML = `
+    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="放大 (Zoom In)"><i class="fas fa-search-plus"></i></button>
+    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="缩小 (Zoom Out)"><i class="fas fa-search-minus"></i></button>
+    <button class="mermaid-btn p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="重置 (Reset)"><i class="fas fa-compress-arrows-alt"></i></button>
+  `
+
+  const btns = controls.querySelectorAll('.mermaid-btn')
+  const [btnIn, btnOut, btnReset] = [btns[0], btns[1], btns[2]]
+
+  btnIn.onclick = e => {
+    e.stopPropagation()
+    scale = Math.min(scale + 0.25, 5)
+    updateTransform()
+    updateZoomIndicator()
+  }
+
+  btnOut.onclick = e => {
+    e.stopPropagation()
+    scale = Math.max(scale - 0.25, 0.3)
+    updateTransform()
+    updateZoomIndicator()
+  }
+
+  btnReset.onclick = e => {
+    e.stopPropagation()
+    scale = 1
+    contentX = 0
+    contentY = 0
+    updateTransform()
+    updateZoomIndicator()
+  }
+
+  container.appendChild(controls)
+
+  // 鼠标拖拽逻辑
+  container.onmousedown = e => {
+    if (
+      e.target.closest('button') ||
+      e.target.closest('.mermaid-controls') ||
+      e.target.closest('a')
+    )
+      return
+    isDragging = true
+    container.style.cursor = 'grabbing'
+    startX = e.clientX - contentX
+    startY = e.clientY - contentY
+  }
+
+  const mouseMoveHandler = e => {
+    if (!isDragging) return
+    e.preventDefault()
+    contentX = e.clientX - startX
+    contentY = e.clientY - startY
+    updateTransform()
+  }
+
+  const mouseUpHandler = () => {
+    isDragging = false
+    container.style.cursor = 'grab'
+  }
+
+  window.addEventListener('mousemove', mouseMoveHandler)
+  window.addEventListener('mouseup', mouseUpHandler)
+
+  // 触摸拖拽逻辑
+  let lastTouchDistance = 0 // 用于双指缩放
+
+  container.ontouchstart = e => {
+    if (
+      e.target.closest('button') ||
+      e.target.closest('.mermaid-controls') ||
+      e.target.closest('a')
+    )
+      return
+    if (e.touches.length === 1) {
+      isDragging = true
+      startX = e.touches[0].clientX - contentX
+      startY = e.touches[0].clientY - contentY
+    } else if (e.touches.length === 2) {
+      // 双指缩放开始
+      lastTouchDistance = getTouchDistance(e.touches)
+    }
+  }
+
+  container.ontouchmove = e => {
+    if (
+      e.target.closest('button') ||
+      e.target.closest('.mermaid-controls') ||
+      e.target.closest('a')
+    )
+      return
+    e.preventDefault() // 防止滚动
+
+    if (e.touches.length === 1 && isDragging) {
+      contentX = e.touches[0].clientX - startX
+      contentY = e.touches[0].clientY - startY
+      updateTransform()
+    } else if (e.touches.length === 2) {
+      // 双指缩放
+      const newDistance = getTouchDistance(e.touches)
+      if (lastTouchDistance > 0) {
+        const delta = (newDistance - lastTouchDistance) / 200
+        scale = Math.min(Math.max(scale + delta, 0.3), 5)
+        updateTransform()
+        updateZoomIndicator()
+      }
+      lastTouchDistance = newDistance
+    }
+  }
+
+  container.ontouchend = e => {
+    isDragging = false
+    if (e.touches.length < 2) {
+      lastTouchDistance = 0
+    }
+  }
+
+  // 滚轮缩放（不需要 Ctrl 键也可以缩放）
+  container.onwheel = e => {
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -0.1 : 0.1
+    scale = Math.min(Math.max(scale + delta, 0.3), 5)
+    updateTransform()
+    updateZoomIndicator()
+  }
+
+  // 双击重置
+  container.ondblclick = e => {
+    if (
+      e.target.closest('button') ||
+      e.target.closest('.mermaid-controls') ||
+      e.target.closest('a')
+    )
+      return
+    scale = 1
+    contentX = 0
+    contentY = 0
+    updateTransform()
+    updateZoomIndicator()
+  }
+
+  return () => {
+    window.removeEventListener('mousemove', mouseMoveHandler)
+    window.removeEventListener('mouseup', mouseUpHandler)
+    container.onmousedown = null
+    container.ontouchstart = null
+    container.ontouchmove = null
+    container.ontouchend = null
+    container.onwheel = null
+    container.ondblclick = null
+  }
+}
+
+/**
+ * 获取两个触摸点之间的距离（用于双指缩放）
+ */
+const getTouchDistance = touches => {
+  const dx = touches[0].clientX - touches[1].clientX
+  const dy = touches[0].clientY - touches[1].clientY
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
+/**
+ * 启用 Mermaid 图中的链接点击功能（类似 GitHub）
+ * 处理 mermaid 图表中的 click 事件和超链接
+ */
+const enableMermaidLinks = (svg, container) => {
+  // 处理 mermaid 中定义的 click 回调链接
+  // Mermaid 使用 <a> 标签或 onclick 属性来处理链接
+  const links = svg.querySelectorAll('a, [onclick], .clickable')
+
+  links.forEach(link => {
+    // 确保链接可点击，不被拖拽干扰
+    link.style.cursor = 'pointer'
+    link.style.pointerEvents = 'auto'
+
+    // 如果是 <a> 标签，确保在新窗口打开外部链接
+    if (link.tagName.toLowerCase() === 'a') {
+      const href = link.getAttribute('xlink:href') || link.getAttribute('href')
+      if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+        link.setAttribute('target', '_blank')
+        link.setAttribute('rel', 'noopener noreferrer')
+      }
+      // 添加视觉提示
+      link.addEventListener('mouseenter', () => {
+        container.style.cursor = 'pointer'
+      })
+      link.addEventListener('mouseleave', () => {
+        container.style.cursor = 'grab'
+      })
+    }
+  })
+
+  // 为所有可交互节点添加悬停效果
+  const nodes = svg.querySelectorAll('.node, .cluster, .edgeLabel')
+  nodes.forEach(node => {
+    node.addEventListener('mouseenter', () => {
+      node.style.opacity = '0.8'
+    })
+    node.addEventListener('mouseleave', () => {
+      node.style.opacity = '1'
+    })
+  })
+}
+
+function renderPrismMac(codeLineNumbers, codeMacBar, prismThemeLoaded) {
   const container = getNotionArticle()
 
   // Add line numbers
@@ -661,15 +973,13 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
     const codeBlocks = container?.getElementsByTagName('pre')
     if (codeBlocks) {
       Array.from(codeBlocks).forEach(item => {
-        if (!item.classList.contains('line-numbers')) {
-          item.classList.add('line-numbers')
-          item.style.whiteSpace = 'pre-wrap'
-        }
+        // 换行策略由 styles/prism-code.css 统一控制（pre-wrap），此处只挂类名
+        item.classList.add('line-numbers')
       })
     }
   }
-  // 重新渲染之前检查所有的多余text
 
+  // 仅对文章容器内的代码块做高亮，避免影响页面其它部分
   try {
     if (container && typeof Prism.highlightAllUnder === 'function') {
       Prism.highlightAllUnder(container)
@@ -698,59 +1008,144 @@ function renderPrismMac(codeLineNumbers, codeMacBar) {
     })
   }
 
-  // 折叠代码行号bug
   if (codeLineNumbers) {
-    return fixCodeLineStyle()
+    return setupLineNumberAlignment(prismThemeLoaded)
   }
   return () => {}
 }
 
 /**
- * 行号样式在首次渲染或被detail折叠后行高判断错误
- * 在此手动resize计算
+ * Prism autoloader 异步加载语言包后会重新高亮并重建行号 DOM，
+ * 通过 complete 钩子通知当前页面的校准调度器重新计算行高。
+ * 钩子全局只注册一次，调度器随页面生命周期增删。
  */
-const fixCodeLineStyle = () => {
-  const article = getNotionArticle()
-  if (!article) {
-    return () => {}
-  }
-
-  if (!Prism?.plugins?.lineNumbers?.resize) {
-    return () => {}
-  }
-
-  const observer = new MutationObserver(mutationsList => {
-    for (const m of mutationsList) {
-      if (m.target.nodeName === 'DETAILS') {
-        const preCodes = m.target.querySelectorAll('pre.notion-code')
-        for (const preCode of preCodes) {
-          try {
-            Prism.plugins.lineNumbers.resize(preCode)
-          } catch (e) {
-            /* ignore */
-          }
-        }
+const lineNumberSchedulers = new Set()
+let prismCompleteHooked = false
+const ensurePrismCompleteHook = () => {
+  if (prismCompleteHooked) return
+  prismCompleteHooked = true
+  try {
+    Prism.hooks.add('complete', env => {
+      if (env?.element?.closest?.('pre.line-numbers')) {
+        lineNumberSchedulers.forEach(schedule => schedule())
       }
-    }
-  })
-  observer.observe(article, {
-    attributes: true,
-    subtree: true
-  })
-  const timeoutId = setTimeout(() => {
-    const preCodes = article.querySelectorAll('pre.notion-code')
+    })
+  } catch (err) {
+    console.warn('[PrismMac] register complete hook failed:', err)
+  }
+}
+
+/**
+ * 行号与代码行高的对齐校准
+ * pre-wrap 下长行会折行，行号插件需要逐行测量实际渲染高度；
+ * 测量结果受 字体加载/主题CSS/容器宽度/异步语言高亮 影响，
+ * 这里统一在这些时机触发 resize（rAF 去抖），保证行号与内容严格对齐。
+ */
+const setupLineNumberAlignment = prismThemeLoaded => {
+  const article = getNotionArticle()
+  const lineNumbersPlugin = Prism?.plugins?.lineNumbers
+  if (!article || typeof lineNumbersPlugin?.resize !== 'function') {
+    return () => {}
+  }
+
+  let disposed = false
+  let rafId = null
+
+  const resizeAll = () => {
+    rafId = null
+    if (disposed || !article.isConnected) return
+    const preCodes = article.querySelectorAll('pre.line-numbers')
     for (const preCode of preCodes) {
       try {
-        Prism.plugins.lineNumbers.resize(preCode)
+        lineNumbersPlugin.resize(preCode)
       } catch (e) {
         /* ignore */
       }
     }
-  }, 10)
+  }
+
+  const schedule = () => {
+    if (disposed) return
+    if (rafId) {
+      cancelAnimationFrame(rafId)
+    }
+    rafId = requestAnimationFrame(resizeAll)
+  }
+
+  // 1. 高亮完成后的首次校准
+  schedule()
+
+  // 2. 代码主题CSS加载完成后（行高、字体可能变化）
+  if (prismThemeLoaded && typeof prismThemeLoaded.then === 'function') {
+    prismThemeLoaded.then(schedule).catch(() => {})
+  }
+
+  // 3. 网页字体加载完成后（字形度量变化引起折行变化）
+  if (document.fonts?.ready?.then) {
+    document.fonts.ready.then(schedule).catch(() => {})
+  }
+
+  // 4. 页面完全加载后兜底一次
+  if (document.readyState !== 'complete') {
+    window.addEventListener('load', schedule, { once: true })
+  }
+
+  // 5. autoloader 异步语言高亮后（Prism complete 钩子）
+  ensurePrismCompleteHook()
+  lineNumberSchedulers.add(schedule)
+
+  // 6. 文章容器宽度变化（侧栏挂载、窗口缩放等引起折行变化）
+  let resizeObserver = null
+  if (typeof ResizeObserver !== 'undefined') {
+    let lastWidth = article.getBoundingClientRect().width
+    resizeObserver = new ResizeObserver(entries => {
+      const width = entries?.[0]?.contentRect?.width
+      if (width && Math.abs(width - lastWidth) > 0.5) {
+        lastWidth = width
+        schedule()
+      }
+    })
+    resizeObserver.observe(article)
+  }
+
+  // 7. Notion 折叠块 <details> 展开后重新校准（隐藏状态下无法测量）
+  const detailsObserver = new MutationObserver(mutationsList => {
+    for (const m of mutationsList) {
+      if (m.target.nodeName === 'DETAILS') {
+        schedule()
+        break
+      }
+    }
+  })
+  detailsObserver.observe(article, {
+    attributes: true,
+    attributeFilter: ['open'],
+    subtree: true
+  })
+
+  // 8. 可访问性字号控件会切换 html class，代码折行高度随之变化，需要重新测量行号。
+  let rootStyleObserver = null
+  if (typeof MutationObserver !== 'undefined' && document.documentElement) {
+    rootStyleObserver = new MutationObserver(schedule)
+    rootStyleObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    })
+  }
 
   return () => {
-    clearTimeout(timeoutId)
-    observer.disconnect()
+    disposed = true
+    if (rafId) {
+      cancelAnimationFrame(rafId)
+    }
+    lineNumberSchedulers.delete(schedule)
+    if (resizeObserver) {
+      resizeObserver.disconnect()
+    }
+    detailsObserver.disconnect()
+    if (rootStyleObserver) {
+      rootStyleObserver.disconnect()
+    }
   }
 }
 

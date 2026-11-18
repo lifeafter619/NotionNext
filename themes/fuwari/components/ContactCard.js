@@ -1,8 +1,11 @@
 import FlipCard from '@/components/FlipCard'
 import { siteConfig } from '@/lib/config'
+import { useRouter } from 'next/router'
 import CONFIG from '../config'
 
 const ContactCard = () => {
+  const router = useRouter()
+
   if (!siteConfig('FUWARI_WIDGET_CONTACT', true, CONFIG)) return null
 
   const title =
@@ -31,13 +34,22 @@ const ContactCard = () => {
     'Share your idea, bug report, or collaboration request.',
     CONFIG
   )
-  const backText = siteConfig('FUWARI_CONTACT_BACK_TEXT', 'Open Contact', CONFIG)
+  const backText = siteConfig(
+    'FUWARI_CONTACT_BACK_TEXT',
+    'Open Contact',
+    CONFIG
+  )
   const openInNewTab = /^https?:\/\//i.test(url)
+  const isInternalPath = typeof url === 'string' && url.startsWith('/')
 
   const jumpToContact = () => {
     if (!url) return
     if (openInNewTab) {
       window.open(url, '_blank', 'noopener,noreferrer')
+      return
+    }
+    if (isInternalPath) {
+      void router.push(url)
       return
     }
     window.location.href = url
@@ -70,9 +82,7 @@ const ContactCard = () => {
       <p className='text-sm text-[var(--fuwari-muted)] leading-6 mb-2 line-clamp-2'>
         {backDesc}
       </p>
-      {url && (
-        <p className='fuwari-link text-sm font-medium'>{backText} →</p>
-      )}
+      {url && <p className='fuwari-link text-sm font-medium'>{backText} →</p>}
     </div>
   )
 
@@ -106,4 +116,3 @@ const ContactCard = () => {
 }
 
 export default ContactCard
-

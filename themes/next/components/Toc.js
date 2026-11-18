@@ -76,7 +76,9 @@ const Toc = ({ toc }) => {
       <div className='w-full pb-1'>
         <Progress />
       </div>
-      <div className='overflow-y-auto max-h-96 overscroll-none scroll-hidden' ref={tRef}>
+      <div
+        className='overflow-y-auto max-h-96 overscroll-none scroll-hidden'
+        ref={tRef}>
         <nav className='h-full  text-black dark:text-gray-300'>
           {toc.map(tocItem => {
             const id = uuidToId(tocItem.id)

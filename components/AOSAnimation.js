@@ -1,5 +1,8 @@
-import { loadExternalResource } from '@/lib/utils'
+import { isBrowser, loadExternalResource } from '@/lib/utils'
+import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+
+let aosInitialized = false
 
 /**
  * 加载滚动动画
@@ -7,35 +10,52 @@ import { useEffect } from 'react'
  * https://michalsnik.github.io/aos/
  */
 export default function AOSAnimation() {
-  const initAOS = () => {
-    if (
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      return
-    }
+  const router = useRouter()
 
-    Promise.all([
-      loadExternalResource('/js/aos.js', 'js'),
-      loadExternalResource('/css/aos.css', 'css')
-    ]).then(() => {
-      if (window.AOS) {
+  useEffect(() => {
+    if (!isBrowser) return
+
+    let cancelled = false
+    const cancelTask = scheduleIdleTask(async () => {
+      if (
+        cancelled ||
+        aosInitialized ||
+        !document.querySelector('[data-aos]') ||
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      ) {
+        return
+      }
+
+      await Promise.all([
+        loadExternalResource('/js/aos.js', 'js'),
+        loadExternalResource('/css/aos.css', 'css')
+      ])
+
+      if (!cancelled && window.AOS && !aosInitialized) {
         window.AOS.init({
           debounceDelay: 100,
           throttleDelay: 120,
           once: true
         })
+        aosInitialized = true
       }
     })
-  }
-  useEffect(() => {
-    if (window.requestIdleCallback) {
-      const id = window.requestIdleCallback(initAOS, { timeout: 3000 })
-      return () => window.cancelIdleCallback(id)
+
+    return () => {
+      cancelled = true
+      cancelTask()
     }
-    const id = window.setTimeout(initAOS, 2000)
-    return () => window.clearTimeout(id)
-  }, [])
+  }, [router.asPath])
 
   return null
+}
+
+function scheduleIdleTask(callback) {
+  if (window.requestIdleCallback) {
+    const taskId = window.requestIdleCallback(callback, { timeout: 3000 })
+    return () => window.cancelIdleCallback?.(taskId)
+  }
+
+  const timeoutId = window.setTimeout(() => callback(), 2000)
+  return () => window.clearTimeout(timeoutId)
 }

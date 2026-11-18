@@ -7,7 +7,8 @@ import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
  * @returns
  */
 const Style = () => {
-  return <style jsx global>{`
+  return (
+    <style jsx global>{`
     body {
         background-color: #fbfbfb;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -103,6 +104,7 @@ const Style = () => {
 
       ${themeConsoleStyle('nav', CONFIG, { rootId: 'theme-onenav' })}
   `}</style>
+  )
 }
 
 export { Style }

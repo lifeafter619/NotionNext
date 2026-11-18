@@ -1,8 +1,13 @@
-const { translateBlock, richTextToString, rebuildRichText } = require('../../../scripts/translate/block-mapper')
+const {
+  translateBlock,
+  richTextToString,
+  rebuildRichText
+} = require('../../../scripts/translate/block-mapper')
 
 const fakeCtx = {
   translateText: async (text, opts) => {
-    if (opts?.hint === 'mermaid') return { text: text.replace(/中国/g, 'China') }
+    if (opts?.hint === 'mermaid')
+      return { text: text.replace(/中国/g, 'China') }
     return { text: '[' + text + ']' }
   }
 }
@@ -31,7 +36,9 @@ describe('translate/block-mapper', () => {
     const block = {
       type: 'code',
       code: {
-        rich_text: [{ type: 'text', text: { content: 'x = 1' }, plain_text: 'x = 1' }],
+        rich_text: [
+          { type: 'text', text: { content: 'x = 1' }, plain_text: 'x = 1' }
+        ],
         language: 'python'
       }
     }
@@ -44,7 +51,13 @@ describe('translate/block-mapper', () => {
     const block = {
       type: 'code',
       code: {
-        rich_text: [{ type: 'text', text: { content: 'pie title 国家\n  "中国" : 50' }, plain_text: 'pie title 国家\n  "中国" : 50' }],
+        rich_text: [
+          {
+            type: 'text',
+            text: { content: 'pie title 国家\n  "中国" : 50' },
+            plain_text: 'pie title 国家\n  "中国" : 50'
+          }
+        ],
         language: 'mermaid'
       }
     }
@@ -54,14 +67,20 @@ describe('translate/block-mapper', () => {
   })
 
   test('column_list returns null (skipped)', async () => {
-    const out = await translateBlock({ type: 'column_list', column_list: {} }, fakeCtx)
+    const out = await translateBlock(
+      { type: 'column_list', column_list: {} },
+      fakeCtx
+    )
     expect(out).toBeNull()
   })
 
   test('image blocks pass through without translation', async () => {
     const block = {
       type: 'image',
-      image: { type: 'external', external: { url: 'https://example.com/x.png' } }
+      image: {
+        type: 'external',
+        external: { url: 'https://example.com/x.png' }
+      }
     }
     const out = await translateBlock(block, fakeCtx)
     expect(out.type).toBe('image')
@@ -70,7 +89,12 @@ describe('translate/block-mapper', () => {
 
   test('rebuildRichText preserves single-segment annotations', () => {
     const original = [
-      { type: 'text', text: { content: 'hi' }, annotations: { italic: true }, plain_text: 'hi' }
+      {
+        type: 'text',
+        text: { content: 'hi' },
+        annotations: { italic: true },
+        plain_text: 'hi'
+      }
     ]
     const out = rebuildRichText('你好', original)
     expect(out[0].text.content).toBe('你好')
@@ -78,10 +102,7 @@ describe('translate/block-mapper', () => {
   })
 
   test('richTextToString concatenates all segments', () => {
-    const rich = [
-      { plain_text: 'foo ' },
-      { plain_text: 'bar' }
-    ]
+    const rich = [{ plain_text: 'foo ' }, { plain_text: 'bar' }]
     expect(richTextToString(rich)).toBe('foo bar')
   })
 })

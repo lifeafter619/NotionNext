@@ -6,7 +6,8 @@ import AnalyticsBusuanzi from '@/components/AnalyticsBusuanzi'
 const Footer = () => {
   const currentYear = new Date().getFullYear()
   const since = parseInt(siteConfig('SINCE') || currentYear, 10)
-  const copyrightDate = since < currentYear ? `${since}-${currentYear}` : `${currentYear}`
+  const copyrightDate =
+    since < currentYear ? `${since}-${currentYear}` : `${currentYear}`
   const author = siteConfig('AUTHOR') || siteConfig('TITLE') || 'NotionNext'
   const version = siteConfig('VERSION') || ''
 
@@ -42,4 +43,3 @@ const Footer = () => {
 }
 
 export default Footer
-

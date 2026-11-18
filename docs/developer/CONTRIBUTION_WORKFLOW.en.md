@@ -55,4 +55,3 @@ Prefer Conventional Commits:
 - Keep patch minimal
 - Split large changes into smaller PRs
 - Clearly mark breaking changes in PR description
-

@@ -1201,9 +1201,11 @@ const Pager = ({ page = 1, postCount = 0, posts = [] }) => {
   const category = router.query.category
   const tag = router.query.tag
   const basePath = router.pathname.startsWith('/category/')
-    ? `/category/${Array.isArray(category) ? category[0] : category || ''}`
+    ? `/category/${encodeURIComponent(
+        (Array.isArray(category) ? category[0] : category) || ''
+      )}`
     : router.pathname.startsWith('/tag/')
-      ? `/tag/${Array.isArray(tag) ? tag[0] : tag || ''}`
+      ? `/tag/${encodeURIComponent((Array.isArray(tag) ? tag[0] : tag) || '')}`
       : ''
 
   if (totalPage <= 1) return null
@@ -1318,7 +1320,7 @@ const LayoutCategoryIndex = props => (
       {(props.categoryOptions || []).map(category => (
         <SmartLink
           key={category.name}
-          href={`/category/${category.name}`}
+          href={`/category/${encodeURIComponent(category.name)}`}
           className='opc-secondary-action rounded-md border px-4 py-2 text-sm'
         >
           {category.name}

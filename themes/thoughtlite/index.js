@@ -86,7 +86,11 @@ const LayoutBase = props => {
           `}>
           <div
             className={`min-w-0 flex-1 ${
-              fullWidth ? 'w-full' : LAYOUT_VERTICAL ? 'w-full max-w-5xl' : 'w-full max-w-3xl'
+              fullWidth
+                ? 'w-full'
+                : LAYOUT_VERTICAL
+                  ? 'w-full max-w-5xl'
+                  : 'w-full max-w-3xl'
             }`}>
             <Transition
               show={!onLoading}
@@ -198,21 +202,23 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      const timer = setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
+
+      return () => clearTimeout(timer)
     }
-  }, [post])
+    return undefined
+  }, [post, router, waiting404])
   return (
     <>
       {lock ? (
@@ -271,16 +277,21 @@ const Layout404 = props => {
     }, 3000)
   }, [])
 
-  return <>
-        <div className='tl-card mx-auto mt-24 max-w-md px-8 py-12 text-center'>
-            <div className='text-[var(--tl-text)]'>
-                <h2 className='inline-block border-r-2 border-[var(--tl-border)] mr-2 px-3 py-2 align-top text-2xl font-semibold'><i className='mr-2 fas fa-spinner animate-spin' />404</h2>
-                <div className='inline-block text-left h-32 leading-10 items-center text-[var(--tl-muted)]'>
-                    <h2 className='m-0 p-0 text-base'>页面无法加载，即将返回首页</h2>
-                </div>
-            </div>
+  return (
+    <>
+      <div className='tl-card mx-auto mt-24 max-w-md px-8 py-12 text-center'>
+        <div className='text-[var(--tl-text)]'>
+          <h2 className='inline-block border-r-2 border-[var(--tl-border)] mr-2 px-3 py-2 align-top text-2xl font-semibold'>
+            <i className='mr-2 fas fa-spinner animate-spin' />
+            404
+          </h2>
+          <div className='inline-block text-left h-32 leading-10 items-center text-[var(--tl-muted)]'>
+            <h2 className='m-0 p-0 text-base'>页面无法加载，即将返回首页</h2>
+          </div>
         </div>
+      </div>
     </>
+  )
 }
 
 /**
@@ -367,7 +378,7 @@ const LayoutCategoryIndex = props => {
         {categoryOptions?.map(category => (
           <SmartLink
             key={category.name}
-            href={`/category/${category.name}`}
+            href={`/category/${encodeURIComponent(category.name)}`}
             className='tl-chip'>
             <i className='fas fa-folder opacity-70' aria-hidden='true' />
             {category.name}

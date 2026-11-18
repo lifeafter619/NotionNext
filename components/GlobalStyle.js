@@ -14,11 +14,11 @@ const GlobalStyle = () => {
   if (GLOBAL_CSS && GLOBAL_CSS.trim() !== '') {
     // console.log('Inject CSS:', GLOBAL_CSS);
   }
-  return (<style jsx global>{`
-
-    ${GLOBAL_CSS}
-
-  `}</style>)
+  return (
+    <style jsx global>{`
+      ${GLOBAL_CSS}
+    `}</style>
+  )
 }
 
 export { GlobalStyle }

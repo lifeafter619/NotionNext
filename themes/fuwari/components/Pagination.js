@@ -29,7 +29,10 @@ function buildPages(currentPage, totalPage) {
 const Pagination = ({ page = 1, postCount = 0 }) => {
   const router = useRouter()
   const { NOTION_CONFIG } = useGlobal()
-  const POSTS_PER_PAGE = parseInt(siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG), 10)
+  const POSTS_PER_PAGE = parseInt(
+    siteConfig('POSTS_PER_PAGE', 12, NOTION_CONFIG),
+    10
+  )
   const totalPage = Math.ceil((postCount || 0) / POSTS_PER_PAGE)
   const currentPage = parseInt(page, 10) || 1
 
@@ -41,13 +44,18 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
     .replace(/\/$/, '')
 
   const pages = buildPages(currentPage, totalPage)
-  const prevHref = currentPage <= 2 ? `${pagePrefix || ''}/` : `${pagePrefix}/page/${currentPage - 1}`
+  const prevHref =
+    currentPage <= 2
+      ? `${pagePrefix || ''}/`
+      : `${pagePrefix}/page/${currentPage - 1}`
   const nextHref = `${pagePrefix}/page/${currentPage + 1}`
+  const withSearchQuery = pathname =>
+    router.query.s ? { pathname, query: { s: router.query.s } } : pathname
 
   return (
     <div className='fuwari-pagination mt-8 mb-4 flex items-center justify-center gap-3'>
       <SmartLink
-        href={currentPage > 1 ? prevHref : '#'}
+        href={currentPage > 1 ? withSearchQuery(prevHref) : '#'}
         aria-label='Previous Page'
         className={`fuwari-page-btn ${currentPage > 1 ? '' : 'fuwari-page-btn-disabled'}`}>
         <i className='fas fa-chevron-left' />
@@ -66,7 +74,9 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
           return (
             <SmartLink
               key={`p-${p}`}
-              href={p === 1 ? `${pagePrefix || ''}/` : `${pagePrefix}/page/${p}`}
+              href={withSearchQuery(
+                p === 1 ? `${pagePrefix || ''}/` : `${pagePrefix}/page/${p}`
+              )}
               className={`fuwari-page-num ${p === currentPage ? 'fuwari-page-num-active' : ''}`}>
               {p}
             </SmartLink>
@@ -75,7 +85,7 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
       </div>
 
       <SmartLink
-        href={currentPage < totalPage ? nextHref : '#'}
+        href={currentPage < totalPage ? withSearchQuery(nextHref) : '#'}
         aria-label='Next Page'
         className={`fuwari-page-btn ${currentPage < totalPage ? '' : 'fuwari-page-btn-disabled'}`}>
         <i className='fas fa-chevron-right' />
@@ -85,4 +95,3 @@ const Pagination = ({ page = 1, postCount = 0 }) => {
 }
 
 export default Pagination
-

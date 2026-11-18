@@ -42,9 +42,7 @@ export const BlogItem = props => {
 
           {/* 文章信息 */}
           <div className='text-sm text-[var(--claude-text-tertiary)] flex flex-wrap items-center gap-x-3 mb-2'>
-            <span>
-              {post.date?.start_date || post.createdTime}
-            </span>
+            <span>{post.date?.start_date || post.createdTime}</span>
             {post?.tags && post?.tags?.length > 0 && (
               <div className='flex flex-wrap gap-x-2'>
                 {post.tags.map(t => (

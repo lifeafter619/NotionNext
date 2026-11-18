@@ -8,6 +8,7 @@
 # testing
 /coverage
 /test-results
+/output/
 
 # next.js
 /.next/
@@ -43,6 +44,7 @@ yarn-error.log*
 # dev
 /data.json
 /pnpm-lock.yaml
+/.worktrees/
 .codex-temp/
 .codex-remote-attachments/
 .codex-*.md
@@ -51,12 +53,14 @@ notionnext-*-comment.txt
 output/
 .idea
 .vscode
+.claude/settings.local.json
 
 
 # sitemap
 /public/robots.txt
 /public/sitemap.xml
 /public/rss/*
+/public/search-index.*.json
 /sitemap.xml
 
 # yarn
@@ -64,10 +68,23 @@ package-lock.json
 # yarn.lock
 
 .notion-api-lock
+
+.codegraph/
+.swc/
 .tmp/
 .perf/
+
+# TypeScript build info
 tsconfig.tsbuildinfo
 webpack-internal:/
+
+# Verification and temp files
+validation-report.json
+quality-report.json
+health-report.json
+*.pyc
+__pycache__/
+.zcode/
 
 # Local AI planning and review records
 /_project-ai/

@@ -42,7 +42,9 @@ export default function BlogListPage(props) {
             {TYPOGRAPHY_POST_AD_ENABLE && (index + 1) % 3 === 0 && (
               <AdSlot type='in-article' />
             )}
-            {TYPOGRAPHY_POST_AD_ENABLE && index + 1 === 4 && <AdSlot type='flow' />}
+            {TYPOGRAPHY_POST_AD_ENABLE && index + 1 === 4 && (
+              <AdSlot type='flow' />
+            )}
             <BlogItem post={p} />
           </div>
         ))}

@@ -51,13 +51,13 @@ It is useful for creators, indie hackers, designers, photographers, course autho
 
 ## What Can You Build?
 
-| Goal | Recommended Entry | Best For |
-| --- | --- | --- |
-| Personal blog | [Get started](https://notionnext.tangly1024.com/user-guide/start-here) | Writers, developers, students |
-| Portfolio or personal brand | [Choose a theme by use case](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) | Designers, photographers, freelancers |
-| Product website or SaaS landing page | [Starter / Landing / Proxio](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) | Indie products, startups, small teams |
-| Knowledge base or docs site | [GitBook / Claude](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) | Open-source projects, course authors, teams |
-| Directory or resource hub | [Nav theme](https://notionnext.tangly1024.com/user-guide/themes/nav) | Curators and community operators |
+| Goal                                 | Recommended Entry                                                                                | Best For                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| Personal blog                        | [Get started](https://notionnext.tangly1024.com/user-guide/start-here)                           | Writers, developers, students               |
+| Portfolio or personal brand          | [Choose a theme by use case](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) | Designers, photographers, freelancers       |
+| Product website or SaaS landing page | [Starter / Landing / Proxio](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) | Indie products, startups, small teams       |
+| Knowledge base or docs site          | [GitBook / Claude](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)           | Open-source projects, course authors, teams |
+| Directory or resource hub            | [Nav theme](https://notionnext.tangly1024.com/user-guide/themes/nav)                             | Curators and community operators            |
 
 ## Why NotionNext?
 
@@ -85,14 +85,14 @@ New users should start with the [Get Started guide](https://notionnext.tangly102
 - Built-in themes: [Themes catalog](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)
 - Theme docs in this repository: [docs/user-guide/themes/](./docs/user-guide/themes/)
 
-| Use Case | Start With |
-| --- | --- |
-| Personal blog | `simple`, `hexo`, `nobelium`, `typography` |
-| Docs / knowledge base | `gitbook`, `claude`, `thoughtlite` |
-| Portfolio / personal brand | `opc`, `proxio`, `starter`, `landing` |
-| Product website | `starter`, `landing`, `commerce` |
-| Photo / visual content | `photo`, `plog`, `magzine` |
-| Directory | `nav` |
+| Use Case                   | Start With                                 |
+| -------------------------- | ------------------------------------------ |
+| Personal blog              | `simple`, `hexo`, `nobelium`, `typography` |
+| Docs / knowledge base      | `gitbook`, `claude`, `thoughtlite`         |
+| Portfolio / personal brand | `opc`, `proxio`, `starter`, `landing`      |
+| Product website            | `starter`, `landing`, `commerce`           |
+| Photo / visual content     | `photo`, `plog`, `magzine`                 |
+| Directory                  | `nav`                                      |
 
 ## Local Development
 
@@ -107,39 +107,39 @@ yarn dev
 
 Common commands:
 
-| Command | Purpose |
-| --- | --- |
-| `yarn dev` | Start local development |
-| `yarn build` | Build for production |
-| `yarn export` | Static export |
-| `yarn docs:site:dev` | Preview the docs site locally |
-| `yarn docs:site:build` | Build the docs site |
+| Command                | Purpose                       |
+| ---------------------- | ----------------------------- |
+| `yarn dev`             | Start local development       |
+| `yarn build`           | Build for production          |
+| `yarn export`          | Static export                 |
+| `yarn docs:site:dev`   | Preview the docs site locally |
+| `yarn docs:site:build` | Build the docs site           |
 
 ## Documentation
 
-| Content | Link |
-| --- | --- |
-| Docs site | [notionnext.tangly1024.com](https://notionnext.tangly1024.com) |
-| New user guide | [Get started](https://notionnext.tangly1024.com/user-guide/start-here) |
-| Use-case templates | [Choose by goal](https://notionnext.tangly1024.com/user-guide/templates) |
-| Configuration index | [Features and configuration](https://notionnext.tangly1024.com/user-guide/reference/features) |
-| Theme docs | [26 built-in themes](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) |
-| Showcase | [User websites](https://notionnext.tangly1024.com/user-guide/showcase): submit your site after launch |
-| Docs source | [docs/](./docs/) |
+| Content             | Link                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| Docs site           | [notionnext.tangly1024.com](https://notionnext.tangly1024.com)                                        |
+| New user guide      | [Get started](https://notionnext.tangly1024.com/user-guide/start-here)                                |
+| Use-case templates  | [Choose by goal](https://notionnext.tangly1024.com/user-guide/templates)                              |
+| Configuration index | [Features and configuration](https://notionnext.tangly1024.com/user-guide/reference/features)         |
+| Theme docs          | [26 built-in themes](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)              |
+| Showcase            | [User websites](https://notionnext.tangly1024.com/user-guide/showcase): submit your site after launch |
+| Docs source         | [docs/](./docs/)                                                                                      |
 
 ## Community
 
 The canonical repository is maintained by [notionnext-org](https://github.com/notionnext-org). Contributions to code, docs, themes, issues, reviews, and discussions are welcome.
 
-| Content | Link |
-| --- | --- |
-| Community guide | [community-participate.md](./docs/user-guide/community-participate.md) |
-| Vision and roadmap | [VISION_ROADMAP.md](./docs/developer/VISION_ROADMAP.md) |
-| Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
-| Governance | [GOVERNANCE.md](./GOVERNANCE.md) |
-| Maintainers | [MAINTAINERS.md](./MAINTAINERS.md) |
-| Code of Conduct | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
-| Discussions | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
+| Content            | Link                                                                           |
+| ------------------ | ------------------------------------------------------------------------------ |
+| Community guide    | [community-participate.md](./docs/user-guide/community-participate.md)         |
+| Vision and roadmap | [VISION_ROADMAP.md](./docs/developer/VISION_ROADMAP.md)                        |
+| Contributing       | [CONTRIBUTING.md](./CONTRIBUTING.md)                                           |
+| Governance         | [GOVERNANCE.md](./GOVERNANCE.md)                                               |
+| Maintainers        | [MAINTAINERS.md](./MAINTAINERS.md)                                             |
+| Code of Conduct    | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)                                     |
+| Discussions        | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
 
 If you cloned from the old repository before the transfer, update your remote:
 

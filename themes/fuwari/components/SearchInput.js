@@ -53,8 +53,12 @@ const SearchInput = ({ keyword = '', cRef, className = '' }) => {
   }
 
   return (
-    <div className={`fuwari-card flex w-full items-center gap-2 px-4 py-3 ${className}`}>
-      <i className='fas fa-search text-[var(--fuwari-muted)]' aria-hidden='true' />
+    <div
+      className={`fuwari-card flex w-full items-center gap-2 px-4 py-3 ${className}`}>
+      <i
+        className='fas fa-search text-[var(--fuwari-muted)]'
+        aria-hidden='true'
+      />
       <input
         ref={searchInputRef}
         type='search'

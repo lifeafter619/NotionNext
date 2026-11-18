@@ -3,6 +3,7 @@
 本指南帮助您安全地将博客更新到上游最新版本，同时保留所有个性化配置。
 
 按照以下流程操作，您可以：
+
 - ✅ 获取 NotionNext 的最新功能和修复
 - ✅ 保留您的个人配置（头像、标题、域名等）
 - ✅ 安全处理可能的代码冲突
@@ -15,11 +16,11 @@
 
 ### 分支说明
 
-| 分支 | 用途 | 更新策略 | 部署状态 |
-|------|------|----------|----------|
-| `main` | 同步上游原始代码 | 快进合并 | 不部署 |
-| `deploy` | 生产环境代码 | 合并 main + 保留个性化 | Vercel 自动部署 |
-| `feature/*` | 功能开发 | 基于 deploy 创建 | 不部署 |
+| 分支        | 用途             | 更新策略               | 部署状态        |
+| ----------- | ---------------- | ---------------------- | --------------- |
+| `main`      | 同步上游原始代码 | 快进合并               | 不部署          |
+| `deploy`    | 生产环境代码     | 合并 main + 保留个性化 | Vercel 自动部署 |
+| `feature/*` | 功能开发         | 基于 deploy 创建       | 不部署          |
 
 ### 架构示意
 
@@ -56,6 +57,7 @@ git remote -v
 ```
 
 预期输出：
+
 ```
 origin    https://github.com/[你的用户名]/NotionNext.git (fetch)
 origin    https://github.com/[你的用户名]/NotionNext.git (push)
@@ -75,6 +77,7 @@ git diff --name-only main..deploy
 ```
 
 常见个性化文件：
+
 - `blog.config.js` - 博客配置
 - `public/avatar.png` - 头像
 - `public/favicon.ico` - 网站图标
@@ -119,12 +122,12 @@ git merge main
 
 如果出现冲突，根据文件类型处理：
 
-| 文件类型 | 处理策略 | Git 命令 |
-|----------|----------|----------|
-| `yarn.lock` | 接受上游版本 | `git checkout --theirs yarn.lock` |
-| `blog.config.js` | 手动合并 | 保留个人配置，添加新配置项 |
+| 文件类型            | 处理策略     | Git 命令                                |
+| ------------------- | ------------ | --------------------------------------- |
+| `yarn.lock`         | 接受上游版本 | `git checkout --theirs yarn.lock`       |
+| `blog.config.js`    | 手动合并     | 保留个人配置，添加新配置项              |
 | `public/avatar.png` | 保留本地版本 | `git checkout --ours public/avatar.png` |
-| `public/favicon.*` | 保留本地版本 | `git checkout --ours public/favicon.*` |
+| `public/favicon.*`  | 保留本地版本 | `git checkout --ours public/favicon.*`  |
 
 处理完成后：
 
@@ -270,4 +273,4 @@ git push origin deploy
 
 ---
 
-*文档版本：0.1.0 | 最后更新：2025-08-19*
+_文档版本：0.1.0 | 最后更新：2025-08-19_

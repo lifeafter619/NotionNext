@@ -57,20 +57,17 @@ const Footer = ({ title }) => {
                     {group.name}
                   </div>
                   <div className='flex flex-col gap-y-2'>
-                    {(Array.isArray(group?.menus) ? group.menus : []).map(
-                      (menu, index) => {
-                        return (
-                          <div key={index}>
-                            <SmartLink
-                              href={menu.href}
-                              className='hover:underline'
-                            >
-                              {menu.title}
-                            </SmartLink>
-                          </div>
-                        )
-                      }
-                    )}
+                    {group?.menus?.map((menu, index) => {
+                      return (
+                        <div key={index}>
+                          <SmartLink
+                            href={menu.href}
+                            className='hover:underline'>
+                            {menu.title}
+                          </SmartLink>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )

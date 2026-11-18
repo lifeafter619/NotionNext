@@ -1,16 +1,15 @@
 # Simple主题
+
 > 迁移自：[Simple主题](https://docs.tangly1024.com/article/notionnext-simple)
 > 发布日期：2024-3-19
 > 最后编辑：2026-8-27
 > 原栏目：⭐ 主题参数
-
 
 ## 主题预览
 
 ![Simple 主题预览](/images/themes-preview/simple.webp)
 
 NotionNext 4.0 系列，用户首次安装的默认主题是Simple。这也是目前我主要在用的简洁主题。
-
 
 ## Simple 主题相关配置
 
@@ -55,7 +54,6 @@ const CONFIG = {
 export default CONFIG
 ```
 
-
 ### 不蒜子访问统计
 
 Simple 主题支持复用全局 `ANALYTICS_BUSUANZI_ENABLE` 配置展示不蒜子访问统计。
@@ -70,20 +68,17 @@ Simple 主题支持复用全局 `ANALYTICS_BUSUANZI_ENABLE` 配置展示不蒜�
 
 更多统计配置见 [站点统计相关](../analytics/overview.md)。
 
-
 ## FAQ
 
 ![Untitled](/legacy/b34bfc45d1b69f05.png)
-
 
 #### 求助：
 
 我想把主页上默认显示的自我介绍删了,找不到呀求教. 想删掉这个: 编程爱好者/互联网从业者/知识分享博主
 
-
 #### 回答：
 
-可以修改  themes/simple/config.js 的 SIMPLE_LOGO_DESCRIPTION 参数：
+可以修改 themes/simple/config.js 的 SIMPLE_LOGO_DESCRIPTION 参数：
 
 ```JavaScript
 SIMPLE_LOGO_DESCRIPTION: process.env.NEXT_PUBLIC_THEME_SIMPLE_LOGO_DESCRIPTION || '&lt;div&gt;编程爱好者&lt;br/&gt;/互联网从业者&lt;br/&gt;/知识分享博主&lt;/div&gt;',

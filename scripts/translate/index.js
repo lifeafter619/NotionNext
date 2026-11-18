@@ -70,12 +70,20 @@ async function main() {
     const includeDrafts = Boolean(flags['include-drafts'])
     const fromLang = typeof flags.from === 'string' ? flags.from : null
     const includePaired = Boolean(flags['include-paired'])
-    const { eligible, skipped } = await findUntranslated({ includeDrafts, fromLang, includePaired })
+    const { eligible, skipped } = await findUntranslated({
+      includeDrafts,
+      fromLang,
+      includePaired
+    })
     console.log(`[batch] 共扫描两个数据库下 ${skipped.total} 篇 Post`)
     console.log(`  ${eligible.length} 篇待翻译`)
-    console.log(`  ${skipped.alreadyPaired} 篇已配对（如需重译，运行 yarn translate:check 检查漂移）`)
+    console.log(
+      `  ${skipped.alreadyPaired} 篇已配对（如需重译，运行 yarn translate:check 检查漂移）`
+    )
     if (!includeDrafts) {
-      console.log(`  ${skipped.notPublished} 篇非 Published（如需包含草稿，加上 --include-drafts）`)
+      console.log(
+        `  ${skipped.notPublished} 篇非 Published（如需包含草稿，加上 --include-drafts）`
+      )
     }
     if (!eligible.length) {
       console.log('\n无需处理。')

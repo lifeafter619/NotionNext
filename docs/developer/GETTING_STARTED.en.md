@@ -45,4 +45,3 @@ yarn test
 - Start with small scoped fixes (single file/module).
 - Do not mix multiple change types in one PR.
 - Ensure lint/test pass before opening PR.
-

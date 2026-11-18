@@ -31,22 +31,22 @@ function renderStarrySky() {
     d = '226,225,224',
     c = []
   function f() {
-    ;(n = window.innerWidth),
+    ;((n = window.innerWidth),
       (e = window.innerHeight),
       (i = 0.216 * n),
       s.setAttribute('width', n),
-      s.setAttribute('height', e)
+      s.setAttribute('height', e))
   }
   function u() {
     h.clearRect(0, 0, n, e)
     for (var t = c.length, i = 0; i < t; i++) {
       var s = c[i]
-      s.move(), s.fadeIn(), s.fadeOut(), s.draw()
+      ;(s.move(), s.fadeIn(), s.fadeOut(), s.draw())
     }
   }
   function y() {
-    ;(this.reset = function () {
-      ;(this.giant = m(3)),
+    ;((this.reset = function () {
+      ;((this.giant = m(3)),
         (this.comet = !this.giant && !o && m(10)),
         (this.x = l(0, n - 10)),
         (this.y = l(0, e)),
@@ -57,7 +57,7 @@ function renderStarrySky() {
         (this.fadingIn = !0),
         (this.opacity = 0),
         (this.opacityTresh = l(0.2, 1 - 0.4 * (this.comet + 1 - 1))),
-        (this.do = l(5e-4, 0.002) + 0.001 * (this.comet + 1 - 1))
+        (this.do = l(5e-4, 0.002) + 0.001 * (this.comet + 1 - 1)))
     }),
       (this.fadeIn = function () {
         this.fadingIn &&
@@ -72,13 +72,13 @@ function renderStarrySky() {
       }),
       (this.draw = function () {
         if ((h.beginPath(), this.giant))
-          (h.fillStyle = 'rgba(' + a + ',' + this.opacity + ')'),
-            h.arc(this.x, this.y, 2, 0, 2 * Math.PI, !1)
+          ((h.fillStyle = 'rgba(' + a + ',' + this.opacity + ')'),
+            h.arc(this.x, this.y, 2, 0, 2 * Math.PI, !1))
         else if (this.comet) {
-          ;(h.fillStyle = 'rgba(' + d + ',' + this.opacity + ')'),
-            h.arc(this.x, this.y, 1.5, 0, 2 * Math.PI, !1)
+          ;((h.fillStyle = 'rgba(' + d + ',' + this.opacity + ')'),
+            h.arc(this.x, this.y, 1.5, 0, 2 * Math.PI, !1))
           for (var t = 0; t < 30; t++)
-            (h.fillStyle =
+            ((h.fillStyle =
               'rgba(' +
               d +
               ',' +
@@ -90,21 +90,21 @@ function renderStarrySky() {
                 2,
                 2
               ),
-              h.fill()
+              h.fill())
         } else
-          (h.fillStyle = 'rgba(' + r + ',' + this.opacity + ')'),
-            h.rect(this.x, this.y, this.r, this.r)
-        h.closePath(), h.fill()
+          ((h.fillStyle = 'rgba(' + r + ',' + this.opacity + ')'),
+            h.rect(this.x, this.y, this.r, this.r))
+        ;(h.closePath(), h.fill())
       }),
       (this.move = function () {
-        ;(this.x += this.dx),
+        ;((this.x += this.dx),
           (this.y += this.dy),
           !1 === this.fadingOut && this.reset(),
-          (this.x > n - n / 4 || this.y < 0) && (this.fadingOut = !0)
+          (this.x > n - n / 4 || this.y < 0) && (this.fadingOut = !0))
       }),
       setTimeout(function () {
         o = !1
-      }, 50)
+      }, 50))
   }
   function m(t) {
     return Math.floor(1e3 * Math.random()) + 1 < 10 * t
@@ -112,18 +112,18 @@ function renderStarrySky() {
   function l(t, i) {
     return Math.random() * (i - t) + t
   }
-  f(),
+  ;(f(),
     window.addEventListener('resize', f, !1),
     (function () {
       h = s.getContext('2d')
-      for (var t = 0; t < i; t++) (c[t] = new y()), c[t].reset()
+      for (var t = 0; t < i; t++) ((c[t] = new y()), c[t].reset())
       u()
     })(),
     (function t() {
-      document.getElementsByTagName('html')[0].className.indexOf('dark') >= 0 &&
-        u(),
-        window.requestAnimationFrame(t)
-    })()
+      ;(document.getElementsByTagName('html')[0].className.indexOf('dark') >=
+        0 && u(),
+        window.requestAnimationFrame(t))
+    })())
 }
 
 window.renderStarrySky = renderStarrySky

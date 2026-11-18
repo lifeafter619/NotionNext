@@ -1,4 +1,5 @@
 # Utterance
+
 > 迁移自：[Utterance](https://docs.tangly1024.com/article/notion-next-utterance)
 > 发布日期：2023-6-29
 > 最后编辑：2024-1-31
@@ -6,11 +7,9 @@
 
 ## Utterance
 
-
 ### 完成预览效果
 
 ![Untitled](/legacy/ca73cd9ce0289c44.png)
-
 
 ## 配置Utterance
 
@@ -37,7 +36,6 @@ You can't perform that action at this time. You signed in with another tab or wi
 ![Untitled](/legacy/4a5891638603d962.png)
 
 </details>
-
 
 ## 配置NotionNext
 

@@ -8,25 +8,25 @@
 const idNest = '__nest'
 function createNest() {
   const e = document.getElementById(idNest)
-  if(!e) return
+  if (!e) return
   function n(e, n, t) {
     return e.getAttribute(n) || t
   }
   function t() {
-    ;(u = i.width =
+    ;((u = i.width =
       window.innerWidth ||
       document.documentElement.clientWidth ||
       document.body.clientWidth),
       (d = i.height =
         window.innerHeight ||
         document.documentElement.clientHeight ||
-        document.body.clientHeight)
+        document.body.clientHeight))
   }
   function o() {
     c.clearRect(0, 0, u, d)
     const e = [s].concat(x)
     let n, t, i, l, r, w
-    x.forEach(function (o) {
+    ;(x.forEach(function (o) {
       for (
         o.x += o.xa,
           o.y += o.ya,
@@ -37,7 +37,7 @@ function createNest() {
         t < e.length;
         t++
       )
-        (n = e[t]),
+        ((n = e[t]),
           o !== n &&
             null !== n.x &&
             null !== n.y &&
@@ -54,10 +54,10 @@ function createNest() {
               (c.strokeStyle = 'rgba(' + a.c + ',' + (i + 0.2) + ')'),
               c.moveTo(o.x, o.y),
               c.lineTo(n.x, n.y),
-              c.stroke()))
+              c.stroke())))
       e.splice(e.indexOf(o), 1)
     }),
-      m(o)
+      m(o))
   }
   var i = document.createElement('canvas')
   i.id = id
@@ -84,17 +84,21 @@ function createNest() {
   const l = Math.random
   var r,
     s = { x: null, y: null, max: 2e4 }
-  ;(i.style.cssText =
-    'position:fixed;top:0;left:0;pointer-events:none;z-index:' + a.z + ';opacity:' + a.o),
-    (r = 'body'), e.appendChild(i),
+  ;((i.style.cssText =
+    'position:fixed;top:0;left:0;pointer-events:none;z-index:' +
+    a.z +
+    ';opacity:' +
+    a.o),
+    (r = 'body'),
+    e.appendChild(i),
     t(),
     (window.onresize = t),
     (window.onmousemove = function (e) {
-      ;(e = e || window.event), (s.x = e.clientX), (s.y = e.clientY)
+      ;((e = e || window.event), (s.x = e.clientX), (s.y = e.clientY))
     }),
     (window.onmouseout = function () {
-      ;(s.x = null), (s.y = null)
-    })
+      ;((s.x = null), (s.y = null))
+    }))
   for (var x = [], w = 0; a.n > w; w++) {
     const e = l() * u,
       n = l() * d,

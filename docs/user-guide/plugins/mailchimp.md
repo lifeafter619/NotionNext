@@ -1,4 +1,5 @@
 # Mailchimp邮件订阅
+
 > 迁移自：[Mailchimp邮件订阅](https://docs.tangly1024.com/article/notion-next-mailchimp)
 > 发布日期：2023-7-4
 > 最后编辑：2024-9-12
@@ -27,7 +28,6 @@ MailChimp是目前最通用且易于使用的 电子邮件营销服务.
 
 MailChimp 为您提供一个免费帐户，最多可拥有 2000 个电子邮件订阅者，每月发送 12000 封电子邮件，在给定的 2000 小时内限制为 24 封电子邮件。 这个限制对于任何初学者以及中级博主和营销人员来说都非常好。
 
-
 ## 操作步骤
 
 你可以按照以下步骤在 Mailchimp 中找到你的邮件列表 ID 和 API KEY：
@@ -35,20 +35,19 @@ MailChimp 为您提供一个免费帐户，最多可拥有 2000 个电子邮件�
 1. 登录你的 Mailchimp 账户，点击右上角的用户名，然后选择 "Account" 进入账户设置页面。
 
 1. 在账户设置页面中，点击 "Extras" 选项卡，然后选择 "API keys"。
-![Untitled](/legacy/4978e7a37b4da5c2.png)
+   ![Untitled](/legacy/4978e7a37b4da5c2.png)
 
 1. 在 API keys 页面中，可以看到你现有的 API KEY 列表。如果没有 API KEY，请点击 "Create A Key" 按钮创建一个新的 API KEY。
-![Untitled](/legacy/f42fd7e5c5aa57f1.png)
-![Untitled](/legacy/d70110572d0258cf.png)
+   ![Untitled](/legacy/f42fd7e5c5aa57f1.png)
+   ![Untitled](/legacy/d70110572d0258cf.png)
 
 1. 复制你的 API KEY，并妥善保管。
 
 1. 点击 "Audience" 选项卡，然后选择你要用来存储用户邮件地址的列表。
-![Untitled](/legacy/a477adb79d48c463.png)
+   ![Untitled](/legacy/a477adb79d48c463.png)
 
 1. 在该列表的设置页面中，可以看到该列表的唯一 ID。复制该 ID。
-![Untitled](/legacy/f53b8a9c99961057.png)
-
+   ![Untitled](/legacy/f53b8a9c99961057.png)
 
 ## 最后
 

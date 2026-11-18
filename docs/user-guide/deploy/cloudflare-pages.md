@@ -1,4 +1,5 @@
 # CloudFlarePage静态部署
+
 > 迁移自：[CloudFlarePage静态部署](https://docs.tangly1024.com/article/notion-next-cloud-flare)
 > 发布日期：2023-3-13
 > 最后编辑：2026-5-10
@@ -34,7 +35,6 @@ CloudFlare部署方案，以及其他所有使用 静态导出的方案，默认
 NotionNext如何配置Algolia
 :::
 
-
 ## ⚠️ Cloudflare Pages 构建镜像 V1 弃用通知
 
 ::: danger 重要：V1 构建镜像将于 2026 年 9 月 15 日弃用
@@ -61,7 +61,6 @@ NotionNext如何配置Algolia
 
 Build your next application with Cloudflare Pages
 
-
 ### 创建项目
 
 ![Untitled](/legacy/eae0c1921ef7ccc0.png)
@@ -72,25 +71,28 @@ Build your next application with Cloudflare Pages
 :::
 
 1. 直接连接git
-![Untitled](/legacy/1a26aefb66d30bef.png)
+   ![Untitled](/legacy/1a26aefb66d30bef.png)
 
 1. 导入项目
-![Untitled](/legacy/6e07dfea953ed984.png)
+   ![Untitled](/legacy/6e07dfea953ed984.png)
 
 1. 选择分支
-分支选择` deploy/cloudflare-support` ；
-在4.0.9之后的版本中，可以直接使用`main`分支部署，无需切换分支
-![Untitled](/legacy/20413b7d85154964.png)
+   分支选择` deploy/cloudflare-support` ；
+   在4.0.9之后的版本中，可以直接使用`main`分支部署，无需切换分支
+   ![Untitled](/legacy/20413b7d85154964.png)
 
 ### 配置参数
+
 来到页面下方的构建设置：
-  - 构建命令填
+
+- 构建命令填
+
 ```Bash
 yarn export
 ```
-  - 输出根目录 `out`
-![Untitled](/legacy/010491fba650a2e6.png)
 
+- 输出根目录 `out`
+  ![Untitled](/legacy/010491fba650a2e6.png)
 
 ### 构建镜像版本选择
 
@@ -106,8 +108,8 @@ Cloudflare Pages 提供 V1、V2、V3 三个版本的构建镜像。**V1 将于 2
 |--------|-----|------|
 | `NODE_VERSION` | `22` | Node.js 版本（项目使用 22） |
 | `YARN_VERSION` | `1.22.22` | **必需**：V3 默认 Yarn 4.x，必须指定 Yarn 1.x |
-| `BUILD_MODE` | `true` | 启用构建模式 |
-| `EXPORT` | `true` | 启用静态导出 |
+| `BUILD_MODE`   | `true`    | 启用构建模式                                  |
+| `EXPORT`       | `true`    | 启用静态导出                                  |
 
 ::: warning `YARN_VERSION` 是最关键的变量
 V3 默认使用 Yarn 4.9.1（Berry），无法读取本项目 Yarn 1.x 格式的 `yarn.lock`，必须设置此变量。
@@ -121,25 +123,23 @@ V3 还支持通过文件检测 Node.js 版本（`.nvmrc` 和 `.node-version`）�
 
 最后点击保存并部署即可。
 
-
 ### 完成部署
 
 页面中心会显示您的访问域名
 
 ![Untitled](/legacy/2283354350ed2532.png)
 
-
 ## V3 构建镜像迁移指南
 
 ### 构建镜像版本对比
 
-| 组件 | V1（旧版，即将弃用） | V2 | V3（推荐） |
-|------|---------------------|-----|-----------|
-| Node.js | 12.18.0 | 18.20.8 | **22.16.0** |
-| Yarn | 1.22.4 | 4.1.1 | **4.9.1** |
-| npm | 6.14.4 | 9.6.6 | **10.9.2** |
-| Ubuntu | 18.04 | 22.04.2 | **22.04.2** |
-| 弃用日期 | **2026-09-15** | 2027-02-23 | N/A（最新） |
+| 组件     | V1（旧版，即将弃用） | V2         | V3（推荐）  |
+| -------- | -------------------- | ---------- | ----------- |
+| Node.js  | 12.18.0              | 18.20.8    | **22.16.0** |
+| Yarn     | 1.22.4               | 4.1.1      | **4.9.1**   |
+| npm      | 6.14.4               | 9.6.6      | **10.9.2**  |
+| Ubuntu   | 18.04                | 22.04.2    | **22.04.2** |
+| 弃用日期 | **2026-09-15**       | 2027-02-23 | N/A（最新） |
 
 ### V3 迁移步骤
 
@@ -202,7 +202,6 @@ YN0070: Migrating from Yarn 1; automatically enabling the compatibility node-mod
 
 ![Untitled](/legacy/46906e8884b4406f.png)
 
-
 ### 需要帮助？
 
 如果你的部署异常，没有出现一个绿色的勾，通常是代码修改异常或者配置错误导致，点击右侧的查看详情，获取详细的部署日志：
@@ -212,7 +211,6 @@ YN0070: Migrating from Yarn 1; automatically enabling the compatibility node-mod
 在构建日志这一栏可以看到所有详细的错误信息，根据错误日志进行排查问题，如果无法自行排查，可以将日志复制或截图，寻求他人帮助。
 
 ![image.png](/legacy/005db960c8859766.png)
-
 
 ## CloudFlarePage如何绑定自定义域名？
 
@@ -229,11 +227,10 @@ YN0070: Migrating from Yarn 1; automatically enabling the compatibility node-mod
 ![Untitled](/legacy/1b00ce496b455cba.png)
 
 - CNAME转发示例
-![Untitled](/legacy/aa89a2a369ffa95c.png)
+  ![Untitled](/legacy/aa89a2a369ffa95c.png)
 
 - 点击下方的激活域，由于我使用的域名商本身就是cloudflare，故此步骤只需几秒即可完成验证。
-![Untitled](/legacy/94c7788c6a3f6212.png)
-
+  ![Untitled](/legacy/94c7788c6a3f6212.png)
 
 ## Hooks 触发部署
 
@@ -254,8 +251,8 @@ CloudFlare 支持和Vercel 类似的hooks 功能，后台生成一个调用地�
 - **Vercel webhook** 👉 GET 也行（在浏览器地址栏输入Webhook网址即可 简单触发）
 
 - **Cloudflare Deploy Hook** 👉 只允许 POST（更安全）
-浏览器访问会提示 `method_not_allowed`
-![image.png](/legacy/abfa7c8ab36bf6dc.png)
+  浏览器访问会提示 `method_not_allowed`
+  ![image.png](/legacy/abfa7c8ab36bf6dc.png)
 
 👉 防止被随便浏览器点一下就触发部署
 
@@ -268,6 +265,7 @@ curl -X POST https://你的hook地址
 当页面显示如下内容，说明已经触发了重新部署
 
 ![image.png](/legacy/96b39161c65a6447.png)
+
 ```Bash
 {
   "result": {

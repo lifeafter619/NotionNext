@@ -6,13 +6,19 @@ import CONFIG from '../config'
 import { siteConfig } from '@/lib/config'
 import NotByAI from '@/components/NotByAI'
 import { resolveArticleCopyrightText } from '@/lib/utils/articleCopyright'
+import {
+  stripTransientQueryParamsFromAsPath,
+  stripTransientQueryParamsFromUrl
+} from '@/lib/utils/stripTransientUrlParams'
 
 export default function ArticleCopyright({ post }) {
   const router = useRouter()
-  const [path, setPath] = useState(siteConfig('LINK') + router.asPath)
+  const [path, setPath] = useState(
+    siteConfig('LINK') + stripTransientQueryParamsFromAsPath(router.asPath)
+  )
   useEffect(() => {
-    setPath(window.location.href)
-  })
+    setPath(stripTransientQueryParamsFromUrl(window.location.href))
+  }, [router.asPath])
 
   const { locale } = useGlobal()
   const copyrightText = resolveArticleCopyrightText({

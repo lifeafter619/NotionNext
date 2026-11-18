@@ -1,4 +1,5 @@
 # Typography主题
+
 > 迁移自：[Typography主题](https://docs.tangly1024.com/article/notion-next-typography)
 > 发布日期：2025-7-7
 > 最后编辑：2026-4-30
@@ -16,7 +17,6 @@
 
 ![image.png](/legacy/316e2bfe81cd54b1.png)
 
-
 ## 主题预览
 
 ![Typography 主题预览](/images/themes-preview/typography.webp)
@@ -24,7 +24,6 @@
 点此预览： [https://preview.tangly1024.com/en?theme=typography](https://preview.tangly1024.com/en?theme=typography)
 
 ![image.png](/legacy/b20c15283f5bfc1e.png)
-
 
 ## 使用
 

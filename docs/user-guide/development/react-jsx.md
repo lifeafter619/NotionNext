@@ -1,4 +1,5 @@
 # 基础教程-简单理解React和JSX
+
 > 迁移自：[基础教程-简单理解React和JSX](https://docs.tangly1024.com/article/react-jsx)
 > 发布日期：2023-7-9
 > 最后编辑：2025-4-25
@@ -12,7 +13,6 @@
 这篇文章着重介绍React的开发与传统Html开发的不同，您可以做一个简单的了解，可以避免很多开发过程中的错误。
 
 React的JSX和普通的HTML网页开发有以下五点不同，分别是语法不同、动态渲染、组件化、数据绑定、生态系统。
-
 
 ### 1. 语法不同：
 
@@ -29,7 +29,6 @@ HTML代码示例：
 ```JavaScript
 &lt;div style="background-color:black;" class="my-class"&gt;Hello, world!&lt;/div&gt;
 ```
-
 
 ### 2. 动态渲染
 
@@ -54,7 +53,6 @@ HTML代码示例：
 &lt;!-- 静态HTML代码 --&gt;
 &lt;h1&gt;Hello, Alice!&lt;/h1&gt;
 ```
-
 
 ### 3. 组件化
 
@@ -96,7 +94,6 @@ HTML代码示例：
   &lt;button onclick="alert('Clicked!')"&gt;Click me&lt;/button&gt;
 &lt;/div&gt;
 ```
-
 
 ### 4. 数据绑定
 
@@ -148,7 +145,6 @@ function increment() {
 }
 &lt;/script&gt;
 ```
-
 
 ### 5. 生态系统
 

@@ -1,116 +1,127 @@
 /**
  * @author https://github.com/txs
- * 通用 Mac 风格代码块样式 (NotionNext Universal)
+ * 当配置文件 CODE_MAC_BAR 开启时，此样式会被动态引入，将开启代码组件左上角的mac图标
+ * 注意：代码块的 padding/行高/字体等对齐关键度量统一由 styles/prism-code.css 管理，
+ * 此文件只负责 mac 圆点、mermaid 图表与代码侧栏预览的装饰样式，避免与打包样式互相覆盖。
  **/
-
-/* 1. Mac 窗口容器样式 */
 .code-toolbar {
   position: relative;
-  width: 100%;
-  margin: 1rem 0;
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(27, 28, 32, 0.94); /* 浅色模式下默认暗底 */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 18px 44px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-/* 暗色模式适配 */
-html.dark .code-toolbar {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(27, 28, 32, 0.72);
-  -webkit-backdrop-filter: saturate(140%) blur(12px);
-  backdrop-filter: saturate(140%) blur(12px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 18px 44px rgba(0, 0, 0, 0.45);
-}
-
-/* 2. Mac 三色点 */
 .pre-mac {
   position: absolute;
-  left: 12px;
-  top: 11px;
-  z-index: 13;
+  left: 1rem;
+  top: 0.95rem;
+  z-index: 10;
   display: flex;
-  gap: 7px;
+  gap: 8px;
+  pointer-events: none;
 }
 
 .pre-mac > span {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
-.pre-mac > span:nth-child(1) { background: #ff5f57; }
-.pre-mac > span:nth-child(2) { background: #febc2e; }
-.pre-mac > span:nth-child(3) { background: #28c840; }
-
-/* 3. Toolbar 工具栏 (复制按钮、语言标签) */
-.code-toolbar > .toolbar {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-  z-index: 12;
+.pre-mac > span:nth-child(1) {
+  background: #ff5f56;
 }
 
-.code-toolbar .toolbar-item > button {
-  font-size: 12px !important;
-  line-height: 1 !important;
-  padding: 6px 8px !important;
-  border-radius: 999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.82) !important;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.pre-mac > span:nth-child(2) {
+  background: #ffbd2e;
 }
 
-.code-toolbar .toolbar-item > button:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #fff !important;
+.pre-mac > span:nth-child(3) {
+  background: #27c93f;
 }
 
-/* 4. 代码正文排版 */
-pre.notion-code {
-  font-size: 0.92em !important;
-  line-height: 1.6 !important;
-  margin: 0 !important;
-  padding: 46px 1.1rem 1rem !important;
-  border-radius: 0 !important;
-  border: none !important;
-  background: transparent !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 5. 智能折叠 S1 极简 UI */
-.collapse-wrapper {
-  margin: 1rem 0;
-}
-
-.collapse-panel-wrapper {
+/* Mermaid 图表样式增强 - 类似 GitHub */
+.mermaid-container {
   position: relative;
-  min-width: 0;
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.55);
-  -webkit-backdrop-filter: saturate(160%) blur(10px);
-  backdrop-filter: saturate(160%) blur(10px);
-  overflow: hidden;
-  transition: all 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-html.dark .collapse-panel-wrapper {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(27, 28, 32, 0.6);
+.mermaid-container.mermaid-fullscreen {
+  background: rgba(255, 255, 255, 0.98) !important;
 }
 
+.dark .mermaid-container.mermaid-fullscreen {
+  background: rgba(30, 30, 30, 0.98) !important;
+}
+
+.mermaid-container .mermaid-content {
+  will-change: transform;
+}
+
+.mermaid-container svg {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Mermaid 链接样式 */
+.mermaid-container svg a,
+.mermaid-container svg .clickable {
+  cursor: pointer !important;
+  transition: opacity 0.2s ease;
+}
+
+.mermaid-container svg a:hover,
+.mermaid-container svg .clickable:hover {
+  opacity: 0.7;
+}
+
+/* Mermaid 节点悬停效果 */
+.mermaid-container svg .node:hover,
+.mermaid-container svg .cluster:hover {
+  filter: brightness(1.1);
+}
+
+/* Mermaid 控制按钮样式 */
+.mermaid-controls {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.mermaid-container:hover .mermaid-controls {
+  opacity: 1;
+}
+
+/* 全屏模式下的控制面板 */
+.mermaid-fullscreen .mermaid-controls {
+  bottom: 20px;
+  right: 20px;
+}
+
+.mermaid-fullscreen .mermaid-zoom-indicator {
+  top: 20px;
+  left: 20px;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+/* 全屏关闭按钮动画 */
+.mermaid-fullscreen-close {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   代码折叠头扩展行与"侧栏查看"按钮（折叠面板本体样式见 styles/prism-code.css）
+   -------------------------------------------------------------------------- */
 .collapse-header-row {
   display: flex;
   align-items: center;
@@ -118,33 +129,11 @@ html.dark .collapse-panel-wrapper {
   min-height: 36px;
 }
 
-.collapse-header {
+/* 折叠头与侧栏按钮并排时，取消 prism-code.css 中 width:100% 的独占布局 */
+.collapse-header-row .collapse-header {
   flex: 1 1 auto;
   min-width: 0;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-  cursor: pointer;
-  user-select: none;
-  border: none;
-  background: transparent;
-  color: rgba(60, 60, 67, 0.6);
-  font: inherit;
-}
-
-html.dark .collapse-header {
-  color: rgba(235, 235, 245, 0.6);
-}
-
-.collapse-label {
-  min-width: 0;
-  overflow: hidden;
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: auto;
 }
 
 .collapse-side-panel-button {
@@ -184,69 +173,7 @@ html.dark .collapse-side-panel-button:hover {
     display: none;
   }
 }
-.collapse-chevron {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.3s ease;
-  opacity: 0.8;
-}
 
-.collapse-panel-wrapper.is-expanded .collapse-chevron {
-  transform: rotate(180deg);
-}
-
-.collapse-panel {
-  min-width: 0;
-  max-height: 0;
-  overflow: hidden;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  transition: max-height 0.32s ease;
-}
-
-html.dark .collapse-panel {
-  border-top-color: rgba(255, 255, 255, 0.08);
-}
-
-.collapse-panel.is-expanded {
-  max-height: none;
-}
-
-/* 折叠块内只保留外层容器的边框、圆角和阴影 */
-.collapse-panel .code-toolbar,
-.collapse-panel pre.notion-code {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: rgba(27, 28, 32, 0.94) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-html.dark .collapse-panel .code-toolbar,
-html.dark .collapse-panel pre.notion-code {
-  background: rgba(27, 28, 32, 0.72) !important;
-  -webkit-backdrop-filter: saturate(140%) blur(12px);
-  backdrop-filter: saturate(140%) blur(12px);
-}
-
-.collapse-panel .code-toolbar > pre.notion-code {
-  max-width: 100%;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-.collapse-panel pre.notion-code > code {
-  background: transparent !important;
-  color: inherit !important;
-  text-shadow: none !important;
-}
-
-.collapse-header:focus-visible,
 .collapse-side-panel-button:focus-visible,
 .code-side-panel-copy:focus-visible,
 .code-side-panel-close:focus-visible {
@@ -254,7 +181,9 @@ html.dark .collapse-panel pre.notion-code {
   outline-offset: 2px;
 }
 
-/* 6. 桌面端代码侧栏预览 */
+/* --------------------------------------------------------------------------
+   桌面端代码侧栏预览
+   -------------------------------------------------------------------------- */
 .code-side-panel-root {
   position: fixed;
   inset: 0;
@@ -394,60 +323,7 @@ html.dark .code-side-panel-drawer {
 }
 
 @media (max-width: 1023px) {
-  .collapse-wrapper {
-    margin: 0.75rem 0;
-  }
-
-  .collapse-header-row {
-    min-height: 34px;
-  }
-
-  .collapse-header {
-    height: 34px;
-    padding: 0 10px;
-  }
-
-  .collapse-label {
-    font-size: 12px;
-  }
-
-  .collapse-chevron {
-    width: 16px;
-    height: 16px;
-  }
-
-  .collapse-panel pre.notion-code {
-    padding-right: 10px !important;
-    padding-left: 10px !important;
-    font-size: 0.82rem !important;
-    line-height: 1.55 !important;
-  }
-
   .code-side-panel-root {
     display: none;
   }
 }
-/* 7. Prism 代码高亮补丁 (暗底优化) */
-.code-toolbar .token.comment,
-.code-toolbar .token.prolog,
-.code-toolbar .token.doctype,
-.code-toolbar .token.cdata { color: rgba(235, 235, 245, 0.46); }
-.code-toolbar .token.punctuation { color: rgba(235, 235, 245, 0.6); }
-.code-toolbar .token.property,
-.code-toolbar .token.tag,
-.code-toolbar .token.boolean,
-.code-toolbar .token.number,
-.code-toolbar .token.constant,
-.code-toolbar .token.symbol,
-.code-toolbar .token.deleted { color: #7ee787; }
-.code-toolbar .token.selector,
-.code-toolbar .token.attr-name,
-.code-toolbar .token.string,
-.code-toolbar .token.char,
-.code-toolbar .token.builtin,
-.code-toolbar .token.inserted { color: #a5d6ff; }
-.code-toolbar .token.atrule,
-.code-toolbar .token.attr-value,
-.code-toolbar .token.keyword { color: #ff7ab2; }
-.code-toolbar .token.function,
-.code-toolbar .token.class-name { color: #ffd479; }

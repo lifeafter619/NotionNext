@@ -46,22 +46,21 @@ MEDIUM_COLOR_PRIMARY: '#4f46e5'
 
 ### 主要配置项
 
-| 配置键 | 说明 |
-| --- | --- |
-| `MEDIUM_RIGHT_PANEL_DARK` | 见 config.js |
-| `MEDIUM_COLOR_PRIMARY` | 主题主色 |
-| `MEDIUM_POST_LIST_COVER` | 见 config.js |
-| `MEDIUM_POST_LIST_PREVIEW` | 见 config.js |
-| `MEDIUM_POST_LIST_CATEGORY` | 见 config.js |
-| `MEDIUM_POST_LIST_TAG` | 见 config.js |
+| 配置键                        | 说明         |
+| ----------------------------- | ------------ |
+| `MEDIUM_RIGHT_PANEL_DARK`     | 见 config.js |
+| `MEDIUM_POST_LIST_COVER`      | 见 config.js |
+| `MEDIUM_POST_LIST_PREVIEW`    | 见 config.js |
+| `MEDIUM_POST_LIST_CATEGORY`   | 见 config.js |
+| `MEDIUM_POST_LIST_TAG`        | 见 config.js |
 | `MEDIUM_POST_DETAIL_CATEGORY` | 见 config.js |
-| `MEDIUM_POST_DETAIL_TAG` | 见 config.js |
-| `MEDIUM_MENU_CATEGORY` | 见 config.js |
-| `MEDIUM_MENU_TAG` | 见 config.js |
-| `MEDIUM_MENU_ARCHIVE` | 见 config.js |
-| `MEDIUM_MENU_SEARCH` | 见 config.js |
+| `MEDIUM_POST_DETAIL_TAG`      | 见 config.js |
+| `MEDIUM_MENU_CATEGORY`        | 见 config.js |
+| `MEDIUM_MENU_TAG`             | 见 config.js |
+| `MEDIUM_MENU_ARCHIVE`         | 见 config.js |
+| `MEDIUM_MENU_SEARCH`          | 见 config.js |
 | `MEDIUM_WIDGET_REVOLVER_MAPS` | 见 config.js |
-| `MEDIUM_WIDGET_TO_TOP` | 见 config.js |
+| `MEDIUM_WIDGET_TO_TOP`        | 见 config.js |
 
 <!-- /theme-config-table -->
 

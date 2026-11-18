@@ -7,16 +7,14 @@ import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
  * @returns
  */
 const Style = () => {
-  return <style jsx global>{`
-
-    // 底色
-    .dark body{
+  return (
+    <style jsx global>{`
+      // 底色
+      .dark body {
         background-color: black;
-    }
-
-
-      ${themeConsoleStyle('nobelium', CONFIG)}
-  `}</style>
+      }
+    `}</style>
+  )
 }
 
 export { Style }

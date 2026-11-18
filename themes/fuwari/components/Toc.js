@@ -1,4 +1,4 @@
-import throttle from 'lodash.throttle'
+import throttle from '@/lib/utils/throttle'
 import { isBrowser } from '@/lib/utils'
 import { uuidToId } from 'notion-utils'
 import { useEffect, useMemo, useState } from 'react'
@@ -76,7 +76,10 @@ const Toc = ({ toc }) => {
                 href={`#${id}`}
                 className='catalog-item block duration-200 py-1'>
                 <span
-                  style={{ display: 'inline-block', marginLeft: tocItem.indentLevel * 16 }}
+                  style={{
+                    display: 'inline-block',
+                    marginLeft: tocItem.indentLevel * 16
+                  }}
                   className={`truncate ${activeSection === id ? 'font-semibold text-[var(--fuwari-primary)]' : ''}`}>
                   {tocItem.text}
                 </span>
@@ -90,4 +93,3 @@ const Toc = ({ toc }) => {
 }
 
 export default Toc
-

@@ -1,4 +1,5 @@
 # NotionNext用配置调整样式
+
 > 迁移自：[NotionNext用配置调整样式](https://docs.tangly1024.com/article/custom-your-style)
 > 发布日期：2024-3-2
 > 最后编辑：2024-9-29
@@ -8,11 +9,9 @@
 
 如果没有技术开发基础，如何自定义样式，调整页面的背景色、字号、框架？本文分享用纯css方案自定义站点，此方案对纯小白会友好一些。
 
-
 ## 前言
 
 NotionNext在[4.2版本](/user-guide/changelog/v4-history)后支持直接在Notion中编辑CSS和JS脚本，从而实时修改网页样式，这种方式调整样式对源代码无是无侵入的。换言之，您无需打开Github代码，只要在Notion笔记中编写几个指令即可调整网页上的效果。
-
 
 ### 效果
 
@@ -23,7 +22,6 @@ NotionNext在[4.2版本](/user-guide/changelog/v4-history)后支持直接在Noti
 我的网页刷新后，立刻出现如下效果：
 
 ![Untitled](/legacy/ac376f31ea9bb7d5.png)
-
 
 ## 步骤介绍
 
@@ -47,16 +45,14 @@ CSS 选择器  CSS（层叠样式表）提供了多种选择器，用于选择�
 NotionConfig指的是您的Notion笔记数据库中，一个类型为CONFIG、名为配置中心的页面，这个页面中的表格可以用来配置站点信息。
 :::
 
-
 ## 操作演示
 
 接下来我将带您将Hexo主题的首页标题字体放大，并调整成红色，其它的样式修改也是类似的。
 
-
 ### 一、获取要修改元素的Selector（选择器）
 
 1. 用浏览器打开您已经部署好的网站
-例如我打开了自己的网站 [/user-guide/intro](/user-guide/intro)
+   例如我打开了自己的网站 [/user-guide/intro](/user-guide/intro)
 
 1. 按下键盘上的`F12`打开控制台
 ![Untitled](/legacy/0ef850da506cd80f.png)
@@ -65,9 +61,9 @@ NotionConfig指的是您的Notion笔记数据库中，一个类型为CONFIG、�
 :::
 
 1. 点击控制台`左上角的选择器`，进入`选择模式`
-![Untitled](/legacy/6ac012d54e9f8eeb.png)
-进入选择器模式后，此按钮变成蓝色，并且您`鼠标指向的元素`都会被一个`蓝色遮罩高亮`突出，同时会有一个`悬浮框`展示当前元素的信息。
-![Untitled](/legacy/85aed1e38353b676.png)
+   ![Untitled](/legacy/6ac012d54e9f8eeb.png)
+   进入选择器模式后，此按钮变成蓝色，并且您`鼠标指向的元素`都会被一个`蓝色遮罩高亮`突出，同时会有一个`悬浮框`展示当前元素的信息。
+   ![Untitled](/legacy/85aed1e38353b676.png)
 
 1. 在源代码中定位此元素
 **单击**目标对象后，控制台中该对象的**源代码自动被蓝色选**中，这就是我们要定位的代码元素
@@ -90,8 +86,9 @@ NotionConfig指的是您的Notion笔记数据库中，一个类型为CONFIG、�
 ### 二、编写css样式
 
 1. 我们的目标是把字体放大，并且颜色调成红色，该怎么写CSS呢？
-![Untitled](/legacy/c3f6670fd1ab0241.png)
-这里示例的元素是p，意思把网页中所有的p元素都调整成大字体和红色。可以推断出我们的CSS写法应该是：
+   ![Untitled](/legacy/c3f6670fd1ab0241.png)
+   这里示例的元素是p，意思把网页中所有的p元素都调整成大字体和红色。可以推断出我们的CSS写法应该是：
+
 ```CSS
 #header &gt; div &gt; [div.font-black.text-4xl.md](http://div.font-black.text-4xl.md/)\:text-5xl.shadow-text{
     font-size: 5rem; /* 设置字体大小稍微大一点 */

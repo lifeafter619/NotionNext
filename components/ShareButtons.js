@@ -1,5 +1,10 @@
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
+import {
+  stripTransientQueryParamsFromAsPath,
+  stripTransientQueryParamsFromUrl
+} from '@/lib/utils/stripTransientUrlParams'
+import { safeDecodeURIComponent } from '@/lib/utils'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
@@ -7,9 +12,14 @@ import { useEffect, useState } from 'react'
 
 const QrCode = dynamic(() => import('@/components/QrCode'), { ssr: false })
 const BASE_BUTTON_CLASS =
-  'cursor-pointer rounded-full mx-1 w-8 h-8 flex items-center justify-center text-white'
-// 统一图标样式：text-sm + leading-none(强制 line-height:1) 消除 baseline 偏移
-const ICON_CLASS = 'text-sm leading-none'
+  'cursor-pointer rounded-full mx-1 w-8 h-8 inline-flex flex-shrink-0 items-center justify-center overflow-hidden text-white leading-none'
+const SHARE_ICON_LAYOUT_CLASS =
+  '!inline-flex !h-4 !w-4 items-center justify-center leading-none'
+const SHARE_ICON_WRAPPER_CLASS =
+  'inline-flex h-full w-full items-center justify-center leading-none'
+const IMAGE_SHARE_BUTTON_CLASS =
+  'cursor-pointer rounded-full mx-1 w-8 h-8 inline-flex flex-shrink-0 items-center justify-center overflow-hidden focus-visible:outline-none focus-visible:ring-2'
+const IMAGE_SHARE_ICON_CLASS = 'h-5 w-5 object-contain'
 
 const SHARE_ICON_CLASS = {
   facebook: 'fab fa-facebook-f',
@@ -68,7 +78,9 @@ const SHARE_BG_CLASS = {
  */
 const ShareButtons = ({ post }) => {
   const router = useRouter()
-  const [shareUrl, setShareUrl] = useState(siteConfig('LINK') + router.asPath)
+  const [shareUrl, setShareUrl] = useState(
+    siteConfig('LINK') + stripTransientQueryParamsFromAsPath(router.asPath)
+  )
   const title = post?.title || siteConfig('TITLE')
   const image = post?.pageCover
   const tags = post.tags || []
@@ -82,7 +94,7 @@ const ShareButtons = ({ post }) => {
   const [qrCodeShow, setQrCodeShow] = useState(false)
 
   const copyUrl = () => {
-    const decodedUrl = decodeURIComponent(shareUrl)
+    const decodedUrl = safeDecodeURIComponent(shareUrl)
     navigator?.clipboard?.writeText(decodedUrl)
     alert(locale.COMMON.URL_COPIED + ' \n' + decodedUrl)
   }
@@ -176,13 +188,15 @@ const ShareButtons = ({ post }) => {
         onClick={() => openShareWindow(shareLink)}
         className={`${BASE_BUTTON_CLASS} ${bgClass}`}
         title={service}>
-        <i className={`${iconClass} ${ICON_CLASS}`} />
+        <i className={`${iconClass} ${SHARE_ICON_LAYOUT_CLASS} text-sm`} />
       </button>
     )
   }
   useEffect(() => {
-    setShareUrl(window.location.href)
-  }, [])
+    // heo 等主题的布局组件在客户端导航时不会重新挂载，
+    // 必须跟随路由更新分享地址，否则分享出去的是上一篇文章的链接
+    setShareUrl(stripTransientQueryParamsFromUrl(window.location.href))
+  }, [router.asPath])
 
   return (
     <>
@@ -214,16 +228,17 @@ const ShareButtons = ({ post }) => {
           case 'qq':
             return (
               <button
-                aria-label={singleService}
                 key={singleService}
-                onClick={() =>
-                  openShareWindow(
-                    `http://connect.qq.com/widget/shareqq/index.html?url=${shareUrl}&sharesource=qzone&title=${title}&desc=${body}`
-                  )
-                }
-                className={`${BASE_BUTTON_CLASS} bg-blue-600`}
+                className='cursor-pointer bg-blue-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'
                 title={singleService}>
-                <i className={`fab fa-qq ${ICON_CLASS}`} />
+                <a
+                  target='_blank'
+                  rel='noreferrer'
+                  aria-label='Share by QQ'
+                  className={SHARE_ICON_WRAPPER_CLASS}
+                  href={`http://connect.qq.com/widget/shareqq/index.html?url=${shareUrl}&sharesource=qzone&title=${title}&desc=${body}`}>
+                  <i className={`fab fa-qq ${SHARE_ICON_LAYOUT_CLASS}`} />
+                </a>
               </button>
             )
           case 'wechat':
@@ -233,9 +248,11 @@ const ShareButtons = ({ post }) => {
                 onMouseLeave={closePopover}
                 aria-label={singleService}
                 key={singleService}
-                className={`${BASE_BUTTON_CLASS} bg-green-600`}
+                className='cursor-pointer bg-green-600 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'
                 title={singleService}>
-                <i className={`fab fa-weixin ${ICON_CLASS}`} />
+                <div id='wechat-button' className={SHARE_ICON_WRAPPER_CLASS}>
+                  <i className={`fab fa-weixin ${SHARE_ICON_LAYOUT_CLASS}`} />
+                </div>
                 <div className='absolute'>
                   <div
                     id='pop'
@@ -259,9 +276,13 @@ const ShareButtons = ({ post }) => {
                 aria-label={singleService}
                 key={singleService}
                 onClick={copyUrl}
-                className={`${BASE_BUTTON_CLASS} bg-yellow-500`}
+                className='cursor-pointer bg-yellow-500 text-white rounded-full mx-1 w-8 h-8 flex flex-shrink-0 items-center justify-center'
                 title={singleService}>
-                <i className={`fas fa-link ${ICON_CLASS}`} />
+                <div
+                  alt={locale.COMMON.URL_COPIED}
+                  className={SHARE_ICON_WRAPPER_CLASS}>
+                  <i className={`fas fa-link ${SHARE_ICON_LAYOUT_CLASS}`} />
+                </div>
               </button>
             )
           case 'csdn':
@@ -269,22 +290,21 @@ const ShareButtons = ({ post }) => {
               <button
                 aria-label={singleService}
                 key={singleService}
-                onClick={() => openRedirectShare('https://link.csdn.net/?target=')}
-                className='cursor-pointer rounded-full mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500'
+                onClick={() =>
+                  openRedirectShare('https://link.csdn.net/?target=')
+                }
+                className={`${IMAGE_SHARE_BUTTON_CLASS} focus-visible:ring-red-500`}
+                style={{ backgroundColor: '#ff6a00' }}
                 title={singleService}>
-                <div
-                  className='w-8 h-8 rounded-full flex items-center justify-center'
-                  style={{ backgroundColor: '#ff6a00' }}>
-                  <Image
-                    src='/svg/csdn.svg'
-                    alt='CSDN'
-                    width={28}
-                    height={28}
-                    className='w-5 h-5'
-                    loading='lazy'
-                    unoptimized
-                  />
-                </div>
+                <Image
+                  src='/svg/csdn.svg'
+                  alt='CSDN'
+                  width={28}
+                  height={28}
+                  className={IMAGE_SHARE_ICON_CLASS}
+                  loading='lazy'
+                  unoptimized
+                />
               </button>
             )
           case 'juejin':
@@ -292,22 +312,21 @@ const ShareButtons = ({ post }) => {
               <button
                 aria-label={singleService}
                 key={singleService}
-                onClick={() => openRedirectShare('https://link.juejin.cn/?target=')}
-                className='cursor-pointer rounded-full mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+                onClick={() =>
+                  openRedirectShare('https://link.juejin.cn/?target=')
+                }
+                className={`${IMAGE_SHARE_BUTTON_CLASS} focus-visible:ring-blue-500`}
+                style={{ backgroundColor: '#5dade2' }}
                 title={singleService}>
-                <div
-                  className='w-8 h-8 rounded-full flex items-center justify-center'
-                  style={{ backgroundColor: '#5dade2' }}>
-                  <Image
-                    src='/svg/juejin.svg'
-                    alt='掘金'
-                    width={24}
-                    height={24}
-                    className='w-5 h-5'
-                    loading='lazy'
-                    unoptimized
-                  />
-                </div>
+                <Image
+                  src='/svg/juejin.svg'
+                  alt='掘金'
+                  width={24}
+                  height={24}
+                  className={IMAGE_SHARE_ICON_CLASS}
+                  loading='lazy'
+                  unoptimized
+                />
               </button>
             )
           default:

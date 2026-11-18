@@ -13,24 +13,24 @@ export const MenuListTop = props => {
       icon: 'fa-solid fa-house',
       name: locale.NAV.INDEX,
       href: '/',
-      show: CONFIG.MENU_INDEX
+      show: siteConfig('COMMERCE_MENU_INDEX', true, CONFIG)
     },
     {
       id: 2,
       icon: 'fas fa-search',
       name: locale.NAV.SEARCH,
       href: '/search',
-      show: CONFIG.MENU_SEARCH
+      show: siteConfig('COMMERCE_MENU_SEARCH', true, CONFIG)
     },
     {
       id: 3,
       icon: 'fas fa-archive',
       name: locale.NAV.ARCHIVE,
       href: '/archive',
-      show: CONFIG.MENU_ARCHIVE
+      show: siteConfig('COMMERCE_MENU_ARCHIVE', true, CONFIG)
     }
-    // { icon: 'fas fa-folder', name: locale.COMMON.CATEGORY, href: '/category', show: CONFIG.MENU_CATEGORY },
-    // { icon: 'fas fa-tag', name: locale.COMMON.TAGS, href: '/tag', show: CONFIG.MENU_TAG }
+    // { icon: 'fas fa-folder', name: locale.COMMON.CATEGORY, href: '/category', show: CONFIG.COMMERCE_MENU_CATEGORY },
+    // { icon: 'fas fa-tag', name: locale.COMMON.TAGS, href: '/tag', show: CONFIG.COMMERCE_MENU_TAG }
   ]
 
   if (customNav) {

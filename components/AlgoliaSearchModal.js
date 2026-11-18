@@ -3,14 +3,18 @@ import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import algoliasearch from 'algoliasearch'
 import SmartLink from '@/components/SmartLink'
+import LazyImage from '@/components/LazyImage'
 import { useRouter } from 'next/router'
+import {
+  getAlgoliaSearchConfig,
+  hasAlgoliaSearchConfig
+} from '@/lib/plugins/algoliaConfig'
 import {
   Fragment,
   useCallback,
-  useMemo,
   useEffect,
-  useId,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -31,12 +35,32 @@ const ShortCutActions = [
   }
 ]
 
+// 搜索类型选项
+const SEARCH_TYPES = [
+  { id: 'all', label: '全部', icon: 'fa-globe' },
+  { id: 'title', label: '标题', icon: 'fa-heading' },
+  { id: 'content', label: '内容', icon: 'fa-file-alt' },
+  { id: 'tags', label: '标签', icon: 'fa-tags' },
+  { id: 'category', label: '分类', icon: 'fa-folder' }
+]
+
+// 排序选项
+const SORT_OPTIONS = [
+  { id: 'relevance', label: '相关度', icon: 'fa-star' },
+  { id: 'newest', label: '本页最新', icon: 'fa-clock' },
+  { id: 'oldest', label: '本页最早', icon: 'fa-history' }
+]
+
 /**
  * 结合 Algolia 实现的弹出式搜索框
+ * 支持全文搜索、标题搜索、标签搜索、分类搜索
+ * 支持按时间排序
  * 打开方式 cRef.current.openSearch()
  * https://www.algolia.com/doc/api-reference/search-api-parameters/
  */
 export default function AlgoliaSearchModal({ cRef }) {
+  const algoliaConfig = getAlgoliaSearchConfig(siteConfig)
+  const algoliaEnabled = hasAlgoliaSearchConfig(algoliaConfig)
   const [searchResults, setSearchResults] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [page, setPage] = useState(0)
@@ -46,68 +70,44 @@ export default function AlgoliaSearchModal({ cRef }) {
   const [useTime, setUseTime] = useState(0)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [isInputFocused, setIsInputFocused] = useState(false)
-
   const [searchError, setSearchError] = useState('')
-  const searchTimer = useRef(null)
-  const highlightTimer = useRef(null)
-  const requestVersion = useRef(0)
-  const invalidateSearch = useCallback(() => {
-    requestVersion.current++
-    clearTimeout(searchTimer.current)
-    clearTimeout(highlightTimer.current)
-  }, [])
+  const [isInputFocused, setIsInputFocused] = useState(false)
+  // 新增：搜索类型和排序状态
+  const [searchType, setSearchType] = useState('all')
+  const [sortOrder, setSortOrder] = useState('relevance')
+  const [showFilters, setShowFilters] = useState(false)
+
   const inputRef = useRef(null)
-  const dialogRef = useRef(null)
-  const returnFocusRef = useRef(null)
-  const restoringFocus = useRef(false)
-  const titleId = useId()
+  const modalRef = useRef(null)
+  const previousFocusRef = useRef(null)
+  // 关闭弹窗还原焦点期间忽略合成 focus 事件，避免 gitbook 输入框的
+  // handleFocus 立即重开弹窗（与上游 openSearch 的守卫一致）
+  const restoringFocusRef = useRef(false)
+  const searchTimer = useRef(null)
+  const focusTimer = useRef(null)
+  const highlightTimer = useRef(null)
+  const requestIdRef = useRef(0)
+  const isComposingRef = useRef(false)
   const router = useRouter()
-  const appId = siteConfig('ALGOLIA_APP_ID')
-  const searchKey = siteConfig('ALGOLIA_SEARCH_ONLY_APP_KEY')
-  const indexName = siteConfig('ALGOLIA_INDEX')
-  const index = useMemo(() => appId && searchKey && indexName
-    ? algoliasearch(appId, searchKey).initIndex(indexName) : null,
-  [appId, searchKey, indexName])
-  const hasSearchIndex = Boolean(index)
-
-  const closeModal = useCallback(() => {
-    invalidateSearch()
-    setIsModalOpen(false)
-  }, [invalidateSearch])
-
-  function openSearch() {
-    if (!appId || restoringFocus.current) return
-    if (!searchKey || !indexName) {
-      void router.push('/search')
-      return
-    }
-    if (isModalOpen) return
-    returnFocusRef.current = document.activeElement
-    setIsModalOpen(true)
-  }
 
   /**
    * 快捷键设置
    */
-  useHotkeys(
-    'ctrl+k',
-    e => {
-      e.preventDefault()
-      openSearch()
-    },
-    { enabled: Boolean(appId) }
-  )
+  useHotkeys('ctrl+k', e => {
+    if (!algoliaEnabled || restoringFocusRef.current) return
+    e.preventDefault()
+    setIsModalOpen(true)
+  })
   // 修改快捷键的使用逻辑
   useHotkeys(
     'down',
     e => {
-      if (isModalOpen && isInputFocused) {
+      if (isInputFocused && searchResults.length > 0) {
         // 只有在聚焦时才触发
         e.preventDefault()
-        if (activeIndex < searchResults.length - 1) {
-          setActiveIndex(activeIndex + 1)
-        }
+        setActiveIndex(current =>
+          Math.min(current + 1, searchResults.length - 1)
+        )
       }
     },
     { enableOnFormTags: true }
@@ -115,11 +115,19 @@ export default function AlgoliaSearchModal({ cRef }) {
   useHotkeys(
     'up',
     e => {
-      if (isModalOpen && isInputFocused) {
+      if (isInputFocused) {
         e.preventDefault()
-        if (activeIndex > 0) {
-          setActiveIndex(activeIndex - 1)
-        }
+        setActiveIndex(current => Math.max(current - 1, 0))
+      }
+    },
+    { enableOnFormTags: true }
+  )
+  useHotkeys(
+    'esc',
+    e => {
+      if (isModalOpen) {
+        e.preventDefault()
+        setIsModalOpen(false)
       }
     },
     { enableOnFormTags: true }
@@ -127,33 +135,43 @@ export default function AlgoliaSearchModal({ cRef }) {
   useHotkeys(
     'enter',
     e => {
-      if (isModalOpen && isInputFocused && searchResults.length > 0) {
+      if (isInputFocused && searchResults.length > 0) {
+        e.preventDefault()
         onJumpSearchResult()
       }
     },
     { enableOnFormTags: true }
   )
   // 跳转Search结果
-  const onJumpSearchResult = (targetIndex) => {
-    const i = targetIndex !== undefined ? targetIndex : activeIndex
-    if (searchResults.length > 0 && searchResults[i]) {
-      const searchResult = searchResults[i]
-      window.location.href = `${siteConfig('SUB_PATH', '')}/${searchResult.slug || searchResult.objectID}`
+  const onJumpSearchResult = selectedIndex => {
+    if (searchResults.length > 0) {
+      const searchResult = searchResults[selectedIndex ?? activeIndex]
+      if (!searchResult || (!searchResult.slug && !searchResult.objectID)) {
+        return
+      }
+      router.push(
+        `${siteConfig('SUB_PATH', '')}/${searchResult.slug || searchResult.objectID}?keyword=${encodeURIComponent(keyword)}`
+      )
     }
   }
 
-  const resetSearch = useCallback(() => {
-    invalidateSearch()
-    setIsLoading(false)
-    setSearchError('')
+  const resetSearch = () => {
     setActiveIndex(0)
     setKeyword('')
     setSearchResults([])
     setUseTime(0)
     setTotalPage(0)
     setTotalHit(0)
+    setSearchType('all')
+    setSortOrder('relevance')
+    setShowFilters(false)
+    setSearchError('')
+    setIsLoading(false)
+    requestIdRef.current += 1
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    if (highlightTimer.current) clearTimeout(highlightTimer.current)
     if (inputRef.current) inputRef.current.value = ''
-  }, [invalidateSearch])
+  }
 
   /**
    * 页面路径变化后，自动关闭此modal
@@ -162,231 +180,600 @@ export default function AlgoliaSearchModal({ cRef }) {
     setIsModalOpen(false)
   }, [router.asPath])
 
+  useEffect(() => {
+    if (!algoliaEnabled && isModalOpen) setIsModalOpen(false)
+  }, [algoliaEnabled, isModalOpen])
+
   /**
-   * 管理整个弹窗的键盘操作与焦点，关闭或卸载时还原到打开入口。
+   * 自动聚焦搜索框
    */
   useEffect(() => {
-    if (!isModalOpen || !hasSearchIndex) {
-      if (!hasSearchIndex) setIsModalOpen(false)
-      resetSearch()
-      return
-    }
-    const dialog = dialogRef.current
-    const focusInput = () => (inputRef.current || dialog)?.focus()
-    const handleKeyDown = event => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        event.stopPropagation()
-        closeModal()
-        return
+    if (isModalOpen && algoliaEnabled) {
+      previousFocusRef.current = document.activeElement
+      const originalOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      focusTimer.current = window.setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+
+      const handleKeyDown = event => {
+        if (event.key !== 'Tab') return
+        const focusable = Array.from(
+          modalRef.current?.querySelectorAll(
+            'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+          ) || []
+        )
+        if (!focusable.length) {
+          event.preventDefault()
+          modalRef.current?.focus()
+          return
+        }
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
       }
-      if (event.key !== 'Tab') return
-      // Re-read after results, retries and pagination change the available controls.
-      const focusable = Array.from(dialog.querySelectorAll(
-        'a[href], button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])'
-      )).filter(element => element.tabIndex >= 0 && !element.closest('[hidden], [inert], [aria-hidden="true"]'))
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      const outside = !dialog.contains(document.activeElement)
-      if (!first) {
-        event.preventDefault()
-        dialog.focus()
-      } else if (event.shiftKey && (document.activeElement === first || outside)) {
-        event.preventDefault()
-        last.focus()
-      } else if (!event.shiftKey && (document.activeElement === last || outside)) {
-        event.preventDefault()
-        first.focus()
-      }
-    }
-    const keepFocusInside = event => {
-      if (!dialog.contains(event.target)) focusInput()
-    }
-    document.addEventListener('keydown', handleKeyDown, true)
-    document.addEventListener('focusin', keepFocusInside)
-    focusInput()
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true)
-      document.removeEventListener('focusin', keepFocusInside)
-      const target = returnFocusRef.current
-      returnFocusRef.current = null
-      if (target?.isConnected) {
-        // GitBook opens search on focus; returning focus must not reopen it.
-        restoringFocus.current = true
-        try {
-          target.focus({ preventScroll: true })
-        } finally {
-          restoringFocus.current = false
+
+      document.addEventListener('keydown', handleKeyDown)
+      return () => {
+        window.clearTimeout(focusTimer.current)
+        document.removeEventListener('keydown', handleKeyDown)
+        document.body.style.overflow = originalOverflow
+        const previousFocus = previousFocusRef.current
+        if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+          restoringFocusRef.current = true
+          previousFocus.focus()
+          window.setTimeout(() => {
+            restoringFocusRef.current = false
+          }, 0)
         }
       }
     }
-  }, [isModalOpen, hasSearchIndex, closeModal, resetSearch])
+
+    resetSearch()
+  }, [algoliaEnabled, isModalOpen])
 
   /**
    * 对外暴露方法
    **/
   useImperativeHandle(cRef, () => {
     return {
-      openSearch
+      openSearch: () => {
+        if (!algoliaEnabled || restoringFocusRef.current) return
+        setIsModalOpen(true)
+      }
     }
-  })
+  }, [algoliaEnabled])
 
-  useEffect(() => invalidateSearch, [invalidateSearch, index])
+  const index = useMemo(() => {
+    if (!algoliaEnabled) return null
+    const client = algoliasearch(
+      algoliaConfig.ALGOLIA_APP_ID,
+      algoliaConfig.ALGOLIA_SEARCH_ONLY_APP_KEY
+    )
+    return client.initIndex(algoliaConfig.ALGOLIA_INDEX)
+  }, [
+    algoliaConfig.ALGOLIA_APP_ID,
+    algoliaConfig.ALGOLIA_INDEX,
+    algoliaConfig.ALGOLIA_SEARCH_ONLY_APP_KEY,
+    algoliaEnabled
+  ])
 
-  const handleSearch = async (query, page = 0) => {
-    invalidateSearch()
-    const version = requestVersion.current
-    setKeyword(query)
-    setPage(page)
-    setSearchResults([])
-    setSearchError('')
-    setUseTime(0)
-    setTotalPage(0)
-    setTotalHit(0)
-    setActiveIndex(0)
-    setIsLoading(Boolean(query && index))
-    if (!query || !index) return
-    try {
-      const { hits, nbHits, nbPages, processingTimeMS } = await index.search(query, { page, hitsPerPage: 10 })
-      if (version !== requestVersion.current) return
-      setUseTime(processingTimeMS)
-      setTotalPage(nbPages)
-      setTotalHit(nbHits)
-      setSearchResults(hits)
-      highlightTimer.current = setTimeout(() => {
-        if (version !== requestVersion.current) return
-        const doms = document.getElementById('search-wrapper')?.getElementsByClassName('replace')
-        if (doms) replaceSearchResult({ doms, search: query, target: { element: 'span', className: 'font-bold border-b border-dashed' } })
-      }, 0)
-    } catch {
-      if (version === requestVersion.current) setSearchError('搜索暂时不可用，请重试。')
-    } finally {
-      if (version === requestVersion.current) setIsLoading(false)
+  /**
+   * 获取搜索配置参数
+   * 根据搜索类型和排序设置返回Algolia搜索参数
+   */
+  const getSearchParams = useCallback(
+    (page, currentSearchType = searchType) => {
+      const params = {
+        page,
+        hitsPerPage: 10
+      }
+
+      // 根据搜索类型限制搜索属性
+      switch (currentSearchType) {
+        case 'title':
+          params.restrictSearchableAttributes = ['title']
+          break
+        case 'content':
+          params.restrictSearchableAttributes = ['content', 'summary']
+          break
+        case 'tags':
+          params.restrictSearchableAttributes = ['tags']
+          break
+        case 'category':
+          params.restrictSearchableAttributes = ['category']
+          break
+        default:
+          // 'all' - 搜索所有字段
+          break
+      }
+
+      return params
+    },
+    [searchType]
+  )
+
+  /**
+   * 对搜索结果进行排序
+   * @param {Array} hits 搜索结果
+   * @returns {Array} 排序后的结果
+   */
+  const sortResults = useCallback(
+    (hits, currentSortOrder = sortOrder) => {
+      if (currentSortOrder === 'relevance') {
+        return hits // Algolia默认按相关度排序
+      }
+
+      const sorted = [...hits]
+      if (currentSortOrder === 'newest') {
+        sorted.sort((a, b) => {
+          const timeA =
+            a.createdTimestamp || new Date(a.createdTime || 0).getTime()
+          const timeB =
+            b.createdTimestamp || new Date(b.createdTime || 0).getTime()
+          return timeB - timeA
+        })
+      } else if (currentSortOrder === 'oldest') {
+        sorted.sort((a, b) => {
+          const timeA =
+            a.createdTimestamp || new Date(a.createdTime || 0).getTime()
+          const timeB =
+            b.createdTimestamp || new Date(b.createdTime || 0).getTime()
+          return timeA - timeB
+        })
+      }
+      return sorted
+    },
+    [sortOrder]
+  )
+
+  /**
+   * 搜索
+   * 支持按类型过滤和按时间排序
+   * @param {*} query
+   */
+  const handleSearch = useCallback(
+    async (
+      query,
+      page,
+      currentSearchType = searchType,
+      currentSortOrder = sortOrder
+    ) => {
+      const requestId = requestIdRef.current + 1
+      requestIdRef.current = requestId
+      setKeyword(query)
+      setPage(page)
+      setSearchResults([])
+      setSearchError('')
+      setUseTime(0)
+      setTotalPage(0)
+      setTotalHit(0)
+      setActiveIndex(0)
+      if (!query || query === '') {
+        setIsLoading(false)
+        return
+      }
+      if (!index) {
+        setIsLoading(false)
+        setSearchError('搜索服务尚未配置')
+        return
+      }
+      setIsLoading(true)
+      try {
+        const searchParams = getSearchParams(page, currentSearchType)
+        const res = await index.search(query, searchParams)
+        if (requestIdRef.current !== requestId) return
+        const { hits, nbHits, nbPages, processingTimeMS } = res
+        setUseTime(processingTimeMS)
+        setTotalPage(nbPages)
+        setTotalHit(nbHits)
+        // 应用排序
+        const sortedHits = sortResults(hits, currentSortOrder)
+        setSearchResults(sortedHits)
+        const doms = document
+          .getElementById('search-wrapper')
+          ?.getElementsByClassName('replace')
+
+        highlightTimer.current = window.setTimeout(() => {
+          if (requestIdRef.current !== requestId || !doms) return
+          replaceSearchResult({
+            doms,
+            search: query,
+            target: {
+              element: 'span',
+              className: 'font-bold border-b border-dashed'
+            }
+          })
+        }, 200) // 延时高亮
+      } catch (error) {
+        if (requestIdRef.current !== requestId) return
+        console.error('Algolia search error:', error)
+        setSearchError('搜索暂时不可用，请稍后重试')
+      } finally {
+        if (requestIdRef.current === requestId) setIsLoading(false)
+      }
+    },
+    [getSearchParams, index, searchType, sortOrder, sortResults]
+  )
+
+  // 使用 ref 追踪上一次的筛选条件，只在条件变化时触发搜索
+  const prevFiltersRef = useRef({ searchType: 'all', sortOrder: 'relevance' })
+
+  // 当搜索类型或排序改变时重新搜索
+  useEffect(() => {
+    // 检查筛选条件是否真正发生变化
+    const filtersChanged =
+      prevFiltersRef.current.searchType !== searchType ||
+      prevFiltersRef.current.sortOrder !== sortOrder
+
+    if (filtersChanged && keyword && isModalOpen) {
+      handleSearch(keyword, 0, searchType, sortOrder)
     }
-  }
 
-  const handleInputChange = event => {
-    const query = event.target.value
-    invalidateSearch() // Invalidate immediately, including the debounce window.
-    setKeyword(query)
-    setSearchResults([])
-    setSearchError('')
-    setIsLoading(Boolean(query))
-    if (!query) {
-      resetSearch()
+    // 更新 ref
+    prevFiltersRef.current = { searchType, sortOrder }
+  }, [searchType, sortOrder, keyword, isModalOpen, handleSearch])
+
+  useEffect(() => {
+    if (!isModalOpen || searchResults.length === 0) return
+    document
+      .getElementById(`algolia-result-${activeIndex}`)
+      ?.scrollIntoView({ block: 'nearest' })
+  }, [activeIndex, isModalOpen, searchResults.length])
+
+  // 修改input的onChange事件处理函数
+  const handleInputChange = e => {
+    const query = e.target.value
+
+    // 如果已经有计时器在等待搜索，先清除之前的计时器
+    if (searchTimer.current) {
+      clearTimeout(searchTimer.current)
+    }
+
+    if (isComposingRef.current || e.nativeEvent?.isComposing) return
+
+    if (!query.trim()) {
+      requestIdRef.current += 1
+      setKeyword('')
+      setSearchResults([])
+      setTotalPage(0)
+      setTotalHit(0)
+      setUseTime(0)
+      setSearchError('')
+      setIsLoading(false)
       return
     }
-    searchTimer.current = setTimeout(() => { void handleSearch(query) }, 600)
+
+    // 设置新的计时器，在用户停止输入一段时间后触发搜索
+    searchTimer.current = setTimeout(() => {
+      void handleSearch(query.trim(), 0, searchType, sortOrder)
+    }, 350)
   }
 
-  const switchPage = page => handleSearch(keyword, page)
+  useEffect(() => {
+    return () => {
+      requestIdRef.current += 1
+      if (searchTimer.current) clearTimeout(searchTimer.current)
+      if (highlightTimer.current) clearTimeout(highlightTimer.current)
+    }
+  }, [])
 
-  if (!index) {
+  /**
+   * 切换页码
+   * @param {*} page
+   */
+  const switchPage = page => {
+    handleSearch(keyword, page)
+  }
+
+  /**
+   * 关闭弹窗
+   */
+  const closeModal = () => {
+    setIsModalOpen(false)
+  }
+
+  if (!algoliaEnabled) {
     return <></>
   }
   return (
     <div
       id='search-wrapper'
       aria-hidden={!isModalOpen}
-      inert={isModalOpen ? undefined : ''}
       className={`${
         isModalOpen ? 'opacity-100' : 'invisible opacity-0 pointer-events-none'
-      } z-30 fixed h-screen w-screen left-0 top-0 sm:mt-[10vh] flex items-start justify-center mt-0`}>
-      {/* 模态框 */}
+      } z-30 fixed h-screen w-screen left-0 top-0 sm:mt-[5vh] flex items-start justify-center mt-0`}>
+      {/* 模态框 - 关闭时立即从可访问树移除，避免屏幕阅读器/Tab 停留在已关闭的弹层 */}
+      {isModalOpen && (
       <div
-        ref={dialogRef}
+        ref={modalRef}
         role='dialog'
-        aria-modal={isModalOpen ? true : undefined}
-        aria-labelledby={titleId}
+        aria-modal='true'
+        aria-label='搜索'
         tabIndex={-1}
         className={`${
           isModalOpen ? 'opacity-100' : 'invisible opacity-0 translate-y-10'
-        } max-h-[80vh] flex flex-col justify-between w-full min-h-[10rem] h-full md:h-fit max-w-xl dark:bg-hexo-black-gray dark:border-gray-800 bg-white dark:bg- p-5 rounded-lg z-50 shadow border hover:border-blue-600 duration-300 transition-all `}>
-        <div className='flex justify-between items-center'>
-          <div id={titleId} className='text-2xl text-blue-600 dark:text-yellow-600 font-bold'>
-            搜索
+        } max-h-[90vh] flex flex-col justify-between w-full min-h-[10rem] h-full md:h-fit max-w-2xl dark:bg-hexo-black-gray dark:border-gray-800 bg-white p-5 rounded-xl z-50 shadow-lg border hover:border-blue-600 duration-300 transition-all`}>
+        {/* 头部 */}
+        <div className='flex justify-between items-center mb-3'>
+          <div
+            id='algolia-search-title'
+            className='text-2xl text-blue-600 dark:text-yellow-600 font-bold flex items-center gap-2'>
+            <i className='fas fa-search'></i>
+            高级搜索
           </div>
-          <div>
-            <button type='button' aria-label='关闭搜索'
-              className='text-gray-600 fa-solid fa-xmark p-1 cursor-pointer hover:text-blue-600'
-              onClick={closeModal} />
+          <div className='flex items-center gap-2'>
+            {/* 过滤器切换按钮 */}
+            <button
+              type='button'
+              aria-expanded={showFilters}
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-3 py-1 rounded-lg text-sm transition-all duration-200 ${
+                showFilters
+                  ? 'bg-blue-600 dark:bg-yellow-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}>
+              <i className='fas fa-filter mr-1'></i>
+              筛选
+            </button>
+            <button
+              type='button'
+              aria-label='关闭搜索'
+              className='text-gray-600 fa-solid fa-xmark p-2 cursor-pointer hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all'
+              onClick={closeModal}
+            />
           </div>
         </div>
 
-        <input
-          type='text'
-          aria-label='搜索关键词'
-          placeholder='在这里输入搜索关键词...'
-          onChange={e => handleInputChange(e)}
-          onFocus={() => setIsInputFocused(true)} // 聚焦时
-          onBlur={() => setIsInputFocused(false)} // 失去焦点时
-          className='text-black dark:text-gray-200 bg-gray-50 dark:bg-gray-600 outline-blue-500 w-full px-4 my-2 py-1 mb-4 border rounded-md'
-          ref={inputRef}
-        />
-
-        {/* 标签组 */}
-        <div className='mb-4'>
-          <TagGroups />
+        {/* 搜索输入框 */}
+        <div className='relative'>
+          <input
+            type='text'
+            role='textbox'
+            aria-label='搜索文章'
+            aria-activedescendant={
+              searchResults.length ? `algolia-result-${activeIndex}` : undefined
+            }
+            placeholder='搜索文章标题、内容、标签、分类...'
+            onChange={e => handleInputChange(e)}
+            onCompositionStart={() => {
+              isComposingRef.current = true
+              if (searchTimer.current) clearTimeout(searchTimer.current)
+            }}
+            onCompositionEnd={event => {
+              isComposingRef.current = false
+              handleInputChange(event)
+            }}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
+            className='text-black dark:text-gray-200 bg-gray-50 dark:bg-gray-700 outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-500 w-full pl-10 pr-4 py-3 border dark:border-gray-600 rounded-xl transition-all'
+            ref={inputRef}
+          />
+          <i className='fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
+          {isLoading && (
+            <i className='fas fa-spinner animate-spin absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 dark:text-yellow-500'></i>
+          )}
         </div>
-        {isLoading && <p role='status' className='text-center text-gray-500'>正在搜索…</p>}
-        {searchError && <p role='alert' className='text-center text-red-600'>{searchError} <button type='button' className='underline' onClick={() => { void handleSearch(keyword, page) }}>重试</button></p>}
-        {searchResults.length === 0 && keyword && !isLoading && !searchError && (
-          <div>
-            <p className=' text-slate-600 text-center my-4 text-base'>
-              {' '}
-              无法找到相关结果
-              <span className='font-semibold'>&quot;{keyword}&quot;</span>
-            </p>
+
+        {/* 搜索过滤器 */}
+        {showFilters && (
+          <div className='mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3 animate-fade-in'>
+            {/* 搜索类型 */}
+            <div>
+              <div className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>
+                搜索范围
+              </div>
+              <div className='flex flex-wrap gap-2'>
+                {SEARCH_TYPES.map(type => (
+                  <button
+                    type='button'
+                    aria-pressed={searchType === type.id}
+                    key={type.id}
+                    onClick={() => setSearchType(type.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                      searchType === type.id
+                        ? 'bg-blue-600 dark:bg-yellow-600 text-white shadow-md'
+                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600'
+                    }`}>
+                    <i className={`fas ${type.icon} text-xs`}></i>
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* 排序方式 */}
+            <div>
+              <div className='text-sm font-medium text-gray-600 dark:text-gray-400 mb-2'>
+                排序方式
+              </div>
+              <div className='flex flex-wrap gap-2'>
+                {SORT_OPTIONS.map(option => (
+                  <button
+                    type='button'
+                    aria-pressed={sortOrder === option.id}
+                    key={option.id}
+                    onClick={() => setSortOrder(option.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                      sortOrder === option.id
+                        ? 'bg-blue-600 dark:bg-yellow-600 text-white shadow-md'
+                        : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border dark:border-gray-600'
+                    }`}>
+                    <i className={`fas ${option.icon} text-xs`}></i>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
-        <ul className='flex-1 overflow-auto'>
+
+        {/* 热门标签 - 仅在无搜索结果时显示 */}
+        {!keyword && (
+          <div className='mt-4'>
+            <div className='text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>
+              热门标签
+            </div>
+            <TagGroups />
+          </div>
+        )}
+
+        {/* 无结果提示 */}
+        {searchResults.length === 0 &&
+          keyword &&
+          !isLoading &&
+          !searchError && (
+            <div className='py-8 text-center'>
+              <i className='fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-3'></i>
+              <p className='text-gray-500 dark:text-gray-400'>
+                未找到{' '}
+                <span className='font-semibold text-gray-700 dark:text-gray-200'>
+                  &quot;{keyword}&quot;
+                </span>{' '}
+                的相关结果
+              </p>
+              <p className='text-sm text-gray-400 dark:text-gray-500 mt-1'>
+                尝试使用不同的关键词或调整搜索范围
+              </p>
+            </div>
+          )}
+
+        {searchError && (
+          <p
+            role='alert'
+            className='py-6 text-center text-sm text-red-600 dark:text-red-400'>
+            {searchError}
+          </p>
+        )}
+
+        {/* 搜索结果列表 - 改进样式，显示更多信息 */}
+        <ul
+          id='algolia-search-results'
+          role='listbox'
+          className='flex-1 overflow-auto mt-3 space-y-2'>
           {searchResults.map((result, index) => (
             <li
+              id={`algolia-result-${index}`}
+              role='option'
+              aria-selected={activeIndex === index}
               key={result.objectID}
               onMouseEnter={() => setActiveIndex(index)}
-              className={`cursor-pointer replace my-2 duration-100
-              rounded-lg
-              ${activeIndex === index ? 'bg-blue-600 dark:bg-yellow-600' : ''}`}>
-              <a
-                href={`${siteConfig('SUB_PATH', '')}/${result.slug || result.objectID}`}
-                className={`block p-2 ${activeIndex === index ? ' text-white' : ' text-black dark:text-gray-300 '}`}>
-                {result.title}
-              </a>
+              onClick={() => onJumpSearchResult(index)}
+              className={`cursor-pointer replace p-3 duration-150 rounded-xl flex gap-3 group
+              ${
+                activeIndex === index
+                  ? 'bg-blue-600 dark:bg-yellow-600 shadow-md'
+                  : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}>
+              {/* 封面图 - 使用 object-contain 保证图片完整显示 */}
+              {result.pageCoverThumbnail && (
+                <div className='w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center'>
+                  <LazyImage
+                    src={result.pageCoverThumbnail}
+                    alt={result.title}
+                    className='max-w-full max-h-full object-contain'
+                  />
+                </div>
+              )}
+              {/* 文章信息 */}
+              <div className='flex-1 min-w-0'>
+                <h3
+                  className={`font-medium line-clamp-1 ${
+                    activeIndex === index
+                      ? 'text-white'
+                      : 'text-gray-800 dark:text-gray-200'
+                  }`}>
+                  {result.title}
+                </h3>
+                {result.summary && (
+                  <p
+                    className={`text-sm line-clamp-1 mt-0.5 ${
+                      activeIndex === index
+                        ? 'text-blue-100 dark:text-yellow-100'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
+                    {result.summary}
+                  </p>
+                )}
+                <div
+                  className={`flex items-center gap-2 mt-1 text-xs ${
+                    activeIndex === index
+                      ? 'text-blue-200 dark:text-yellow-200'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}>
+                  {result.category && (
+                    <span className='flex items-center gap-1'>
+                      <i className='fas fa-folder'></i>
+                      {result.category}
+                    </span>
+                  )}
+                  {result.tags && result.tags.length > 0 && (
+                    <span className='flex items-center gap-1'>
+                      <i className='fas fa-tags'></i>
+                      {result.tags.slice(0, 2).join(', ')}
+                    </span>
+                  )}
+                  {result.createdTime && (
+                    <span className='flex items-center gap-1'>
+                      <i className='fas fa-calendar'></i>
+                      {new Date(result.createdTime).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* 箭头指示 */}
+              <div
+                className={`self-center transition-transform duration-200 ${
+                  activeIndex === index
+                    ? 'translate-x-0 opacity-100'
+                    : 'translate-x-2 opacity-0'
+                }`}>
+                <i
+                  className={`fas fa-arrow-right ${activeIndex === index ? 'text-white' : ''}`}></i>
+              </div>
             </li>
           ))}
         </ul>
+
+        {/* 分页 */}
         <Pagination totalPage={totalPage} page={page} switchPage={switchPage} />
-        <div className='flex items-center justify-between mt-2 sm:text-sm text-xs dark:text-gray-300'>
-          {totalHit === 0 && (
-            <div className='flex items-center'>
-              {ShortCutActions.map((action, index) => {
-                return (
-                  <Fragment key={index}>
-                    <div className='border-gray-300 dark:text-gray-300 text-gray-600 px-2 rounded border inline-block'>
+
+        {/* 底部信息 */}
+        <div className='flex items-center justify-between mt-3 pt-3 border-t dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400'>
+          {totalHit === 0 ? (
+            <div className='flex items-center gap-3'>
+              {ShortCutActions.map((action, index) => (
+                <Fragment key={index}>
+                  <div className='flex items-center gap-1'>
+                    <kbd className='px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 font-mono text-xs'>
                       {action.key}
-                    </div>
-                    <span className='ml-2 mr-4  text-gray-600 dark:text-gray-300'>
-                      {action.action}
-                    </span>
-                  </Fragment>
-                )
-              })}
+                    </kbd>
+                    <span>{action.action}</span>
+                  </div>
+                </Fragment>
+              ))}
             </div>
+          ) : (
+            <p>
+              共找到{' '}
+              <span className='font-medium text-blue-600 dark:text-yellow-500'>
+                {totalHit}
+              </span>{' '}
+              条结果， 用时 <span className='font-medium'>{useTime}</span> 毫秒
+            </p>
           )}
-          <div>
-            {totalHit > 0 && (
-              <p>
-                共搜索到 {totalHit} 条结果，用时 {useTime} 毫秒
-              </p>
-            )}
-          </div>
-          <div className='text-gray-600 dark:text-gray-300  text-right'>
-            <span>
-              <i className='fa-brands fa-algolia'></i> Algolia 提供搜索服务
-            </span>
+          <div className='flex items-center gap-1'>
+            <i className='fa-brands fa-algolia text-blue-500'></i>
+            <span>Algolia</span>
           </div>
         </div>
       </div>
+      )}
 
       {/* 遮罩 */}
       <div
@@ -442,7 +829,7 @@ function Pagination(props) {
     return <></>
   }
   return (
-    <div className='flex space-x-1 w-full justify-center py-1'>
+    <div className='flex flex-wrap gap-1 w-full justify-center py-1'>
       {Array.from({ length: totalPage }, (_, i) => {
         const classNames =
           page === i

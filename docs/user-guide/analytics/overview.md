@@ -1,4 +1,5 @@
 # 站点统计相关
+
 > 迁移自：[站点统计相关](https://docs.tangly1024.com/article/notion-next-analytics)
 > 发布日期：2023-8-4
 > 最后编辑：2024-4-28
@@ -35,7 +36,6 @@
 
 这些统计方案在功能和报告类型上略有不同，你可以根据自己的需求选择最适合你的方案。无论你选择哪种方案，站点统计功能都将帮助你更好地了解和优化你的网站。
 
-
 ## 配置相关
 
 ```JavaScript
@@ -59,7 +59,6 @@ ANALYTICS_GOOGLE_ID: process.env.NEXT_PUBLIC_ANALYTICS_GOOGLE_ID || '', // 谷�
 
 ![Untitled](/legacy/58c5d20bf433eff7.png)
 
-
 #### GA-ID从哪里来？
 
 在[GoogleAnalytics后台](https://analytics.google.com/analytics/web/) 创建你的网站资源，并添加一个数据流（类型为网站）
@@ -70,15 +69,14 @@ ANALYTICS_GOOGLE_ID: process.env.NEXT_PUBLIC_ANALYTICS_GOOGLE_ID || '', // 谷�
 
 ![Untitled](/legacy/d72bb8754da49d1e.png)
 
-
 ## FAQ
 
 - 统计多久生效？
   - 理论上实时生效，只要在站点安装好后，google后台就能立刻查询到安装结果
 
 - 怎么知道我的统计安装是否生效？
-  - 打开网页 → 按F12打开控制台  → 点击元素(Elements)面板 → 在面板中搜索你的衡量ID，如果能搜索相关代码`googletagmanager.com/gtag/js?id=xxxxx`到就是成功的。
-![Untitled](/legacy/5af36fcdda61b725.png)
+  - 打开网页 → 按F12打开控制台 → 点击元素(Elements)面板 → 在面板中搜索你的衡量ID，如果能搜索相关代码`googletagmanager.com/gtag/js?id=xxxxx`到就是成功的。
+    ![Untitled](/legacy/5af36fcdda61b725.png)
 
 - 配置失效怎么办？
   - 参考站点配置的文档，进行r[edeploy](/user-guide/config-site#c4768010ae7d44609b744e79e2f9959a)

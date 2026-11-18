@@ -1,11 +1,29 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
+
+// 覆盖 jest.setup.js 的全局 next/dynamic 空实现：让 ssr:false 的动态组件
+// （本地的 Comment 经 next/dynamic 引入）在测试里真实解析到对应的 mock 模块
+jest.mock('next/dynamic', () =>
+  function dynamic(loader) {
+    const { Suspense, lazy, createElement } = require('react')
+    const Lazy = lazy(() =>
+      Promise.resolve()
+        .then(loader)
+        .then(mod => ({ default: mod?.default ?? mod }))
+    )
+    return function DynamicComponent(props) {
+      return createElement(Suspense, { fallback: null }, createElement(Lazy, props))
+    }
+  }
+)
 import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { LayoutSlug } from '@/themes/heo'
 
 jest.mock('@/lib/config', () => ({ siteConfig: jest.fn() }))
 jest.mock('@/lib/global', () => ({ useGlobal: jest.fn() }))
-jest.mock('next/router', () => ({ useRouter: () => ({ push: jest.fn() }) }))
+jest.mock('next/router', () => ({
+  useRouter: () => ({ push: jest.fn(), query: {}, asPath: '/', locale: 'zh-CN', basePath: '' })
+}))
 jest.mock('@/lib/plugins/wow', () => ({ loadWowJS: jest.fn() }))
 jest.mock(
   '@/components/Comment',
@@ -23,7 +41,6 @@ jest.mock('@/components/ShareBar', () => () => null)
 jest.mock('@/components/WWAds', () => () => null)
 jest.mock('@/components/AISummary', () => () => null)
 jest.mock('@/components/ArticleExpirationNotice', () => () => null)
-jest.mock('@/themes/heo/components/BlogPostArchive', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListPage', () => () => null)
 jest.mock('@/themes/heo/components/BlogPostListScroll', () => () => null)
 jest.mock('@/themes/heo/components/CategoryBar', () => () => null)
@@ -69,21 +86,23 @@ it.each([
     siteConfig.mockImplementation(name => (name === key ? value : false))
     render(<LayoutSlug post={post} />)
     expect(screen.getByText('Comments')).toBeVisible()
-    expect(screen.getByTestId('comment-provider')).toHaveTextContent('article')
+    // 本地版 Comment 经 next/dynamic 懒加载，需等待异步解析
+    return expect(screen.findByTestId('comment-provider')).resolves.toHaveTextContent('article')
   }
 )
 
 it.each([undefined, false, 'false'])(
   'omits the comment heading and provider when configuration is disabled (%s)',
-  value => {
+  async value => {
     siteConfig.mockReturnValue(value)
     render(<LayoutSlug post={post} />)
     expect(screen.queryByText('Comments')).not.toBeInTheDocument()
+    await act(() => Promise.resolve())
     expect(screen.queryByTestId('comment-provider')).not.toBeInTheDocument()
   }
 )
 
-it('omits comments on hidden or locked posts and in full-width mode', () => {
+it('omits comments on hidden or locked posts and in full-width mode', async () => {
   siteConfig.mockImplementation(key => key === 'COMMENT_NOTION_ENABLE')
   const { rerender } = render(
     <LayoutSlug post={{ ...post, comment: 'Hide' }} />
@@ -96,5 +115,6 @@ it('omits comments on hidden or locked posts and in full-width mode', () => {
   expect(screen.queryByTestId('comment-provider')).not.toBeInTheDocument()
   useGlobal.mockReturnValue({ locale, fullWidth: false })
   rerender(<LayoutSlug post={post} lock={false} />)
-  expect(screen.getByTestId('comment-provider')).toBeVisible()
+  // 本地版 Comment 经 next/dynamic 懒加载，等待解析后校验最终可见
+  expect(await screen.findByTestId('comment-provider')).toBeVisible()
 })

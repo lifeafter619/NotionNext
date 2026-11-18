@@ -1,6 +1,6 @@
 import LazyImage from '@/components/LazyImage'
 import NotionIcon from '@/components/NotionIcon'
-import { siteConfig } from '@/lib/config'
+import { siteConfig, siteConfigBoolean } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import SmartLink from '@/components/SmartLink'
@@ -39,7 +39,7 @@ export default function PostHero({ post, siteInfo }) {
             {post.category && (
               <>
                 <SmartLink
-                  href={`/category/${post.category}`}
+                  href={`/category/${encodeURIComponent(post.category)}`}
                   passHref
                   legacyBehavior>
                   <div className='cursor-pointer px-2 py-1 mb-2 border rounded-sm dark:border-white text-sm font-medium hover:underline duration-200 shadow-text-md text-white'>
@@ -75,7 +75,7 @@ export default function PostHero({ post, siteInfo }) {
               </div>
             </div>
 
-            {JSON.parse(siteConfig('ANALYTICS_BUSUANZI_ENABLE')) && (
+            {siteConfigBoolean('ANALYTICS_BUSUANZI_ENABLE') && (
               <div className='busuanzi_container_page_pv font-light mr-2'>
                 <span className='mr-2 busuanzi_value_page_pv' />
                 {locale.COMMON.VIEWS}

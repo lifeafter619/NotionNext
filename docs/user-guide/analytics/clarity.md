@@ -1,4 +1,5 @@
 # Clarity站点统计
+
 > 迁移自：[Clarity站点统计](https://docs.tangly1024.com/article/notion-next-clarity)
 > 发布日期：2024-1-31
 > 最后编辑：2024-1-31
@@ -7,7 +8,6 @@
 ## 什么是Clarity
 
 微软推出的完全免费的站点统计数据，它是一个用户行为分析工具，可帮助你了解用户如何通过会话重播和热度地图等功能与网站交互。
-
 
 ### 优点
 
@@ -29,7 +29,6 @@ Microsoft Clarity有以下这些优点：
 
 1. 数据安全，不收集敏感信息。
 
-
 ## 效果
 
 在后台查看实时访客，总访客、文章访问、等信息。
@@ -46,7 +45,6 @@ Microsoft Clarity有以下这些优点：
 
 > 接下来介绍如何部署
 
-
 ## 创建您的Clarity账户
 
 登录clarity
@@ -59,7 +57,6 @@ Clarity is a free user behavior analytics tool that helps you understand how use
 
 ![Untitled](/legacy/dabbd299f15edcb7.png)
 
-
 ### 获取Clarity的ID
 
 创建好项目后选择手动安装
@@ -69,7 +66,6 @@ Clarity is a free user behavior analytics tool that helps you understand how use
 页面中的这串10个字符就是您的ID
 
 ![Untitled](/legacy/abd6cc46cd509db2.png)
-
 
 ## 配置NotionNext
 

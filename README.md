@@ -51,13 +51,13 @@ NotionNext 是一个基于 **Next.js + Notion API** 的开源站点系统。你�
 
 ## 你可以用它做什么？
 
-| 目标 | 推荐入口 | 适合人群 |
-| --- | --- | --- |
-| 搭个人博客 | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here) | 内容创作者、独立开发者、学生 |
-| 做作品集或个人品牌站 | [按场景选主题](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 设计师、摄影师、自由职业者 |
-| 做产品官网或 SaaS 落地页 | [Starter / Landing / Proxio](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 创业者、独立产品、小团队 |
-| 做知识库或文档站 | [GitBook / Claude](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 开源项目、课程作者、团队文档 |
-| 做导航站或资源聚合 | [Nav 主题](https://notionnext.tangly1024.com/user-guide/themes/nav) | 资源整理者、社群运营者 |
+| 目标                     | 推荐入口                                                                                                      | 适合人群                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 搭个人博客               | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here)                                         | 内容创作者、独立开发者、学生 |
+| 做作品集或个人品牌站     | [按场景选主题](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题)               | 设计师、摄影师、自由职业者   |
+| 做产品官网或 SaaS 落地页 | [Starter / Landing / Proxio](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 创业者、独立产品、小团队     |
+| 做知识库或文档站         | [GitBook / Claude](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题)           | 开源项目、课程作者、团队文档 |
+| 做导航站或资源聚合       | [Nav 主题](https://notionnext.tangly1024.com/user-guide/themes/nav)                                           | 资源整理者、社群运营者       |
 
 ## 为什么选择 NotionNext？
 
@@ -85,14 +85,14 @@ NotionNext 是一个基于 **Next.js + Notion API** 的开源站点系统。你�
 - 26 个内置主题：[主题全览](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)
 - 仓库内主题文档：[docs/user-guide/themes/](./docs/user-guide/themes/)
 
-| 场景 | 优先看 |
-| --- | --- |
-| 个人博客 | `simple`、`hexo`、`nobelium`、`typography` |
-| 文档 / 知识库 | `gitbook`、`claude`、`thoughtlite` |
-| 作品集 / 个人品牌 | `opc`、`proxio`、`starter`、`landing` |
-| 产品官网 | `starter`、`landing`、`commerce` |
-| 图片 / 摄影 | `photo`、`plog`、`magzine` |
-| 导航站 | `nav` |
+| 场景              | 优先看                                     |
+| ----------------- | ------------------------------------------ |
+| 个人博客          | `simple`、`hexo`、`nobelium`、`typography` |
+| 文档 / 知识库     | `gitbook`、`claude`、`thoughtlite`         |
+| 作品集 / 个人品牌 | `opc`、`proxio`、`starter`、`landing`      |
+| 产品官网          | `starter`、`landing`、`commerce`           |
+| 图片 / 摄影       | `photo`、`plog`、`magzine`                 |
+| 导航站            | `nav`                                      |
 
 ## 本地开发
 
@@ -114,42 +114,42 @@ yarn dev
 
 常用命令：
 
-| 命令 | 用途 |
-| --- | --- |
-| `yarn dev` | 启动本地开发 |
-| `yarn build` | 构建生产版本 |
-| `yarn export` | 静态导出 |
-| `yarn docs:site:dev` | 本地预览文档站 |
-| `yarn docs:site:build` | 构建文档站 |
+| 命令                   | 用途           |
+| ---------------------- | -------------- |
+| `yarn dev`             | 启动本地开发   |
+| `yarn build`           | 构建生产版本   |
+| `yarn export`          | 静态导出       |
+| `yarn docs:site:dev`   | 本地预览文档站 |
+| `yarn docs:site:build` | 构建文档站     |
 
 ## 文档入口
 
 自 2026 年起，NotionNext 使用仓库内 Markdown 文档作为主要教程来源，并发布为独立文档站。
 
-| 内容 | 链接 |
-| --- | --- |
-| 在线文档站 | [notionnext.tangly1024.com](https://notionnext.tangly1024.com) |
-| 新手入口 | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here) |
-| 场景模板 | [按目标选择模板](https://notionnext.tangly1024.com/user-guide/templates) |
-| 配置索引 | [全站功能与配置索引](https://notionnext.tangly1024.com/user-guide/reference/features) |
-| 主题说明 | [26 个主题说明](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) |
-| 用户作品 | [Showcase](https://notionnext.tangly1024.com/user-guide/showcase)：已上线站点欢迎提交作品 |
-| 文档源码 | [docs/](./docs/) |
-| 旧版手册 | [docs.tangly1024.com](https://docs.tangly1024.com/) |
+| 内容       | 链接                                                                                      |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| 在线文档站 | [notionnext.tangly1024.com](https://notionnext.tangly1024.com)                            |
+| 新手入口   | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here)                     |
+| 场景模板   | [按目标选择模板](https://notionnext.tangly1024.com/user-guide/templates)                  |
+| 配置索引   | [全站功能与配置索引](https://notionnext.tangly1024.com/user-guide/reference/features)     |
+| 主题说明   | [26 个主题说明](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)       |
+| 用户作品   | [Showcase](https://notionnext.tangly1024.com/user-guide/showcase)：已上线站点欢迎提交作品 |
+| 文档源码   | [docs/](./docs/)                                                                          |
+| 旧版手册   | [docs.tangly1024.com](https://docs.tangly1024.com/)                                       |
 
 ## 参与社区
 
 NotionNext 主仓库由 GitHub 组织 [notionnext-org](https://github.com/notionnext-org) 维护。欢迎提交问题、补充文档、贡献主题、修复代码或参与讨论。
 
-| 内容 | 链接 |
-| --- | --- |
-| 参与社区 | [community-participate.md](./docs/user-guide/community-participate.md) |
-| 5.0 愿景与路线图 | [VISION_ROADMAP.md](./docs/developer/VISION_ROADMAP.md) |
-| 贡献指南 | [CONTRIBUTING.zh-CN.md](./CONTRIBUTING.zh-CN.md) |
-| 项目治理 | [GOVERNANCE.zh-CN.md](./GOVERNANCE.zh-CN.md) |
-| 维护者 | [MAINTAINERS.md](./MAINTAINERS.md) |
-| 行为准则 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
-| 讨论区 | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
+| 内容             | 链接                                                                           |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 参与社区         | [community-participate.md](./docs/user-guide/community-participate.md)         |
+| 5.0 愿景与路线图 | [VISION_ROADMAP.md](./docs/developer/VISION_ROADMAP.md)                        |
+| 贡献指南         | [CONTRIBUTING.zh-CN.md](./CONTRIBUTING.zh-CN.md)                               |
+| 项目治理         | [GOVERNANCE.zh-CN.md](./GOVERNANCE.zh-CN.md)                                   |
+| 维护者           | [MAINTAINERS.md](./MAINTAINERS.md)                                             |
+| 行为准则         | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)                                     |
+| 讨论区           | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
 
 如果你在仓库转让前已克隆旧地址，建议更新远程仓库：
 

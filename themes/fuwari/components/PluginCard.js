@@ -9,4 +9,3 @@ const PluginCard = ({ rightAreaSlot }) => {
 }
 
 export default PluginCard
-

@@ -1,0 +1,38 @@
+# 生产部署成功后预热 ISR 缓存：把 fallback:'blocking' 的长尾页面
+# （文章、标签、分类、翻页）在真实访客到达前生成好，压低 P75 TTFB。
+# 详见 scripts/warm-isr-cache.mjs
+name: Warm ISR cache
+
+on:
+  # Vercel 的 GitHub 集成会在每次部署后推送 deployment_status 事件
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: 要预热的站点地址
+        required: false
+        default: 'https://619.pp.ua'
+
+# 连续部署时只保留最新一次预热
+concurrency:
+  group: warm-isr-cache
+  cancel-in-progress: true
+
+jobs:
+  warm:
+    name: Warm ISR cache
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       contains(fromJSON('["Production", "production"]'), github.event.deployment.environment))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      # 脚本零依赖，无需 yarn install
+      - run: node scripts/warm-isr-cache.mjs
+        env:
+          SITE_URL: ${{ inputs.site_url || vars.WARMUP_SITE_URL || 'https://619.pp.ua' }}

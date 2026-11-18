@@ -1,18 +1,20 @@
 import styles from './AISummary.module.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useGlobal } from '@/lib/global'
 
 const AISummary = ({ aiSummary }) => {
   const { locale } = useGlobal()
-  const [summary, setSummary] = useState(aiSummary)
+  const [summary, setSummary] = useState('')
+  const containerRef = useRef(null)
 
   useEffect(() => {
-    showAiSummaryAnimation(aiSummary, setSummary)
-  }, [])
+    setSummary('')
+    return showAiSummaryAnimation(aiSummary, setSummary, containerRef.current)
+  }, [aiSummary])
 
   return (
     aiSummary && (
-      <div className={styles['post-ai']}>
+      <div ref={containerRef} className={styles['post-ai']}>
         <div className={styles['ai-container']}>
           <div className={styles['ai-header']}>
             <div className={styles['ai-icon']}>
@@ -44,13 +46,15 @@ const AISummary = ({ aiSummary }) => {
   )
 }
 
-const showAiSummaryAnimation = (rawSummary, setSummary) => {
+const showAiSummaryAnimation = (rawSummary, setSummary, targetElement) => {
   if (!rawSummary) return
   let currentIndex = 0
   const typingDelay = 20
   const punctuationDelayMultiplier = 6
   let animationRunning = true
   let lastUpdateTime = performance.now()
+  let rafId = null
+  let observer = null
   const animate = () => {
     if (currentIndex < rawSummary.length && animationRunning) {
       const currentTime = performance.now()
@@ -71,27 +75,34 @@ const showAiSummaryAnimation = (rawSummary, setSummary) => {
           setSummary(rawSummary.slice(0, currentIndex))
         } else {
           setSummary(rawSummary)
-          observer.disconnect()
+          observer?.disconnect()
         }
       }
-      requestAnimationFrame(animate)
+      rafId = globalThis.requestAnimationFrame(animate)
     }
   }
   animate(rawSummary)
-  const observer = new IntersectionObserver(
+  observer = new IntersectionObserver(
     entries => {
       animationRunning = entries[0].isIntersecting
       if (animationRunning && currentIndex === 0) {
         setTimeout(() => {
-          requestAnimationFrame(animate)
+          rafId = globalThis.requestAnimationFrame(animate)
         }, 200)
       }
     },
     { threshold: 0 }
   )
-  let post_ai = document.querySelector('.post-ai')
-  if (post_ai) {
-    observer.observe(post_ai)
+  if (targetElement) {
+    observer.observe(targetElement)
+  }
+
+  return () => {
+    animationRunning = false
+    if (rafId && typeof globalThis.cancelAnimationFrame === 'function') {
+      globalThis.cancelAnimationFrame(rafId)
+    }
+    observer?.disconnect()
   }
 }
 
