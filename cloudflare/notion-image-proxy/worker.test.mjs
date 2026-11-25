@@ -974,6 +974,10 @@ test('hotlink protection allows allow-listed domains by default', async () => {
     'https://619.pp.ua/',
     'https://66619.eu.org/article/x',
     'https://619-project.eu.org/',
+    // 微信/QQ 跳转确认页的 Referer 必须放行（qq.com 子域）
+    'https://weixin110.qq.com/cgi-bin/mmspamsupport-bin/newredirectconfirmcgi',
+    'https://mp.weixin.qq.com/s/abc123',
+    'https://c.pc.qq.com/middlem.html',
     'http://localhost:3000/',
     'http://127.0.0.1:3000/'
   ]) {
@@ -1038,22 +1042,9 @@ test('hotlink protection does not let a third-party spoof a suffix match', async
   assert.equal(response.status, 403)
 })
 
-test('hotlink protection applies to the /f/ direct-read route too', async () => {
-  // /f/ 路由同样受防盗链保护：无 Referer 放行（本站请求）
-  const { bucket } = createMockBucket()
-  await bucket.put('demo.png', new Uint8Array([1, 2, 3]), {
-    httpMetadata: { contentType: 'image/png' }
-  })
-
-  const response = await worker.fetch(
-    new Request('https://cdn.example.com/f/demo.png'),
-    { ASSET_BUCKET: bucket }
-  )
-
-  assert.equal(response.status, 200)
-})
-
-test('hotlink protection rejects third-party Referers on /f/ route', async () => {
+test('/f/ direct-read route skips hotlink protection', async () => {
+  // /f/ 是分享下载用途的路由，不做 Referer 校验：第三方 Referer（含微信/QQ
+  // 跳转确认页）也直接放行
   const { bucket } = createMockBucket()
   await bucket.put('demo.png', new Uint8Array([1, 2, 3]), {
     httpMetadata: { contentType: 'image/png' }
@@ -1061,12 +1052,12 @@ test('hotlink protection rejects third-party Referers on /f/ route', async () =>
 
   const response = await worker.fetch(
     new Request('https://cdn.example.com/f/demo.png', {
-      headers: { Referer: 'https://evil.com/' }
+      headers: { Referer: 'https://weixin110.qq.com/' }
     }),
     { ASSET_BUCKET: bucket }
   )
 
-  assert.equal(response.status, 403)
+  assert.equal(response.status, 200)
 })
 
 test('ALLOWED_DOMAINS env var overrides the default allow-list', async () => {

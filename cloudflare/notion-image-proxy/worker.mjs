@@ -16,6 +16,10 @@ const DEFAULT_ALLOWED_DOMAINS = [
   '619.pp.ua',
   '66619.eu.org',
   '619-project.eu.org',
+  // 微信/QQ 分享外链会先经其跳转确认页（weixin110.qq.com / c.pc.qq.com），
+  // 随后浏览器带着该页的 Referer 访问目标链接，必须放行 qq.com 全系子域，
+  // 否则微信里点开直链一律 403。
+  'qq.com',
   'localhost',
   '127.0.0.1'
 ]
@@ -79,10 +83,12 @@ export default {
       })
     }
 
-    // 防盗链：所有路由（/image、/signed、/images、/f、Waline emoji）统一校验
-    // Referer。本站图片请求不带 Referer（no-referrer），故直接放行；
-    // 第三方站点把图嵌到自己页面时，Referer 会是其自身域名，被白名单拒绝。
-    if (!isRefererAllowed(request, env)) {
+    // 防盗链：/image、/signed、/images 和 Waline emoji 路由统一校验 Referer。
+    // 本站图片请求不带 Referer（no-referrer），故直接放行；第三方站点把图嵌到
+    // 自己页面时，Referer 会是其自身域名，被白名单拒绝。
+    // /f/ 是分享下载用途的图床直读路由，跳过校验：微信/QQ 等跳转确认页会带着
+    // 自身 Referer 访问目标链接，下载分享链接不应因此 403。
+    if (routeKind !== 'r2-file' && !isRefererAllowed(request, env)) {
       return textResponse(request, 403, 'Hotlinking not allowed')
     }
 

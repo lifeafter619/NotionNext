@@ -71,10 +71,19 @@ The `v1/` prefix is the proxy's internal cache namespace: it is hidden from
 rule, so manual uploads are never deleted automatically. Avoid naming your
 own files under `v1/`.
 
+`/f/` skips the hotlink Referer check on purpose (share/download use case),
+so links opened from WeChat/QQ redirect pages work without 403.
+
 ## Hotlink protection (防盗链)
 
-All routes (`/image`, `/signed`, `/images`, `/f`, and the Waline emoji proxy)
-check the request `Referer` against an allow-list:
+The Referer allow-list applies to `/image`, `/signed`, `/images`, and the
+Waline emoji proxy. **`/f/` is exempt by design**: it is the share/download
+route, and WeChat/QQ open external links through redirect-confirm pages
+(`weixin110.qq.com`, `c.pc.qq.com`) that send their own Referer — checking it
+there would 403 every download shared into those apps. Anyone may link or
+embed objects under `/f/`.
+
+The remaining routes check the request `Referer` against an allow-list:
 
 - **No `Referer` → allowed.** NotionNext sets `referrerPolicy: 'no-referrer'`
   on every image request, so your own site's requests carry no `Referer` and
@@ -95,10 +104,13 @@ check the request `Referer` against an allow-list:
 > guarantees use `Origin`/`Sec-Fetch-Site` checks or the signed-URL routes.
 
 The allow-list defaults to `619.pp.ua`, `66619.eu.org`,
-`619-project.eu.org`, `localhost`, `127.0.0.1`. Override it with the
-`ALLOWED_DOMAINS` environment variable (comma-separated, case-insensitive).
-Setting it **replaces** the default list entirely (it does not extend it),
-so include all the domains you need:
+`619-project.eu.org`, `qq.com`, `localhost`, `127.0.0.1`. The `qq.com`
+entry is required for WeChat/QQ: tapping a shared link there goes through
+a redirect-confirm page (`weixin110.qq.com`, `c.pc.qq.com`) whose Referer
+must be allowed, or every link opened from WeChat gets 403. Override it
+with the `ALLOWED_DOMAINS` environment variable (comma-separated,
+case-insensitive). Setting it **replaces** the default list entirely (it
+does not extend it), so include all the domains you need:
 
 ```bash
 # Dashboard: Workers & Pages → notion-image-proxy → Settings → Variables
